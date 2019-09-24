@@ -1,0 +1,81 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+            <h2 id="jhi-invoice-heading" jhiTranslate="tbsApp.invoice.home.createOrEditLabel">Create or edit a Invoice</h2>
+            <div>
+                <jhi-alert-error></jhi-alert-error>
+                <div class="form-group" [hidden]="!editForm.get('id').value">
+                    <label for="id" jhiTranslate="global.field.id">ID</label>
+                    <input type="text" class="form-control" id="id" name="id" formControlName="id"
+                        readonly />
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="tbsApp.invoice.customerId" for="field_customerId">Customer Id</label>
+                    <input type="text" class="form-control" name="customerId" id="field_customerId"
+                           formControlName="customerId"/>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="tbsApp.invoice.status" for="field_status">Status</label>
+                    <select class="form-control" name="status" formControlName="status" id="field_status">
+                        <option value="DRAFT">{{'tbsApp.InvoiceStatus.DRAFT' | translate}}</option>
+                        <option value="SENT">{{'tbsApp.InvoiceStatus.SENT' | translate}}</option>
+                        <option value="VIEWED">{{'tbsApp.InvoiceStatus.VIEWED' | translate}}</option>
+                        <option value="APPROVED">{{'tbsApp.InvoiceStatus.APPROVED' | translate}}</option>
+                        <option value="PARTIAL">{{'tbsApp.InvoiceStatus.PARTIAL' | translate}}</option>
+                        <option value="PAID">{{'tbsApp.InvoiceStatus.PAID' | translate}}</option>
+                        <option value="OVERDUE">{{'tbsApp.InvoiceStatus.OVERDUE' | translate}}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="tbsApp.invoice.number" for="field_number">Number</label>
+                    <input type="number" class="form-control" name="number" id="field_number"
+                           formControlName="number"/>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="tbsApp.invoice.note" for="field_note">Note</label>
+                    <input type="text" class="form-control" name="note" id="field_note"
+                           formControlName="note"/>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="tbsApp.invoice.dueDate" for="field_dueDate">Due Date</label>
+                    <div class="d-flex">
+                        <input id="field_dueDate" type="datetime-local" class="form-control" name="dueDate" formControlName="dueDate" placeholder="YYYY-MM-DD HH:mm"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="tbsApp.invoice.subtotal" for="field_subtotal">Subtotal</label>
+                    <input type="number" class="form-control" name="subtotal" id="field_subtotal"
+                           formControlName="subtotal"/>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="tbsApp.invoice.amount" for="field_amount">Amount</label>
+                    <input type="number" class="form-control" name="amount" id="field_amount"
+                           formControlName="amount"/>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="tbsApp.invoice.discount" for="field_discount">Discount</label>
+                    <select class="form-control" id="field_discount" name="discount" formControlName="discountId">
+                        <option [ngValue]="null"></option>
+                        <option [ngValue]="discountOption.id" *ngFor="let discountOption of discounts; trackBy: trackDiscountById">{{discountOption.id}}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="tbsApp.invoice.client" for="field_client">Client</label>
+                    <select class="form-control" id="field_client" name="client" formControlName="clientId">
+                        <option [ngValue]="null"></option>
+                        <option [ngValue]="clientOption.id" *ngFor="let clientOption of clients; trackBy: trackClientById">{{clientOption.id}}</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <button type="button" id="cancel-save" class="btn btn-secondary"  (click)="previousState()">
+                    <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
+                </button>
+                <button type="submit" id="save-entity" [disabled]="editForm.invalid || isSaving" class="btn btn-primary">
+                    <fa-icon [icon]="'save'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Save</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

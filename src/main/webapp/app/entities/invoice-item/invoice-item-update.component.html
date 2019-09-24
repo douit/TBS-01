@@ -1,0 +1,75 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+            <h2 id="jhi-invoice-item-heading" jhiTranslate="tbsApp.invoiceItem.home.createOrEditLabel">Create or edit a Invoice Item</h2>
+            <div>
+                <jhi-alert-error></jhi-alert-error>
+                <div class="form-group" [hidden]="!editForm.get('id').value">
+                    <label for="id" jhiTranslate="global.field.id">ID</label>
+                    <input type="text" class="form-control" id="id" name="id" formControlName="id"
+                        readonly />
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="tbsApp.invoiceItem.name" for="field_name">Name</label>
+                    <input type="text" class="form-control" name="name" id="field_name"
+                           formControlName="name"/>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="tbsApp.invoiceItem.description" for="field_description">Description</label>
+                    <input type="text" class="form-control" name="description" id="field_description"
+                           formControlName="description"/>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="tbsApp.invoiceItem.amount" for="field_amount">Amount</label>
+                    <input type="number" class="form-control" name="amount" id="field_amount"
+                           formControlName="amount"/>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="tbsApp.invoiceItem.quantity" for="field_quantity">Quantity</label>
+                    <input type="number" class="form-control" name="quantity" id="field_quantity"
+                           formControlName="quantity"/>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="tbsApp.invoiceItem.taxName" for="field_taxName">Tax Name</label>
+                    <input type="text" class="form-control" name="taxName" id="field_taxName"
+                           formControlName="taxName"/>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="tbsApp.invoiceItem.taxRate" for="field_taxRate">Tax Rate</label>
+                    <input type="number" class="form-control" name="taxRate" id="field_taxRate"
+                           formControlName="taxRate"/>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="tbsApp.invoiceItem.invoice" for="field_invoice">Invoice</label>
+                    <select class="form-control" id="field_invoice" name="invoice" formControlName="invoiceId">
+                        <option [ngValue]="null"></option>
+                        <option [ngValue]="invoiceOption.id" *ngFor="let invoiceOption of invoices; trackBy: trackInvoiceById">{{invoiceOption.id}}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="tbsApp.invoiceItem.discount" for="field_discount">Discount</label>
+                    <select class="form-control" id="field_discount" name="discount" formControlName="discountId">
+                        <option [ngValue]="null"></option>
+                        <option [ngValue]="discountOption.id" *ngFor="let discountOption of discounts; trackBy: trackDiscountById">{{discountOption.id}}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="tbsApp.invoiceItem.item" for="field_item">Item</label>
+                    <select class="form-control" id="field_item" name="item" formControlName="itemId">
+                        <option [ngValue]="null"></option>
+                        <option [ngValue]="itemOption.id" *ngFor="let itemOption of items; trackBy: trackItemById">{{itemOption.id}}</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <button type="button" id="cancel-save" class="btn btn-secondary"  (click)="previousState()">
+                    <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
+                </button>
+                <button type="submit" id="save-entity" [disabled]="editForm.invalid || isSaving" class="btn btn-primary">
+                    <fa-icon [icon]="'save'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Save</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

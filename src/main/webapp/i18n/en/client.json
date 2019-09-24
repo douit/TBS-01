@@ -1,0 +1,28 @@
+{
+  "tbsApp": {
+    "client": {
+      "home": {
+        "title": "Clients",
+        "createLabel": "Create a new Client",
+        "createOrEditLabel": "Create or edit a Client",
+        "notFound": "No Clients found"
+      },
+      "created": "A new Client is created with identifier {{ param }}",
+      "updated": "A Client is updated with identifier {{ param }}",
+      "deleted": "A Client is deleted with identifier {{ param }}",
+      "delete": {
+        "question": "Are you sure you want to delete Client {{ id }}?"
+      },
+      "detail": {
+        "title": "Client"
+      },
+      "clientId": "Client Id",
+      "clientSecret": "Client Secret",
+      "name": "Name",
+      "logo": "Logo",
+      "dueDateUnit": "Due Date Unit",
+      "dueDateValue": "Due Date Value",
+      "vatNumber": "Vat Number"
+    }
+  }
+}

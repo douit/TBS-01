@@ -1,0 +1,65 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="invoiceItem">
+            <h2><span jhiTranslate="tbsApp.invoiceItem.detail.title">Invoice Item</span> {{invoiceItem.id}}</h2>
+            <hr>
+            <jhi-alert-error></jhi-alert-error>
+            <dl class="row-md jh-entity-details">
+                <dt><span jhiTranslate="tbsApp.invoiceItem.name">Name</span></dt>
+                <dd>
+                    <span>{{invoiceItem.name}}</span>
+                </dd>
+                <dt><span jhiTranslate="tbsApp.invoiceItem.description">Description</span></dt>
+                <dd>
+                    <span>{{invoiceItem.description}}</span>
+                </dd>
+                <dt><span jhiTranslate="tbsApp.invoiceItem.amount">Amount</span></dt>
+                <dd>
+                    <span>{{invoiceItem.amount}}</span>
+                </dd>
+                <dt><span jhiTranslate="tbsApp.invoiceItem.quantity">Quantity</span></dt>
+                <dd>
+                    <span>{{invoiceItem.quantity}}</span>
+                </dd>
+                <dt><span jhiTranslate="tbsApp.invoiceItem.taxName">Tax Name</span></dt>
+                <dd>
+                    <span>{{invoiceItem.taxName}}</span>
+                </dd>
+                <dt><span jhiTranslate="tbsApp.invoiceItem.taxRate">Tax Rate</span></dt>
+                <dd>
+                    <span>{{invoiceItem.taxRate}}</span>
+                </dd>
+                <dt><span jhiTranslate="tbsApp.invoiceItem.invoice">Invoice</span></dt>
+                <dd>
+                    <div *ngIf="invoiceItem.invoiceId">
+                        <a [routerLink]="['/invoice', invoiceItem.invoiceId, 'view']">{{invoiceItem.invoiceId}}</a>
+                    </div>
+                </dd>
+                <dt><span jhiTranslate="tbsApp.invoiceItem.discount">Discount</span></dt>
+                <dd>
+                    <div *ngIf="invoiceItem.discountId">
+                        <a [routerLink]="['/discount', invoiceItem.discountId, 'view']">{{invoiceItem.discountId}}</a>
+                    </div>
+                </dd>
+                <dt><span jhiTranslate="tbsApp.invoiceItem.item">Item</span></dt>
+                <dd>
+                    <div *ngIf="invoiceItem.itemId">
+                        <a [routerLink]="['/item', invoiceItem.itemId, 'view']">{{invoiceItem.itemId}}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon [icon]="'arrow-left'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back"> Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/invoice-item', invoiceItem.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon [icon]="'pencil-alt'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit"> Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

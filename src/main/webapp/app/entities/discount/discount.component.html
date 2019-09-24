@@ -1,0 +1,61 @@
+<div>
+    <h2 id="page-heading">
+        <span jhiTranslate="tbsApp.discount.home.title">Discounts</span>
+        <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-discount" [routerLink]="['/discount/new']">
+            <fa-icon [icon]="'plus'"></fa-icon>
+            <span  jhiTranslate="tbsApp.discount.home.createLabel">
+            Create a new Discount
+            </span>
+        </button>
+    </h2>
+    <jhi-alert></jhi-alert>
+    <br/>
+    <div class="alert alert-warning" *ngIf="discounts?.length === 0">
+        <span jhiTranslate="tbsApp.discount.home.notFound">No discounts found</span>
+    </div>
+    <div class="table-responsive" *ngIf="discounts?.length > 0">
+        <table class="table table-striped" aria-describedby="page-heading">
+            <thead>
+            <tr>
+            <th><span jhiTranslate="global.field.id">ID</span></th>
+            <th><span jhiTranslate="tbsApp.discount.iPercentage">I Percentage</span></th>
+            <th><span jhiTranslate="tbsApp.discount.value">Value</span></th>
+            <th><span jhiTranslate="tbsApp.discount.type">Type</span></th>
+            <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let discount of discounts ;trackBy: trackId">
+                <td><a [routerLink]="['/discount', discount.id, 'view' ]">{{discount.id}}</a></td>
+                <td>{{discount.iPercentage}}</td>
+                <td>{{discount.value}}</td>
+                <td jhiTranslate="{{'tbsApp.DiscountType.' + discount.type}}">{{discount.type}}</td>
+                <td class="text-right">
+                    <div class="btn-group">
+                        <button type="submit"
+                                [routerLink]="['/discount', discount.id, 'view' ]"
+                                class="btn btn-info btn-sm">
+                            <fa-icon [icon]="'eye'"></fa-icon>
+                            <span class="d-none d-md-inline" jhiTranslate="entity.action.view">View</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/discount', discount.id, 'edit']"
+                                class="btn btn-primary btn-sm">
+                            <fa-icon [icon]="'pencil-alt'"></fa-icon>
+                            <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Edit</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/discount', { outlets: { popup: discount.id + '/delete'} }]"
+                                replaceUrl="true"
+                                queryParamsHandling="merge"
+                                class="btn btn-danger btn-sm">
+                            <fa-icon [icon]="'times'"></fa-icon>
+                            <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Delete</span>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,10 @@
+{
+  "tbsApp": {
+    "PaymentStatus": {
+      "null": "",
+      "SUCCESSFUL": "SUCCESSFUL",
+      "FAILED": "FAILED",
+      "PENDING": "PENDING"
+    }
+  }
+}

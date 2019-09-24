@@ -1,0 +1,85 @@
+<div>
+    <h2 id="page-heading">
+        <span jhiTranslate="tbsApp.invoiceItem.home.title">Invoice Items</span>
+        <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-invoice-item" [routerLink]="['/invoice-item/new']">
+            <fa-icon [icon]="'plus'"></fa-icon>
+            <span  jhiTranslate="tbsApp.invoiceItem.home.createLabel">
+            Create a new Invoice Item
+            </span>
+        </button>
+    </h2>
+    <jhi-alert></jhi-alert>
+    <br/>
+    <div class="alert alert-warning" *ngIf="invoiceItems?.length === 0">
+        <span jhiTranslate="tbsApp.invoiceItem.home.notFound">No invoiceItems found</span>
+    </div>
+    <div class="table-responsive" *ngIf="invoiceItems?.length > 0">
+        <table class="table table-striped" aria-describedby="page-heading">
+            <thead>
+            <tr>
+            <th><span jhiTranslate="global.field.id">ID</span></th>
+            <th><span jhiTranslate="tbsApp.invoiceItem.name">Name</span></th>
+            <th><span jhiTranslate="tbsApp.invoiceItem.description">Description</span></th>
+            <th><span jhiTranslate="tbsApp.invoiceItem.amount">Amount</span></th>
+            <th><span jhiTranslate="tbsApp.invoiceItem.quantity">Quantity</span></th>
+            <th><span jhiTranslate="tbsApp.invoiceItem.taxName">Tax Name</span></th>
+            <th><span jhiTranslate="tbsApp.invoiceItem.taxRate">Tax Rate</span></th>
+            <th><span jhiTranslate="tbsApp.invoiceItem.invoice">Invoice</span></th>
+            <th><span jhiTranslate="tbsApp.invoiceItem.discount">Discount</span></th>
+            <th><span jhiTranslate="tbsApp.invoiceItem.item">Item</span></th>
+            <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let invoiceItem of invoiceItems ;trackBy: trackId">
+                <td><a [routerLink]="['/invoice-item', invoiceItem.id, 'view' ]">{{invoiceItem.id}}</a></td>
+                <td>{{invoiceItem.name}}</td>
+                <td>{{invoiceItem.description}}</td>
+                <td>{{invoiceItem.amount}}</td>
+                <td>{{invoiceItem.quantity}}</td>
+                <td>{{invoiceItem.taxName}}</td>
+                <td>{{invoiceItem.taxRate}}</td>
+                <td>
+                    <div *ngIf="invoiceItem.invoiceId">
+                        <a [routerLink]="['/invoice', invoiceItem.invoiceId , 'view' ]" >{{invoiceItem.invoiceId}}</a>
+                    </div>
+                </td>
+                <td>
+                    <div *ngIf="invoiceItem.discountId">
+                        <a [routerLink]="['/discount', invoiceItem.discountId , 'view' ]" >{{invoiceItem.discountId}}</a>
+                    </div>
+                </td>
+                <td>
+                    <div *ngIf="invoiceItem.itemId">
+                        <a [routerLink]="['/item', invoiceItem.itemId , 'view' ]" >{{invoiceItem.itemId}}</a>
+                    </div>
+                </td>
+                <td class="text-right">
+                    <div class="btn-group">
+                        <button type="submit"
+                                [routerLink]="['/invoice-item', invoiceItem.id, 'view' ]"
+                                class="btn btn-info btn-sm">
+                            <fa-icon [icon]="'eye'"></fa-icon>
+                            <span class="d-none d-md-inline" jhiTranslate="entity.action.view">View</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/invoice-item', invoiceItem.id, 'edit']"
+                                class="btn btn-primary btn-sm">
+                            <fa-icon [icon]="'pencil-alt'"></fa-icon>
+                            <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Edit</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/invoice-item', { outlets: { popup: invoiceItem.id + '/delete'} }]"
+                                replaceUrl="true"
+                                queryParamsHandling="merge"
+                                class="btn btn-danger btn-sm">
+                            <fa-icon [icon]="'times'"></fa-icon>
+                            <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Delete</span>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

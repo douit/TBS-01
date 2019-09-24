@@ -1,0 +1,24 @@
+{
+  "tbsApp": {
+    "refund": {
+      "home": {
+        "title": "Refunds",
+        "createLabel": "Create a new Refund",
+        "createOrEditLabel": "Create or edit a Refund",
+        "notFound": "No Refunds found"
+      },
+      "created": "A new Refund is created with identifier {{ param }}",
+      "updated": "A Refund is updated with identifier {{ param }}",
+      "deleted": "A Refund is deleted with identifier {{ param }}",
+      "delete": {
+        "question": "Are you sure you want to delete Refund {{ id }}?"
+      },
+      "detail": {
+        "title": "Refund"
+      },
+      "amount": "Amount",
+      "status": "Status",
+      "refundId": "Refund Id"
+    }
+  }
+}

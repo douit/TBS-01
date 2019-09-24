@@ -1,0 +1,5 @@
+id;name;description;amount;quantity;tax_name;tax_rate;invoice_id;item_id;created_by;created_date;last_modified_by;last_modified_date
+1;visa;visa;100;1;KSA Tax;5;1;1;system;2019-09-15T04:44:38;system;2019-09-15T04:44:38
+2;certification;certification;50;2;KSA Tax;5;1;2;system;2019-09-15T04:44:38;system;2019-09-15T04:44:38
+3;verification;verification;150;4;KSA Tax;5;3;3;system;2019-09-15T04:44:38;system;2019-09-15T04:44:38
+4;visa;visa;100;2;KSA Tax;5;2;1;system;2019-09-15T04:44:38;system;2019-09-15T04:44:38

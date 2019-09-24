@@ -1,0 +1,9 @@
+{
+  "tbsApp": {
+    "DiscountType": {
+      "null": "",
+      "Invoice": "Invoice",
+      "Item": "Item"
+    }
+  }
+}
