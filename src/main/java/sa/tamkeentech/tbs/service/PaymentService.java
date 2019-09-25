@@ -1,7 +1,15 @@
 package sa.tamkeentech.tbs.service;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.configurationprocessor.json.JSONException;
+import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sa.tamkeentech.tbs.domain.Payment;
@@ -10,10 +18,19 @@ import sa.tamkeentech.tbs.service.PaymentService;
 import sa.tamkeentech.tbs.service.dto.PaymentDTO;
 import sa.tamkeentech.tbs.service.mapper.PaymentMapper;
 
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
 
 /**
  * Service Implementation for managing {@link Payment}.
@@ -27,6 +44,18 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
 
     private final PaymentMapper paymentMapper;
+
+    @Value("${tbs.payment.sadad-url}")
+    private String sadadUrl;
+
+    @Value("${tbs.payment.sadad-account-prefix}")
+    private String sadadAccountPrefix;
+
+    @Value("${tbs.payment.sadad-application-id}")
+    private String sadadApplicationId;
+
+    @Value("${tbs.payment.credit-card-url}")
+    private String creditCardUrl;
 
     public PaymentService(PaymentRepository paymentRepository, PaymentMapper paymentMapper) {
         this.paymentRepository = paymentRepository;
@@ -82,4 +111,61 @@ public class PaymentService {
         log.debug("Request to delete Payment : {}", id);
         paymentRepository.deleteById(id);
     }
+
+
+    public Boolean sadadCall(String sadadBillId, String sadadAccount , BigDecimal amount) throws IOException, JSONException {
+        HttpClient client = HttpClientBuilder.create().build();
+        HttpPost post = new HttpPost(sadadUrl);
+        post.setHeader("Content-Type", "application/json");
+        //JSONObject accountInfo = new JSONObject();
+
+        JSONObject billInfo = new JSONObject();
+        JSONObject billInfoContent = new JSONObject();
+        billInfoContent.put("billNumber", sadadBillId ); // autoincrement
+        billInfoContent.put("billAccount", sadadAccount); // Unique 15 digits
+        billInfoContent.put("amount",amount);
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.HOUR, 3);
+        c.add(Calendar.MINUTE, 2);
+        String dueDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(c.getTime());
+        billInfoContent.put("duedate", dueDate);
+        c.add(Calendar.DATE, 2);
+        String expiryDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(c.getTime());
+        billInfoContent.put("expirydate",expiryDate);
+        billInfoContent.put("billStatus","BillNew");
+        // applicationId 0 for test
+        billInfoContent.put("applicationId",sadadApplicationId);
+        billInfo.put("BillInfo", billInfoContent);
+        String jsonStr = billInfo.toString();
+        post.setEntity(new StringEntity(jsonStr));
+        HttpResponse response;
+        response = client.execute(post);
+        if (response.getStatusLine().getStatusCode() == 200){
+            return true ;
+        }
+            return false;
+    }
+
+    public String creditCardCall( String sadadAccount , BigDecimal amount , String url) throws IOException, JSONException {
+        HttpClient client = HttpClientBuilder.create().build();
+        HttpPost post = new HttpPost(creditCardUrl);
+        post.setHeader("Content-Type", "application/json");
+        JSONObject billInfoContent = new JSONObject();
+        billInfoContent.put("BillNumber", sadadAccount);
+        billInfoContent.put("ResponseBackURL",url);
+        billInfoContent.put("Amount",amount);
+        String jsonStr = billInfoContent.toString();
+        post.setEntity(new StringEntity(jsonStr));
+        HttpResponse response;
+        response = client.execute(post);
+        HttpEntity entity = response.getEntity();
+        String responseString = EntityUtils.toString(entity, "UTF-8");
+        log.info("************** response from credit Card ************ : " + responseString.substring(8,responseString.indexOf( ',' )));
+        return responseString.substring(8,responseString.indexOf( ',' ) - 1) ;
+    }
+
+    public String getSadadBillAccount(String billId) {
+        return sadadAccountPrefix.concat(String.format("%012d", new BigInteger(billId)));
+    }
+
 }

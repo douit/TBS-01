@@ -2,10 +2,12 @@ package sa.tamkeentech.tbs.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.*;
 import sa.tamkeentech.tbs.domain.enumeration.DiscountType;
 import sa.tamkeentech.tbs.domain.enumeration.IdentityType;
@@ -15,7 +17,9 @@ import sa.tamkeentech.tbs.security.SecurityUtils;
 import sa.tamkeentech.tbs.service.dto.InvoiceDTO;
 import sa.tamkeentech.tbs.service.dto.OneItemInvoiceDTO;
 import sa.tamkeentech.tbs.service.mapper.InvoiceMapper;
+import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Optional;
@@ -41,13 +45,16 @@ public class InvoiceService {
 
     private final ItemService itemService;
 
-    public InvoiceService(InvoiceRepository invoiceRepository, InvoiceMapper invoiceMapper, ClientService clientService, CustomerService customerService, PaymentMethodService paymentMethodService, ItemService itemService) {
+    private final PaymentService paymentService;
+
+    public InvoiceService(InvoiceRepository invoiceRepository, InvoiceMapper invoiceMapper, ClientService clientService, CustomerService customerService, PaymentMethodService paymentMethodService, ItemService itemService, PaymentService paymentService) {
         this.invoiceRepository = invoiceRepository;
         this.invoiceMapper = invoiceMapper;
         this.clientService = clientService;
         this.customerService = customerService;
         this.paymentMethodService = paymentMethodService;
         this.itemService = itemService;
+        this.paymentService = paymentService;
     }
 
     /**
@@ -117,9 +124,6 @@ public class InvoiceService {
             .build());
         }
 
-        // Payment method
-        Optional<PaymentMethod> paymentMethod = paymentMethodService.findByCode(oneItemInvoiceDTO.getPaymentMethod().getName().toUpperCase());
-
         Invoice invoice = Invoice.builder()
             .client(client.get())
             .customer(customer.get())
@@ -130,7 +134,10 @@ public class InvoiceService {
 
         //invoiceItem
         Optional<Item> item = itemService.findByNameAndClient(oneItemInvoiceDTO.getItemName(), client.get().getId());
-        InvoiceItem invoiceItem = InvoiceItem.builder()
+        if (!item.isPresent()) {
+            throw new TbsRunTimeException("Unknown item: "+ oneItemInvoiceDTO.getItemName());
+        }
+            InvoiceItem invoiceItem = InvoiceItem.builder()
             .item(item.get())
             .amount(item.get().getPrice())
             .name(item.get().getName())
@@ -148,8 +155,43 @@ public class InvoiceService {
 
         invoice.setInvoiceItems(Arrays.asList(invoiceItem));
         invoice = invoiceRepository.save(invoice);
-        oneItemInvoiceDTO.setBillNumber(invoice.getId().toString());
+
+        // Payment
+        // Payment method
+        Optional<PaymentMethod> paymentMethod = paymentMethodService.findByCode(oneItemInvoiceDTO.getPaymentMethod().getName().toUpperCase());
+
+        if (paymentMethod.isPresent()) {
+            String paymentMethodCode = paymentMethod.get().getCode();
+            switch (paymentMethodCode) {
+                case Constants.SADAD:
+                    String billId = paymentService.getSadadBillAccount(invoice.getId().toString());
+                    Boolean sadadResult = false;
+                    try {
+                        sadadResult = paymentService.sadadCall(invoice.getId().toString(), paymentService.getSadadBillAccount(billId), oneItemInvoiceDTO.getPrice());
+                    } catch (IOException | JSONException e) {
+                        // ToDo add new exception 500 for sadad
+                        throw new TbsRunTimeException("Sadad issue", e);
+                    }
+                    // ToDo add new exception 500 for sadad
+                    if (!sadadResult) {
+                        throw new TbsRunTimeException("Sadad bill creation error");
+                    }
+                    oneItemInvoiceDTO.setBillNumber(billId);
+                break;
+                case Constants.MADA:
+                case Constants.VISA:
+                    log.debug("CC payment method");
+                break;
+                default:
+                    log.debug("Cash payment method");
+
+            }
+        } else {
+            throw new TbsRunTimeException("Unknown payment method");
+        }
 
         return oneItemInvoiceDTO;
     }
+
+
 }

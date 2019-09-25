@@ -12,6 +12,12 @@ public final class Constants {
     public static final String DEFAULT_LANGUAGE = "en";
     public static final String ANONYMOUS_USER = "anonymoususer";
 
+    // Payment
+    public static final String SADAD = "SADAD";
+    public static final String VISA = "VISA";
+    public static final String MADA = "MADA";
+    public static final String CASH = "CASH";
+
     private Constants() {
     }
 }

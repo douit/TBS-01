@@ -150,3 +150,12 @@ jhipster:
 # ===================================================================
 
 # application:
+tbs:
+  http:
+    token-header-name: Authorization
+    authentication-token: bearer AFDD0B4AD2EC172C586E2150770FBF9E
+  payment:
+    sadad-url: 'http://10.60.75.60:1001/api/sadad/billloadrq'
+    sadad-account-prefix: '123'
+    sadad-application-id: '0'
+    credit-card-url: 'http://172.25.70.72:301/api/OnlinePayment'

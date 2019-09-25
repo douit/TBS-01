@@ -1,7 +1,6 @@
 package sa.tamkeentech.tbs.web.rest.errors;
 
 import io.github.jhipster.web.util.HeaderUtil;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.http.ResponseEntity;
@@ -128,5 +127,18 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
             .with(MESSAGE_KEY, ErrorConstants.ERR_CONCURRENCY_FAILURE)
             .build();
         return create(ex, problem, request);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<Problem> innodevcoRuntime(TbsRunTimeException ex, NativeWebRequest request) {
+        // String code = RandomString.randomAlphaNumeric(6);
+        return ResponseEntity.badRequest()
+            .body(Problem.builder()
+            .withType(ErrorConstants.DEFAULT_TYPE)
+            .withTitle(ex.getMessage())
+            //.withDetail(ex.getCause().getMessage())
+            // .withStatus(Status.INTERNAL_SERVER_ERROR)
+            .with(MESSAGE_KEY, ErrorConstants.ERR_VALIDATION)
+            .build());
     }
 }

@@ -120,7 +120,3 @@ jhipster:
 # ===================================================================
 
 # application:
-tbs:
-  http:
-    token-header-name: Authorization
-    authentication-token: bearer AFDD0B4AD2EC172C586E2150770FBF9E
