@@ -5,8 +5,8 @@ import { NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { JhiLanguageService } from 'ng-jhipster';
 
 import { EMAIL_ALREADY_USED_TYPE, LOGIN_ALREADY_USED_TYPE } from 'app/shared/constants/error.constants';
-import { LoginModalService } from 'app/core/login/login-modal.service';
 import { Register } from './register.service';
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'jhi-register',
@@ -29,10 +29,10 @@ export class RegisterComponent implements OnInit, AfterViewInit {
 
   constructor(
     private languageService: JhiLanguageService,
-    private loginModalService: LoginModalService,
     private registerService: Register,
     private elementRef: ElementRef,
     private renderer: Renderer,
+    private router: Router,
     private fb: FormBuilder
   ) {}
 
@@ -70,7 +70,7 @@ export class RegisterComponent implements OnInit, AfterViewInit {
   }
 
   openLogin() {
-    this.modalRef = this.loginModalService.open();
+    this.router.navigate(['home']);
   }
 
   private processError(response: HttpErrorResponse) {

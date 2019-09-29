@@ -57,7 +57,8 @@ export class JhiLoginModalComponent implements AfterViewInit {
         if (
           this.router.url === '/account/register' ||
           this.router.url.startsWith('/account/activate/') ||
-          this.router.url.startsWith('/account/reset/')
+          this.router.url.startsWith('/account/reset/') ||
+          this.router.url.startsWith('/home')
         ) {
           this.router.navigate(['']);
         }

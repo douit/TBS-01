@@ -12,3 +12,13 @@ eg $input-color: red;
 @import 'src/main/webapp/content/scss/rtl.scss';
 
 /* jhipster-needle-scss-add-vendor JHipster will add new css style */
+
+@import '~primeng/resources/themes/omega/theme.css';
+@import '~primeng/resources/primeng.min.css';
+@import '~sweetalert2/dist/sweetalert2.css';
+@import '~perfect-scrollbar/css/perfect-scrollbar.css';
+@import '~datatables.net-dt/css/jquery.dataTables.css';
+@import '~primeicons/primeicons.css';
+
+@import 'src/main/webapp/content/sass/material-dashboard.scss';
+@import '../css/global.css';

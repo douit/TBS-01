@@ -3,9 +3,9 @@ import { Subscription } from 'rxjs';
 import { NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { JhiEventManager } from 'ng-jhipster';
 
-import { LoginModalService } from 'app/core/login/login-modal.service';
 import { AccountService } from 'app/core/auth/account.service';
 import { Account } from 'app/core/user/account.model';
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'jhi-home',
@@ -19,7 +19,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   constructor(
     private accountService: AccountService,
-    private loginModalService: LoginModalService,
+    private router: Router,
     private eventManager: JhiEventManager
   ) {}
 
@@ -43,7 +43,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   login() {
-    this.modalRef = this.loginModalService.open();
+    this.router.navigate(['home']);
   }
 
   ngOnDestroy() {

@@ -1,10 +1,13 @@
 import { Injectable } from '@angular/core';
 import { AccountService } from 'app/core/auth/account.service';
 import { AuthServerProvider } from 'app/core/auth/auth-session.service';
+import {Router} from "@angular/router";
 
 @Injectable({ providedIn: 'root' })
 export class LoginService {
-  constructor(private accountService: AccountService, private authServerProvider: AuthServerProvider) {}
+  constructor(private accountService: AccountService,
+              private authServerProvider: AuthServerProvider,
+              private router: Router,) {}
 
   login(credentials, callback?) {
     const cb = callback || function() {};
@@ -27,6 +30,11 @@ export class LoginService {
   }
 
   logout() {
-    this.authServerProvider.logout().subscribe(null, null, () => this.accountService.authenticate(null));
+    this.authServerProvider.logout().subscribe(null, null,
+      () => {
+        this.accountService.authenticate(null);
+        this.router.navigate(['home']);
+      }
+      );
   }
 }

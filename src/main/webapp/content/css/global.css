@@ -1,0 +1,323 @@
+@media (min-width: 992px){
+    .typo-line{
+        padding-left: 140px;
+        margin-bottom: 40px;
+        position: relative;
+    }
+
+    .typo-line .category{
+        transform: translateY(-50%);
+        top: 50%;
+        left: 0px;
+        position: absolute;
+    }
+}
+.sebm-google-map-container {
+  height: 300px;
+}
+
+.col-centered{
+    float: none;
+    margin: 0 auto;
+}
+
+#map{
+    position:relative;
+    width:100%;
+    height: 60%;
+    margin-top: 70px;
+}
+
+.places-buttons .btn{
+    margin-bottom: 30px
+}
+
+.space-70{
+    height: 70px;
+    display: block;
+}
+
+.tim-row{
+    margin-bottom: 20px;
+}
+
+.tim-typo{
+    padding-left: 25%;
+    margin-bottom: 40px;
+    position: relative;
+}
+.tim-typo .tim-note{
+    bottom: 10px;
+    color: #c0c1c2;
+    display: block;
+    font-weight: 400;
+    font-size: 13px;
+    line-height: 13px;
+    left: 0;
+    margin-left: 20px;
+    position: absolute;
+    width: 260px;
+}
+.tim-row{
+    padding-top: 50px;
+}
+.tim-row h3{
+    margin-top: 0;
+}
+@media (min-width: 992px){
+
+    .typo-line{
+        padding-left: 140px;
+        margin-bottom: 40px;
+        position: relative;
+    }
+
+    .typo-line .category{
+        transform: translateY(-50%);
+        top: 50%;
+        left: 0px;
+        position: absolute;
+    }
+}
+
+#floating-map-search-panel .dropdown-item.active {
+    color: #fff;
+    text-decoration: none;
+    background-color: #5f7b89;
+}
+
+#floating-map-search-panel .dropdown-item {
+    display: block;
+    width: 100%;
+    padding: .25rem 1.5rem;
+    clear: both;
+    font-weight: 200;
+    color: #5f7b89;
+    text-align: inherit;
+    font-size: smaller;
+    background-color: transparent;
+    border: 0;
+}
+
+#floating-map-search-panel .dropdown-menu {
+    background: #ddd;
+}
+
+#floating-map-search-panel .highlightSearchResult {
+	font-weight: bold;
+    border: 1px solid #bfbfbf;
+}
+
+#floating-map-search-panel .iconSearchResult{
+	float: left;
+	width: 30px;
+    margin-left: -10px;
+}
+
+.driver-card {
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    max-width: 300px;
+    padding-top: 10px;
+    margin: auto;
+    text-align: center;
+}
+
+.driver-card .stats {
+    line-height: 22px;
+    color: #717171;
+    font-size: 12px;
+}
+.driver-card .stats .material-icons {
+    position: relative;
+    top: 4px;
+    font-size: 16px;
+}
+
+.driver-card .driver-img {
+    max-width: 100px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 5px;
+
+}
+
+.driver-card p {
+    line-height: 0.5em;
+}
+
+.driver-profile-img {
+    max-width: 150px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 5px;
+
+}
+
+.driver-profile-card .title {
+    width: 200px;
+}
+
+.driver-profile-card .stats {
+    line-height: 22px;
+    color: #717171;
+    font-size: 12px;
+}
+.driver-profile-card .stats .material-icons {
+    position: relative;
+    top: 4px;
+    font-size: 16px;
+}
+
+.down-alerts-layer {
+    position: absolute;
+    width: calc(100% - 350px);
+    z-index: 100;
+    padding-left: .9375rem;
+    padding-right: .9375rem;
+    bottom: .125rem;
+}
+
+.text-center {
+    text-align: center !important;
+}
+
+.up-alert-box, .down-alert-box {
+    border-style: solid;
+    border-width: 1px;
+    display: block;
+    font-size: 12px;
+    font-weight: normal;
+    margin-bottom: 1.25rem;
+    padding: .875rem 1.5rem .875rem .875rem;
+    position: relative;
+    transition: opacity 300ms ease-out;
+    background-color: #00bc6f;
+    border-color: #00a25f;
+    color: #fff;
+    border-radius: 4px;
+    background-color: #333;
+    border-color: #000;
+    opacity: 0.9;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.display-in-full-screen-map {
+	z-index: 9999999999 !important;
+}
+
+.map-label-pickup  {
+	width: 65px;
+	height: 20px;
+	border: 1px solid #002b72;
+	border-radius: 5px;
+	background: #bdd4f9;
+	color: #002b72;
+	text-align: center;
+	line-height: 20px;
+	font-weight: bold;
+	font-size: 14px;
+}
+
+.map-label-dropoff  {
+	width: 65px;
+	height: 20px;
+	border: 1px solid #e04700;
+	border-radius: 5px;
+	background: #ffd79b;
+	color: #e04700;
+	text-align: center;
+	line-height: 20px;
+	font-weight: bold;
+	font-size: 14px;
+}
+
+.map-label-trips-number  {
+    width: 14px;
+    height: 14px;
+    //border: 1px solid #000;
+    border-radius: 3px;
+    background: #73c596;
+    color: #000;
+    text-align: center;
+    line-height: 16px;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.map-label-connect-status {
+    width: 10px;
+    height: 10px;
+//border: 1px solid #000;
+    border-radius: 5px;
+    background: #ff0000;
+    color: #000;
+    text-align: center;
+    line-height: 20px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.red-icon {
+    color: #ff0000;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.orange-icon {
+    color: #ff8800;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Define the default color for all the table rows */
+.clickable-rows tr {
+    background: inherit;
+}
+
+/* Define the hover highlight color for the table row */
+.clickable-rows tr:hover {
+    background-color: #e3e3e3;
+    cursor: pointer;
+}
+
+/* ws connection status */
+.connect-ws  {
+    background:url(../images/new/connect-48.png) no-repeat top left;
+    background-size: contain;
+    display: inline-block;
+    height: 42px;
+    width: 42px;
+}
+
+.disconnect-ws  {
+    background:url(../images/new/disconnect-48.png) no-repeat top left;
+    background-size: contain;
+    display: inline-block;
+    height: 42px;
+    width: 42px;
+}
+
+.flashing-background {
+    -webkit-animation: flashing 4s infinite; /* Safari 4.0 - 8.0 */
+    animation: flashing 4s infinite;
+    -webkit-animation-name: flashing; /* Safari 4.0 - 8.0 */
+    animation-name: flashing;
+}
+
+/* Safari 4.0 - 8.0 */
+@-webkit-keyframes flashing {
+    0%   {background-color: white;}
+    25%  {background-color: lightgrey;}
+    50%  {background-color: lightgrey;}
+    100% {background-color: white;}
+}
+
+/* Standard syntax */
+@keyframes flashing {
+    0%   {background-color: white;}
+    25%  {background-color: lightgrey;}
+    50%  {background-color: lightgrey;}
+    100% {background-color: white;}
+}

@@ -1,13 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router, ActivatedRouteSnapshot, NavigationEnd, NavigationError } from '@angular/router';
 
 import { JhiLanguageHelper } from 'app/core/language/language.helper';
+import {NewNavbarComponent} from '../../shared/navbar/navbar.component'
 
 @Component({
   selector: 'jhi-main',
   templateUrl: './main.component.html'
 })
 export class JhiMainComponent implements OnInit {
+
+
+  @ViewChild('sidebar', {static: false}) sidebar: any;
+  @ViewChild(NewNavbarComponent, {static: false}) navbar: NewNavbarComponent;
   constructor(private jhiLanguageHelper: JhiLanguageHelper, private router: Router) {}
 
   private getPageTitle(routeSnapshot: ActivatedRouteSnapshot) {
