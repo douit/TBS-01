@@ -18,7 +18,7 @@ import java.time.LocalDate;
  * @see sa.tamkeentech.tbs.security.PersistentTokenRememberMeServices
  */
 @Entity
-@Table(name = "jhi_persistent_token")
+@Table(name = "persistent_token")
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 public class PersistentToken implements Serializable {
 
@@ -33,7 +33,7 @@ public class PersistentToken implements Serializable {
     @NotNull
     @Column(name = "token_value", nullable = false)
     private String tokenValue;
-    
+
     @Column(name = "token_date")
     private LocalDate tokenDate;
 

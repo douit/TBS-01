@@ -9,9 +9,6 @@ import { NotificationInterceptor } from './blocks/interceptor/notification.inter
 import { TbsSharedModule } from 'app/shared/shared.module';
 import { TbsCoreModule } from 'app/core/core.module';
 import { TbsAppRoutingModule } from './app-routing.module';
-import { TbsHomeModule } from './home/home.module';
-import { TbsEntityModule } from './entities/entity.module';
-// jhipster-needle-angular-add-module-import JHipster will add new module here
 import { JhiMainComponent } from './layouts/main/main.component';
 import { NavbarComponent } from './layouts/navbar/navbar.component';
 import { FooterComponent } from './layouts/footer/footer.component';
@@ -57,7 +54,7 @@ import {
 } from '@angular/material';
 
 import {SidebarModule} from "app/sidebar/sidebar.module";
-import {FooterModule} from './shared/footer/footer.module';
+// import {FooterModule} from './shared/footer/footer.module';
 import {NewNavbarModule} from './shared/navbar/navbar.module';
 import * as $ from 'jquery'; window["$"] = $; window["jQuery"] = $;
 
@@ -105,14 +102,10 @@ export class MaterialModule {}
     BrowserModule,
     TbsSharedModule,
     TbsCoreModule,
-    //TbsHomeModule,
     MaterialModule,
     SidebarModule,
     NewNavbarModule,
-    FooterModule,
-    // DashboardModule,
-    // jhipster-needle-angular-add-module JHipster will add new module here
-    TbsEntityModule,
+    // FooterModule,
     TbsAppRoutingModule,
     BrowserAnimationsModule
   ],
