@@ -6,7 +6,7 @@
 
 .sidebar {
     position: fixed;
-    top: 0;
+    top: 0px;
     bottom: 0;
     left: 0;
     z-index: 2;
@@ -27,7 +27,7 @@
     }
 
     &[data-background-color="black"]{
-        background-color: #191919;
+        background-color: $grey-900;
     }
     .logo-img{
         width: 35px;
@@ -239,7 +239,7 @@
     }
 
     .logo{
-        padding: 15px 0px;
+        padding: 25px 0px;
         margin: 0;
         display: block;
         position: relative;
@@ -252,7 +252,7 @@
             right: 15px;
             height: 1px;
             width: calc(100% - 30px);
-            background-color: rgba(180,180,180, .3);
+            /*background-color: rgba(180,180,180, .3);*/
 
         }
 

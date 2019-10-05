@@ -68,7 +68,7 @@ export class SidebarComponent implements OnInit {
         //this.user = this.authenticationService.getUser();
       this.accountService.identity().then(account => {
         this.username = account.firstName + ' ' + account.lastName;
-        if(account.imageUrl != null) {
+        if(account.imageUrl != null && account.imageUrl != "") {
           this.avatar = account.imageUrl;
         } else {
           this.avatar = '../../content/images/new/default-avatar.png';
