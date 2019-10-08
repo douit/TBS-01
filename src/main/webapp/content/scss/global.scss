@@ -184,3 +184,34 @@ ui bootstrap tweaks
 }
 
 /* jhipster-needle-scss-add-main JHipster will add new css style */
+
+/* background content */
+.card-content {
+  display: inline-block;
+  position: relative;
+  width: 100%;
+  margin: 25px 0;
+  -webkit-box-shadow: 0 1px 4px 0 rgba(0,0,0,.14);
+  box-shadow: 0 1px 4px 0 rgba(0,0,0,.14);
+  border-radius: 6px;
+  color: rgba(0,0,0,.87);
+  background: #fff;
+  background-image: initial;
+  background-position-x: initial;
+  background-position-y: initial;
+  background-size: initial;
+  background-repeat-x: initial;
+  background-repeat-y: initial;
+  background-attachment: initial;
+  background-origin: initial;
+  background-clip: initial;
+  background-color: rgb(255, 255, 255);
+}
+
+
+.align-username {
+  font-weight: 300;
+  max-width: 154px;
+  overflow: hidden;
+  display: inline-block;
+}

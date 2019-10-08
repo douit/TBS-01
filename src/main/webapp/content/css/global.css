@@ -693,6 +693,7 @@
 .sidebar[data-active-color="white"] .sidebar-moving-tab i {
   color: rgba(60, 72, 88, 0.8);
 }
+
 .sidebar[data-image]:after, .sidebar.has-image:after {
   opacity: .77;
 }
