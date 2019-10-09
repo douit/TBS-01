@@ -43,21 +43,18 @@
                 </div>
             </div>
             <div class="nav-container">
-                <ul class="nav">
-                    <li routerLinkActive="active" *ngFor="let menuitem of menuItems">
-                        <!--If is a single link-->
-                        <a [routerLink]="[menuitem.path]" *ngIf="menuitem.type === 'link'">
+                <!--<ul class="nav">
+                    <li routerLinkActive="active" *ngFor="let menuitem of menuItems" class="nav-item">
+                        <a [routerLink]="[menuitem.path]" *ngIf="menuitem.type === 'link'" class="nav-link">
                             <i class="material-icons" style="color: #fcb220;">{{menuitem.icontype}}</i>
                             <p style="letter-spacing: 1px;">{{menuitem.title}}</p>
                         </a>
 
-                        <!--If it have a submenu-->
                         <a data-toggle="collapse" href="#{{menuitem.collapse}}" *ngIf="menuitem.type === 'sub'" (click)="updatePS()">
                             <i class="material-icons" style="color: #fcb220;">{{menuitem.icontype}}</i>
                             <p style="letter-spacing: 1px;">{{menuitem.title}}<b class="caret"></b></p>
                         </a>
 
-                        <!--Display the submenu items-->
                         <div id="{{menuitem.collapse}}" class="collapse" *ngIf="menuitem.type === 'sub'">
                             <ul class="nav">
                                 <li routerLinkActive="active" *ngFor="let childitem of menuitem.children">
@@ -70,6 +67,15 @@
                         </div>
                     </li>
 
+                </ul>-->
+
+                <ul class="nav">
+                    <li routerLinkActive="active" *ngFor="let menuitem of menuItems" class="nav-item">
+                        <a [routerLink]="[menuitem.path]" *ngIf="menuitem.type === 'link'" class="nav-link">
+                            <i class="material-icons" style="color: #fcb220;">{{menuitem.icontype}}</i>
+                            <p style="letter-spacing: 1px;">{{menuitem.title}}</p>
+                        </a>
+                    </li>
                 </ul>
             </div>
 

@@ -284,7 +284,7 @@
 
 /* ws connection status */
 .connect-ws  {
-    background:url(../images/new/connect-48.png) no-repeat top left;
+    background:url(../images/connect-48.png) no-repeat top left;
     background-size: contain;
     display: inline-block;
     height: 42px;
@@ -292,7 +292,7 @@
 }
 
 .disconnect-ws  {
-    background:url(../images/new/disconnect-48.png) no-repeat top left;
+    background:url(../images/disconnect-48.png) no-repeat top left;
     background-size: contain;
     display: inline-block;
     height: 42px;
@@ -425,10 +425,11 @@
   background-color: transparent;
   outline: none;
 }
+
 .sidebar .nav li:first-child > a {
   margin: 0 15px;
 }
-.sidebar .nav li:hover > a, .sidebar .nav li.active > [data-toggle="collapse"] {
+.sidebar .nav li:not(.active):hover > a, .sidebar .nav li.active > [data-toggle="collapse"] {
   background-color: rgba(200, 200, 200, 0.2);
   color: #3C4858;
   box-shadow: none;
@@ -675,7 +676,7 @@
   box-shadow: 0 4px 20px 0px rgba(0, 0, 0, 0.14), 0 7px 10px -5px rgba(233, 30, 99, 0.4);
 }
 .sidebar[data-active-color="white"] li.active > a {
-  background-color: #FFFFFF;
+  background-color: #FFFFFF !important;
   box-shadow: 0 4px 20px 0px rgba(0, 0, 0, 0.14), 0 7px 10px -5px rgba(255, 255, 255, 0.4);
 }
 .sidebar[data-active-color="white"] .nav li.active > a:not([data-toggle="collapse"]) {

@@ -30,11 +30,19 @@ export interface ChildrenItems {
 
 //Menu Items
 export const ROUTES: RouteInfo[] = [{
-    path: '/dashboard',
-    title: 'Dashboard',
-    authorities: ['ROLE_USER'],
-    type: 'link',
-    icontype: 'dashboard'
+  path: '/dashboard',
+  title: 'Dashboard',
+  authorities: ['ROLE_USER'],
+  type: 'link',
+  icontype: 'dashboard'
+}
+, {
+  path: '/administrative',
+  authorities: ['ROLE_USER'],
+  title: 'Administrative',
+  type: 'link',
+  icontype: 'settings',
+  collapse: 'administrative'
 }
 ];
 
@@ -71,7 +79,7 @@ export class SidebarComponent implements OnInit {
         if(account.imageUrl != null && account.imageUrl != "") {
           this.avatar = account.imageUrl;
         } else {
-          this.avatar = '../../content/images/new/default-avatar.png';
+          this.avatar = '../../content/images/default-avatar.png';
         }
       });
         /*this.username = this.user.username;

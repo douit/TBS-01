@@ -7,7 +7,7 @@ import {BehaviorSubject} from "rxjs/BehaviorSubject";
 @Injectable({ providedIn: 'root' })
 export class SidebarService {
 
-    private avatarSource = new BehaviorSubject<string>('../../content/images/new/default-avatar.png');
+    private avatarSource = new BehaviorSubject<string>('../../content/images/default-avatar.png');
     currentAvatar = this.avatarSource.asObservable();
 
     constructor() {
@@ -15,7 +15,7 @@ export class SidebarService {
 
     changeAvatar(avatar: string) {
         if(avatar == null){
-            this.avatarSource.next('../../content/images/new/default-avatar.png');
+            this.avatarSource.next('../../content/images/default-avatar.png');
         } else {
             this.avatarSource.next(avatar);
         }
