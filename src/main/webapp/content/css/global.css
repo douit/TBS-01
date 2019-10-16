@@ -698,3 +698,29 @@
 .sidebar[data-image]:after, .sidebar.has-image:after {
   opacity: .77;
 }
+
+
+/******* New After integrating materials swift ******/
+
+@media (min-width: 768px) {
+  .navbar-header {
+    float: left;
+  }
+}
+
+.container-fluid {
+  display: block !important;
+}
+
+.card {
+  display: inline-block !important;
+}
+
+.row {
+  margin-right: -10px !important;
+  margin-left: -10px !important;
+}
+
+.nav-item {
+  width: 100%;
+}

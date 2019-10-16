@@ -40,9 +40,16 @@ export const ROUTES: RouteInfo[] = [{
   path: '/administrative',
   authorities: ['ROLE_USER'],
   title: 'Administrative',
-  type: 'link',
+  type: 'sub',
   icontype: 'settings',
-  collapse: 'administrative'
+  collapse: 'administrative',
+    children: [
+      {
+        path: 'city-boundaries',
+        title: 'City Boundaries',
+        icontype: 'border_outer',
+        authorities: ['ROLE_USER'],
+      }]
 }
 ];
 

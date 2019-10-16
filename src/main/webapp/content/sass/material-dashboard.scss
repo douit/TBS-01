@@ -1,59 +1,69 @@
 /*!
 
-=========================================================
-* Material Dashboard Angular - v2.3.0
-=========================================================
+ =========================================================
+ * Material Dashboard PRO Angular CLI - V1.4.5
+ =========================================================
 
-* Product Page: https://www.creative-tim.com/product/material-dashboard-angular2
-* Copyright 2019 Creative Tim (https://www.creative-tim.com)
-* Licensed under MIT (https://github.com/creativetimofficial/material-dashboard-angular2/blob/master/LICENSE.md)
+ * Product Page: https://www.creative-tim.com/product/material-dashboard-pro-angular2
+ * Copyright 2017 Creative Tim (https://www.creative-tim.com)
+ * License Creative Tim (https://www.creative-tim.com/license)
 
-* Coded by Creative Tim
+ =========================================================
 
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-*/
+ */
  @import "~@angular/material/prebuilt-themes/indigo-pink.css";
 
- @import "core/variables";
- @import "core/mixins";
- @import "~bootstrap/scss/bootstrap";
+//variables and mixins
+@import "material-dashboard/variables";
+@import "material-dashboard/mixins";
+@import "material-dashboard/shadows";
+// @import '../../../node_modules/@angular/material/theming';
+
+//plugin css
+@import "material-dashboard/plugins/plugin-nouislider";
+@import "material-dashboard/plugins/animate";
+@import "material-dashboard/plugins/sweetalert2";
+@import "material-dashboard/plugins/datatables.net";
+@import "material-dashboard/plugins/jquery.jvectormap";
+@import "material-dashboard/plugins/plugin-datetime-picker";
+@import "material-dashboard/plugins/fullcalendar";
+@import "material-dashboard/plugins/wizard-card";
+@import "material-dashboard/plugins/chartist";
+@import "material-dashboard/plugins/select-bootstrap";
 
 
- // Core Components
- @import "core/buttons";
- @import "core/checkboxes";
- @import "core/radios";
- @import "core/forms";
- @import "core/input-group";
- @import "core/images";
- @import "core/navbar";
- @import "core/alerts";
- @import "core/type";
- @import "core/tabs";
- @import "core/tooltip";
- @import "core/popover";
- @import "core/dropdown";
- @import "core/togglebutton";
- @import "core/ripples";
- @import "core/footers";
- @import "core/sidebar-and-main-panel";
- @import "core/fixed-plugin";
- @import "core/tables";
- @import "core/misc";
+// Core CSS
+@import "material-dashboard/typography";
+@import "material-dashboard/sidebar-and-main-panel";
+@import "material-dashboard/buttons";
+@import "material-dashboard/misc";
+@import "material-dashboard/inputs";
+@import "material-dashboard/fileupload";
+@import "material-dashboard/alerts";
+@import "material-dashboard/tables";
+@import "material-dashboard/forms";
+@import "material-dashboard/checkboxes";
+@import "material-dashboard/radios";
+@import "material-dashboard/progress";
+@import "material-dashboard/togglebutton";
+@import "material-dashboard/pages";
+@import "material-dashboard/tags";
+@import "material-dashboard/timeline";
+@import "material-dashboard/ripples";
+@import "material-dashboard/panels";
+@import "material-dashboard/pagination";
+@import "material-dashboard/labels";
+@import "material-dashboard/pills";
+@import "material-dashboard/dialogs";
+@import "material-dashboard/navbars";
+@import "material-dashboard/popups";
+@import "material-dashboard/footers";
 
-@import "core/cards";
-@import "core/cards/card-stats";
-@import "core/cards/card-profile";
-@import "core/cards/card-plain";
+// Fancy Stuff
+@import "material-dashboard/dropdown";
+@import "material-dashboard/cards";
+@import "material-dashboard/tabs";
+@import "material-dashboard/responsive";
 
- //plugin scss
- @import "core/plugins/animate";
- @import "core/plugins/chartist";
- @import "core/plugins/perfect-scrollbar";
-
- @import "core/responsive";
-
-@import "core/angular-modal.scss";
+// Demo Purpose
+@import "material-dashboard/fixed-plugin";
