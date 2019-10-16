@@ -1,15 +1,12 @@
-import {NgModule} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {RouterModule} from '@angular/router';
-import {NewNavbarComponent} from './navbar.component';
-import {TranslateService} from '@ngx-translate/core';
-import {TbsSharedModule} from "../shared.module";
-
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { NewNavbarComponent } from './navbar.component';
+import { MatButtonModule } from '@angular/material';
 @NgModule({
-    imports: [ RouterModule, CommonModule ,TbsSharedModule],
+    imports: [ RouterModule, CommonModule, MatButtonModule ],
     declarations: [ NewNavbarComponent ],
-    exports: [ NewNavbarComponent ],
-    providers: [ TranslateService ]
+    exports: [ NewNavbarComponent ]
 })
 
 export class NewNavbarModule {}

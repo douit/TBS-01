@@ -11,6 +11,7 @@ import { TbsCoreModule } from 'app/core/core.module';
 import { TbsAppRoutingModule } from './app-routing.module';
 import { JhiMainComponent } from './layouts/main/main.component';
 import { NavbarComponent } from './layouts/navbar/navbar.component';
+// import { NavbarModule} from './shared/navbar/navbar.module';
 import { FooterComponent } from './layouts/footer/footer.component';
 import { PageRibbonComponent } from './layouts/profiles/page-ribbon.component';
 import { ActiveMenuDirective } from './layouts/navbar/active-menu.directive';
@@ -26,7 +27,6 @@ import {
   MatCardModule,
   MatCheckboxModule,
   MatChipsModule,
-  MatDatepickerModule,
   MatDialogModule,
   MatExpansionModule,
   MatGridListModule,
@@ -46,16 +46,19 @@ import {
   MatSlideToggleModule,
   MatSnackBarModule,
   MatSortModule,
-  MatStepperModule,
   MatTableModule,
   MatTabsModule,
   MatToolbarModule,
   MatTooltipModule,
+  MatStepperModule,
 } from '@angular/material';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 
 import {SidebarModule} from "app/sidebar/sidebar.module";
-// import {FooterModule} from './shared/footer/footer.module';
-import {NewNavbarModule} from './shared/navbar/navbar.module';
+import { FooterModule } from './shared/footer/footer.module';
+import { NewNavbarModule} from './shared/navbar/navbar.module';
+import { FixedpluginModule} from './shared/fixedplugin/fixedplugin.module';
+import { AuthLayoutComponent } from './layouts/auth/auth-layout.component';
 import * as $ from 'jquery'; window["$"] = $; window["jQuery"] = $;
 
 @NgModule({
@@ -105,9 +108,10 @@ export class MaterialModule {}
     MaterialModule,
     SidebarModule,
     NewNavbarModule,
-    // FooterModule,
     TbsAppRoutingModule,
-    BrowserAnimationsModule
+    BrowserAnimationsModule,
+    FooterModule,
+    FixedpluginModule
   ],
   declarations: [
     AdminLayoutComponent,
@@ -117,7 +121,8 @@ export class MaterialModule {}
     ErrorComponent,
     PageRibbonComponent,
     ActiveMenuDirective,
-    TbsLandingComponent
+    TbsLandingComponent,
+    AuthLayoutComponent
   ],
   providers: [
     {

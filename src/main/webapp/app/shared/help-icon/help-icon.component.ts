@@ -5,7 +5,7 @@ declare var $: any;
 @Component({
   selector: 'app-help-icon',
   templateUrl: './help-icon.component.html',
-  styleUrls: ['./help-icon.component.css']
+  styleUrls: ['./help-icon.component.scss']
 })
 
 export class HelpIconComponent implements OnInit{
