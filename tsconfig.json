@@ -1,9 +1,11 @@
 {
+  "compileOnSave": false,
   "compilerOptions": {
     "baseUrl": "./",
     "outDir": "target/classes/static/app",
     "sourceMap": true,
-    "module": "es2015",
+    "declaration": false,
+    "module": "esnext",
     "moduleResolution": "node",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
@@ -13,12 +15,7 @@
     "paths": {
       "app/*": ["src/main/webapp/app/*"]
     },
-    "removeComments": false,
-    "noImplicitAny": false,
-    "skipLibCheck": true,
-    "suppressImplicitAnyIndexErrors": true,
-    "importHelpers": true,
-    "allowJs": true
+    "skipLibCheck": true
   },
   "include": ["src/main/webapp/app", "src/test/javascript/"],
   "exclude": ["node_modules"]

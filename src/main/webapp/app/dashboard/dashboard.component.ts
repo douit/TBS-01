@@ -70,6 +70,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   }
   // constructor(private navbarTitleService: NavbarTitleService) { }
   public ngOnInit() {
+    
       this.tableData = {
           headerRow: ['ID', 'Name', 'Salary', 'Country', 'City'],
           dataRows: [
