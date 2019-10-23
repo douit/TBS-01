@@ -52,6 +52,7 @@ import { TbsSharedModule } from './shared/shared.module';
 import { TbsCoreModule } from './core/core.module';
 
 import { AppRoutes } from './app.routing';
+import {TbsLandingModule} from './tbs-landing/tbs-landing.module';
 
 @NgModule({
   exports: [
@@ -95,7 +96,7 @@ export class MaterialModule {}
         CommonModule,
         BrowserAnimationsModule,
         FormsModule,
-        RouterModule.forRoot(AppRoutes,{
+        RouterModule.forRoot(AppRoutes, {
           useHash: true
         }),
         HttpModule,
@@ -106,13 +107,14 @@ export class MaterialModule {}
         SidebarModule,
         NavbarModule,
         FooterModule,
-        FixedpluginModule
+        FixedpluginModule// ,
+        // TbsLandingModule
     ],
     declarations: [
         AppComponent,
         AdminLayoutComponent,
-        AuthLayoutComponent,
-        TbsLandingComponent
+        AuthLayoutComponent// ,
+        // TbsLandingComponent
     ],
     bootstrap:    [ AppComponent ]
 })

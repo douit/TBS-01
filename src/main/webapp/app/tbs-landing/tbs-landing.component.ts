@@ -1,20 +1,21 @@
-import {AfterViewInit, Component, ElementRef, OnInit, Renderer} from '@angular/core';
+import { Component, OnInit, ElementRef, OnDestroy, Renderer } from '@angular/core';
 import {StateStorageService} from '../core/auth/state-storage.service';
 import {JhiEventManager} from 'ng-jhipster';
 import {LoginService} from '../core/login/login.service';
 import {Router} from '@angular/router';
 import {FormBuilder} from '@angular/forms';
-
-import * as $ from 'jquery';
+declare var $: any;
 
 @Component({
-  selector: 'app-tbs-landing',
-  templateUrl: './tbs-landing.component.html',
-  styleUrls: ['./tbs-landing.component.scss']
+  selector: 'app-login-cmp',
+  templateUrl: './tbs-landing.component.html'
 })
-export class TbsLandingComponent implements OnInit, AfterViewInit {
 
-  2date: Date;
+export class TbsLandingComponent implements OnInit, OnDestroy {
+  test: Date = new Date();
+  private toggleButton: any;
+  private sidebarVisible: boolean;
+  private nativeElement: Node;
   authenticationError: boolean;
   loginForm = this.fb.group({
     username: [''],
@@ -22,25 +23,52 @@ export class TbsLandingComponent implements OnInit, AfterViewInit {
     rememberMe: [false]
   });
 
-  ngOnInit() {
-      this.date = new Date();
-  }
-
   constructor(
+    private element: ElementRef,
     private eventManager: JhiEventManager,
     private loginService: LoginService,
     private stateStorageService: StateStorageService,
     private elementRef: ElementRef,
     private renderer: Renderer,
     private router: Router,
-    // public activeModal: NgbActiveModal,
-    private fb: FormBuilder
-  ) {}
-
-  ngAfterViewInit() {
-    setTimeout(() => this.renderer.invokeElementMethod(this.elementRef.nativeElement.querySelector('#username'), 'focus', []), 0);
+    private fb: FormBuilder) {
+    this.nativeElement = element.nativeElement;
+    this.sidebarVisible = false;
   }
 
+  ngOnInit() {
+    let navbar : HTMLElement = this.element.nativeElement;
+    this.toggleButton = navbar.getElementsByClassName('navbar-toggle')[0];
+    const body = document.getElementsByTagName('body')[0];
+    body.classList.add('login-page');
+    body.classList.add('off-canvas-sidebar');
+    const card = document.getElementsByClassName('card')[0];
+    setTimeout(function() {
+      // after 1000 ms we add the class animated to the login/register card
+      card.classList.remove('card-hidden');
+    }, 700);
+  }
+  sidebarToggle() {
+    let toggleButton = this.toggleButton;
+    let body = document.getElementsByTagName('body')[0];
+    let sidebar = document.getElementsByClassName('navbar-collapse')[0];
+    if (this.sidebarVisible == false) {
+      setTimeout(function() {
+        toggleButton.classList.add('toggled');
+      }, 500);
+      body.classList.add('nav-open');
+      this.sidebarVisible = true;
+    } else {
+      this.toggleButton.classList.remove('toggled');
+      this.sidebarVisible = false;
+      body.classList.remove('nav-open');
+    }
+  }
+  ngOnDestroy(){
+    const body = document.getElementsByTagName('body')[0];
+    body.classList.remove('login-page');
+    body.classList.remove('off-canvas-sidebar');
+  }
   cancel() {
     this.authenticationError = false;
     this.loginForm.patchValue({
@@ -49,7 +77,6 @@ export class TbsLandingComponent implements OnInit, AfterViewInit {
     });
     // this.activeModal.dismiss('cancel');
   }
-
   login() {
     this.loginService
       .login({
@@ -85,17 +112,4 @@ export class TbsLandingComponent implements OnInit, AfterViewInit {
       .catch(() => {
         this.authenticationError = true;
       });
-  }
-
-  register() {
-    // this.activeModal.dismiss('to state register');
-    this.router.navigate(['/account/register']);
-  }
-
-  requestResetPassword() {
-    //this.activeModal.dismiss('to state requestReset');
-    this.router.navigate(['/account/reset', 'request']);
-  }
-
-
 }

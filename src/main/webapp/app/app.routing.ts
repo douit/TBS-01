@@ -11,8 +11,13 @@ export const AppRoutes: Routes = [
       redirectTo: 'dashboard',
       pathMatch: 'full',
     }, {
-      path: 'login',
-      component: TbsLandingComponent
+    path: '',
+    component: AuthLayoutComponent,
+    children: [{
+      path: '',
+      loadChildren: () => import('./tbs-landing/tbs-landing.module').then(m => m.TbsLandingModule)
+      // loadChildren: './tbs-landing/tbs-landing.module#TbsLandingModule'
+    }]
     }, {
       path: '',
       component: AdminLayoutComponent,
