@@ -4,7 +4,7 @@ import { NavItem, NavItemType } from '../../md/md.module';
 import { Subscription } from 'rxjs/Subscription';
 import { Location, LocationStrategy, PathLocationStrategy, PopStateEvent } from '@angular/common';
 import 'rxjs/add/operator/filter';
-import { NewNavbarComponent } from '../../shared/navbar/navbar.component';
+import { NavbarComponent } from '../../shared/navbar/navbar.component';
 import PerfectScrollbar from 'perfect-scrollbar';
 
 declare const $: any;
@@ -23,7 +23,7 @@ export class AdminLayoutComponent implements OnInit, AfterViewInit {
     location: Location;
 
     @ViewChild('sidebar', {static: false}) sidebar: any;
-    @ViewChild(NewNavbarComponent, {static: false}) navbar: NewNavbarComponent;
+    @ViewChild(NavbarComponent, {static: false}) navbar: NavbarComponent;
     constructor( private router: Router, location: Location ) {
       this.location = location;
     }

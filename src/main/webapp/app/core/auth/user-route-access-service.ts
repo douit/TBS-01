@@ -1,7 +1,7 @@
 import { Injectable, isDevMode } from '@angular/core';
 import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from '@angular/router';
 
-import { AccountService } from 'app/core/auth/account.service';
+import { AccountService } from '../../core/auth/account.service';
 import { StateStorageService } from './state-storage.service';
 
 @Injectable({ providedIn: 'root' })
@@ -40,8 +40,8 @@ export class UserRouteAccessService implements CanActivate {
       }
 
       this.stateStorageService.storeUrl(url);
-      //sthis.loginModalService.open();
-      this.router.navigate(['home']);
+      // sthis.loginModalService.open();
+      this.router.navigate(['login']);
       return false;
     });
   }

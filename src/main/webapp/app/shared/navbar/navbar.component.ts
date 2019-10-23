@@ -3,6 +3,13 @@ import { ROUTES } from '../.././sidebar/sidebar.component';
 import { Router, ActivatedRoute, NavigationEnd, NavigationStart } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
 import { Location, LocationStrategy, PathLocationStrategy } from '@angular/common';
+
+import { JhiLanguageService } from 'ng-jhipster';
+import { SessionStorageService } from 'ngx-webstorage';
+import {VERSION} from '../../app.constants';
+import {JhiLanguageHelper} from '../..//core/language/language.helper';
+import {AccountService} from '../../core/auth/account.service';
+import {LoginService} from '../../core/login/login.service';
 const misc: any = {
     navbar_menu_visible: 0,
     active_collapse: true,
@@ -15,7 +22,7 @@ declare var $: any;
     templateUrl: 'navbar.component.html'
 })
 
-export class NewNavbarComponent implements OnInit {
+export class NavbarComponent implements OnInit {
     private listTitles: any[];
     location: Location;
     mobile_menu_visible: any = 0;
@@ -24,14 +31,28 @@ export class NewNavbarComponent implements OnInit {
     private sidebarVisible: boolean;
     private _router: Subscription;
 
+    version: string;
+    isNavbarCollapsed: boolean;
+
     @ViewChild('app-navbar-cmp', {static: false}) button: any;
 
-    constructor(location: Location, private renderer: Renderer, private element: ElementRef, private router: Router,) {
+    constructor(location: Location,
+                private renderer: Renderer,
+                private element: ElementRef,
+                private router: Router,
+                private loginService: LoginService,
+                private languageService: JhiLanguageService,
+                private languageHelper: JhiLanguageHelper,
+                private sessionStorage: SessionStorageService,
+                private accountService: AccountService) {
         this.location = location;
         this.nativeElement = element.nativeElement;
         this.sidebarVisible = false;
+
+      this.version = VERSION ? 'v' + VERSION : '';
+      this.isNavbarCollapsed = true;
     }
-    minimizeSidebar(){
+    minimizeSidebar() {
       const body = document.getElementsByTagName('body')[0];
 
       if (misc.sidebar_mini_active === true) {
@@ -56,7 +77,7 @@ export class NewNavbarComponent implements OnInit {
           clearInterval(simulateWindowResize);
       }, 1000);
     }
-    hideSidebar(){
+    hideSidebar() {
       const body = document.getElementsByTagName('body')[0];
       const sidebar = document.getElementsByClassName('sidebar')[0];
 
@@ -117,10 +138,10 @@ export class NewNavbarComponent implements OnInit {
       return true;
     }
     sidebarOpen() {
-      var $toggle = document.getElementsByClassName('navbar-toggler')[0];
+      const $toggle = document.getElementsByClassName('navbar-toggler')[0];
         const toggleButton = this.toggleButton;
         const body = document.getElementsByTagName('body')[0];
-        setTimeout(function(){
+        setTimeout(function() {
             toggleButton.classList.add('toggled');
         }, 500);
         body.classList.add('nav-open');
@@ -128,13 +149,13 @@ export class NewNavbarComponent implements OnInit {
             $toggle.classList.add('toggled');
         }, 430);
 
-        var $layer = document.createElement('div');
+        const $layer = document.createElement('div');
         $layer.setAttribute('class', 'close-layer');
 
 
         if (body.querySelectorAll('.main-panel')) {
             document.getElementsByClassName('main-panel')[0].appendChild($layer);
-        }else if (body.classList.contains('off-canvas-sidebar')) {
+        } else if (body.classList.contains('off-canvas-sidebar')) {
             document.getElementsByClassName('wrapper-full-page')[0].appendChild($layer);
         }
 
@@ -142,7 +163,7 @@ export class NewNavbarComponent implements OnInit {
             $layer.classList.add('visible');
         }, 100);
 
-        $layer.onclick = function() { //asign a function
+        $layer.onclick = function() { // asign a function
           body.classList.remove('nav-open');
           this.mobile_menu_visible = 0;
           this.sidebarVisible = false;
@@ -157,12 +178,12 @@ export class NewNavbarComponent implements OnInit {
         body.classList.add('nav-open');
         this.mobile_menu_visible = 1;
         this.sidebarVisible = true;
-    };
+    }
     sidebarClose() {
-      var $toggle = document.getElementsByClassName('navbar-toggler')[0];
+      const $toggle = document.getElementsByClassName('navbar-toggler')[0];
         const body = document.getElementsByTagName('body')[0];
         this.toggleButton.classList.remove('toggled');
-        var $layer = document.createElement('div');
+        const $layer = document.createElement('div');
         $layer.setAttribute('class', 'close-layer');
 
         this.sidebarVisible = false;
@@ -178,7 +199,7 @@ export class NewNavbarComponent implements OnInit {
         }, 400);
 
         this.mobile_menu_visible = 0;
-    };
+    }
     sidebarToggle() {
         if (this.sidebarVisible === false) {
             this.sidebarOpen();
@@ -188,16 +209,16 @@ export class NewNavbarComponent implements OnInit {
     }
 
     getTitle() {
-      var titlee = this.location.prepareExternalUrl(this.location.path());
-      if(titlee.charAt(0) === '#'){
+      let titlee = this.location.prepareExternalUrl(this.location.path());
+      if (titlee.charAt(0) === '#') {
           titlee = titlee.slice( 1 );
       }
         for (let i = 0; i < this.listTitles.length; i++) {
-            if (this.listTitles[i].type === "link" && this.listTitles[i].path === titlee) {
+            if (this.listTitles[i].type === 'link' && this.listTitles[i].path === titlee) {
                 return this.listTitles[i].title;
-            } else if (this.listTitles[i].type === "sub") {
+            } else if (this.listTitles[i].type === 'sub') {
                 for (let j = 0; j < this.listTitles[i].children.length; j++) {
-                    let subtitle = this.listTitles[i].path + '/' + this.listTitles[i].children[j].path;
+                    const subtitle = this.listTitles[i].path + '/' + this.listTitles[i].children[j].path;
                     // console.log(subtitle)
                     // console.log(titlee)
                     if (subtitle === titlee) {
@@ -211,4 +232,14 @@ export class NewNavbarComponent implements OnInit {
     getPath() {
         return this.location.prepareExternalUrl(this.location.path());
     }
+
+  logout() {
+    this.collapseNavbar();
+    this.loginService.logout();
+    this.router.navigate(['']);
+  }
+
+  collapseNavbar() {
+    this.isNavbarCollapsed = true;
+  }
 }

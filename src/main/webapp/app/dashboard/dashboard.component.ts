@@ -4,7 +4,8 @@ import { LegendItem, ChartType } from '../md/md-chart/md-chart.component';
 
 import * as Chartist from 'chartist';
 
-declare const $: any;
+import * as $ from 'jquery';
+// declare const $: any;
 
 @Component({
   selector: 'app-dashboard',
@@ -70,7 +71,6 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   }
   // constructor(private navbarTitleService: NavbarTitleService) { }
   public ngOnInit() {
-    
       this.tableData = {
           headerRow: ['ID', 'Name', 'Salary', 'Country', 'City'],
           dataRows: [
@@ -157,32 +157,6 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       const websiteViewsChart = new Chartist.Bar('#websiteViewsChart', dataWebsiteViewsChart, optionsWebsiteViewsChart, responsiveOptions);
 
       this.startAnimationForBarChart(websiteViewsChart);
-
-      $('#worldMap').vectorMap({
-        map: 'world_en',
-        backgroundColor: 'transparent',
-         borderColor: '#818181',
-         borderOpacity: 0.25,
-         borderWidth: 1,
-         color: '#b3b3b3',
-         enableZoom: true,
-         hoverColor: '#eee',
-         hoverOpacity: null,
-         normalizeFunction: 'linear',
-         scaleColors: ['#b6d6ff', '#005ace'],
-         selectedColor: '#c9dfaf',
-         selectedRegions: null,
-         showTooltip: true,
-         onRegionClick: function(element, code, region)
-         {
-             var message = 'You clicked "'
-                 + region
-                 + '" which has the code: '
-                 + code.toUpperCase();
-
-             alert(message);
-         }
-      });
    }
    ngAfterViewInit() {
        const breakCards = true;

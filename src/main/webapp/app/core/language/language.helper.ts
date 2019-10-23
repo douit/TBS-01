@@ -3,8 +3,8 @@ import { Title } from '@angular/platform-browser';
 import { Router, ActivatedRouteSnapshot } from '@angular/router';
 import { TranslateService, LangChangeEvent } from '@ngx-translate/core';
 
-import { LANGUAGES } from 'app/core/language/language.constants';
-import { FindLanguageFromKeyPipe } from 'app/shared/language/find-language-from-key.pipe';
+import { LANGUAGES } from '../../core/language/language.constants';
+import { FindLanguageFromKeyPipe } from '../../shared/language/find-language-from-key.pipe';
 
 @Injectable({ providedIn: 'root' })
 export class JhiLanguageHelper {

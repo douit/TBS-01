@@ -1,10 +1,11 @@
 import {AfterViewInit, Component, ElementRef, OnInit, Renderer} from '@angular/core';
-import {StateStorageService} from "app/core/auth/state-storage.service";
-import {JhiEventManager} from "ng-jhipster";
-import {LoginService} from "app/core/login/login.service";
-import {Router} from "@angular/router";
-import {FormBuilder} from "@angular/forms";
-//import {NgbActiveModal} from "@ng-bootstrap/ng-bootstrap";
+import {StateStorageService} from '../core/auth/state-storage.service';
+import {JhiEventManager} from 'ng-jhipster';
+import {LoginService} from '../core/login/login.service';
+import {Router} from '@angular/router';
+import {FormBuilder} from '@angular/forms';
+
+import * as $ from 'jquery';
 
 @Component({
   selector: 'app-tbs-landing',
@@ -12,20 +13,18 @@ import {FormBuilder} from "@angular/forms";
   styleUrls: ['./tbs-landing.component.scss']
 })
 export class TbsLandingComponent implements OnInit, AfterViewInit {
-    date: Date;
 
-  ngOnInit() {
-      this.date = new Date();
-  }
-
-
+  2date: Date;
   authenticationError: boolean;
-
   loginForm = this.fb.group({
     username: [''],
     password: [''],
     rememberMe: [false]
   });
+
+  ngOnInit() {
+      this.date = new Date();
+  }
 
   constructor(
     private eventManager: JhiEventManager,
@@ -34,7 +33,7 @@ export class TbsLandingComponent implements OnInit, AfterViewInit {
     private elementRef: ElementRef,
     private renderer: Renderer,
     private router: Router,
-    //public activeModal: NgbActiveModal,
+    // public activeModal: NgbActiveModal,
     private fb: FormBuilder
   ) {}
 
@@ -48,7 +47,7 @@ export class TbsLandingComponent implements OnInit, AfterViewInit {
       username: '',
       password: ''
     });
-    //this.activeModal.dismiss('cancel');
+    // this.activeModal.dismiss('cancel');
   }
 
   login() {
@@ -60,12 +59,12 @@ export class TbsLandingComponent implements OnInit, AfterViewInit {
       })
       .then(() => {
         this.authenticationError = false;
-        //this.activeModal.dismiss('login success');
+        // this.activeModal.dismiss('login success');
         if (
           this.router.url === '/account/register' ||
           this.router.url.startsWith('/account/activate/') ||
-          this.router.url.startsWith('/account/reset/')||
-          this.router.url.startsWith('/home')
+          this.router.url.startsWith('/account/reset/') ||
+          this.router.url.startsWith('/login')
         ) {
           this.router.navigate(['']);
         }
@@ -89,7 +88,7 @@ export class TbsLandingComponent implements OnInit, AfterViewInit {
   }
 
   register() {
-    //this.activeModal.dismiss('to state register');
+    // this.activeModal.dismiss('to state register');
     this.router.navigate(['/account/register']);
   }
 

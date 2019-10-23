@@ -11,9 +11,9 @@ import { NgJhipsterModule, translatePartialLoader, missingTranslationHandler, Jh
 import locale from '@angular/common/locales/en';
 
 import * as moment from 'moment';
-import { FindLanguageFromKeyPipe } from 'app/shared/language/find-language-from-key.pipe';
+import { FindLanguageFromKeyPipe } from '../shared/language/find-language-from-key.pipe';
 import { NgbDateAdapter, NgbDatepickerConfig } from '@ng-bootstrap/ng-bootstrap';
-import { NgbDateMomentAdapter } from 'app/shared/util/datepicker-adapter';
+import { NgbDateMomentAdapter } from '../shared/util/datepicker-adapter';
 
 import { fontAwesomeIcons } from './icons/font-awesome-icons';
 

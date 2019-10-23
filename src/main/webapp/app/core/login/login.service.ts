@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { AccountService } from 'app/core/auth/account.service';
-import { AuthServerProvider } from 'app/core/auth/auth-session.service';
-import {Router} from "@angular/router";
+import { AccountService } from '../auth/account.service';
+import { AuthServerProvider } from '../auth/auth-session.service';
+import {Router} from '@angular/router';
 
 @Injectable({ providedIn: 'root' })
 export class LoginService {
@@ -33,7 +33,7 @@ export class LoginService {
     this.authServerProvider.logout().subscribe(null, null,
       () => {
         this.accountService.authenticate(null);
-        this.router.navigate(['home']);
+        this.router.navigate(['login']);
       }
       );
   }

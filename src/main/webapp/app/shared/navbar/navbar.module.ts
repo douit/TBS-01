@@ -1,12 +1,13 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { NewNavbarComponent } from './navbar.component';
+import { NavbarComponent } from './navbar.component';
 import { MatButtonModule } from '@angular/material';
+import {TbsSharedModule} from '../shared.module';
 @NgModule({
-    imports: [ RouterModule, CommonModule, MatButtonModule ],
-    declarations: [ NewNavbarComponent ],
-    exports: [ NewNavbarComponent ]
+    imports: [ RouterModule, CommonModule, MatButtonModule, TbsSharedModule ],
+    declarations: [ NavbarComponent ],
+    exports: [ NavbarComponent ]
 })
 
-export class NewNavbarModule {}
+export class NavbarModule {}
