@@ -1,0 +1,49 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="contact">
+            <h2><span jhiTranslate="tbsApp.contact.detail.title">Contact</span> {{contact.id}}</h2>
+            <hr>
+            <jhi-alert-error></jhi-alert-error>
+            <dl class="row-md jh-entity-details">
+                <dt><span jhiTranslate="tbsApp.contact.email">Email</span></dt>
+                <dd>
+                    <span>{{contact.email}}</span>
+                </dd>
+                <dt><span jhiTranslate="tbsApp.contact.phone">Phone</span></dt>
+                <dd>
+                    <span>{{contact.phone}}</span>
+                </dd>
+                <dt><span jhiTranslate="tbsApp.contact.address">Address</span></dt>
+                <dd>
+                    <span>{{contact.address}}</span>
+                </dd>
+                <dt><span jhiTranslate="tbsApp.contact.street">Street</span></dt>
+                <dd>
+                    <span>{{contact.street}}</span>
+                </dd>
+                <dt><span jhiTranslate="tbsApp.contact.city">City</span></dt>
+                <dd>
+                    <span>{{contact.city}}</span>
+                </dd>
+                <dt><span jhiTranslate="tbsApp.contact.country">Country</span></dt>
+                <dd>
+                    <div *ngIf="contact.countryId">
+                        <a [routerLink]="['/country', contact.countryId, 'view']">{{contact.countryId}}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon [icon]="'arrow-left'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back"> Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/contact', contact.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon [icon]="'pencil-alt'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit"> Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

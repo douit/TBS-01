@@ -1,0 +1,4 @@
+<div *ngIf="rowCount == 0">{{ 'global.datatable.total_entries' | translate: { from: 0, to: 0, total: 0 } }}</div>
+<div *ngIf="rowCount > 0">
+    {{ 'global.datatable.total_entries' | translate: { from: 1 + (offset * pageSize), to: toCal, total: rowCount } }}
+</div>

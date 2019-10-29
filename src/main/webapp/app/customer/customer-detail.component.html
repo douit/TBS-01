@@ -1,0 +1,41 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="customer">
+            <h2><span jhiTranslate="tbsApp.customer.detail.title">Customer</span> {{customer.id}}</h2>
+            <hr>
+            <jhi-alert-error></jhi-alert-error>
+            <dl class="row-md jh-entity-details">
+                <dt><span jhiTranslate="tbsApp.customer.identity">Identity</span></dt>
+                <dd>
+                    <span>{{customer.identity}}</span>
+                </dd>
+                <dt><span jhiTranslate="tbsApp.customer.identityType">Identity Type</span></dt>
+                <dd>
+                    <span jhiTranslate="{{'tbsApp.IdentityType.' + customer.identityType}}">{{customer.identityType}}</span>
+                </dd>
+                <dt><span jhiTranslate="tbsApp.customer.name">Name</span></dt>
+                <dd>
+                    <span>{{customer.name}}</span>
+                </dd>
+                <dt><span jhiTranslate="tbsApp.customer.contact">Contact</span></dt>
+                <dd>
+                    <div *ngIf="customer.contactId">
+                        <a [routerLink]="['/contact', customer.contactId, 'view']">{{customer.contactId}}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon [icon]="'arrow-left'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back"> Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/customer', customer.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon [icon]="'pencil-alt'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit"> Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

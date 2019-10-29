@@ -1,0 +1,48 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+            <h2 id="jhi-customer-heading" jhiTranslate="tbsApp.customer.home.createOrEditLabel">Create or edit a Customer</h2>
+            <div>
+                <jhi-alert-error></jhi-alert-error>
+                <div class="form-group" [hidden]="!editForm.get('id').value">
+                    <label for="id" jhiTranslate="global.field.id">ID</label>
+                    <input type="text" class="form-control" id="id" name="id" formControlName="id"
+                        readonly />
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="tbsApp.customer.identity" for="field_identity">Identity</label>
+                    <input type="text" class="form-control" name="identity" id="field_identity"
+                           formControlName="identity"/>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="tbsApp.customer.identityType" for="field_identityType">Identity Type</label>
+                    <select class="form-control" name="identityType" formControlName="identityType" id="field_identityType">
+                        <option value="NATIONAL">{{'tbsApp.IdentityType.NATIONAL' | translate}}</option>
+                        <option value="IQAMA">{{'tbsApp.IdentityType.IQAMA' | translate}}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="tbsApp.customer.name" for="field_name">Name</label>
+                    <input type="text" class="form-control" name="name" id="field_name"
+                           formControlName="name"/>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="tbsApp.customer.contact" for="field_contact">Contact</label>
+                    <select class="form-control" id="field_contact" name="contact" formControlName="contactId">
+                        <option [ngValue]="null"></option>
+                        <option [ngValue]="contactOption.id" *ngFor="let contactOption of contacts; trackBy: trackContactById">{{contactOption.id}}</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <button type="button" id="cancel-save" class="btn btn-secondary"  (click)="previousState()">
+                    <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
+                </button>
+                <button type="submit" id="save-entity" [disabled]="editForm.invalid || isSaving" class="btn btn-primary">
+                    <fa-icon [icon]="'save'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Save</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

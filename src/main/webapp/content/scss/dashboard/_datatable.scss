@@ -1,0 +1,405 @@
+/*
+ ==============================================
+ * Datatable component
+ ==============================================
+ */
+
+$row-light-blue: #bcf0f7;
+$row-light-pink: #ffe1ef;
+$row-light-orange: #ffd699;
+
+.datatable-wrapper {
+    $table-row-border-color: #eeeeee;
+    $table-alternate-row-bg-color: #ffffff;
+    $pagination-btn-color: rgba(200, 200, 200, 0.2);
+    $toolbar-padding: 15px;
+
+    >.row:first-child,
+    .datatable-toolbar {
+        border-bottom: 1px solid #f1f1f1;
+    }
+
+    .datatable-toolbar {
+        padding: $toolbar-padding;
+    }
+
+    /* Datatable length */
+    .datatable-length {
+
+        .mat-input-infix {
+            border-top-width: 0;
+            margin-top: 5px;
+        }
+    }
+
+    /* Datatable filter */
+    .datatable-filter {
+        padding: $toolbar-padding;
+        text-align: right;
+
+        label {
+            margin-bottom: 0;
+
+            .form-group {
+                padding: 0;
+                margin: 0;
+
+                input {
+                    &::placeholder {
+                        color: #aaa !important;
+                        font-size: 15px !important;
+                        font-weight: 400 !important;
+                    }
+                }
+            }
+        }
+    }
+
+    /* Main Datatable */
+    .walem-ngx-datatable-wrapper {
+        overflow-x: auto;
+
+        .walem-ngx-datatable {
+            min-width: 1000px;
+
+            // Added to fix `row-detail` responsive issue on page resize
+            .datatable-body {
+
+                .datatable-scroll {
+                    width: 100% !important;
+                }
+            }
+
+            .datatable-row-details {
+
+                .item-row {
+                    @include clearfix;
+
+                    border-bottom: 1px solid $table-row-border-color;
+                    padding: 8px 16px;
+
+                    .item-label-wrapper,
+                    .item-value-wrapper {
+
+                        @include float-start;
+                    }
+
+                    .item-label-wrapper {
+                        width: 15%;
+                    }
+
+                    .item-value-wrapper {
+                        width: 35%;
+                    }
+
+                    .item-label,
+                    .item-value {
+                        padding: 8px 0;
+                    }
+
+                    .item-label {
+                        font-weight: bold;
+                    }
+                }
+            }
+
+            &.ngx-datatable {
+                .empty-row {
+                    padding: 20px;
+                    text-align: center;
+                    border-bottom: 1px solid #eee;
+                }
+
+                .checkbox {
+                    margin-top: 0;
+                    margin-bottom: 0;
+                }
+
+                .btn {
+
+                    &.btn-icon {
+                        margin: 0;
+                        padding: 3px;
+                    }
+                }
+
+
+                .sortable {
+
+                    .sort-btn {
+                        font-family: 'FontAwesome';
+                        font-size: 12px;
+                        opacity: 0.4;
+
+                        &:after {
+                            content: "\F0DC";
+                        }
+
+                        &.sort-asc {
+                            opacity: 0.8;
+                            margin-top: 4px;
+
+                            &:after {
+                                content: "\F0DE";
+                            }
+                        }
+
+                        &.sort-desc {
+                            opacity: 0.8;
+                            margin-top: -4px;
+
+                            &:after {
+                                content: "\F0DD";
+                            }
+                        }
+                    }
+                }
+
+                .datatable-header {
+                    border-bottom: 1px solid #eee;
+
+                    /* Header */
+                    datatable-header-cell {
+                        font-size: 16px;
+                        font-weight: 900;
+                        padding: 8px;
+                        word-break: break-word;
+                    }
+                }
+
+                /* Row */
+                datatable-row-wrapper {
+
+                    datatable-body-row {
+                        padding: 3px 0;
+                        border-bottom: 1px solid $table-row-border-color;
+
+                        .datatable-row-group {
+                            align-items: center;
+                        }
+
+                        &.datatable-row-even {
+                            background-color: $table-alternate-row-bg-color;
+                        }
+
+                        &.highlight-light-blue {
+                            background-color: $row-light-blue;
+                        }
+
+                        &.highlight-light-orange {
+                            background-color: $row-light-orange;
+                        }
+
+                        &.highlight-light-pink {
+                            background-color: $row-light-pink;
+                        }
+
+                        .datatable-body-cell-label {
+                            font-size: 16px;
+                            padding: 8px;
+                            word-break: break-word;
+
+                            .hide-cell-overflow {
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                                white-space: nowrap;
+                            }
+
+                            .datatable-row-drag-handle {
+                                cursor: pointer;
+                            }
+                        }
+                    }
+                }
+
+                /* Summary Row */
+                datatable-summary-row {
+
+                    datatable-body-row {
+
+                        datatable-body-cell {
+                            padding: 12px;
+                            font-weight: bold;
+                        }
+                    }
+                }
+
+                /* Footer */
+                .datatable-footer {
+
+                    .datatable-footer-inner {
+                        justify-content: space-between;
+
+                        .total-entries {
+                            padding: $toolbar-padding;
+                        }
+
+                        .datatable-pagination {
+                            padding: $toolbar-padding;
+
+                            .datatable-pager {
+
+                                .pager {
+
+                                    li {
+                                        margin-left: 3px;
+                                        margin-right: 3px;
+
+                                        >a {
+                                            border-radius: 3px;
+                                            width: 30px;
+                                            height: 30px;
+                                            line-height: 30px;
+                                            padding: 0px 11px;
+                                            font-size: 12px;
+                                        }
+
+                                        /* for 1,2,3 etc */
+                                        &.pages {
+
+                                            >a {
+                                                border-color: transparent;
+                                                color: #999999;
+                                                font-weight: 400;
+                                                font-size: 12px;
+                                            }
+                                        }
+
+                                        /* for `next`, `prev` etc */
+                                        &.page-navigate {
+
+                                            >a {
+                                                padding: 0 11px;
+                                                border-color: transparent;
+                                                width: auto;
+                                                color: #999999;
+                                                font-weight: 400;
+                                                font-size: 12px;
+                                            }
+
+                                            &.disabled {
+
+                                                >a {
+                                                    color: #777777;
+                                                }
+                                            }
+                                        }
+
+                                        &.active {
+
+                                            >a {
+                                                background-color: $pagination-btn-color;
+                                                color: #111111;
+                                                border-radius: 3px;
+                                                width: 30px;
+                                                height: 30px;
+                                                line-height: 30px;
+                                                padding: 0px 11px;
+                                                font-size: 12px;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+                }
+
+                /* Datatable hover */
+                &.datatable-hover {
+
+                    /* Row */
+                    datatable-row-wrapper {
+
+                        datatable-body-row {
+
+                            &:hover {
+                                background-color: #f1f1f1;
+                                cursor: pointer;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// For Dragula Drag and Drop
+.gu-mirror {
+
+    datatable-body-cell {
+        display: inline-block;
+
+        * {
+            display: inline-block;
+        }
+    }
+}
+
+// ==============================================
+//  Walem Datatable (Table made for <div>)
+// ==============================================
+
+.walem-table-wrapper {
+    overflow-x: auto;
+
+    .walem-table {
+        display: table;
+        width: 100%;
+
+        .table-row-group {
+            display: table-row-group;
+
+            .table-row {
+                display: table-row;
+
+                .table-cell {
+                    display: table-cell;
+                    vertical-align: middle;
+                }
+
+                &.header-row {
+
+                    .table-cell {
+                        font-size: 16px;
+                        font-weight: 900;
+                        padding: 8px;
+                    }
+                }
+
+                &.item-row {
+
+                    .table-cell {
+                        border-top: 1px solid #eee;
+                        font-size: 16px;
+                        padding: 8px;
+                    }
+                }
+
+                &.highlight-light-blue {
+                    background-color: $row-light-blue;
+                }
+
+                &.highlight-light-orange {
+                    background-color: $row-light-orange;
+                }
+
+                &.highlight-light-pink {
+                    background-color: $row-light-pink;
+                }
+            }
+        }
+
+        .table-caption {
+            display: table-caption;
+            padding: 8px;
+            text-align: center;
+
+            &.table-caption-bottom {
+                caption-side: bottom;
+            }
+        }
+    }
+}

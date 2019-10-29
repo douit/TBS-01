@@ -1,0 +1,177 @@
+/*
+ ==============================================
+ * Utility classes
+ ==============================================
+ */
+
+// TODO: other `utility` classes needs to be moved here for re-usability,
+// which are defined multiple times in code.
+
+// NOTE: RTL Utility mixins and classes will allow us to write code once,
+// and it will handle LTR and RTL behind the scene for us.
+
+// ==============================================
+//  Mixins
+// ==============================================
+
+@mixin ltr() {
+    [dir='ltr'] & {
+        @content;
+    }
+}
+
+@mixin rtl() {
+    [dir='rtl'] & {
+        @content;
+    }
+}
+
+@mixin property-horizontal($property, $start, $end: $start) {
+    @include ltr() {
+
+        @if($start !=null) {
+            #{$property}-left: $start;
+        }
+
+        @if($end !=null) {
+            #{$property}-right: $end;
+        }
+    }
+
+    @include rtl() {
+
+        @if($end !=null) {
+            #{$property}-left: $end;
+        }
+
+        @if($start !=null) {
+            #{$property}-right: $start;
+        }
+    }
+}
+
+// Padding
+@mixin padding-start($start) {
+    @include property-horizontal(padding, $start, null);
+}
+
+@mixin padding-end($end) {
+    @include property-horizontal(padding, null, $end);
+}
+
+@mixin padding-horizontal($start, $end: $start) {
+    @include property-horizontal(padding, $start, $end);
+}
+
+// Margin
+@mixin margin-start($start) {
+    @include property-horizontal(margin, $start, null);
+}
+
+@mixin margin-end($end) {
+    @include property-horizontal(margin, null, $end);
+}
+
+@mixin margin-horizontal($start, $end: $start) {
+    @include property-horizontal(margin, $start, $end);
+}
+
+// Border
+@mixin border-start($start) {
+    @include property-horizontal(border, $start, null);
+}
+
+@mixin border-end($end) {
+    @include property-horizontal(border, null, $end);
+}
+
+// Text align
+@mixin text-start() {
+    @include ltr() {
+        text-align: left;
+    }
+
+    @include rtl() {
+        text-align: right;
+    }
+}
+
+@mixin text-end() {
+    @include ltr() {
+        text-align: right;
+    }
+
+    @include rtl() {
+        text-align: left;
+    }
+}
+
+// Float
+@mixin float-start() {
+    @include ltr() {
+        float: left;
+    }
+
+    @include rtl() {
+        float: right;
+    }
+}
+
+@mixin float-end() {
+    @include ltr() {
+        float: right;
+    }
+
+    @include rtl() {
+        float: left;
+    }
+}
+
+// Position
+@mixin position-start($start) {
+    @include ltr() {
+        left: $start;
+    }
+
+    @include rtl() {
+        right: $start;
+    }
+}
+
+@mixin position-end($end) {
+    @include ltr() {
+        right: $end;
+    }
+
+    @include rtl() {
+        left: $end;
+    }
+}
+
+// ==============================================
+//  Classes
+// ==============================================
+.text-start {
+    @include text-start;
+}
+
+.text-end {
+    @include text-end;
+}
+
+.float-start {
+    @include float-start;
+}
+
+.float-end {
+    @include float-end;
+}
+
+// Clearfix
+@mixin clearfix() {
+    &::after {
+        clear: both;
+        content: '';
+        display: block;
+    }
+}
