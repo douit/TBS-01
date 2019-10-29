@@ -161,6 +161,7 @@ public class InvoiceService {
             }
         } else {
             totalPrice = item.get().getPrice();
+            invoiceItem.setQuantity(1);
         }
 
         // adding vat
@@ -168,7 +169,7 @@ public class InvoiceService {
         if (CollectionUtils.isNotEmpty(item.get().getTaxes())) {
             for (Tax tax: item.get().getTaxes()) {
                 if (tax.getRate() != null) {
-                    totalPrice = totalPrice.add(item.get().getPrice().multiply(tax.getRate()));
+                    totalPrice = totalPrice.add(item.get().getPrice().multiply(tax.getRate().divide(new BigDecimal("100"))));
                     totalTaxes = totalTaxes.add(tax.getRate());
                 }
             }
@@ -178,6 +179,8 @@ public class InvoiceService {
         invoiceItem.setTaxRate(totalTaxes);
 
         invoice.setInvoiceItems(Arrays.asList(invoiceItem));
+        invoice.setSubtotal(item.get().getPrice());
+        invoice.setAmount(totalPrice);
         invoice = invoiceRepository.save(invoice);
 
         // Payment

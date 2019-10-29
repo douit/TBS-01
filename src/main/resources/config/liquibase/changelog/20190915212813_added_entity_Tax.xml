@@ -59,14 +59,14 @@
     -->
     <changeSet id="20190915212813-1-data" author="Ahmed B" context="faker">
         <loadData
-                  file="config/liquibase/fake-data/tax.csv"
+                  file="config/liquibase/data/tax.csv"
                   separator=";"
                   tableName="tax">
             <column name="id" type="numeric"/>
             <column name="name" type="string"/>
             <column name="description" type="string"/>
             <column name="rate" type="numeric"/>
-
+            <column name="item_id" type="numeric"/>
             <column name="created_by" type="string"/>
             <column name="created_date" type="datetime"/>
             <column name="last_modified_by" type="string"/>
