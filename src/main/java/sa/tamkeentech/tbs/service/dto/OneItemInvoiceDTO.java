@@ -40,11 +40,11 @@ public class OneItemInvoiceDTO implements Serializable {
     @NotBlank
     private String itemName;//req
 
-    @NotNull
+    // @NotNull
     @DecimalMin(value = "0.0")
     private BigDecimal price;//req
 
-    @NotNull
+    // @NotNull
     @Min(value= 1)
     private Integer quantity;//req
 

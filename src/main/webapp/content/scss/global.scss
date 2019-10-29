@@ -82,3 +82,33 @@ $fa-font-path: "~font-awesome/fonts";
         position: absolute;
     }
 }
+
+.align-username {
+  font-size: small;
+  max-width: 153px;
+  overflow: hidden;
+  display: inline-block;
+}
+
+.card-header-primary .card-text{
+  background: $brand-primary !important;
+}
+
+
+/***** Datatable *******/
+.form-group.label-floating:not(.is-empty) label.control-label {
+  top: -28px;
+  left: 0;
+  font-size: 11px;
+  line-height: 1.07142857;
+}
+
+.card .card-content {
+  padding: 15px 20px;
+  position: relative;
+}
+
+.datatable-length {
+  width: 50%;
+}
+/************************/

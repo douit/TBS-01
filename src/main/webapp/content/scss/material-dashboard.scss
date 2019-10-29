@@ -62,6 +62,10 @@
 @import "dashboard/misc";
 @import "dashboard/pages";
 
+@import "dashboard/util";
+// Custom
+@import "dashboard/datatable";
+
  // Components for PRO
  @import "dashboard/social-buttons";
  @import "dashboard/fileupload";

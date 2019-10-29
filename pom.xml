@@ -103,6 +103,7 @@
     </dependencyManagement>
 
     <dependencies>
+
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -342,6 +343,26 @@
             <artifactId>httpclient</artifactId>
             <version>4.5.10</version>
         </dependency>
+
+        <dependency>
+            <groupId>javax.el</groupId>
+            <artifactId>javax.el-api</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.darrachequesne</groupId>
+            <artifactId>spring-data-jpa-datatables</artifactId>
+            <!--<version>4.0</version>-->
+            <version>5.0.0</version>
+            <!-- <exclusions>
+                <exclusion>
+                    <groupId>javax.el</groupId>
+                    <artifactId>javax.el-api</artifactId>
+                </exclusion>
+            </exclusions> -->
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -820,7 +841,7 @@
                     <optional>true</optional>
                 </dependency>
             </dependencies>
-            <build>
+            <!--<build>
                 <plugins>
                     <plugin>
                         <groupId>com.github.eirslett</groupId>
@@ -859,7 +880,7 @@
                         </executions>
                     </plugin>
                 </plugins>
-            </build>
+            </build>-->
             <properties>
                 <!-- default Spring profiles -->
                 <spring.profiles.active>dev${profile.no-liquibase}</spring.profiles.active>

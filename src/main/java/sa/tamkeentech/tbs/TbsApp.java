@@ -1,5 +1,7 @@
 package sa.tamkeentech.tbs;
 
+import org.springframework.data.jpa.datatables.repository.DataTablesRepositoryFactoryBean;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import sa.tamkeentech.tbs.config.ApplicationProperties;
 import sa.tamkeentech.tbs.config.DefaultProfileUtil;
 
@@ -22,6 +24,7 @@ import java.util.Collection;
 
 @SpringBootApplication
 @EnableConfigurationProperties({LiquibaseProperties.class, ApplicationProperties.class})
+@EnableJpaRepositories(basePackages = {"sa.tamkeentech.tbs.repository"}, repositoryFactoryBeanClass = DataTablesRepositoryFactoryBean.class)
 public class TbsApp implements InitializingBean {
 
     private static final Logger log = LoggerFactory.getLogger(TbsApp.class);

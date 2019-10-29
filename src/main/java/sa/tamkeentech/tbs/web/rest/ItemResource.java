@@ -1,5 +1,8 @@
 package sa.tamkeentech.tbs.web.rest;
 
+import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
+import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
+import org.springframework.security.access.prepost.PreAuthorize;
 import sa.tamkeentech.tbs.service.ItemService;
 import sa.tamkeentech.tbs.web.rest.errors.BadRequestAlertException;
 import sa.tamkeentech.tbs.service.dto.ItemDTO;
@@ -114,5 +117,11 @@ public class ItemResource {
         log.debug("REST request to delete Item : {}", id);
         itemService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString())).build();
+    }
+
+    // @PreAuthorize("isAuthenticated()")
+    @GetMapping("/items/datatable")
+    public DataTablesOutput<ItemDTO> getAllItems(DataTablesInput input) {
+        return itemService.get(input);
     }
 }

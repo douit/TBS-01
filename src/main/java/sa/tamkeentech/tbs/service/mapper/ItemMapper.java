@@ -2,6 +2,7 @@ package sa.tamkeentech.tbs.service.mapper;
 
 import sa.tamkeentech.tbs.domain.*;
 import sa.tamkeentech.tbs.service.dto.ItemDTO;
+import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
 
 import org.mapstruct.*;
 
@@ -29,4 +30,6 @@ public interface ItemMapper extends EntityMapper<ItemDTO, Item> {
         item.setId(id);
         return item;
     }
+
+    DataTablesOutput<ItemDTO> toDto(DataTablesOutput<Item> all);
 }

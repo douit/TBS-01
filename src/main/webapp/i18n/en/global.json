@@ -96,7 +96,37 @@
     "ribbon": {
       "dev": "Development"
     },
-    "item-count": "Showing {{first}} - {{second}} of {{total}} items."
+    "item-count": "Showing {{first}} - {{second}} of {{total}} items.",
+    "datatable": {
+      "show_entries": "Show Entries",
+      "id": "ID",
+      "code": "Code",
+      "name": "Name",
+      "actions": "Actions",
+      "edit": "Edit",
+      "search": "Search",
+      "actions": "Actions",
+      "first": "FIRST",
+      "previous": "PREVIOUS",
+      "next": "NEXT",
+      "last": "LAST",
+      "id": "ID",
+      "request_id": "Request ID",
+      "actions": "Actions",
+      "show": "Show",
+      "entries": "Entries",
+      "search_records": "Search Records",
+      "remove": "Remove",
+      "details": "Details",
+      "edit": "Edit",
+      "view": "View",
+      "delete": "Delete",
+      "save": "Save",
+      "duplicate": "Duplicate",
+      "active": "Active",
+      "deactive": "Deactivate",
+      "total_entries": "Showing {{ from }} to {{ to }} of {{ total }} entries"
+    }
   },
   "entity": {
     "action": {

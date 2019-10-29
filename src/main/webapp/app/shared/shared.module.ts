@@ -4,10 +4,24 @@ import { FindLanguageFromKeyPipe } from './language/find-language-from-key.pipe'
 import { JhiAlertComponent } from './alert/alert.component';
 import { JhiAlertErrorComponent } from './alert/alert-error.component';
 import { HasAnyAuthorityDirective } from './auth/has-any-authority.directive';
+import { NgxDatatableModule } from '@swimlane/ngx-datatable';
+import { DatatableTotalEntriesComponent } from 'app/shared/datatable/datatable-total-entries/datatable-total-entries.component';
+import { DatatableDirective } from 'app/shared/directives/datatable.directive';
 
 @NgModule({
-  imports: [TbsSharedLibsModule],
-  declarations: [FindLanguageFromKeyPipe, JhiAlertComponent, JhiAlertErrorComponent, /*JhiLoginModalComponent,*/ HasAnyAuthorityDirective],
+  imports: [
+    TbsSharedLibsModule,
+    NgxDatatableModule
+  ],
+  declarations: [
+    FindLanguageFromKeyPipe,
+    JhiAlertComponent,
+    JhiAlertErrorComponent,
+    /*JhiLoginModalComponent,*/
+    HasAnyAuthorityDirective,
+    DatatableTotalEntriesComponent,
+    DatatableDirective
+  ],
   // entryComponents: [JhiLoginModalComponent],
   exports: [
     TbsSharedLibsModule,
@@ -16,6 +30,9 @@ import { HasAnyAuthorityDirective } from './auth/has-any-authority.directive';
     JhiAlertErrorComponent,
     // JhiLoginModalComponent,
     HasAnyAuthorityDirective,
+    NgxDatatableModule,
+    DatatableTotalEntriesComponent,
+    DatatableDirective
   ]
 })
 export class TbsSharedModule {}

@@ -48,6 +48,28 @@
                     <input type="password" class="form-control" placeholder="Password..." name="password" id="password" formControlName="password">
                   </div>
                 </span>
+
+                                <!--<div class="checkbox">
+                                    <label class="form-check-label" for="rememberMe">
+                                        <input class="form-check-input" type="checkbox" name="rememberMe" id="rememberMe" formControlName="rememberMe">
+                                        <span jhiTranslate="login.form.rememberme">Remember me</span>
+                                    </label>
+                                </div>-->
+                                <div class="bmd-form-group">
+                                    <label class="col-md-1"></label>
+                                    <div class="col-md-11">
+                                        <div class="form-check">
+                                            <label class="form-check-label">
+                                                <input class="form-check-input" type="checkbox" value="">
+                                                 {{'login.form.rememberme' | translate}}
+                                                <span class="form-check-sign">
+                        <span class="check"></span>
+                      </span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
                             </div>
                             <div class="card-footer justify-content-center">
                                 <!--<a href="#pablo" class="btn btn-warning btn-link btn-lg">Login</a>-->

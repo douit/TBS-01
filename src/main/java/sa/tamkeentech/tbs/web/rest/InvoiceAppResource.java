@@ -16,6 +16,7 @@ import sa.tamkeentech.tbs.security.SecurityUtils;
 import sa.tamkeentech.tbs.service.InvoiceService;
 import sa.tamkeentech.tbs.service.dto.InvoiceDTO;
 import sa.tamkeentech.tbs.service.dto.OneItemInvoiceDTO;
+import sa.tamkeentech.tbs.service.dto.OneItemInvoiceRespDTO;
 import sa.tamkeentech.tbs.web.rest.errors.BadRequestAlertException;
 
 import javax.validation.Valid;
@@ -52,12 +53,12 @@ public class InvoiceAppResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/invoices")
-    public ResponseEntity<OneItemInvoiceDTO> createOneItemInvoice(@Valid @RequestBody OneItemInvoiceDTO oneItemInvoiceDTO) throws URISyntaxException {
+    public ResponseEntity<OneItemInvoiceRespDTO> createOneItemInvoice(@Valid @RequestBody OneItemInvoiceDTO oneItemInvoiceDTO) throws URISyntaxException {
         log.debug("REST request to save Invoice : {}", oneItemInvoiceDTO);
         if (oneItemInvoiceDTO.getBillNumber() != null) {
             throw new BadRequestAlertException("A new invoice cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        OneItemInvoiceDTO result = invoiceService.saveOnItemInvoice(oneItemInvoiceDTO);
+        OneItemInvoiceRespDTO result = invoiceService.saveOnItemInvoice(oneItemInvoiceDTO);
         String id = (result.getBillNumber()!= null)? result.getBillNumber().toString(): "";
         return ResponseEntity.created(new URI("/api/invoices/" + result.getBillNumber()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, id))

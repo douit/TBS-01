@@ -2,6 +2,8 @@ package sa.tamkeentech.tbs.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
+import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sa.tamkeentech.tbs.domain.Item;
@@ -85,5 +87,9 @@ public class ItemService {
 
     public Optional<Item> findByNameAndClient(String itemName, Long id) {
         return itemRepository.findByNameAndClientId(itemName, id);
+    }
+
+    public DataTablesOutput<ItemDTO> get(DataTablesInput input) {
+        return itemMapper.toDto(itemRepository.findAll(input));
     }
 }

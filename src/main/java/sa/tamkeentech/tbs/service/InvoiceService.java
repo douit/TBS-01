@@ -1,5 +1,6 @@
 package sa.tamkeentech.tbs.service;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.configurationprocessor.json.JSONException;
@@ -16,6 +17,7 @@ import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.security.SecurityUtils;
 import sa.tamkeentech.tbs.service.dto.InvoiceDTO;
 import sa.tamkeentech.tbs.service.dto.OneItemInvoiceDTO;
+import sa.tamkeentech.tbs.service.dto.OneItemInvoiceRespDTO;
 import sa.tamkeentech.tbs.service.mapper.InvoiceMapper;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
@@ -108,7 +110,7 @@ public class InvoiceService {
     }
 
     @Transactional
-    public OneItemInvoiceDTO saveOnItemInvoice(OneItemInvoiceDTO oneItemInvoiceDTO) {
+    public OneItemInvoiceRespDTO saveOnItemInvoice(OneItemInvoiceDTO oneItemInvoiceDTO) {
         // Client
         String appName = SecurityUtils.getCurrentUserLogin().orElse("");
         Optional<Client> client =  clientService.getClientByClientId(appName);
@@ -146,12 +148,34 @@ public class InvoiceService {
             .invoice(invoice)
             .build();
 
+
+        BigDecimal totalPrice = null;
+
         //Add Discount if price <> item
-        if (oneItemInvoiceDTO.getPrice().compareTo(item.get().getPrice().multiply(BigDecimal.valueOf(oneItemInvoiceDTO.getQuantity()))) < 0) {
-            BigDecimal discountAmount = item.get().getPrice().multiply(new BigDecimal(oneItemInvoiceDTO.getQuantity())).subtract(oneItemInvoiceDTO.getPrice());
-            Discount discount = Discount.builder().iPercentage(false).type(DiscountType.ITEM).value(discountAmount).build();
-            invoiceItem.setDiscount(discount);
+        if (oneItemInvoiceDTO.getPrice() != null) {
+            if (oneItemInvoiceDTO.getPrice().compareTo(item.get().getPrice().multiply(BigDecimal.valueOf(oneItemInvoiceDTO.getQuantity()))) < 0) {
+                BigDecimal discountAmount = item.get().getPrice().multiply(new BigDecimal(oneItemInvoiceDTO.getQuantity())).subtract(oneItemInvoiceDTO.getPrice());
+                Discount discount = Discount.builder().iPercentage(false).type(DiscountType.ITEM).value(discountAmount).build();
+                invoiceItem.setDiscount(discount);
+                totalPrice = oneItemInvoiceDTO.getPrice();
+            }
+        } else {
+            totalPrice = item.get().getPrice();
         }
+
+        // adding vat
+        BigDecimal totalTaxes = BigDecimal.ZERO;
+        if (CollectionUtils.isNotEmpty(item.get().getTaxes())) {
+            for (Tax tax: item.get().getTaxes()) {
+                if (tax.getRate() != null) {
+                    totalPrice = totalPrice.add(item.get().getPrice().multiply(tax.getRate()));
+                    totalTaxes = totalTaxes.add(tax.getRate());
+                }
+            }
+        }
+        // Add tax to invoice Item ToDo
+        invoiceItem.setTaxName("Total_Taxes");
+        invoiceItem.setTaxRate(totalTaxes);
 
         invoice.setInvoiceItems(Arrays.asList(invoiceItem));
         invoice = invoiceRepository.save(invoice);
@@ -160,12 +184,15 @@ public class InvoiceService {
         // Payment method
         Optional<PaymentMethod> paymentMethod = paymentMethodService.findByCode(oneItemInvoiceDTO.getPaymentMethod().getName().toUpperCase());
 
+        OneItemInvoiceRespDTO oneItemInvoiceRespDTO= OneItemInvoiceRespDTO.builder()
+            .paymentMethod(oneItemInvoiceDTO.getPaymentMethod().getId().intValue()).build();
+
         if (paymentMethod.isPresent()) {
             String paymentMethodCode = paymentMethod.get().getCode();
             switch (paymentMethodCode) {
                 case Constants.SADAD:
                     String billId = paymentService.getSadadBillAccount(invoice.getId().toString());
-                    Boolean sadadResult = false;
+                    int sadadResult;
                     try {
                         sadadResult = paymentService.sadadCall(invoice.getId().toString(), paymentService.getSadadBillAccount(billId), oneItemInvoiceDTO.getPrice());
                     } catch (IOException | JSONException e) {
@@ -173,10 +200,16 @@ public class InvoiceService {
                         throw new TbsRunTimeException("Sadad issue", e);
                     }
                     // ToDo add new exception 500 for sadad
-                    if (!sadadResult) {
+                    if (sadadResult != 200) {
+                        oneItemInvoiceRespDTO.setStatusId(sadadResult);
+                        oneItemInvoiceRespDTO.setShortDesc("error");
+                        oneItemInvoiceRespDTO.setDescription("error_message");
                         throw new TbsRunTimeException("Sadad bill creation error");
                     }
-                    oneItemInvoiceDTO.setBillNumber(billId);
+                    oneItemInvoiceRespDTO.setStatusId(1);
+                    oneItemInvoiceRespDTO.setShortDesc("success");
+                    oneItemInvoiceRespDTO.setDescription("");
+                    oneItemInvoiceRespDTO.setBillNumber(billId);
                 break;
                 case Constants.MADA:
                 case Constants.VISA:
@@ -190,7 +223,9 @@ public class InvoiceService {
             throw new TbsRunTimeException("Unknown payment method");
         }
 
-        return oneItemInvoiceDTO;
+
+
+        return oneItemInvoiceRespDTO;
     }
 
 

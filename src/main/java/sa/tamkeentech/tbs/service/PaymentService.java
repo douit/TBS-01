@@ -113,7 +113,7 @@ public class PaymentService {
     }
 
 
-    public Boolean sadadCall(String sadadBillId, String sadadAccount , BigDecimal amount) throws IOException, JSONException {
+    public int sadadCall(String sadadBillId, String sadadAccount , BigDecimal amount) throws IOException, JSONException {
         HttpClient client = HttpClientBuilder.create().build();
         HttpPost post = new HttpPost(sadadUrl);
         post.setHeader("Content-Type", "application/json");
@@ -140,10 +140,11 @@ public class PaymentService {
         post.setEntity(new StringEntity(jsonStr));
         HttpResponse response;
         response = client.execute(post);
-        if (response.getStatusLine().getStatusCode() == 200){
+       /* if (response.getStatusLine().getStatusCode() == 200){
             return true ;
         }
-            return false;
+            return false;*/
+        return response.getStatusLine().getStatusCode();
     }
 
     public String creditCardCall( String sadadAccount , BigDecimal amount , String url) throws IOException, JSONException {
@@ -165,7 +166,9 @@ public class PaymentService {
     }
 
     public String getSadadBillAccount(String billId) {
-        return sadadAccountPrefix.concat(String.format("%012d", new BigInteger(billId)));
+        // no prefix
+        //return sadadAccountPrefix.concat(String.format("%010d", new BigInteger(billId)));
+        return String.format("%010d", new BigInteger(billId));
     }
 
 }

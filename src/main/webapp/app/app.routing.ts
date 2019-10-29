@@ -19,6 +19,23 @@ export const AppRoutes: Routes = [
       // loadChildren: './tbs-landing/tbs-landing.module#TbsLandingModule'
     }]
     }, {
+      path: 'item',
+      component: AdminLayoutComponent,
+      canActivate: [UserRouteAccessService],
+      loadChildren: () => import('./item/item.module').then(m => m.TbsposItemModule)
+    },
+    {
+      path: 'invoice',
+      component: AdminLayoutComponent,
+      canActivate: [UserRouteAccessService],
+      loadChildren: () => import('./invoice/invoice.module').then(m => m.TbsposInvoiceModule)
+    },
+    {
+      path: 'payment',
+      component: AdminLayoutComponent,
+      canActivate: [UserRouteAccessService],
+      loadChildren: () => import('./payment/payment.module').then(m => m.TbsposPaymentModule)
+    }, {
       path: '',
       component: AdminLayoutComponent,
       canActivate: [UserRouteAccessService],
