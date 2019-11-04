@@ -83,7 +83,11 @@ public class PaymentMethodService {
         paymentMethodRepository.deleteById(id);
     }
 
-    Optional<PaymentMethod> findByCode(String code)  {
+    public Optional<PaymentMethod> findById(Long id)  {
+        return paymentMethodRepository.findById(id);
+    }
+
+    public Optional<PaymentMethod> findByCode(String code)  {
         return paymentMethodRepository.findByCode(code);
     }
 }

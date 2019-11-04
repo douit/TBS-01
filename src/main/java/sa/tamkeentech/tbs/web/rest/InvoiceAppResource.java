@@ -58,7 +58,7 @@ public class InvoiceAppResource {
         if (oneItemInvoiceDTO.getBillNumber() != null) {
             throw new BadRequestAlertException("A new invoice cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        OneItemInvoiceRespDTO result = invoiceService.saveOnItemInvoice(oneItemInvoiceDTO);
+        OneItemInvoiceRespDTO result = invoiceService.saveOneItemInvoice(oneItemInvoiceDTO);
         String id = (result.getBillNumber()!= null)? result.getBillNumber().toString(): "";
         return ResponseEntity.created(new URI("/api/invoices/" + result.getBillNumber()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, id))

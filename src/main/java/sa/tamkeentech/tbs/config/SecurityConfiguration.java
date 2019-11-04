@@ -65,10 +65,11 @@ public class SecurityConfiguration {
                 }
             });
             httpSecurity.
-                antMatcher("/api/app/invoices**").// change this to invoicesApp ToDO !!!!
+                antMatcher("/billing/createbill**").// change this to invoicesApp ToDO !!!!
                 csrf().disable().
                 sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).
                 and().addFilter(filter).authorizeRequests().anyRequest().authenticated();
+
         }
     }
 
@@ -117,7 +118,9 @@ public class SecurityConfiguration {
                 .antMatchers("/i18n/**")
                 .antMatchers("/content/**")
                 .antMatchers("/swagger-ui/index.html")
-                .antMatchers("/test/**");
+                .antMatchers("/test/**")
+                .antMatchers("/h2-console/**")
+                .antMatchers("/sadad/paymentnotification**");
         }
 
         @Override

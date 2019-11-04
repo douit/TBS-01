@@ -1,0 +1,8 @@
+id;name;description;price;default_quantity;category_id;client_id;created_by;created_date;last_modified_by;last_modified_date
+2;84fd87e3-aff6-4246-b93d-7f804d1d3d95;مستندات الخبرة;550;1;1;3;system;2019-09-15T04:44:38;system;2019-09-15T04:44:38
+3;ab37656a-fff6-4ce5-bcbc-e7e594694d6a;الوثائق الثبوتية;522.5;1;1;3;system;2019-09-15T04:44:38;system;2019-09-15T04:44:38
+4;696f1bed-83d6-4282-bc4b-b707cbaa1689;شهادة أكاديمية;506;1;1;3;system;2019-09-15T04:44:38;system;2019-09-15T04:44:38
+5;1f5e38f9-cd76-4676-8509-d3f85c646899;شهادة مهنية;429;1;1;3;system;2019-09-15T04:44:38;system;2019-09-15T04:44:38
+6;268db7be-8270-40df-b2ae-83cbf2a74a4c;رخصة مهنية;429;1;1;3;system;2019-09-15T04:44:38;system;2019-09-15T04:44:38
+7;628c8e05-0a4f-4b96-90dd-d1cb8cfb823d;فحص ما قبل التوظيف;429;1;1;3;system;2019-09-15T04:44:38;system;2019-09-15T04:44:38
+8;012fb2ec-fe12-47d0-ba48-ec956c05b3e7;الفحص الأمني;352;1;1;3;system;2019-09-15T04:44:38;system;2019-09-15T04:44:38

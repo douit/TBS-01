@@ -28,7 +28,7 @@ public class OneItemInvoiceDTO implements Serializable {
     @NotBlank
     private String customerId;//req
 
-    @NotBlank
+    // @NotBlank
     private String customerIdType;//req
 
     private String customerName;//req
@@ -49,7 +49,7 @@ public class OneItemInvoiceDTO implements Serializable {
     private Integer quantity;//req
 
     @NotNull
-    private PaymentMethodDTO paymentMethod; // req name-code? + RESP
+    private Long paymentMethodId; // req name-code? + RESP
 
     private String statusId; //RESP
 

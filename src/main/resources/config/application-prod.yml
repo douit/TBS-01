@@ -28,20 +28,21 @@ management:
 spring:
   devtools:
     restart:
-      enabled: false
+      enabled: true
     livereload:
       enabled: false
   datasource:
-    type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:postgresql://localhost:5432/TBS
-    username: TBS
-    password:
-    hikari:
-      poolName: Hikari
-      auto-commit: false
+#    type: com.zaxxer.hikari.HikariDataSource
+    url: jdbc:h2:file:/home/developer/h2
+    driverClassName: org.h2.Driver
+    username: sa
+    password: password
+#    hikari:
+#      poolName: Hikari
+#      auto-commit: false
   jpa:
-    database-platform: io.github.jhipster.domain.util.FixedPostgreSQL95Dialect
-    database: POSTGRESQL
+    database-platform: org.hibernate.dialect.H2Dialect
+#    database: POSTGRESQL
     show-sql: false
     properties:
       hibernate.id.new_generator_mappings: true
@@ -49,6 +50,7 @@ spring:
       hibernate.cache.use_second_level_cache: true
       hibernate.cache.use_query_cache: false
       hibernate.generate_statistics: false
+      hibernate.dialect: org.hibernate.dialect.H2Dialect
   # Replace by 'prod, faker' to add the faker context and have sample data loaded in production
   liquibase:
     contexts: prod
@@ -81,11 +83,11 @@ spring:
 #        ciphers: TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 ,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256 ,TLS_DHE_RSA_WITH_AES_256_GCM_SHA384 ,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,TLS_DHE_RSA_WITH_AES_128_CBC_SHA256,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA256,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_RSA_WITH_AES_256_CBC_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA,TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA,TLS_RSA_WITH_CAMELLIA_256_CBC_SHA,TLS_DHE_RSA_WITH_CAMELLIA_128_CBC_SHA,TLS_RSA_WITH_CAMELLIA_128_CBC_SHA
 # ===================================================================
 server:
-  port: 8080
-  compression:
-    enabled: true
-    mime-types: text/html,text/xml,text/plain,text/css, application/javascript, application/json
-    min-response-size: 1024
+  port: 8081
+#  compression:
+#    enabled: true
+#    mime-types: text/html,text/xml,text/plain,text/css, application/javascript, application/json
+#    min-response-size: 1024
 
 # ===================================================================
 # JHipster specific properties
@@ -101,6 +103,13 @@ jhipster:
     ehcache: # Ehcache configuration
       time-to-live-seconds: 3600 # By default objects stay 1 hour in the cache
       max-entries: 1000 # Number of objects in each cache entry
+  cors:
+    allowed-origins: '*'
+    allowed-methods: '*'
+    allowed-headers: '*'
+    exposed-headers: 'Link,X-Total-Count'
+    allow-credentials: true
+    max-age: 1800
   security:
     remember-me:
       # security key (this key should be unique for your application, and kept secret)
@@ -131,5 +140,7 @@ jhipster:
 # ===================================================================
 
 # application:
+tbs:
+  payment:
     sadad-url: http://10.4.7.61:2020/sender/api/sadad/billloadrq
     sadad-application-id: '1'

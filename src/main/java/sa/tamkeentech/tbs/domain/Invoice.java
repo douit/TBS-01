@@ -17,7 +17,7 @@ import java.util.Set;
 import sa.tamkeentech.tbs.domain.enumeration.InvoiceStatus;
 
 /**
- * The Employee entity.
+ * The Invoice entity.
  */
 @Entity
 @Table(name = "invoice")
@@ -32,8 +32,9 @@ public class Invoice extends AbstractAuditingEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGeneratorInvoice")
-    @SequenceGenerator(name = "sequenceGeneratorInvoice")
+    /*@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGeneratorInvoice")
+    @SequenceGenerator(name = "sequenceGeneratorInvoice")*/
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Enumerated(EnumType.STRING)

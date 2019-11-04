@@ -17,7 +17,7 @@
     -->
     <changeSet id="00000000000001" author="Ahmed B">
         <createTable tableName="users">
-            <column name="id" type="bigint" autoIncrement="${autoIncrement}">
+            <column name="id" type="bigint" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="login" type="varchar(50)">
@@ -117,7 +117,7 @@
                   separator=";"
                   tableName="user_authority"/>
         <createTable tableName="persistent_audit_event">
-            <column name="event_id" type="bigint" autoIncrement="${autoIncrement}">
+            <column name="event_id" type="bigint" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="principal" type="varchar(50)">
@@ -160,7 +160,7 @@
 
     <changeSet author="Ahmed B" id="00000000000002" context="test">
         <createTable tableName="date_time_wrapper">
-            <column autoIncrement="${autoIncrement}" name="id" type="BIGINT">
+            <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true" primaryKeyName="date_time_wrapperPK"/>
             </column>
             <column name="instant" type="timestamp"/>

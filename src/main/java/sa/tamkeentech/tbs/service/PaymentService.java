@@ -52,7 +52,7 @@ public class PaymentService {
     private String sadadAccountPrefix;
 
     @Value("${tbs.payment.sadad-application-id}")
-    private String sadadApplicationId;
+    private Long sadadApplicationId;
 
     @Value("${tbs.payment.credit-card-url}")
     private String creditCardUrl;
@@ -113,7 +113,7 @@ public class PaymentService {
     }
 
 
-    public int sadadCall(String sadadBillId, String sadadAccount , BigDecimal amount) throws IOException, JSONException {
+    public int sadadCall(Long sadadBillId, String sadadAccount , BigDecimal amount) throws IOException, JSONException {
         HttpClient client = HttpClientBuilder.create().build();
         HttpPost post = new HttpPost(sadadUrl);
         post.setHeader("Content-Type", "application/json");
@@ -124,11 +124,13 @@ public class PaymentService {
         billInfoContent.put("billNumber", sadadBillId ); // autoincrement
         billInfoContent.put("billAccount", sadadAccount); // Unique 15 digits
         billInfoContent.put("amount",amount);
-        Calendar c = Calendar.getInstance();
-        c.add(Calendar.HOUR, 3);
-        c.add(Calendar.MINUTE, 2);
-        String dueDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(c.getTime());
+        Calendar c1 = Calendar.getInstance();
+        // c.add(Calendar.HOUR, 3);
+        // ToDO delete +35 work arround !!!!
+        c1.add(Calendar.MINUTE, 35);
+        String dueDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(c1.getTime());
         billInfoContent.put("duedate", dueDate);
+        Calendar c = Calendar.getInstance();
         c.add(Calendar.DATE, 2);
         String expiryDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(c.getTime());
         billInfoContent.put("expirydate",expiryDate);
@@ -144,6 +146,13 @@ public class PaymentService {
             return true ;
         }
             return false;*/
+        log.debug("----Sadad request : {}", jsonStr);
+        log.info("----Sadad response status code : {}", response.getStatusLine().getStatusCode());
+        if (response.getEntity() != null) {
+            log.debug("----Sadad response content : {}", response.getEntity().getContent());
+            log.debug("----Sadad response entity : {}", response.getEntity().toString());
+        }
+
         return response.getStatusLine().getStatusCode();
     }
 
@@ -165,10 +174,18 @@ public class PaymentService {
         return responseString.substring(8,responseString.indexOf( ',' ) - 1) ;
     }
 
-    public String getSadadBillAccount(String billId) {
+    public Long getSadadBillAccount(Long billId) {
         // no prefix
         //return sadadAccountPrefix.concat(String.format("%010d", new BigInteger(billId)));
-        return String.format("%010d", new BigInteger(billId));
+        return (billId + 7000000065l);
+        // return String.format("%010d", new BigInteger(account.toString()));
+    }
+
+    public Long getSadadBillId(Long billId) {
+        // no prefix
+        //return sadadAccountPrefix.concat(String.format("%010d", new BigInteger(billId)));
+        return (billId + 4065l);
+        // return String.format("%010d", new BigInteger(account.toString()));
     }
 
 }

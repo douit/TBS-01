@@ -16,6 +16,7 @@ import sa.tamkeentech.tbs.domain.enumeration.InvoiceStatus;
 import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.security.SecurityUtils;
 import sa.tamkeentech.tbs.service.dto.InvoiceDTO;
+import sa.tamkeentech.tbs.service.dto.InvoiceStatusDTO;
 import sa.tamkeentech.tbs.service.dto.OneItemInvoiceDTO;
 import sa.tamkeentech.tbs.service.dto.OneItemInvoiceRespDTO;
 import sa.tamkeentech.tbs.service.mapper.InvoiceMapper;
@@ -23,7 +24,9 @@ import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Optional;
 
 /**
@@ -110,7 +113,7 @@ public class InvoiceService {
     }
 
     @Transactional
-    public OneItemInvoiceRespDTO saveOnItemInvoice(OneItemInvoiceDTO oneItemInvoiceDTO) {
+    public OneItemInvoiceRespDTO saveOneItemInvoice(OneItemInvoiceDTO oneItemInvoiceDTO) {
         // Client
         String appName = SecurityUtils.getCurrentUserLogin().orElse("");
         Optional<Client> client =  clientService.getClientByClientId(appName);
@@ -120,7 +123,7 @@ public class InvoiceService {
         if (!customer.isPresent()) {
             customer = Optional.of(Customer.builder()
                 .identity(oneItemInvoiceDTO.getCustomerId())
-                .identityType(IdentityType.valueOf(oneItemInvoiceDTO.getCustomerIdType().toUpperCase()))
+                // .identityType(IdentityType.valueOf(oneItemInvoiceDTO.getCustomerIdType().toUpperCase()))
                 .name(oneItemInvoiceDTO.getCustomerName())
                 .contact(Contact.builder().email(oneItemInvoiceDTO.getEmail()).phone(oneItemInvoiceDTO.getMobile()).build())
             .build());
@@ -185,19 +188,19 @@ public class InvoiceService {
 
         // Payment
         // Payment method
-        Optional<PaymentMethod> paymentMethod = paymentMethodService.findByCode(oneItemInvoiceDTO.getPaymentMethod().getName().toUpperCase());
+        Optional<PaymentMethod> paymentMethod = paymentMethodService.findById(oneItemInvoiceDTO.getPaymentMethodId());
 
         OneItemInvoiceRespDTO oneItemInvoiceRespDTO= OneItemInvoiceRespDTO.builder()
-            .paymentMethod(oneItemInvoiceDTO.getPaymentMethod().getId().intValue()).build();
+            .paymentMethod(oneItemInvoiceDTO.getPaymentMethodId()).build();
 
         if (paymentMethod.isPresent()) {
             String paymentMethodCode = paymentMethod.get().getCode();
             switch (paymentMethodCode) {
                 case Constants.SADAD:
-                    String billId = paymentService.getSadadBillAccount(invoice.getId().toString());
+                    String billId = paymentService.getSadadBillAccount(invoice.getId()).toString();
                     int sadadResult;
                     try {
-                        sadadResult = paymentService.sadadCall(invoice.getId().toString(), paymentService.getSadadBillAccount(billId), oneItemInvoiceDTO.getPrice());
+                        sadadResult = paymentService.sadadCall(paymentService.getSadadBillId(invoice.getId()), paymentService.getSadadBillAccount(invoice.getId()).toString(), totalPrice);
                     } catch (IOException | JSONException e) {
                         // ToDo add new exception 500 for sadad
                         throw new TbsRunTimeException("Sadad issue", e);
@@ -226,9 +229,28 @@ public class InvoiceService {
             throw new TbsRunTimeException("Unknown payment method");
         }
 
-
-
         return oneItemInvoiceRespDTO;
+    }
+
+
+    public InvoiceStatusDTO getOneItemInvoice(Long billNumber) {
+        Optional<Invoice> invoice = invoiceRepository.findById(billNumber-7000000065l);
+        if (!invoice.isPresent()) {
+            throw new TbsRunTimeException("Bill does not exist");
+        }
+        InvoiceItem invoiceItem = invoice.get().getInvoiceItems().get(0);
+        String issueDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date.from(invoice.get().getCreatedDate()));
+        return InvoiceStatusDTO.builder()
+            .billNumber(billNumber.toString())
+            .vat(invoice.get().getAmount().subtract(invoice.get().getSubtotal()))
+            .vatNumber("300879111900003")
+            .price(invoice.get().getSubtotal())
+            .itemName(invoiceItem.getItem().getName())
+            .quantity(1)
+            .billerId(156)
+            .companyName("تمكين للتقنيات")
+            .issueDate(issueDate)
+            .build();
     }
 
 
