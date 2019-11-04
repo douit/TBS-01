@@ -14,6 +14,14 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class NotifiReqDTO {
 
+    /*[NotifiReqDTO(
+        billId=4105,
+        billAccount=7000000105,
+        amount=577.50,
+        paymentDate=10/31/2019 12:55:24 PM,
+        bankId=AAALSARI,
+        transactionPaymentId=2317423415), sadad, Sa@2018#2000]*/
+
     private  String billId;
     private String billAccount;
     private String amount;
