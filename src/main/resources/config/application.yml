@@ -157,5 +157,5 @@ tbs:
   payment:
     sadad-url: 'http://10.60.75.60:1001/api/sadad/billloadrq'
     sadad-account-prefix: '123'
-    sadad-application-id: '0'
+    sadad-application-id: 0
     credit-card-url: 'http://172.25.70.72:301/api/OnlinePayment'

@@ -63,6 +63,7 @@
         <dropDefaultValue tableName="invoice" columnName="due_date" columnDataType="datetime"/>
     </changeSet>
 
+
     <changeSet id="20190915212815-1-relations" author="Ahmed B">
 
     </changeSet>

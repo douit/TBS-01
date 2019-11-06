@@ -69,7 +69,7 @@ spring:
     cache: false
 
 server:
-  port: 8080
+  port: 8081
 
 # ===================================================================
 # JHipster specific properties
@@ -120,3 +120,7 @@ jhipster:
 # ===================================================================
 
 # application:
+tbs:
+  payment:
+    sadad-url: http://10.4.7.61:2020/sender/api/sadad/billloadrq
+    sadad-application-id: 1

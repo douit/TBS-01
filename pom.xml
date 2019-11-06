@@ -5,7 +5,7 @@
 
     <groupId>sa.tamkeentech.tbs</groupId>
     <artifactId>tbs</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1-Postgres</version>
     <packaging>jar</packaging>
     <name>TBS</name>
 

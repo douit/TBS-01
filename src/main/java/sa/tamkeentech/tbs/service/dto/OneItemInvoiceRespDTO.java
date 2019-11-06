@@ -33,7 +33,7 @@ public class OneItemInvoiceRespDTO implements Serializable {
     private String description;
     private String billNumber;
     private String link ;
-    private int paymentMethod ;
+    private Long paymentMethod ;
 
 
 

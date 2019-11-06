@@ -20,8 +20,9 @@ public class APIKeyAuthFilter extends AbstractPreAuthenticatedProcessingFilter {
 
     @Override
     protected Object getPreAuthenticatedPrincipal(HttpServletRequest request) {
-        // return request.getHeader(principalRequestHeader);
-        Optional<Client> client =  clientService.getClientBySecretKey(request.getHeader(principalRequestHeader));
+        // temp as client does not send
+        // Optional<Client> client =  clientService.getClientBySecretKey(request.getHeader(principalRequestHeader));
+        Optional<Client> client =  clientService.getClientBySecretKey("06400E55EF3DD14AC6477E56681BF609B0A99B3620CB648CC4E8EF794F9C3AE8");
         return client.map(Client::getClientId).orElse("");
     }
 

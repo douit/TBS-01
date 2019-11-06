@@ -7,14 +7,15 @@
                         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
     <changeSet id="00000000000000" author="Ahmed B">
-        <createSequence sequenceName="sequence_generator" startValue="1050" incrementBy="1"/>
-        <createSequence sequenceName="sequence_generator_invoice" startValue="7000000200" incrementBy="1"/>
-    </changeSet>
+    <!-- Here will start with 1001 and  7000000201-->
+    <!--<createSequence sequenceName="sequence_generator" startValue="1050" incrementBy="1"/>-->
+    <!--<createSequence sequenceName="sequence_generator_invoice" startValue="7000000200" incrementBy="1"/>-->
+</changeSet>
 
-    <!--
-        JHipster core tables.
-        The initial schema has the '00000000000001' id, so that it is over-written if we re-generate it.
-    -->
+<!--
+    JHipster core tables.
+    The initial schema has the '00000000000001' id, so that it is over-written if we re-generate it.
+-->
     <changeSet id="00000000000001" author="Ahmed B">
         <createTable tableName="users">
             <column name="id" type="bigint" autoIncrement="${autoIncrement}">

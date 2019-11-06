@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <property name="now" value="now()" dbms="h2"/>
+
+    <changeSet id="insert-h2-1" author="Ahmed B">
+        <sqlFile dbms="postgresql" path="config/liquibase/data/dump-prod-h2.sql" />
+    </changeSet>
+
+    <changeSet id="alterSequence-1" author="Ahmed B">
+        <!-- ToDo update sequences after data migration  -->
+        <!--<sql dbms="postgresql">select setval('invoice_item_id_seq', max(id)+1) from jhi_user</sql>-->
+        <!-- First row will be +1 -->
+       <!-- <sql dbms="postgresql">select setval('invoice_id_seq', 7000000200)</sql>-->
+        <!--<sql dbms="h2">alter sequence invoice_id_seq restart with (select max(id)+1 from jhi_user)</sql>-->
+    </changeSet>
+
+</databaseChangeLog>

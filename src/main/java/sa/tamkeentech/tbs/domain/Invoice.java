@@ -1,6 +1,11 @@
 package sa.tamkeentech.tbs.domain;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.*;
+import lombok.Data;
+import lombok.Builder;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.EqualsAndHashCode;
+
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -14,6 +19,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.hibernate.annotations.GenerationTime;
+import org.hibernate.annotations.Generated;
 import sa.tamkeentech.tbs.domain.enumeration.InvoiceStatus;
 
 /**
@@ -31,9 +38,13 @@ public class Invoice extends AbstractAuditingEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    public static final long DIFF = 6999996000L;
+
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGeneratorInvoice")
-    @SequenceGenerator(name = "sequenceGeneratorInvoice")
+    /*@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequence_generator_invoice")
+    @SequenceGenerator(name = "sequence_generator_invoice", sequenceName="sequence_generator_invoice", allocationSize = 1)*/
+    // No rollback for sequence so invoice will be created even if Sadad is down
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Enumerated(EnumType.STRING)
