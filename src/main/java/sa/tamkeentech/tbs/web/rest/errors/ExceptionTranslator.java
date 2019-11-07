@@ -130,7 +130,7 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
     }
 
     @ExceptionHandler
-    public ResponseEntity<Problem> innodevcoRuntime(TbsRunTimeException ex, NativeWebRequest request) {
+    public ResponseEntity<Problem> tbsRuntime(TbsRunTimeException ex, NativeWebRequest request) {
         // String code = RandomString.randomAlphaNumeric(6);
         return ResponseEntity.badRequest()
             .body(Problem.builder()

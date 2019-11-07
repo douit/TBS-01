@@ -10,12 +10,26 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
+import sa.tamkeentech.tbs.config.Constants;
+import sa.tamkeentech.tbs.domain.Invoice;
 import sa.tamkeentech.tbs.domain.Payment;
+import sa.tamkeentech.tbs.domain.PaymentMethod;
+import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
+import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.repository.PaymentRepository;
-import sa.tamkeentech.tbs.service.PaymentService;
+import sa.tamkeentech.tbs.service.dto.NotifiReqDTO;
+import sa.tamkeentech.tbs.service.dto.NotifiRespDTO;
 import sa.tamkeentech.tbs.service.dto.PaymentDTO;
+import sa.tamkeentech.tbs.service.dto.TokenResponseDTO;
 import sa.tamkeentech.tbs.service.mapper.PaymentMapper;
 
 import org.apache.http.client.HttpClient;
@@ -23,7 +37,6 @@ import org.apache.http.impl.client.HttpClientBuilder;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.LinkedList;
@@ -45,6 +58,11 @@ public class PaymentService {
 
     private final PaymentMapper paymentMapper;
 
+    private final InvoiceRepository invoiceRepository;
+
+    private final PaymentMethodService paymentMethodService;
+
+
     @Value("${tbs.payment.sadad-url}")
     private String sadadUrl;
 
@@ -57,9 +75,13 @@ public class PaymentService {
     @Value("${tbs.payment.credit-card-url}")
     private String creditCardUrl;
 
-    public PaymentService(PaymentRepository paymentRepository, PaymentMapper paymentMapper) {
+    public static final Long DIFF_ACCOUNT_BILL_ID = 6999996000l;
+
+    public PaymentService(PaymentRepository paymentRepository, PaymentMapper paymentMapper, InvoiceRepository invoiceRepository, PaymentMethodService paymentMethodService) {
         this.paymentRepository = paymentRepository;
         this.paymentMapper = paymentMapper;
+        this.invoiceRepository = invoiceRepository;
+        this.paymentMethodService = paymentMethodService;
     }
 
     /**
@@ -186,8 +208,61 @@ public class PaymentService {
         // no prefix
         // return sadadAccountPrefix.concat(String.format("%010d", new BigInteger(billId)));
         // return (billId + 4065l);
-        return billId;
+        // return billId;
+        return billId - DIFF_ACCOUNT_BILL_ID;
         // return String.format("%010d", new BigInteger(account.toString()));
+    }
+
+    //  diff = 7000000065l - 4065l =  6999996000
+
+
+    @Transactional
+    public ResponseEntity<NotifiRespDTO> sendPaymentNotification(NotifiReqDTO req, String apiKey, String apiSecret) {
+        log.debug("----Sadad Notification : {}", req);
+        // Optional<Invoice> invoice = invoiceRepository.findById(Long.parseLong(req.getBillAccount())-7000000065l);
+        Optional<Invoice> invoice = invoiceRepository.findById(Long.parseLong(req.getBillAccount()));
+        NotifiRespDTO resp = NotifiRespDTO.builder().statusId(200).build();
+        for (Payment payment : invoice.get().getPayments()) {
+            if (payment.getStatus() == PaymentStatus.SUCCESSFUL) {
+                log.warn("Payment already received, Exit without updating Client app");
+                return new ResponseEntity<NotifiRespDTO>(resp,  HttpStatus.OK);
+            }
+        }
+
+        Optional<PaymentMethod> paymentMethod = paymentMethodService.findByCode(Constants.SADAD);
+        Payment payment = Payment.builder()
+            .invoice(invoice.get())
+            .status(PaymentStatus.SUCCESSFUL)
+            .amount(new BigDecimal(req.getAmount()))
+            .paymentMethod(paymentMethod.get())
+            //.expirationDate()
+            .build();
+        paymentRepository.save(payment);
+
+        if (payment.getId() != null) {
+            log.info("Successful TBS update bill: {}", req.getBillAccount());
+            RestTemplate rt1 = new RestTemplate();
+            HttpHeaders headers1 = new HttpHeaders();
+            headers1.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            MultiValueMap<String, String> map1= new LinkedMultiValueMap<String, String>();
+            map1.add("grant_type", "client_credentials");
+            map1.add("client_id", "tamkeen-billing-system");
+            //map1.add("client_secret", "06f4c17f-5c4a-492a-9a8e-a10eafec66c6"); // staging
+            map1.add("client_secret", "076a2d1c-15c6-4abf-80a7-0b181f18d617"); // production
+            org.springframework.http.HttpEntity<MultiValueMap<String, String>> request1 = new org.springframework.http.HttpEntity<MultiValueMap<String, String>>(map1, headers1);
+            //uri = "https://sso.tamkeen.land/auth/realms/tamkeen/protocol/openid-connect/token"; // staging
+            String uri = "https://accounts.wahid.sa/auth/realms/wahid/protocol/openid-connect/token"; // production
+            ResponseEntity<TokenResponseDTO> response1 = rt1.postForEntity( uri, request1 , TokenResponseDTO.class );
+            // log.info("DVS Token" +  response1.getBody().getAccess_token());
+            RestTemplate restTemplate = new RestTemplate();
+            String ResourceUrl = "http://10.60.71.16:8880/dvs/?billnumber=";
+            ResponseEntity<NotifiRespDTO> response2= restTemplate.getForEntity(ResourceUrl + req.getBillAccount() + "&paymentdate=" + req.getPaymentDate() + "&token=" + response1.getBody().getAccess_token() , NotifiRespDTO.class);
+            log.info("Succuss DVS update" + response2.getBody().getStatusId());
+            // NotifiResp resp = (NotifiResp)response2.getBody(); // only for testing
+            return new ResponseEntity<NotifiRespDTO>(resp,  HttpStatus.OK);
+        } else {
+            return new ResponseEntity<NotifiRespDTO>(resp,  HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 }

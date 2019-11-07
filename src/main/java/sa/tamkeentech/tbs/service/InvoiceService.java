@@ -132,8 +132,8 @@ public class InvoiceService {
         Invoice invoice = Invoice.builder()
             .client(client.get())
             .customer(customer.get())
-            .subtotal(oneItemInvoiceDTO.getPrice())
-            .amount(oneItemInvoiceDTO.getPrice())
+            // .subtotal(oneItemInvoiceDTO.getPrice())
+            // .amount(oneItemInvoiceDTO.getPrice())
             .status(InvoiceStatus.APPROVED)
             .build();
 
@@ -253,6 +253,5 @@ public class InvoiceService {
             .issueDate(issueDate)
             .build();
     }
-
 
 }
