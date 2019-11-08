@@ -110,7 +110,7 @@ INSERT INTO payment (id,amount,status,expiration_date,invoice_id,payment_method_
 select setval('contact_id_seq', 36);
 select setval('customer_id_seq', 36);
 select setval('discount_id_seq', 36);
-select setval('invoice_id_seq', 7000000997);
+select setval('invoice_id_seq', 7000000200);
 select setval('invoice_item_id_seq', 135);
 select setval('payment_id_seq', 1);
 

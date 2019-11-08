@@ -35,16 +35,21 @@ spring:
     serialization:
       indent-output: true
   datasource:
-    type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:postgresql://localhost:5432/tbs
-    username: postgres
-    password: postgres
-    hikari:
-      poolName: Hikari
-      auto-commit: false
+    url: jdbc:h2:file:~/Desktop/h2
+    driverClassName: org.h2.Driver
+    username: sa
+    password: password
+#    type: com.zaxxer.hikari.HikariDataSource
+#    url: jdbc:postgresql://localhost:5432/tbs
+#    username: postgres
+#    password: postgres
+#    hikari:
+#      poolName: Hikari
+#      auto-commit: false
   jpa:
-    database-platform: io.github.jhipster.domain.util.FixedPostgreSQL95Dialect
-    database: POSTGRESQL
+#    database-platform: io.github.jhipster.domain.util.FixedPostgreSQL95Dialect
+    database-platform: org.hibernate.dialect.H2Dialect
+#    database: POSTGRESQL
     show-sql: true
     properties:
       hibernate.id.new_generator_mappings: true
@@ -52,6 +57,7 @@ spring:
       hibernate.cache.use_second_level_cache: true
       hibernate.cache.use_query_cache: false
       hibernate.generate_statistics: false
+      hibernate.dialect: org.hibernate.dialect.H2Dialect
 #      hibernate.hbm2ddl.auto: update
 #      hibernate.hbm2ddl.auto: validate
   liquibase:
@@ -120,7 +126,7 @@ jhipster:
 # ===================================================================
 
 # application:
-tbs:
-  payment:
-    sadad-url: http://10.4.7.61:2020/sender/api/sadad/billloadrq
-    sadad-application-id: 1
+#tbs:
+#  payment:
+#    sadad-url: http://10.4.7.61:2020/sender/api/sadad/billloadrq
+#    sadad-application-id: 1

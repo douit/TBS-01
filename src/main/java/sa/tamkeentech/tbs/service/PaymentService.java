@@ -221,7 +221,7 @@ public class PaymentService {
         log.debug("----Sadad Notification : {}", req);
         // Optional<Invoice> invoice = invoiceRepository.findById(Long.parseLong(req.getBillAccount())-7000000065l);
         Optional<Invoice> invoice = invoiceRepository.findById(Long.parseLong(req.getBillAccount()));
-        NotifiRespDTO resp = NotifiRespDTO.builder().statusId(200).build();
+        NotifiRespDTO resp = NotifiRespDTO.builder().statusId(1).build();
         for (Payment payment : invoice.get().getPayments()) {
             if (payment.getStatus() == PaymentStatus.SUCCESSFUL) {
                 log.warn("Payment already received, Exit without updating Client app");
