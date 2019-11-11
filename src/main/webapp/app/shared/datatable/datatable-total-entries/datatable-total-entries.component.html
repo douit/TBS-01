@@ -1,4 +1,7 @@
 <div *ngIf="rowCount == 0">{{ 'global.datatable.total_entries' | translate: { from: 0, to: 0, total: 0 } }}</div>
-<div *ngIf="rowCount > 0">
-    {{ 'global.datatable.total_entries' | translate: { from: 1 + (offset * pageSize), to: (curPage * pageSize) < rowCount ? (curPage * pageSize) : rowCount, total: rowCount } }}
+<div *ngIf="rowCount > 0 && (curPage * pageSize) < rowCount">
+    {{ 'global.datatable.total_entries' | translate: { from: 1 + (offset * pageSize), to: (curPage * pageSize), total: rowCount } }}
+</div>
+<div *ngIf="rowCount > 0 && (curPage * pageSize) >= rowCount">
+    {{ 'global.datatable.total_entries' | translate: { from: 1 + (offset * pageSize), to: rowCount, total: rowCount } }}
 </div>
