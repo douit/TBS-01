@@ -85,7 +85,8 @@
         <jacoco.itReportFile>${jacoco.itReportFolder}/integrationTest.exec</jacoco.itReportFile>
         <junit.utReportFolder>${project.testresult.directory}/test</junit.utReportFolder>
         <junit.itReportFolder>${project.testresult.directory}/integrationTest</junit.itReportFolder>
-        <lombok.version>1.16.20</lombok.version>
+        <!--<lombok.version>1.16.20</lombok.version>-->
+        <lombok.version>1.18.6</lombok.version>
         <!-- jhipster-needle-maven-property -->
     </properties>
 
