@@ -51,7 +51,7 @@ public class Invoice extends AbstractAuditingEntity implements Serializable {
     @Column(name = "status")
     private InvoiceStatus status;
 
-    @Column(name = "number")
+    @Column(name = "bill_id")
     private Long number;
 
     @Column(name = "note")
@@ -60,11 +60,17 @@ public class Invoice extends AbstractAuditingEntity implements Serializable {
     @Column(name = "due_date")
     private Instant dueDate;
 
+    @Column(name = "expiry_date")
+    private Instant expiryDate;
+
     @Column(name = "subtotal", precision = 21, scale = 2)
     private BigDecimal subtotal;
 
-    @Column(name = "amount", precision = 21, scale = 2)
+    @Column(name = "grand_total", precision = 21, scale = 2)
     private BigDecimal amount;
+
+    @Column(name = "tax_fees", precision = 21, scale = 2)
+    private BigDecimal taxFees;
 
     @OneToOne
     @JoinColumn(unique = true)

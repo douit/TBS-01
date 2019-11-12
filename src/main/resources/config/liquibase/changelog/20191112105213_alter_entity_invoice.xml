@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <property name="now" value="now()" dbms="h2"/>
+
+
+    <changeSet id="20191112105213-1-change1" author="Ahmed B" context="faker">
+        <!--<renameColumn catalogName="public"-->
+        <renameColumn
+                      columnDataType="decimal(21,2)"
+                      newColumnName="grand_total"
+                      oldColumnName="amount"
+                      remarks=""
+                      schemaName="public"
+                      tableName="invoice"/>
+        <renameColumn
+            columnDataType="bigint"
+            newColumnName="bill_id"
+            oldColumnName="number"
+            remarks=""
+            schemaName="public"
+            tableName="invoice"/>
+    </changeSet>
+
+    <changeSet id="20191112105213-1-change2" author="Ahmed B" context="faker">
+        <addColumn
+            schemaName="public"
+            tableName="invoice">
+            <column name="tax_fees" type="decimal(21,2)"  afterColumn="subtotal"/>
+        </addColumn>
+       <!-- <modifySql>
+            <append value=" AFTER subtotal"/>
+        </modifySql>-->
+    </changeSet>
+
+
+    <changeSet id="20191112105213-1-change3" author="Ahmed B" context="faker">
+        <addColumn
+            schemaName="public"
+            tableName="invoice">
+            <column name="expiry_date" type="datetime" afterColumn="due_date"/>
+        </addColumn>
+       <!-- <modifySql>
+            <append value=" AFTER due_date"/>
+        </modifySql>-->
+    </changeSet>
+
+</databaseChangeLog>

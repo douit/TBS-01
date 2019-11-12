@@ -12,7 +12,7 @@ export interface IInvoice {
   subtotal?: number;
   amount?: number;
   discountId?: number;
-  customerId?: number;
+  customerId?: string;
   invoiceItems?: IInvoiceItem[];
   payments?: IPayment[];
   clientId?: number;
@@ -28,7 +28,7 @@ export class Invoice implements IInvoice {
     public subtotal?: number,
     public amount?: number,
     public discountId?: number,
-    public customerId?: number,
+    public customerId?: string,
     public invoiceItems?: IInvoiceItem[],
     public payments?: IPayment[],
     public clientId?: number

@@ -21,7 +21,7 @@ public class InvoiceDTO implements Serializable {
 
     private Long id;
 
-    private Long customerId;
+    private String customerId;
 
     private InvoiceStatus status;
 
