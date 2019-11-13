@@ -50,4 +50,16 @@
         </modifySql>-->
     </changeSet>
 
+    add new two status + default values
+    <changeSet id="20191112105213-1-change4" author="Ahmed B" context="faker">
+        <addColumn
+            schemaName="public"
+            tableName="invoice">
+            <column name="expiry_date" type="datetime" afterColumn="due_date"/>
+        </addColumn>
+        <!-- <modifySql>
+             <append value=" AFTER due_date"/>
+         </modifySql>-->
+    </changeSet>
+
 </databaseChangeLog>

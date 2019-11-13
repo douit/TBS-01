@@ -4,5 +4,6 @@ package sa.tamkeentech.tbs.domain.enumeration;
  * The InvoiceStatus enumeration.
  */
 public enum InvoiceStatus {
-    DRAFT, SENT, VIEWED, APPROVED, PARTIAL, PAID, OVERDUE
+    /*DRAFT, SENT, VIEWED, APPROVED, PARTIAL, PAID, OVERDUE*/
+    NEW, FAILED, CREATED, EXPIRED
 }

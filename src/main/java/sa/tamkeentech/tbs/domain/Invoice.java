@@ -51,6 +51,14 @@ public class Invoice extends AbstractAuditingEntity implements Serializable {
     @Column(name = "status")
     private InvoiceStatus status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_status")
+    private InvoiceStatus paymentStatus;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "notification_status")
+    private InvoiceStatus notificationStatus;
+
     @Column(name = "bill_id")
     private Long number;
 
