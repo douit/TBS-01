@@ -4,6 +4,14 @@ package sa.tamkeentech.tbs.domain.enumeration;
  * The InvoiceStatus enumeration.
  */
 public enum InvoiceStatus {
-    /*DRAFT, SENT, VIEWED, APPROVED, PARTIAL, PAID, OVERDUE*/
-    NEW, FAILED, CREATED, EXPIRED
+    NEW("New bill creation request"),
+    FAILED("bill creation was failed"),
+    CREATED("Bill was created"),
+    EXPIRED("Bill expired");
+
+    InvoiceStatus (String description) {
+        this.description = description;
+    }
+
+    String description;
 }

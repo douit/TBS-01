@@ -223,7 +223,7 @@ public class PaymentService {
         Optional<Invoice> invoice = invoiceRepository.findById(Long.parseLong(req.getBillAccount()));
         NotifiRespDTO resp = NotifiRespDTO.builder().statusId(1).build();
         for (Payment payment : invoice.get().getPayments()) {
-            if (payment.getStatus() == PaymentStatus.SUCCESSFUL) {
+            if (payment.getStatus() == PaymentStatus.PAID) {
                 log.warn("Payment already received, Exit without updating Client app");
                 return new ResponseEntity<NotifiRespDTO>(resp,  HttpStatus.OK);
             }
@@ -232,7 +232,7 @@ public class PaymentService {
         Optional<PaymentMethod> paymentMethod = paymentMethodService.findByCode(Constants.SADAD);
         Payment payment = Payment.builder()
             .invoice(invoice.get())
-            .status(PaymentStatus.SUCCESSFUL)
+            .status(PaymentStatus.PAID)
             .amount(new BigDecimal(req.getAmount()))
             .paymentMethod(paymentMethod.get())
             //.expirationDate()

@@ -22,6 +22,8 @@ import java.util.Set;
 import org.hibernate.annotations.GenerationTime;
 import org.hibernate.annotations.Generated;
 import sa.tamkeentech.tbs.domain.enumeration.InvoiceStatus;
+import sa.tamkeentech.tbs.domain.enumeration.NotificationStatus;
+import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 
 /**
  * The Employee entity.
@@ -53,11 +55,11 @@ public class Invoice extends AbstractAuditingEntity implements Serializable {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_status")
-    private InvoiceStatus paymentStatus;
+    private PaymentStatus paymentStatus;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "notification_status")
-    private InvoiceStatus notificationStatus;
+    private NotificationStatus notificationStatus;
 
     @Column(name = "bill_id")
     private Long number;

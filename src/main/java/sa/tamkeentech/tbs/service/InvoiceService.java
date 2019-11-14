@@ -134,7 +134,7 @@ public class InvoiceService {
             .customer(customer.get())
             // .subtotal(oneItemInvoiceDTO.getPrice())
             // .amount(oneItemInvoiceDTO.getPrice())
-            .status(InvoiceStatus.APPROVED)
+            .status(InvoiceStatus.NEW)
             .build();
 
         //invoiceItem

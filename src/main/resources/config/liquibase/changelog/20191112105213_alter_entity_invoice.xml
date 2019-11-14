@@ -45,21 +45,34 @@
             tableName="invoice">
             <column name="expiry_date" type="datetime" afterColumn="due_date"/>
         </addColumn>
-       <!-- <modifySql>
-            <append value=" AFTER due_date"/>
-        </modifySql>-->
     </changeSet>
 
-    add new two status + default values
+    <!-- add new status + default values-->
     <changeSet id="20191112105213-1-change4" author="Ahmed B" context="faker">
         <addColumn
             schemaName="public"
             tableName="invoice">
-            <column name="expiry_date" type="datetime" afterColumn="due_date"/>
+            <column name="notification_status" type="varchar(255)" defaultValue="NEW" afterColumn="status"/>
         </addColumn>
-        <!-- <modifySql>
-             <append value=" AFTER due_date"/>
-         </modifySql>-->
+
+        <addColumn
+            schemaName="public"
+            tableName="invoice">
+            <column name="payment_status" type="varchar(255)" defaultValue="PENDING" afterColumn="status"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20191112105213-1-change5" author="Ahmed B" context="faker">
+        <addDefaultValue
+            schemaName="public"
+            tableName="invoice" columnName="status" columnDataType="varchar(255)" defaultValue="NEW" />
+    </changeSet>
+
+    <changeSet id="20191112105213-1-change6" author="Ahmed B" context="faker">
+        <update schemaName="public"  tableName="invoice">
+            <column name="status" value="CREATED" />
+            <!--<where>otherProperty = 'otherPropertyValue'</where>-->
+        </update>
     </changeSet>
 
 </databaseChangeLog>
