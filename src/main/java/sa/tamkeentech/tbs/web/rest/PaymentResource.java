@@ -57,6 +57,18 @@ public class PaymentResource {
             .body(result);
     }
 
+    @PostMapping("/payments/credit-card")
+    public ResponseEntity<PaymentDTO> createCCPayment(@RequestBody PaymentDTO paymentDTO) throws URISyntaxException {
+        log.debug("REST request to save Payment : {}", paymentDTO);
+        if (paymentDTO.getId() != null) {
+            throw new BadRequestAlertException("A new payment cannot already have an ID", ENTITY_NAME, "idexists");
+        }
+        PaymentDTO result = paymentService.createCreditCardPayment(paymentDTO);
+        return ResponseEntity.created(new URI("/api/payments/" + result.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+            .body(result);
+    }
+
     /**
      * {@code PUT  /payments} : Updates an existing payment.
      *

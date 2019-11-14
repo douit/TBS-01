@@ -7,6 +7,7 @@ import { PaymentDetailComponent } from './payment-detail.component';
 import { PaymentUpdateComponent } from './payment-update.component';
 import { PaymentDeletePopupComponent, PaymentDeleteDialogComponent } from './payment-delete-dialog.component';
 import { paymentRoute, paymentPopupRoute } from './payment.route';
+import {PaymentTestCcComponent} from './payment-test-cccomponent';
 
 const ENTITY_STATES = [...paymentRoute, ...paymentPopupRoute];
 
@@ -17,8 +18,15 @@ const ENTITY_STATES = [...paymentRoute, ...paymentPopupRoute];
     PaymentDetailComponent,
     PaymentUpdateComponent,
     PaymentDeleteDialogComponent,
-    PaymentDeletePopupComponent
+    PaymentDeletePopupComponent,
+    PaymentTestCcComponent
   ],
-  entryComponents: [PaymentComponent, PaymentUpdateComponent, PaymentDeleteDialogComponent, PaymentDeletePopupComponent]
+  entryComponents: [
+    PaymentComponent,
+    PaymentUpdateComponent,
+    PaymentDeleteDialogComponent,
+    PaymentDeletePopupComponent,
+    PaymentTestCcComponent
+  ]
 })
 export class TbsposPaymentModule {}

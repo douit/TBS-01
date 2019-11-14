@@ -1,16 +1,14 @@
 package sa.tamkeentech.tbs.domain;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Data;
-import lombok.Builder;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.EqualsAndHashCode;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.*;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import sa.tamkeentech.tbs.domain.enumeration.InvoiceStatus;
+import sa.tamkeentech.tbs.domain.enumeration.NotificationStatus;
+import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 
 import javax.persistence.*;
-
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -18,12 +16,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.hibernate.annotations.GenerationTime;
-import org.hibernate.annotations.Generated;
-import sa.tamkeentech.tbs.domain.enumeration.InvoiceStatus;
-import sa.tamkeentech.tbs.domain.enumeration.NotificationStatus;
-import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 
 /**
  * The Employee entity.

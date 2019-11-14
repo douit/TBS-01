@@ -265,4 +265,14 @@ public class PaymentService {
         }
     }
 
+    public PaymentDTO createCreditCardPayment(PaymentDTO paymentDTO) {
+        log.debug("Request to create cc Payment : {}", paymentDTO);
+        Payment payment = paymentMapper.toEntity(paymentDTO);
+        // payment = paymentRepository.save(payment);
+
+
+
+        return paymentMapper.toDto(payment);
+    }
+
 }

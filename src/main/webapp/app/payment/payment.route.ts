@@ -11,6 +11,7 @@ import { PaymentDetailComponent } from './payment-detail.component';
 import { PaymentUpdateComponent } from './payment-update.component';
 import { PaymentDeletePopupComponent } from './payment-delete-dialog.component';
 import { IPayment } from 'app/shared/model/payment.model';
+import {PaymentTestCcComponent} from "app/payment/payment-test-cccomponent";
 
 @Injectable({ providedIn: 'root' })
 export class PaymentResolve implements Resolve<IPayment> {
@@ -65,6 +66,18 @@ export const paymentRoute: Routes = [
   {
     path: ':id/edit',
     component: PaymentUpdateComponent,
+    resolve: {
+      payment: PaymentResolve
+    },
+    data: {
+      authorities: ['ROLE_USER'],
+      pageTitle: 'tbsApp.payment.home.title'
+    },
+    canActivate: [UserRouteAccessService]
+  },
+  {
+    path: 'testCC',
+    component: PaymentTestCcComponent,
     resolve: {
       payment: PaymentResolve
     },

@@ -1,0 +1,51 @@
+<div class="main-content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header card-header-text card-header-primary" data-background-color="primary-one">
+                        <div class="card-text">
+                            <h4 id="page-heading">
+                                <span> Create a credit card payment </span>
+                            </h4>
+                        </div>
+                    </div>
+
+
+                    <div class="card-content">
+                        <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+                            <div>
+                                <jhi-alert-error></jhi-alert-error>
+                                <!--<div class="form-group">
+                                    <label for="id" jhiTranslate="global.field.id">ID</label>
+                                    <input type="text" class="form-control" id="invoiceId" name="invoiceId" formControlName="invoiceId"/>
+                                </div>-->
+                                <div class="form-group">
+                                    <label class="form-control-label" jhiTranslate="tbsApp.payment.invoice" for="field_invoice">Invoice</label>
+                                    <select class="form-control" id="field_invoice" name="invoice" formControlName="invoiceId">
+                                        <option [ngValue]="null"></option>
+                                        <option [ngValue]="invoiceOption.id" *ngFor="let invoiceOption of invoices; trackBy: trackInvoiceById">{{invoiceOption.id}}</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-control-label" jhiTranslate="tbsApp.payment.amount" for="field_amount">Amount</label>
+                                    <input type="number" class="form-control" name="amount" id="field_amount"
+                                           formControlName="amount"/>
+                                </div>
+                            </div>
+                            <div>
+                                <button type="button" id="cancel-save" class="btn btn-secondary"  (click)="previousState()">
+                                    <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
+                                </button>
+                                <button type="submit" id="save-entity" [disabled]="editForm.invalid || isSaving" class="btn btn-primary">
+                                    <fa-icon [icon]="'save'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Save</span>
+                                </button>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

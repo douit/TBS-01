@@ -52,7 +52,7 @@
         <addColumn
             schemaName="public"
             tableName="invoice">
-            <column name="notification_status" type="varchar(255)" defaultValue="NEW" afterColumn="status"/>
+            <column name="notification_status" type="varchar(255)" defaultValue="PAYMENT_NOTIFICATION_NEW" afterColumn="status"/>
         </addColumn>
 
         <addColumn

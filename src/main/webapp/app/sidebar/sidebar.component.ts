@@ -37,11 +37,22 @@ export const ROUTES: RouteInfo[] = [{
         title: 'Invoices',
         type: 'link',
         icontype: 'content_paste'
-    }, {
+    },
+  /* {
+    path: '/payment',
+    title: 'Payments',
+    type: 'link',
+    icontype: 'attach_money'
+  },*/
+  {
         path: '/payment',
         title: 'Payments',
-        type: 'link',
-        icontype: 'attach_money'
+        type: 'sub',
+        icontype: 'attach_money',
+        collapse: 'payment',
+          children: [
+            {path: 'testCC', title: 'Credit Card Payment', ab:''}
+            ]
     }/*,{
         path: '/components',
         title: 'Components',
