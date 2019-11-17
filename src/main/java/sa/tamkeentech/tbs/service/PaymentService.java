@@ -1,9 +1,15 @@
 package sa.tamkeentech.tbs.service;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,12 +42,10 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -271,6 +275,81 @@ public class PaymentService {
         // payment = paymentRepository.save(payment);
 
 
+        //Step 1: Generate Secure Hash
+        // Use Yours, Please Store Your Secret Key in safe Place (eg. database)
+        String SECRET_KEY = "Y2FkMTdlOWZiMzJjMzY4ZGFkMzhkMWIz";
+        // put the parameters in a TreeMap to have the parameters to have them sorted alphabetically.
+        // Map <String,String> parameters = new TreeMap<String,String> ();
+        List<NameValuePair> parameters = new ArrayList<NameValuePair>();
+        String transactionId = String.valueOf(System.currentTimeMillis());
+        // fill required parameters
+        parameters.add(new BasicNameValuePair("TransactionID", transactionId));
+        parameters.add(new BasicNameValuePair("MerchantID", "ANBRedirectM"));
+        parameters.add(new BasicNameValuePair("Amount", "2000"));
+        parameters.add(new BasicNameValuePair("CurrencyISOCode", "840"));
+        parameters.add(new BasicNameValuePair("MessageID", "1"));
+        parameters.add(new BasicNameValuePair("Quantity", "1"));
+        parameters.add(new BasicNameValuePair("Channel", "0"));
+        //fill some optional parameters
+        parameters.add(new BasicNameValuePair("Language", "en"));
+        parameters.add(new BasicNameValuePair("ThemeID", "1000000001"));
+        // ToDO change this url
+        parameters.add(new BasicNameValuePair("ResponseBackURL", "https://MerchantSite/RedirectPaymentResponsePage"));
+        // if this url is configured for the merchant it's not required
+        parameters.add(new BasicNameValuePair("Version", "1.0"));
+        //Create an Ordered String of The Parameters Map with Secret Key
+        StringBuilder orderedString = new StringBuilder();
+        orderedString.append(SECRET_KEY);
+        for (NameValuePair pair : parameters) {
+            orderedString.append(pair.getValue());
+        }
+        System.out.println("orderdString: " + orderedString);
+        // Generate SecureHash with SHA256
+        // Using DigestUtils from appache.commons.codes.jar Library
+        String secureHash = new String(DigestUtils.sha256Hex(orderedString.toString()).getBytes());
+
+        // Step 2: Prepare Payment Request and Send It to Redirect JSP Page (To Send a Post Request)
+        /*request.setAttribute("TransactionID", transactionId);
+        request.setAttribute("MerchantID", "ANBRedirectM");
+        request.setAttribute("Amount", "2000");
+        request.setAttribute("CurrencyISOCode", "840");
+        request.setAttribute("MessageID", "1");
+        request.setAttribute("Quantity", "1");
+        request.setAttribute("Channel", "0");
+        request.setAttribute("Language", "en");
+        request.setAttribute("ThemeID", "1000000001");
+        // if this url is configured for the merchant it's not required, else it is required
+        request.setAttribute("ResponseBackURL", "http://MerchantSite/RedirectPaymentResponsePage");
+
+
+        request.setAttribute("Version", "1.0");
+        request.setAttribute("RedirectURL","http://SmartrouteURL/SmartRoutePaymentWEB/SRPayMsgHandler");
+        // set secure hash in the request
+        request.setAttribute("SecureHash", secureHash);
+        request.getRequestDispatcher(response.encodeURL("SubmitRedirectPaymentRequest.jsp")).forward(request, response);*/
+
+        // Step 3: submit the form
+        parameters.add(new BasicNameValuePair("SecureHash", secureHash));
+        HttpClient httpClient = new DefaultHttpClient();
+        String url = "https://srstaging.stspayone.com/SmartRoutePaymentWeb/SRPayMsgHandler";
+        HttpPost httpPost = new HttpPost(url);
+        try {
+            List<NameValuePair> params = new ArrayList<NameValuePair>();
+            httpPost.setEntity(new UrlEncodedFormEntity(parameters, "UTF-8"));
+            HttpResponse response = httpClient.execute(httpPost);
+            HttpEntity respEntity = response.getEntity();
+
+            if (respEntity != null) {
+                String content = EntityUtils.toString(respEntity);
+                System.out.println(content);
+            }
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (ClientProtocolException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         return paymentMapper.toDto(payment);
     }

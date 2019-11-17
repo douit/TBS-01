@@ -28,7 +28,7 @@ export class PaymentTestCcComponent implements OnInit {
   paymentmethods: IPaymentMethod[];
 
   editForm = this.fb.group({
-    id: [],
+    invoiceId: [],
     amount: []
   });
 
