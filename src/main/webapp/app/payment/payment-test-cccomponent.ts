@@ -25,6 +25,8 @@ export class PaymentTestCcComponent implements OnInit {
 
   invoices: IInvoice[];
 
+  submitFormCC: String;
+
   paymentmethods: IPaymentMethod[];
 
   editForm = this.fb.group({
@@ -71,15 +73,16 @@ export class PaymentTestCcComponent implements OnInit {
   }
 
   protected subscribeToSaveResponse(result: Observable<HttpResponse<IPayment>>) {
-    result.subscribe(() => this.onSaveSuccess(), () => this.onSaveError());
+    result.subscribe((res) => this.onSaveSuccess(res), (err) => this.onSaveError(err));
   }
 
-  protected onSaveSuccess() {
+  protected onSaveSuccess(res) {
     this.isSaving = false;
-    this.previousState();
+    // this.previousState();
+    this.submitFormCC = res.body.result;
   }
 
-  protected onSaveError() {
+  protected onSaveError(err) {
     this.isSaving = false;
   }
   protected onError(errorMessage: string) {

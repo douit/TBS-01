@@ -8,6 +8,7 @@ export interface IPayment {
   expirationDate?: Moment;
   invoiceId?: number;
   paymentMethodId?: number;
+  result?: String;
 }
 
 export class Payment implements IPayment {

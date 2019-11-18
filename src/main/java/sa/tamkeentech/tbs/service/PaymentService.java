@@ -284,9 +284,9 @@ public class PaymentService {
         String transactionId = String.valueOf(System.currentTimeMillis());
         // fill required parameters
         parameters.add(new BasicNameValuePair("TransactionID", transactionId));
-        parameters.add(new BasicNameValuePair("MerchantID", "ANBRedirectM"));
+        parameters.add(new BasicNameValuePair("MerchantID", "010000085"));
         parameters.add(new BasicNameValuePair("Amount", "2000"));
-        parameters.add(new BasicNameValuePair("CurrencyISOCode", "840"));
+        parameters.add(new BasicNameValuePair("CurrencyISOCode", "682"));
         parameters.add(new BasicNameValuePair("MessageID", "1"));
         parameters.add(new BasicNameValuePair("Quantity", "1"));
         parameters.add(new BasicNameValuePair("Channel", "0"));
@@ -333,6 +333,7 @@ public class PaymentService {
         HttpClient httpClient = new DefaultHttpClient();
         String url = "https://srstaging.stspayone.com/SmartRoutePaymentWeb/SRPayMsgHandler";
         HttpPost httpPost = new HttpPost(url);
+        String content = null;
         try {
             List<NameValuePair> params = new ArrayList<NameValuePair>();
             httpPost.setEntity(new UrlEncodedFormEntity(parameters, "UTF-8"));
@@ -340,7 +341,7 @@ public class PaymentService {
             HttpEntity respEntity = response.getEntity();
 
             if (respEntity != null) {
-                String content = EntityUtils.toString(respEntity);
+                content = EntityUtils.toString(respEntity);
                 System.out.println(content);
             }
         } catch (UnsupportedEncodingException e) {
@@ -350,8 +351,9 @@ public class PaymentService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        return paymentMapper.toDto(payment);
+        PaymentDTO result = paymentMapper.toDto(payment);
+        result.setResult(content);
+        return result;
     }
 
 }

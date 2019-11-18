@@ -23,6 +23,8 @@ public class PaymentDTO implements Serializable {
 
     private Long paymentMethodId;
 
+    private String result;
+
     public Long getId() {
         return id;
     }
@@ -69,6 +71,14 @@ public class PaymentDTO implements Serializable {
 
     public void setPaymentMethodId(Long paymentMethodId) {
         this.paymentMethodId = paymentMethodId;
+    }
+
+    public String getResult() {
+        return result;
+    }
+
+    public void setResult(String result) {
+        this.result = result;
     }
 
     @Override
