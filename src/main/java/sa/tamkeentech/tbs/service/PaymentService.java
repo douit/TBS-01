@@ -34,9 +34,11 @@ import sa.tamkeentech.tbs.service.mapper.PaymentMapper;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.LinkedList;
@@ -75,6 +77,12 @@ public class PaymentService {
     @Value("${tbs.payment.credit-card-url}")
     private String creditCardUrl;
 
+    @Value("${tbs.payment.credit-card-biller-code}")
+    private String billerCode;
+
+    @Value("${tbs.payment.credit-card-app-code}")
+    private String appCode;
+
     public static final Long DIFF_ACCOUNT_BILL_ID = 6999996000l;
 
     public PaymentService(PaymentRepository paymentRepository, PaymentMapper paymentMapper, InvoiceRepository invoiceRepository, PaymentMethodService paymentMethodService) {
@@ -82,6 +90,36 @@ public class PaymentService {
         this.paymentMapper = paymentMapper;
         this.invoiceRepository = invoiceRepository;
         this.paymentMethodService = paymentMethodService;
+    }
+
+    /**
+     * Create new credit card payment.
+     *
+     * @param paymentDTO the entity to save.
+     * @return the persisted entity.
+     */
+    public PaymentDTO createNewPayment(PaymentDTO paymentDTO) {
+        log.debug("Request to save Payment : {}", paymentDTO);
+        Payment payment = paymentMapper.toEntity(paymentDTO);
+        Optional<PaymentMethod> paymentMethod = paymentMethodService.findByCode(Constants.VISA);
+        payment.setPaymentMethod(paymentMethod.get());
+
+        Optional<Invoice> invoice = invoiceRepository.findById(paymentDTO.getInvoiceId());
+        if (!invoice.isPresent()) {
+            throw new TbsRunTimeException("Bill does not exist");
+        }
+
+        // call payment gateway
+        BigDecimal roundedAmount = invoice.get().getAmount().setScale(2, RoundingMode.HALF_UP);
+        String redirectUrl = creditCardCall(invoice.get().getId(), roundedAmount.multiply(new BigDecimal("100")));
+
+        payment.setInvoice(invoice.get());
+        payment.setAmount(invoice.get().getAmount());
+        payment.setStatus(PaymentStatus.PENDING);
+        payment = paymentRepository.save(payment);
+        PaymentDTO result = paymentMapper.toDto(payment);
+        result.setRedirectUrl(redirectUrl);
+        return result;
     }
 
     /**
@@ -178,39 +216,36 @@ public class PaymentService {
         return response.getStatusLine().getStatusCode();
     }
 
-    public String creditCardCall( String sadadAccount , BigDecimal amount , String url) throws IOException, JSONException {
+    public String creditCardCall( Long invoiceId , BigDecimal amount) {
         HttpClient client = HttpClientBuilder.create().build();
         HttpPost post = new HttpPost(creditCardUrl);
         post.setHeader("Content-Type", "application/json");
         JSONObject billInfoContent = new JSONObject();
-        billInfoContent.put("BillNumber", sadadAccount);
-        billInfoContent.put("ResponseBackURL",url);
-        billInfoContent.put("Amount",amount);
-        String jsonStr = billInfoContent.toString();
-        post.setEntity(new StringEntity(jsonStr));
-        HttpResponse response;
-        response = client.execute(post);
-        HttpEntity entity = response.getEntity();
-        String responseString = EntityUtils.toString(entity, "UTF-8");
+        String responseString = null;
+        try {
+            billInfoContent.put("BillNumber", invoiceId);
+            billInfoContent.put("Amount",amount);
+            billInfoContent.put("BillerCode",billerCode);
+            billInfoContent.put("AppCode",appCode);
+            String jsonStr = billInfoContent.toString();
+            post.setEntity(new StringEntity(jsonStr));
+            HttpResponse response;
+            response = client.execute(post);
+            HttpEntity entity = response.getEntity();
+            responseString = EntityUtils.toString(entity, "UTF-8");
+        } catch (JSONException | IOException e) {
+            log.error("Payment gateway issue: {}", e.getCause());
+        }
         log.info("************** response from credit Card ************ : " + responseString.substring(8,responseString.indexOf( ',' )));
         return responseString.substring(8,responseString.indexOf( ',' ) - 1) ;
     }
 
     public Long getSadadBillAccount(Long billId) {
-        // no prefix
-        //return sadadAccountPrefix.concat(String.format("%010d", new BigInteger(billId)));
-        // return (billId + 7000000065l);
         return billId;
-        // return String.format("%010d", new BigInteger(account.toString()));
     }
 
     public Long getSadadBillId(Long billId) {
-        // no prefix
-        // return sadadAccountPrefix.concat(String.format("%010d", new BigInteger(billId)));
-        // return (billId + 4065l);
-        // return billId;
         return billId - DIFF_ACCOUNT_BILL_ID;
-        // return String.format("%010d", new BigInteger(account.toString()));
     }
 
     //  diff = 7000000065l - 4065l =  6999996000

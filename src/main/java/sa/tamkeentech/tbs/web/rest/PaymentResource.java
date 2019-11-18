@@ -51,7 +51,7 @@ public class PaymentResource {
         if (paymentDTO.getId() != null) {
             throw new BadRequestAlertException("A new payment cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        PaymentDTO result = paymentService.save(paymentDTO);
+        PaymentDTO result = paymentService.createNewPayment(paymentDTO);
         return ResponseEntity.created(new URI("/api/payments/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -103,16 +103,4 @@ public class PaymentResource {
         return ResponseUtil.wrapOrNotFound(paymentDTO);
     }
 
-    /**
-     * {@code DELETE  /payments/:id} : delete the "id" payment.
-     *
-     * @param id the id of the paymentDTO to delete.
-     * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
-     */
-    @DeleteMapping("/payments/{id}")
-    public ResponseEntity<Void> deletePayment(@PathVariable Long id) {
-        log.debug("REST request to delete Payment : {}", id);
-        paymentService.delete(id);
-        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString())).build();
-    }
 }

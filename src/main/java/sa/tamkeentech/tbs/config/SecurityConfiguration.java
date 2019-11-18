@@ -12,6 +12,8 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import sa.tamkeentech.tbs.security.*;
 
 import io.github.jhipster.config.JHipsterProperties;
@@ -31,6 +33,8 @@ import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.web.filter.CorsFilter;
 import org.zalando.problem.spring.web.advice.security.SecurityProblemSupport;
 import sa.tamkeentech.tbs.service.ClientService;
+
+import javax.servlet.http.HttpServletRequest;
 
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
@@ -52,7 +56,6 @@ public class SecurityConfiguration {
         protected void configure(HttpSecurity httpSecurity) throws Exception {
             APIKeyAuthFilter filter = new APIKeyAuthFilter(clientService, principalRequestHeader);
             filter.setAuthenticationManager(new AuthenticationManager() {
-
                 @Override
                 public Authentication authenticate(Authentication authentication) throws AuthenticationException {
                     String principal = (String) authentication.getPrincipal();
@@ -64,11 +67,62 @@ public class SecurityConfiguration {
                     return authentication;
                 }
             });
-            httpSecurity.
+            /*httpSecurity.
                 antMatcher("/billing/createbill**").// change this to invoicesApp ToDO !!!!
                 csrf().disable().
                 sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).
-                and().addFilter(filter).authorizeRequests().anyRequest().authenticated();
+                and().addFilter(filter).authorizeRequests().anyRequest().authenticated();*/
+            /*httpSecurity.
+                antMatcher("/api/payments**").// change this to invoicesApp ToDO !!!!
+                csrf().disable().
+                sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).
+                and().addFilter(filter).authorizeRequests().anyRequest().authenticated();*/
+
+            // No open all
+            /*httpSecurity.requestMatchers().
+                // antMatchers(HttpMethod.GET,"/restricgted/get/**","/restricgted2/get/**").
+                antMatchers(HttpMethod.POST,"/billing/createbill**","/api/payments**").
+                //csrf().disable().
+                and().addFilter(filter).csrf().disable().authorizeRequests().anyRequest().authenticated();*/
+
+            // No open all
+            /*httpSecurity.requestMatchers().
+                // antMatchers(HttpMethod.GET,"/restricgted/get/**","/restricgted2/get/**").
+                    antMatchers(HttpMethod.POST,"/billing/createbill**","/api/payments**").
+                and().csrf().disable().
+                addFilter(filter).authorizeRequests().anyRequest().authenticated();*/
+
+            // open all
+            /*httpSecurity.csrf().ignoringAntMatchers("/billing/createbill**","/api/payments**").
+                and().addFilter(filter).csrf().disable().authorizeRequests().anyRequest().authenticated();*/
+            // Build the request matcher for CSFR protection
+            RequestMatcher csrfRequestMatcher = new RequestMatcher() {
+
+                // Disable CSFR protection on the following urls:
+                private AntPathRequestMatcher[] requestMatchers = {
+                    new AntPathRequestMatcher("/billing/createbill**"),
+                    new AntPathRequestMatcher("/api/payments**")
+                };
+
+                @Override
+                public boolean matches(HttpServletRequest request) {
+                    // If the request match one url the CSFR protection will be disabled
+                    for (AntPathRequestMatcher rm : requestMatchers) {
+                        if (rm.matches(request)) { return false; }
+                    }
+                    return true;
+                } // method matches
+
+            }; // new RequestMatcher
+
+
+            httpSecurity
+                // Disable the csrf protection on some request matches
+                .csrf()
+                .requireCsrfProtectionMatcher(csrfRequestMatcher)
+
+                .and().addFilter(filter).csrf().disable().authorizeRequests().anyRequest().authenticated();
+
         }
     }
 

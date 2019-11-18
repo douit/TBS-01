@@ -15,7 +15,6 @@ public final class Constants {
     // Payment
     public static final String SADAD = "SADAD";
     public static final String VISA = "VISA";
-    public static final String MADA = "MADA";
     public static final String CASH = "CASH";
 
     private Constants() {

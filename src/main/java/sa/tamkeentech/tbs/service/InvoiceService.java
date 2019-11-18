@@ -217,7 +217,6 @@ public class InvoiceService {
                     oneItemInvoiceRespDTO.setDescription("");
                     oneItemInvoiceRespDTO.setBillNumber(billId);
                 break;
-                case Constants.MADA:
                 case Constants.VISA:
                     log.info("CC payment method");
                 break;

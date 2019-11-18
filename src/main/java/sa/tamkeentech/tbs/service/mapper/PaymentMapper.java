@@ -12,11 +12,11 @@ import org.mapstruct.*;
 public interface PaymentMapper extends EntityMapper<PaymentDTO, Payment> {
 
     @Mapping(source = "invoice.id", target = "invoiceId")
-    @Mapping(source = "paymentMethod.id", target = "paymentMethodId")
+    // @Mapping(source = "paymentMethod.id", target = "paymentMethodId")
     PaymentDTO toDto(Payment payment);
 
     @Mapping(source = "invoiceId", target = "invoice")
-    @Mapping(source = "paymentMethodId", target = "paymentMethod")
+    // @Mapping(source = "paymentMethodId", target = "paymentMethod")
     Payment toEntity(PaymentDTO paymentDTO);
 
     default Payment fromId(Long id) {
