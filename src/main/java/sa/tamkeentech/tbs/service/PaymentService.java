@@ -277,7 +277,7 @@ public class PaymentService {
 
         //Step 1: Generate Secure Hash
         // Use Yours, Please Store Your Secret Key in safe Place (eg. database)
-        String SECRET_KEY = "Y2FkMTdlOWZiMzJjMzY4ZGFkMzhkMWIz";
+        String SECRET_KEY = "OTJkZGM5YzRkZmI0NzU0OTNkNDU0MGNi";
         // put the parameters in a TreeMap to have the parameters to have them sorted alphabetically.
         // Map <String,String> parameters = new TreeMap<String,String> ();
         List<NameValuePair> parameters = new ArrayList<NameValuePair>();

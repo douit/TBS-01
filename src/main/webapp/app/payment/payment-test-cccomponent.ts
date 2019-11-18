@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit, ViewChild} from '@angular/core';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { HttpResponse, HttpErrorResponse } from '@angular/common/http';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { FormBuilder, Validators } from '@angular/forms';
+import {FormBuilder, FormGroupDirective, Validators} from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
@@ -27,12 +27,19 @@ export class PaymentTestCcComponent implements OnInit {
 
   submitFormCC: String;
 
+  postURL = 'https://srstaging.stspayone.com/SmartRoutePaymentWeb/SRPayMsgHandler';
+
   paymentmethods: IPaymentMethod[];
 
   editForm = this.fb.group({
     invoiceId: [],
     amount: []
   });
+
+  /*ccForm = this.fb.group({
+  });*/
+  @ViewChild('ccForm', {static: true})
+  ccForm: FormGroupDirective;
 
   constructor(
     protected jhiAlertService: JhiAlertService,
@@ -64,6 +71,11 @@ export class PaymentTestCcComponent implements OnInit {
     this.subscribeToSaveResponse(this.paymentService.createCcPayment(payment));
   }
 
+  save2(form: any, e: any): void {
+    // Note that I added 'e' and calling the event target's .submit()
+      e.target.submit();
+    }
+
   private createFromForm(): IPayment {
     return {
       ...new Payment(),
@@ -80,6 +92,7 @@ export class PaymentTestCcComponent implements OnInit {
     this.isSaving = false;
     // this.previousState();
     this.submitFormCC = res.body.result;
+    this.ccForm.onSubmit(undefined);
   }
 
   protected onSaveError(err) {

@@ -13,13 +13,13 @@
 
 
                     <div class="card-content">
-                        <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+                        <!--<form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
                             <div>
                                 <jhi-alert-error></jhi-alert-error>
-                                <!--<div class="form-group">
+                                &lt;!&ndash;<div class="form-group">
                                     <label for="id" jhiTranslate="global.field.id">ID</label>
                                     <input type="text" class="form-control" id="invoiceId" name="invoiceId" formControlName="invoiceId"/>
-                                </div>-->
+                                </div>&ndash;&gt;
                                 <div class="form-group">
                                     <label class="form-control-label" jhiTranslate="tbsApp.payment.invoice" for="field_invoice">Invoice</label>
                                     <select class="form-control" id="field_invoice" name="invoice" formControlName="invoiceId">
@@ -41,9 +41,41 @@
                                     <fa-icon [icon]="'save'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Save</span>
                                 </button>
                             </div>
-                        </form>
+                        </form>-->
 
-                        <span [innerHTML]="submitFormCC"></span>
+                        <!--<span [innerHTML]="submitFormCC"></span>-->
+                        <form [action]='postURL' name='redirectForm' method='POST' target='_top'
+                               #ccForm="ngForm"  (ngSubmit)="save2(cartForm, $event)">
+                            <div id='dialog-message' style='margin-top: 25%;'>
+                                <p align='center'>
+                                    <img src ='https://srstaging.stspayone.com/SmartRoutePaymentWeb/images/pleaseWait.gif' align='middle'/>
+                                </p>
+                                <p align='center' style='font-size: 12px'></p>
+                            </div>
+                            <input type="hidden" name="Version" value="1.0" />
+                            <input type="hidden" name="Quantity" value="1" />
+                            <input type="hidden" name="MerchantID" value="010000085" />
+                            <input type="hidden" name="Language" value="en" />
+                            <input type="hidden" name="CurrencyISOCode" value="682" />
+                            <input type="hidden" name="MessageID" value="1" />
+                            <input type="hidden" name="Channel" value="0" />
+                            <input type="hidden" name="SecureHash" value="aafdc951795e56b086336d2c578c0dd0632259243667bc92347016bd098a7972" />
+                            <input type="hidden" name="Amount" value="2000" />
+                            <input type="hidden" name="ResponseBackURL" value="https://MerchantSite/RedirectPaymentResponsePage" />
+                            <input type="hidden" name="ThemeID" value="1000000001" />
+                            <input type="hidden" name="TransactionID" value="1574069027083" />
+                            <input type='hidden' name='Loading' value='true' />
+
+                            <div>
+                                <button type="button" id="cancel-save" class="btn btn-secondary"  (click)="previousState()">
+                                    <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
+                                </button>
+                                <button type="submit" id="save-entity" [disabled]="editForm.invalid || isSaving" class="btn btn-primary">
+                                    <fa-icon [icon]="'save'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Save</span>
+                                </button>
+                            </div>
+
+                        </form>
 
                     </div>
                 </div>
