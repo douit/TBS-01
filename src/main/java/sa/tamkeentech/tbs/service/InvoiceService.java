@@ -135,17 +135,17 @@ public class InvoiceService {
                         throw new TbsRunTimeException("Sadad issue", e);
                     }
                     // ToDo add new exception 500 for sadad
-                    invoice = invoiceRepository.getOne(invoice.getId());
+                    // invoice = invoiceRepository.getOne(invoice.getId());
                     if (sadadResult != 200) {
                         oneItemInvoiceRespDTO.setStatusId(sadadResult);
                         oneItemInvoiceRespDTO.setShortDesc("error");
                         oneItemInvoiceRespDTO.setDescription("error_message");
                         invoice.setStatus(InvoiceStatus.FAILED);
-                        invoiceRepository.save(invoice);
+                        // invoiceRepository.save(invoice);
                         throw new TbsRunTimeException("Sadad bill creation error");
                     }
                     invoice.setStatus(InvoiceStatus.CREATED);
-                    invoiceRepository.save(invoice);
+                    // invoiceRepository.save(invoice);
                     oneItemInvoiceRespDTO.setStatusId(1);
                     oneItemInvoiceRespDTO.setShortDesc("success");
                     oneItemInvoiceRespDTO.setDescription("");
