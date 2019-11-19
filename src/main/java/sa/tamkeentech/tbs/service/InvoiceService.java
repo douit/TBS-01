@@ -7,6 +7,7 @@ import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.*;
@@ -110,8 +111,62 @@ public class InvoiceService {
         invoiceRepository.deleteById(id);
     }
 
-    @Transactional
+
     public OneItemInvoiceRespDTO saveOneItemInvoice(OneItemInvoiceDTO oneItemInvoiceDTO) {
+
+        Invoice invoice = addNewInvoice(oneItemInvoiceDTO);
+        // Payment
+        // Payment method
+        Optional<PaymentMethod> paymentMethod = paymentMethodService.findById(oneItemInvoiceDTO.getPaymentMethodId());
+
+        OneItemInvoiceRespDTO oneItemInvoiceRespDTO= OneItemInvoiceRespDTO.builder()
+            .paymentMethod(oneItemInvoiceDTO.getPaymentMethodId()).build();
+
+        if (paymentMethod.isPresent()) {
+            String paymentMethodCode = paymentMethod.get().getCode();
+            switch (paymentMethodCode) {
+                case Constants.SADAD:
+                    String billId = paymentService.getSadadBillAccount(invoice.getId()).toString();
+                    int sadadResult;
+                    try {
+                        sadadResult = paymentService.sadadCall(paymentService.getSadadBillId(invoice.getId()), paymentService.getSadadBillAccount(invoice.getId()).toString(), invoice.getAmount());
+                    } catch (IOException | JSONException e) {
+                        // ToDo add new exception 500 for sadad
+                        throw new TbsRunTimeException("Sadad issue", e);
+                    }
+                    // ToDo add new exception 500 for sadad
+                    invoice = invoiceRepository.getOne(invoice.getId());
+                    if (sadadResult != 200) {
+                        oneItemInvoiceRespDTO.setStatusId(sadadResult);
+                        oneItemInvoiceRespDTO.setShortDesc("error");
+                        oneItemInvoiceRespDTO.setDescription("error_message");
+                        invoice.setStatus(InvoiceStatus.FAILED);
+                        invoiceRepository.save(invoice);
+                        throw new TbsRunTimeException("Sadad bill creation error");
+                    }
+                    invoice.setStatus(InvoiceStatus.CREATED);
+                    invoiceRepository.save(invoice);
+                    oneItemInvoiceRespDTO.setStatusId(1);
+                    oneItemInvoiceRespDTO.setShortDesc("success");
+                    oneItemInvoiceRespDTO.setDescription("");
+                    oneItemInvoiceRespDTO.setBillNumber(billId);
+                break;
+                case Constants.VISA:
+                    log.info("CC payment method");
+                break;
+                default:
+                    log.info("Cash payment method");
+
+            }
+        } else {
+            throw new TbsRunTimeException("Unknown payment method");
+        }
+
+        return oneItemInvoiceRespDTO;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    Invoice addNewInvoice(OneItemInvoiceDTO oneItemInvoiceDTO) {
         // Client
         String appName = SecurityUtils.getCurrentUserLogin().orElse("");
         Optional<Client> client =  clientService.getClientByClientId(appName);
@@ -124,7 +179,7 @@ public class InvoiceService {
                 // .identityType(IdentityType.valueOf(oneItemInvoiceDTO.getCustomerIdType().toUpperCase()))
                 .name(oneItemInvoiceDTO.getCustomerName())
                 .contact(Contact.builder().email(oneItemInvoiceDTO.getEmail()).phone(oneItemInvoiceDTO.getMobile()).build())
-            .build());
+                .build());
         }
 
         Invoice invoice = Invoice.builder()
@@ -140,7 +195,7 @@ public class InvoiceService {
         if (!item.isPresent()) {
             throw new TbsRunTimeException("Unknown item: "+ oneItemInvoiceDTO.getItemName());
         }
-            InvoiceItem invoiceItem = InvoiceItem.builder()
+        InvoiceItem invoiceItem = InvoiceItem.builder()
             .item(item.get())
             .amount(item.get().getPrice())
             .name(item.get().getName())
@@ -182,55 +237,7 @@ public class InvoiceService {
         invoice.setInvoiceItems(Arrays.asList(invoiceItem));
         invoice.setSubtotal(item.get().getPrice());
         invoice.setAmount(totalPrice);
-        invoice = invoiceRepository.save(invoice);
-
-        // Payment
-        // Payment method
-        Optional<PaymentMethod> paymentMethod = paymentMethodService.findById(oneItemInvoiceDTO.getPaymentMethodId());
-
-        OneItemInvoiceRespDTO oneItemInvoiceRespDTO= OneItemInvoiceRespDTO.builder()
-            .paymentMethod(oneItemInvoiceDTO.getPaymentMethodId()).build();
-
-        if (paymentMethod.isPresent()) {
-            String paymentMethodCode = paymentMethod.get().getCode();
-            switch (paymentMethodCode) {
-                case Constants.SADAD:
-                    String billId = paymentService.getSadadBillAccount(invoice.getId()).toString();
-                    int sadadResult;
-                    try {
-                        sadadResult = paymentService.sadadCall(paymentService.getSadadBillId(invoice.getId()), paymentService.getSadadBillAccount(invoice.getId()).toString(), totalPrice);
-                    } catch (IOException | JSONException e) {
-                        // ToDo add new exception 500 for sadad
-                        throw new TbsRunTimeException("Sadad issue", e);
-                    }
-                    // ToDo add new exception 500 for sadad
-                    if (sadadResult != 200) {
-                        oneItemInvoiceRespDTO.setStatusId(sadadResult);
-                        oneItemInvoiceRespDTO.setShortDesc("error");
-                        oneItemInvoiceRespDTO.setDescription("error_message");
-                        invoice.setStatus(InvoiceStatus.FAILED);
-                        invoiceRepository.save(invoice);
-                        throw new TbsRunTimeException("Sadad bill creation error");
-                    }
-                    invoice.setStatus(InvoiceStatus.CREATED);
-                    invoiceRepository.save(invoice);
-                    oneItemInvoiceRespDTO.setStatusId(1);
-                    oneItemInvoiceRespDTO.setShortDesc("success");
-                    oneItemInvoiceRespDTO.setDescription("");
-                    oneItemInvoiceRespDTO.setBillNumber(billId);
-                break;
-                case Constants.VISA:
-                    log.info("CC payment method");
-                break;
-                default:
-                    log.info("Cash payment method");
-
-            }
-        } else {
-            throw new TbsRunTimeException("Unknown payment method");
-        }
-
-        return oneItemInvoiceRespDTO;
+        return invoiceRepository.saveAndFlush(invoice);
     }
 
 
