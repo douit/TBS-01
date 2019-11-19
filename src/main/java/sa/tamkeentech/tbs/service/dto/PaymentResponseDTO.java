@@ -1,10 +1,7 @@
 package sa.tamkeentech.tbs.service.dto;
-import java.time.Instant;
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,27 +10,29 @@ import lombok.NoArgsConstructor;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 
 import javax.validation.constraints.NotBlank;
+import java.io.Serializable;
 
 /**
  * A DTO for the {@link sa.tamkeentech.tbs.domain.Payment} entity.
  */
-@ApiModel(description = "Online Payment DTO.")
+@ApiModel(description = "Online Payment Response DTO.")
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class PaymentDTO implements Serializable {
+// @JsonInclude(JsonInclude.Include.NON_EMPTY)
+public class PaymentResponseDTO implements Serializable {
 
-    private Long id;
+    @JsonProperty("Code")
+    private Long code;
 
-    private PaymentStatus status;
+    @JsonProperty("URL")
+    private String url;
 
-    @NotBlank
-    private Long invoiceId;
+    @JsonProperty("Description")
+    private String description;
 
-    private String redirectUrl;
-
+    @JsonProperty("TransactionId")
     private String transactionId;
 
 }

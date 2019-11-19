@@ -160,4 +160,3 @@ tbs:
     sadad-application-id: 0
     credit-card-url: 'http://172.25.70.72:301/api/OnlinePayment'
     credit-card-biller-code: 'B1APP10092019'
-    credit-card-app-code: 'N3APP10092019'

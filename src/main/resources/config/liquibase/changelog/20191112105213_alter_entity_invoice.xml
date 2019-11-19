@@ -75,4 +75,12 @@
         </update>
     </changeSet>
 
+    <changeSet id="20191112105213-1-change7" author="Ahmed B" context="faker">
+    <addColumn
+        schemaName="public"
+        tableName="payment">
+        <column name="transaction_id" type="varchar(255)" afterColumn="status"/>
+    </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

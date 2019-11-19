@@ -41,4 +41,5 @@
     <include file="config/liquibase/changelog/20190915212818_added_entity_constraints_Payment.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20191105061813_dump-h2-prod.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20191112105213_alter_entity_invoice.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20191119105213_alter_entity_client.xml" relativeToChangelogFile="false"/>
 </databaseChangeLog>

@@ -22,7 +22,7 @@ import java.util.Optional;
  * REST controller for managing {@link sa.tamkeentech.tbs.domain.Payment}.
  */
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/billing")
 public class PaymentResource {
 
     private final Logger log = LoggerFactory.getLogger(PaymentResource.class);

@@ -1,40 +1,37 @@
 package sa.tamkeentech.tbs.config;
 
+import io.github.jhipster.config.JHipsterProperties;
+import io.github.jhipster.security.AjaxAuthenticationFailureHandler;
+import io.github.jhipster.security.AjaxAuthenticationSuccessHandler;
+import io.github.jhipster.security.AjaxLogoutSuccessHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.csrf.CsrfFilter;
-import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.security.web.util.matcher.RequestMatcher;
-import sa.tamkeentech.tbs.security.*;
-
-import io.github.jhipster.config.JHipsterProperties;
-import io.github.jhipster.security.*;
-
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.RememberMeServices;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfFilter;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.web.filter.CorsFilter;
 import org.zalando.problem.spring.web.advice.security.SecurityProblemSupport;
+import sa.tamkeentech.tbs.security.APIKeyAuthFilter;
+import sa.tamkeentech.tbs.security.AuthoritiesConstants;
 import sa.tamkeentech.tbs.service.ClientService;
-
-import javax.servlet.http.HttpServletRequest;
 
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
@@ -67,16 +64,11 @@ public class SecurityConfiguration {
                     return authentication;
                 }
             });
-            /*httpSecurity.
-                antMatcher("/billing/createbill**").// change this to invoicesApp ToDO !!!!
+            httpSecurity.
+                antMatcher("/billing/**").// change this to invoicesApp ToDO !!!!
                 csrf().disable().
                 sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).
-                and().addFilter(filter).authorizeRequests().anyRequest().authenticated();*/
-            /*httpSecurity.
-                antMatcher("/api/payments**").// change this to invoicesApp ToDO !!!!
-                csrf().disable().
-                sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).
-                and().addFilter(filter).authorizeRequests().anyRequest().authenticated();*/
+                and().addFilter(filter).authorizeRequests().anyRequest().authenticated();
 
             // No open all
             /*httpSecurity.requestMatchers().
@@ -96,7 +88,8 @@ public class SecurityConfiguration {
             /*httpSecurity.csrf().ignoringAntMatchers("/billing/createbill**","/api/payments**").
                 and().addFilter(filter).csrf().disable().authorizeRequests().anyRequest().authenticated();*/
             // Build the request matcher for CSFR protection
-            RequestMatcher csrfRequestMatcher = new RequestMatcher() {
+
+            /*RequestMatcher csrfRequestMatcher = new RequestMatcher() {
 
                 // Disable CSFR protection on the following urls:
                 private AntPathRequestMatcher[] requestMatchers = {
@@ -114,14 +107,14 @@ public class SecurityConfiguration {
                 } // method matches
 
             }; // new RequestMatcher
+*/
 
-
-            httpSecurity
+            /*httpSecurity
                 // Disable the csrf protection on some request matches
                 .csrf()
                 .requireCsrfProtectionMatcher(csrfRequestMatcher)
 
-                .and().addFilter(filter).csrf().disable().authorizeRequests().anyRequest().authenticated();
+                .and().addFilter(filter).csrf().disable().authorizeRequests().anyRequest().authenticated();*/
 
         }
     }
@@ -205,7 +198,8 @@ public class SecurityConfiguration {
                 .permitAll()
             .and()
                 .headers()
-                .contentSecurityPolicy("default-src 'self'; frame-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://storage.googleapis.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:")
+                .contentSecurityPolicy("default-src 'self'; frame-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://storage.googleapis.com; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; img-src 'self' data:; font-src 'self' https://fonts.gstatic.com data:")
+                //.contentSecurityPolicy("default-src 'self'; frame-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://storage.googleapis.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:")
             .and()
                 .referrerPolicy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)
             .and()

@@ -5,8 +5,8 @@ package sa.tamkeentech.tbs.domain.enumeration;
  */
 public enum InvoiceStatus {
     NEW("New bill creation request"),
-    FAILED("bill creation was failed"),
-    CREATED("Bill was created"),
+    FAILED("bill creation was failed in SADAD"),
+    CREATED("Bill was created in SADAD"),
     EXPIRED("Bill expired");
 
     InvoiceStatus (String description) {

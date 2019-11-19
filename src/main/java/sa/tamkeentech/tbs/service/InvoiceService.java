@@ -10,9 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.*;
-import sa.tamkeentech.tbs.domain.enumeration.DiscountType;
-import sa.tamkeentech.tbs.domain.enumeration.IdentityType;
-import sa.tamkeentech.tbs.domain.enumeration.InvoiceStatus;
+import sa.tamkeentech.tbs.domain.enumeration.*;
 import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.security.SecurityUtils;
 import sa.tamkeentech.tbs.service.dto.InvoiceDTO;
@@ -132,8 +130,8 @@ public class InvoiceService {
         Invoice invoice = Invoice.builder()
             .client(client.get())
             .customer(customer.get())
-            // .subtotal(oneItemInvoiceDTO.getPrice())
-            // .amount(oneItemInvoiceDTO.getPrice())
+            .paymentStatus(PaymentStatus.PENDING)
+            .notificationStatus(NotificationStatus.PAYMENT_NOTIFICATION_NEW)
             .status(InvoiceStatus.NEW)
             .build();
 
@@ -210,8 +208,12 @@ public class InvoiceService {
                         oneItemInvoiceRespDTO.setStatusId(sadadResult);
                         oneItemInvoiceRespDTO.setShortDesc("error");
                         oneItemInvoiceRespDTO.setDescription("error_message");
+                        invoice.setStatus(InvoiceStatus.FAILED);
+                        invoiceRepository.save(invoice);
                         throw new TbsRunTimeException("Sadad bill creation error");
                     }
+                    invoice.setStatus(InvoiceStatus.CREATED);
+                    invoiceRepository.save(invoice);
                     oneItemInvoiceRespDTO.setStatusId(1);
                     oneItemInvoiceRespDTO.setShortDesc("success");
                     oneItemInvoiceRespDTO.setDescription("");

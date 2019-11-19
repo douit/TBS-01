@@ -1,10 +1,10 @@
 package sa.tamkeentech.tbs.service;
 
-import org.apache.http.HttpEntity;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,10 +26,7 @@ import sa.tamkeentech.tbs.domain.PaymentMethod;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.repository.PaymentRepository;
-import sa.tamkeentech.tbs.service.dto.NotifiReqDTO;
-import sa.tamkeentech.tbs.service.dto.NotifiRespDTO;
-import sa.tamkeentech.tbs.service.dto.PaymentDTO;
-import sa.tamkeentech.tbs.service.dto.TokenResponseDTO;
+import sa.tamkeentech.tbs.service.dto.*;
 import sa.tamkeentech.tbs.service.mapper.PaymentMapper;
 
 import org.apache.http.client.HttpClient;
@@ -64,6 +61,8 @@ public class PaymentService {
 
     private final PaymentMethodService paymentMethodService;
 
+    private final ObjectMapper objectMapper;
+
 
     @Value("${tbs.payment.sadad-url}")
     private String sadadUrl;
@@ -80,16 +79,15 @@ public class PaymentService {
     @Value("${tbs.payment.credit-card-biller-code}")
     private String billerCode;
 
-    @Value("${tbs.payment.credit-card-app-code}")
-    private String appCode;
 
     public static final Long DIFF_ACCOUNT_BILL_ID = 6999996000l;
 
-    public PaymentService(PaymentRepository paymentRepository, PaymentMapper paymentMapper, InvoiceRepository invoiceRepository, PaymentMethodService paymentMethodService) {
+    public PaymentService(PaymentRepository paymentRepository, PaymentMapper paymentMapper, InvoiceRepository invoiceRepository, PaymentMethodService paymentMethodService, ObjectMapper objectMapper) {
         this.paymentRepository = paymentRepository;
         this.paymentMapper = paymentMapper;
         this.invoiceRepository = invoiceRepository;
         this.paymentMethodService = paymentMethodService;
+        this.objectMapper = objectMapper;
     }
 
     /**
@@ -111,14 +109,23 @@ public class PaymentService {
 
         // call payment gateway
         BigDecimal roundedAmount = invoice.get().getAmount().setScale(2, RoundingMode.HALF_UP);
-        String redirectUrl = creditCardCall(invoice.get().getId(), roundedAmount.multiply(new BigDecimal("100")));
+        String appCode = invoice.get().getClient().getPaymentKeyApp();
+        PaymentResponseDTO paymentResponseDTO = creditCardCall(invoice.get().getId(), appCode, roundedAmount.multiply(new BigDecimal("100")));
 
         payment.setInvoice(invoice.get());
         payment.setAmount(invoice.get().getAmount());
         payment.setStatus(PaymentStatus.PENDING);
+        if (paymentResponseDTO != null) {
+            payment.setTransactionId(paymentResponseDTO.getTransactionId());
+        }
         payment = paymentRepository.save(payment);
+
+        if (paymentResponseDTO == null || paymentResponseDTO.getTransactionId() == null || StringUtils.isEmpty(paymentResponseDTO.getUrl())) {
+            throw new TbsRunTimeException("Payment gateway issue");
+        }
+
         PaymentDTO result = paymentMapper.toDto(payment);
-        result.setRedirectUrl(redirectUrl);
+        result.setRedirectUrl(paymentResponseDTO.getUrl());
         return result;
     }
 
@@ -216,12 +223,12 @@ public class PaymentService {
         return response.getStatusLine().getStatusCode();
     }
 
-    public String creditCardCall( Long invoiceId , BigDecimal amount) {
+    public PaymentResponseDTO creditCardCall( Long invoiceId , String appCode, BigDecimal amount) {
         HttpClient client = HttpClientBuilder.create().build();
         HttpPost post = new HttpPost(creditCardUrl);
         post.setHeader("Content-Type", "application/json");
         JSONObject billInfoContent = new JSONObject();
-        String responseString = null;
+        PaymentResponseDTO paymentResponseDTO = null;
         try {
             billInfoContent.put("BillNumber", invoiceId);
             billInfoContent.put("Amount",amount);
@@ -229,15 +236,15 @@ public class PaymentService {
             billInfoContent.put("AppCode",appCode);
             String jsonStr = billInfoContent.toString();
             post.setEntity(new StringEntity(jsonStr));
-            HttpResponse response;
-            response = client.execute(post);
-            HttpEntity entity = response.getEntity();
-            responseString = EntityUtils.toString(entity, "UTF-8");
+            HttpResponse response = client.execute(post);
+            /*HttpEntity entity = response.getEntity();
+            responseString = EntityUtils.toString(entity, "UTF-8");*/
+            paymentResponseDTO = objectMapper.readValue(response.getEntity().getContent(), PaymentResponseDTO.class);
         } catch (JSONException | IOException e) {
             log.error("Payment gateway issue: {}", e.getCause());
         }
-        log.info("************** response from credit Card ************ : " + responseString.substring(8,responseString.indexOf( ',' )));
-        return responseString.substring(8,responseString.indexOf( ',' ) - 1) ;
+        log.info("************** response from credit Card ************ : " + paymentResponseDTO);
+        return paymentResponseDTO;
     }
 
     public Long getSadadBillAccount(Long billId) {
