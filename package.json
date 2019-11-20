@@ -14,6 +14,7 @@
     "lint": "ng lint",
     "e2e": "ng e2e",
     "cleanup": "rimraf target/classes/static/ target/classes/aot",
+    "clean-www": "rimraf target/classes/static/app/{src,target/}",
     "install:clean": "rm -rf node_modules/ && rm -rf package-lock.json && npm install",
     "webpack:dev": "npm run webpack-dev-server -- --config webpack/webpack.dev.js --inline --hot --port=9060 --watch-content-base --env.stats=minimal",
     "webpack:dev-verbose": "npm run webpack-dev-server -- --config webpack/webpack.dev.js --inline --hot --port=9060 --watch-content-base --profile --progress --env.stats=normal",
@@ -21,7 +22,7 @@
     "webpack:build": "npm run cleanup && npm run webpack:build:main",
     "webpack:prod:main": "npm run webpack -- --config webpack/webpack.prod.js --profile",
     "webpack:prod": "npm run cleanup && npm run webpack:prod:main && npm run clean-www",
-    "webpack:test": "npm run test",
+    "webpack:test": "",
     "webpack-dev-server": "node --max_old_space_size=4096 node_modules/webpack-dev-server/bin/webpack-dev-server.js",
     "webpack": "node --max_old_space_size=4096 node_modules/webpack/bin/webpack.js"
   },
@@ -75,7 +76,6 @@
     "moment-timezone": "0.4.0",
     "ng-jhipster": "0.11.1",
     "ng2-nouislider": "1.8.2",
-    "ng2-select": "2.0.0",
     "ngx-chips": "1.9.8",
     "ngx-cookie": "4.0.2",
     "ngx-infinite-scroll": "8.0.0",
@@ -149,6 +149,13 @@
     "webpack-notifier": "1.8.0",
     "webpack-visualizer-plugin": "0.1.11",
     "workbox-webpack-plugin": "4.3.1",
-    "write-file-webpack-plugin": "4.5.1"
+    "write-file-webpack-plugin": "4.5.1",
+    "karma": "4.1.0",
+    "karma-chrome-launcher": "2.2.0",
+    "karma-cli": "2.0.0",
+    "karma-coverage-istanbul-reporter": "2.0.5",
+    "karma-jasmine": "2.0.1",
+    "karma-jasmine-html-reporter": "1.4.2",
+    "protractor": "5.4.2"
   }
 }

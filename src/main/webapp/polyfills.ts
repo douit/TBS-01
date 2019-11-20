@@ -73,7 +73,7 @@ declare var $: any;
 declare var jQuery: any;
 
 // window.$ = window.jQuery = require('jquery-slim');
-window.Popper = require('popper.js');
+// window.Popper = require('popper.js');
 
 require('bootstrap/dist/js/bootstrap');
 

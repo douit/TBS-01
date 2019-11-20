@@ -20,9 +20,42 @@ module.exports = webpackMerge(commonConfig({ env: ENV }), {
     // You have to enable it in Terser config below and in tsconfig-aot.json as well
     // devtool: 'source-map',
     entry: {
-        polyfills: './src/main/webapp/app/polyfills',
+        polyfills: './src/main/webapp/polyfills.ts',
         global: './src/main/webapp/content/scss/global.scss',
-        main: './src/main/webapp/app/app.main'
+        main: './src/main/webapp/main.ts',
+      styles: [
+        "./node_modules/perfect-scrollbar/css/perfect-scrollbar.css",
+        "./node_modules/angular-calendar/scss/angular-calendar.scss",
+        "./node_modules/sweetalert2/src/sweetalert2.scss",
+        "./src/main/webapp/content/scss/global.scss",
+        "./node_modules/datatables.net-bs4/css/dataTables.bootstrap4.css",
+        "./src/main/webapp/content/scss/material-dashboard.scss"
+      ],
+      scripts: [
+        "./node_modules/jquery/dist/jquery.js",
+        "./node_modules/popper.js/dist/umd/popper.js",
+        "./node_modules/bootstrap-material-design/dist/js/bootstrap-material-design.min.js",
+        "./node_modules/moment/moment.js",
+        "./node_modules/arrive/src/arrive.js",
+        "./node_modules/hammerjs/hammer.min.js",
+        "./node_modules/web-animations-js/web-animations.min.js",
+        "./node_modules/chartist/dist/chartist.js",
+        "./node_modules/chartist-plugin-zoom/dist/chartist-plugin-zoom.js",
+        "./node_modules/twitter-bootstrap-wizard/jquery.bootstrap.wizard.js",
+        "./node_modules/bootstrap-notify/bootstrap-notify.js",
+        "./node_modules/nouislider/distribute/nouislider.min.js",
+        "./node_modules/bootstrap-select/dist/js/bootstrap-select.js",
+        "./node_modules/datatables/media/js/jquery.dataTables.js",
+        "./node_modules/datatables.net-bs4/js/dataTables.bootstrap4.js",
+        "./node_modules/datatables.net-responsive/js/dataTables.responsive.js",
+        "./node_modules/fullcalendar/dist/fullcalendar.js",
+        "./node_modules/bootstrap-tagsinput/dist/bootstrap-tagsinput.js",
+        "./node_modules/jasny-bootstrap/dist/js/jasny-bootstrap.min.js",
+        "./node_modules/perfect-scrollbar/dist/perfect-scrollbar.min.js",
+        "./node_modules/jqvmap/dist/jquery.vmap.min.js",
+        "./node_modules/jqvmap/dist/maps/jquery.vmap.world.js",
+        "./node_modules/jquery-validation/dist/jquery.validate.min.js"
+      ]
     },
     output: {
         path: utils.root('target/classes/static/'),
@@ -141,7 +174,7 @@ module.exports = webpackMerge(commonConfig({ env: ENV }), {
             filename: '../stats.html'
         }),
         new AngularCompilerPlugin({
-            mainPath: utils.root('src/main/webapp/app/app.main.ts'),
+            mainPath: utils.root('src/main/webapp/main.ts'),
             tsConfigPath: utils.root('tsconfig-aot.json'),
             sourceMap: true
         }),

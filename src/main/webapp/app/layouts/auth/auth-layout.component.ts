@@ -1,6 +1,7 @@
 import { Component, OnInit, ElementRef } from '@angular/core';
 import { Router, NavigationEnd, NavigationStart } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
+import { filter} from 'rxjs/operators';
 
 @Component({
   selector: 'app-layout',
@@ -19,16 +20,16 @@ export class AuthLayoutComponent implements OnInit {
     const navbar: HTMLElement = this.element.nativeElement;
 
     this.toggleButton = navbar.getElementsByClassName('navbar-toggler')[0];
-    this._router = this.router.events.filter(event => event instanceof NavigationEnd).subscribe((event: NavigationEnd) => {
+    /*this._router = this.router.events.filter(event => event instanceof NavigationEnd).subscribe((event: NavigationEnd) => {
       this.sidebarClose();
       const $layer = document.getElementsByClassName('close-layer')[0];
       if ($layer) {
         $layer.remove();
       }
-    });
+    });*/
   }
   sidebarOpen() {
-    var $toggle = document.getElementsByClassName('navbar-toggler')[0];
+    const $toggle = document.getElementsByClassName('navbar-toggler')[0];
       const toggleButton = this.toggleButton;
       const body = document.getElementsByTagName('body')[0];
       setTimeout(function(){

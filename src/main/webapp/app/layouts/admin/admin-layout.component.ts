@@ -6,6 +6,7 @@ import { Location, LocationStrategy, PathLocationStrategy, PopStateEvent } from 
 import 'rxjs/add/operator/filter';
 import { NavbarComponent } from '../../shared/navbar/navbar.component';
 import PerfectScrollbar from 'perfect-scrollbar';
+import { filter, tap} from 'rxjs/operators';
 
 declare const $: any;
 
@@ -30,7 +31,7 @@ export class AdminLayoutComponent implements OnInit, AfterViewInit {
     ngOnInit() {
         const elemMainPanel = <HTMLElement>document.querySelector('.main-panel');
         const elemSidebar = <HTMLElement>document.querySelector('.sidebar .sidebar-wrapper');
-        this.location.subscribe((ev:PopStateEvent) => {
+        this.location.subscribe((ev: PopStateEvent) => {
             this.lastPoppedUrl = ev.url;
         });
          this.router.events.subscribe((event:any) => {
@@ -46,10 +47,19 @@ export class AdminLayoutComponent implements OnInit, AfterViewInit {
                    window.scrollTo(0, 0);
            }
         });
-        this._router = this.router.events.filter(event => event instanceof NavigationEnd).subscribe((event: NavigationEnd) => {
+        /*this._router = this.router.events.filter(event => event instanceof NavigationEnd).subscribe((event: NavigationEnd) => {
              elemMainPanel.scrollTop = 0;
              elemSidebar.scrollTop = 0;
-        });
+        });*/
+
+      this.router.events.pipe(
+        filter(event => event instanceof NavigationEnd),
+        tap(event => {
+          elemMainPanel.scrollTop = 0;
+          elemSidebar.scrollTop = 0;
+        })
+      );
+
         const html = document.getElementsByTagName('html')[0];
         if (window.matchMedia(`(min-width: 960px)`).matches && !this.isMac()) {
             let ps = new PerfectScrollbar(elemMainPanel);
@@ -59,9 +69,9 @@ export class AdminLayoutComponent implements OnInit, AfterViewInit {
         else {
             html.classList.add('perfect-scrollbar-off');
         }
-        this._router = this.router.events.filter(event => event instanceof NavigationEnd).subscribe((event: NavigationEnd) => {
+        /*this._router = this.router.events.filter(event => event instanceof NavigationEnd).subscribe((event: NavigationEnd) => {
           this.navbar.sidebarClose();
-        });
+        });*/
 
         this.navItems = [
           { type: NavItemType.NavbarLeft, title: 'Dashboard', iconClass: 'fa fa-dashboard' },

@@ -10,6 +10,7 @@ import {VERSION} from '../../app.constants';
 import {JhiLanguageHelper} from '../..//core/language/language.helper';
 import {AccountService} from '../../core/auth/account.service';
 import {LoginService} from '../../core/login/login.service';
+import { filter} from 'rxjs/operators';
 const misc: any = {
     navbar_menu_visible: 0,
     active_collapse: true,
@@ -122,14 +123,14 @@ export class NavbarComponent implements OnInit {
         if (body.classList.contains('hide-sidebar')) {
             misc.hide_sidebar_active = true;
         }
-        this._router = this.router.events.filter(event => event instanceof NavigationEnd).subscribe((event: NavigationEnd) => {
+        /*this._router = this.router.events.filter(event => event instanceof NavigationEnd).subscribe((event: NavigationEnd) => {
           this.sidebarClose();
 
           const $layer = document.getElementsByClassName('close-layer')[0];
           if ($layer) {
             $layer.remove();
           }
-        });
+        });*/
     }
     onResize(event) {
       if ($(window).width() > 991) {

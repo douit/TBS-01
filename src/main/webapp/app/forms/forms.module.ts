@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NouisliderModule } from 'ng2-nouislider';
 import { TagInputModule } from 'ngx-chips';
-import { SelectModule } from 'ng2-select';
+// import { SelectModule } from 'ng2-select';
 import { MaterialModule } from '../app.module';
 import { FormsRoutes } from './forms.routing';
 

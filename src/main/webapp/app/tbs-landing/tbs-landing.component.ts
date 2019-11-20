@@ -37,7 +37,7 @@ export class TbsLandingComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    let navbar : HTMLElement = this.element.nativeElement;
+    const navbar: HTMLElement = this.element.nativeElement;
     this.toggleButton = navbar.getElementsByClassName('navbar-toggle')[0];
     const body = document.getElementsByTagName('body')[0];
     body.classList.add('login-page');
@@ -49,10 +49,10 @@ export class TbsLandingComponent implements OnInit, OnDestroy {
     }, 700);
   }
   sidebarToggle() {
-    let toggleButton = this.toggleButton;
-    let body = document.getElementsByTagName('body')[0];
-    let sidebar = document.getElementsByClassName('navbar-collapse')[0];
-    if (this.sidebarVisible == false) {
+    const toggleButton = this.toggleButton;
+    const body = document.getElementsByTagName('body')[0];
+    const sidebar = document.getElementsByClassName('navbar-collapse')[0];
+    if (this.sidebarVisible === false) {
       setTimeout(function() {
         toggleButton.classList.add('toggled');
       }, 500);
@@ -64,7 +64,7 @@ export class TbsLandingComponent implements OnInit, OnDestroy {
       body.classList.remove('nav-open');
     }
   }
-  ngOnDestroy(){
+  ngOnDestroy() {
     const body = document.getElementsByTagName('body')[0];
     body.classList.remove('login-page');
     body.classList.remove('off-canvas-sidebar');
@@ -112,4 +112,5 @@ export class TbsLandingComponent implements OnInit, OnDestroy {
       .catch(() => {
         this.authenticationError = true;
       });
+  }
 }
