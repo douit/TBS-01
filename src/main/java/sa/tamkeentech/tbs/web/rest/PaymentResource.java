@@ -1,8 +1,8 @@
 package sa.tamkeentech.tbs.web.rest;
 
 import sa.tamkeentech.tbs.service.PaymentService;
+import sa.tamkeentech.tbs.service.dto.*;
 import sa.tamkeentech.tbs.web.rest.errors.BadRequestAlertException;
-import sa.tamkeentech.tbs.service.dto.PaymentDTO;
 
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -22,7 +22,7 @@ import java.util.Optional;
  * REST controller for managing {@link sa.tamkeentech.tbs.domain.Payment}.
  */
 @RestController
-@RequestMapping("/billing")
+// @RequestMapping("/billing")
 public class PaymentResource {
 
     private final Logger log = LoggerFactory.getLogger(PaymentResource.class);
@@ -39,19 +39,27 @@ public class PaymentResource {
     }
 
     /**
-     * {@code POST  /payments} : Create a new payment.
+     * {@code POST  /payments} : Create a CC new payment.
      *
      * @param paymentDTO the paymentDTO to create.
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new paymentDTO, or with status {@code 400 (Bad Request)} if the payment has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PostMapping("/payments")
-    public ResponseEntity<PaymentDTO> createPayment(@RequestBody PaymentDTO paymentDTO) throws URISyntaxException {
+    @PostMapping("/billing/payments")
+    public ResponseEntity<PaymentDTO> InitiateCCPayment(@RequestBody PaymentDTO paymentDTO) throws URISyntaxException {
         log.debug("REST request to save Payment : {}", paymentDTO);
         if (paymentDTO.getId() != null) {
             throw new BadRequestAlertException("A new payment cannot already have an ID", ENTITY_NAME, "idexists");
         }
         PaymentDTO result = paymentService.createNewPayment(paymentDTO);
+        return ResponseEntity.created(new URI("/api/payments/" + result.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+            .body(result);
+    }
+
+    @PostMapping("/billing/payments/status")
+    public ResponseEntity<PaymentDTO> updatePaymentStatus(@RequestBody PaymentStatusResponseDTO paymentStatusResponseDTO) throws URISyntaxException {
+        PaymentDTO result = paymentService.updateCreditCardPayment(paymentStatusResponseDTO);
         return ResponseEntity.created(new URI("/api/payments/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -66,7 +74,7 @@ public class PaymentResource {
      * or with status {@code 500 (Internal Server Error)} if the paymentDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PutMapping("/payments")
+    @PutMapping("/api/payments")
     public ResponseEntity<PaymentDTO> updatePayment(@RequestBody PaymentDTO paymentDTO) throws URISyntaxException {
         log.debug("REST request to update Payment : {}", paymentDTO);
         if (paymentDTO.getId() == null) {
@@ -84,7 +92,7 @@ public class PaymentResource {
 
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of payments in body.
      */
-    @GetMapping("/payments")
+    @GetMapping("/api/payments")
     public List<PaymentDTO> getAllPayments() {
         log.debug("REST request to get all Payments");
         return paymentService.findAll();
@@ -96,11 +104,16 @@ public class PaymentResource {
      * @param id the id of the paymentDTO to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the paymentDTO, or with status {@code 404 (Not Found)}.
      */
-    @GetMapping("/payments/{id}")
+    @GetMapping("/api/payments/{id}")
     public ResponseEntity<PaymentDTO> getPayment(@PathVariable Long id) {
         log.debug("REST request to get Payment : {}", id);
         Optional<PaymentDTO> paymentDTO = paymentService.findOne(id);
         return ResponseUtil.wrapOrNotFound(paymentDTO);
+    }
+
+    @PostMapping(value="/sadad/paymentnotification")
+    ResponseEntity<NotifiRespDTO>  getPaymentNotification(@RequestBody NotifiReqDTO req, @RequestHeader(value="TBS-ApiKey")  String apiKey , @RequestHeader(value="TBS-ApiSecret")  String apiSecret)  throws Exception {
+        return paymentService.sendPaymentNotification(req, apiKey, apiSecret);
     }
 
 }

@@ -74,10 +74,4 @@ public class OneItemInvoiceAppResource {
             .body(result);
     }
 
-
-    @PostMapping(value="/sadad/paymentnotification")
-    ResponseEntity<NotifiRespDTO>  getPaymentNotification(@RequestBody NotifiReqDTO req, @RequestHeader(value="TBS-ApiKey")  String apiKey , @RequestHeader(value="TBS-ApiSecret")  String apiSecret)  throws Exception {
-        return paymentService.sendPaymentNotification(req, apiKey, apiSecret);
-    }
-
 }
