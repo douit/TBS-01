@@ -130,6 +130,29 @@ public class PaymentService {
     }
 
     /**
+     *  Update Credit card payment status
+     *
+     * @param paymentStatusResponseDTO
+     * @return
+     */
+    public PaymentDTO updateCreditCardPayment(PaymentStatusResponseDTO paymentStatusResponseDTO) {
+        log.debug("Request to update status Payment : {}", paymentStatusResponseDTO);
+        Payment payment = paymentRepository.findByTransactionId(paymentStatusResponseDTO.getTransactionId());
+        Invoice invoice = payment.getInvoice();
+        if (Constants.CC_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode().toString())) {
+            payment.setStatus(PaymentStatus.PAID);
+            invoice.setPaymentStatus(PaymentStatus.PAID);
+        } else {
+            payment.setStatus(PaymentStatus.UNPAID);
+            invoice.setPaymentStatus(PaymentStatus.UNPAID);
+        }
+        paymentRepository.save(payment);
+        PaymentDTO result = paymentMapper.toDto(payment);
+        return result;
+    }
+
+
+    /**
      * Save a payment.
      *
      * @param paymentDTO the entity to save.

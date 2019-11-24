@@ -17,6 +17,8 @@ public final class Constants {
     public static final String VISA = "VISA";
     public static final String CASH = "CASH";
 
+    public static final String CC_PAYMENT_SUCCESS_CODE = "1007";
+
     private Constants() {
     }
 }

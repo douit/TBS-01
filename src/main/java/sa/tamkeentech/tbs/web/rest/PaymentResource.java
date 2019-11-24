@@ -1,6 +1,7 @@
 package sa.tamkeentech.tbs.web.rest;
 
 import sa.tamkeentech.tbs.service.PaymentService;
+import sa.tamkeentech.tbs.service.dto.PaymentStatusResponseDTO;
 import sa.tamkeentech.tbs.web.rest.errors.BadRequestAlertException;
 import sa.tamkeentech.tbs.service.dto.PaymentDTO;
 
@@ -55,6 +56,15 @@ public class PaymentResource {
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
             .body(result);
     }
+
+    @PostMapping("/billing/payments/status")
+    public ResponseEntity<PaymentDTO> updatePaymentStatus(@RequestBody PaymentStatusResponseDTO paymentStatusResponseDTO) throws URISyntaxException {
+        PaymentDTO result = paymentService.updateCreditCardPayment(paymentStatusResponseDTO);
+        return ResponseEntity.created(new URI("/api/payments/" + result.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+            .body(result);
+    }
+
 
     /**
      * {@code PUT  /payments} : Updates an existing payment.
