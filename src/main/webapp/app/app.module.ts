@@ -5,6 +5,10 @@ import { HttpModule } from '@angular/http';
 import { APP_BASE_HREF } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { AuthExpiredInterceptor } from './blocks/interceptor/auth-expired.interceptor';
+import { ErrorHandlerInterceptor } from './blocks/interceptor/errorhandler.interceptor';
+import { NotificationInterceptor } from './blocks/interceptor/notification.interceptor';
 import {
   MatAutocompleteModule,
   MatButtonModule,
@@ -116,6 +120,23 @@ export class MaterialModule {}
         AuthLayoutComponent// ,
         // TbsLandingComponent
     ],
+    providers: [
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthExpiredInterceptor,
+      multi: true
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: ErrorHandlerInterceptor,
+      multi: true
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: NotificationInterceptor,
+      multi: true
+    }
+  ],
     bootstrap:    [ AppComponent ]
 })
 export class AppModule { }

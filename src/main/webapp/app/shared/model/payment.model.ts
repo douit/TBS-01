@@ -8,6 +8,8 @@ export interface IPayment {
   expirationDate?: Moment;
   invoiceId?: number;
   paymentMethodId?: number;
+  redirectUrl?: string;
+  transactionId?: string;
 }
 
 export class Payment implements IPayment {
@@ -17,6 +19,8 @@ export class Payment implements IPayment {
     public status?: PaymentStatus,
     public expirationDate?: Moment,
     public invoiceId?: number,
-    public paymentMethodId?: number
+    public paymentMethodId?: number,
+    public redirectUrl?: string,
+    public transactionId?: string
   ) {}
 }

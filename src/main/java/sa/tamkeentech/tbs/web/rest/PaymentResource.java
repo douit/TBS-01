@@ -22,7 +22,6 @@ import java.util.Optional;
  * REST controller for managing {@link sa.tamkeentech.tbs.domain.Payment}.
  */
 @RestController
-@RequestMapping("/billing")
 public class PaymentResource {
 
     private final Logger log = LoggerFactory.getLogger(PaymentResource.class);
@@ -45,7 +44,7 @@ public class PaymentResource {
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new paymentDTO, or with status {@code 400 (Bad Request)} if the payment has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PostMapping("/payments")
+    @PostMapping("/billing/payments/credit-card")
     public ResponseEntity<PaymentDTO> createPayment(@RequestBody PaymentDTO paymentDTO) throws URISyntaxException {
         log.debug("REST request to save Payment : {}", paymentDTO);
         if (paymentDTO.getId() != null) {
@@ -66,7 +65,7 @@ public class PaymentResource {
      * or with status {@code 500 (Internal Server Error)} if the paymentDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PutMapping("/payments")
+    @PutMapping("/api/payments")
     public ResponseEntity<PaymentDTO> updatePayment(@RequestBody PaymentDTO paymentDTO) throws URISyntaxException {
         log.debug("REST request to update Payment : {}", paymentDTO);
         if (paymentDTO.getId() == null) {
@@ -84,7 +83,7 @@ public class PaymentResource {
 
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of payments in body.
      */
-    @GetMapping("/payments")
+    @GetMapping("/api/payments")
     public List<PaymentDTO> getAllPayments() {
         log.debug("REST request to get all Payments");
         return paymentService.findAll();
@@ -96,7 +95,7 @@ public class PaymentResource {
      * @param id the id of the paymentDTO to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the paymentDTO, or with status {@code 404 (Not Found)}.
      */
-    @GetMapping("/payments/{id}")
+    @GetMapping("/api/payments/{id}")
     public ResponseEntity<PaymentDTO> getPayment(@PathVariable Long id) {
         log.debug("REST request to get Payment : {}", id);
         Optional<PaymentDTO> paymentDTO = paymentService.findOne(id);

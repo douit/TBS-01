@@ -11,6 +11,8 @@ import { CustomerDetailComponent } from './customer-detail.component';
 import { CustomerUpdateComponent } from './customer-update.component';
 import { CustomerDeletePopupComponent } from './customer-delete-dialog.component';
 import { ICustomer } from 'app/shared/model/customer.model';
+import {PaymentResolve} from "app/payment/payment.route";
+import {CustomerTestCcComponent} from "app/customer/customer-test-cc.component";
 
 @Injectable({ providedIn: 'root' })
 export class CustomerResolve implements Resolve<ICustomer> {
@@ -71,6 +73,18 @@ export const customerRoute: Routes = [
     data: {
       authorities: ['ROLE_USER'],
       pageTitle: 'tbsApp.customer.home.title'
+    },
+    canActivate: [UserRouteAccessService]
+  },
+  {
+    path: 'test_cc',
+    component: CustomerTestCcComponent,
+    resolve: {
+      payment: PaymentResolve
+    },
+    data: {
+      authorities: ['ROLE_USER'],
+      pageTitle: 'tbsApp.payment.home.title'
     },
     canActivate: [UserRouteAccessService]
   }

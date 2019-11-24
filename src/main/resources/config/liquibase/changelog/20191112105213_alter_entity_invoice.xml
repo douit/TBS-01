@@ -83,4 +83,11 @@
     </addColumn>
     </changeSet>
 
+    <changeSet id="20191119105213-change8" author="Ahmed B" context="faker">
+        <update tableName="payment">
+            <column name="status" value="PAID" />
+            <where>status = 'SUCCESSFUL'</where>
+        </update>
+    </changeSet>
+
 </databaseChangeLog>

@@ -42,7 +42,12 @@ export const ROUTES: RouteInfo[] = [{
         title: 'Payments',
         type: 'link',
         icontype: 'attach_money'
-    }/*,{
+    }, {
+        path: '/customer/test_cc',
+        title: 'Test Credit Card Payment',
+        type: 'link',
+        icontype: 'widgets'
+}/*, {
         path: '/components',
         title: 'Components',
         type: 'sub',

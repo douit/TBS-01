@@ -19,6 +19,11 @@ const ENTITY_STATES = [...paymentRoute, ...paymentPopupRoute];
     PaymentDeleteDialogComponent,
     PaymentDeletePopupComponent
   ],
-  entryComponents: [PaymentComponent, PaymentUpdateComponent, PaymentDeleteDialogComponent, PaymentDeletePopupComponent]
+  entryComponents: [
+    PaymentComponent,
+    PaymentUpdateComponent,
+    PaymentDeleteDialogComponent,
+    PaymentDeletePopupComponent
+  ]
 })
 export class TbsposPaymentModule {}

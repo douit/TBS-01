@@ -16,6 +16,7 @@ type EntityArrayResponseType = HttpResponse<IPayment[]>;
 @Injectable({ providedIn: 'root' })
 export class PaymentService {
   public resourceUrl = SERVER_API_URL + 'api/payments';
+  public resourceUrlCreditCard = '/billing/payments/credit-card';
 
   constructor(protected http: HttpClient) {}
 
@@ -23,6 +24,13 @@ export class PaymentService {
     const copy = this.convertDateFromClient(payment);
     return this.http
       .post<IPayment>(this.resourceUrl, copy, { observe: 'response' })
+      .pipe(map((res: EntityResponseType) => this.convertDateFromServer(res)));
+  }
+
+  createCcPayment(payment: IPayment): Observable<EntityResponseType> {
+    const copy = this.convertDateFromClient(payment);
+    return this.http
+      .post<IPayment>(this.resourceUrlCreditCard, copy, { observe: 'response' })
       .pipe(map((res: EntityResponseType) => this.convertDateFromServer(res)));
   }
 

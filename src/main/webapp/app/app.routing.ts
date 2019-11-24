@@ -35,6 +35,12 @@ export const AppRoutes: Routes = [
       component: AdminLayoutComponent,
       canActivate: [UserRouteAccessService],
       loadChildren: () => import('./payment/payment.module').then(m => m.TbsposPaymentModule)
+    },
+    {
+      path: 'customer',
+      component: AdminLayoutComponent,
+      canActivate: [UserRouteAccessService],
+      loadChildren: () => import('./customer/customer.module').then(m => m.TbsposCustomerModule)
     }, {
       path: '',
       component: AdminLayoutComponent,

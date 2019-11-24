@@ -7,6 +7,7 @@ import { CustomerDetailComponent } from './customer-detail.component';
 import { CustomerUpdateComponent } from './customer-update.component';
 import { CustomerDeletePopupComponent, CustomerDeleteDialogComponent } from './customer-delete-dialog.component';
 import { customerRoute, customerPopupRoute } from './customer.route';
+import {CustomerTestCcComponent} from './customer-test-cc.component';
 
 const ENTITY_STATES = [...customerRoute, ...customerPopupRoute];
 
@@ -17,8 +18,14 @@ const ENTITY_STATES = [...customerRoute, ...customerPopupRoute];
     CustomerDetailComponent,
     CustomerUpdateComponent,
     CustomerDeleteDialogComponent,
-    CustomerDeletePopupComponent
+    CustomerDeletePopupComponent,
+    CustomerTestCcComponent
   ],
-  entryComponents: [CustomerComponent, CustomerUpdateComponent, CustomerDeleteDialogComponent, CustomerDeletePopupComponent]
+  entryComponents: [
+    CustomerComponent,
+    CustomerUpdateComponent,
+    CustomerDeleteDialogComponent,
+    CustomerDeletePopupComponent,
+    CustomerTestCcComponent]
 })
 export class TbsposCustomerModule {}
