@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import sa.tamkeentech.tbs.domain.PaymentMethod;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 
 import javax.validation.constraints.NotBlank;
@@ -35,5 +36,7 @@ public class PaymentDTO implements Serializable {
     private String redirectUrl;
 
     private String transactionId;
+    private PaymentMethod paymentMethod;
+
 
 }

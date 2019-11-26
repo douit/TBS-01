@@ -34,6 +34,13 @@ public class Refund extends AbstractAuditingEntity implements Serializable {
 
     @Column(name = "refund_id")
     private String refundId;
+    @Column(name = "biller_id")
+    private String billerId;
+    @Column(name = "bank_id")
+    private String bankId;
+    @Column(name = "official_id")
+    private String officialId;
+
 
     // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
     public Long getId() {
@@ -51,6 +58,34 @@ public class Refund extends AbstractAuditingEntity implements Serializable {
     public Refund amount(BigDecimal amount) {
         this.amount = amount;
         return this;
+    }
+
+    public static long getSerialVersionUID() {
+        return serialVersionUID;
+    }
+
+    public String getBillerId() {
+        return billerId;
+    }
+
+    public void setBillerId(String billerId) {
+        this.billerId = billerId;
+    }
+
+    public String getBankId() {
+        return bankId;
+    }
+
+    public void setBankId(String bankId) {
+        this.bankId = bankId;
+    }
+
+    public String getOfficialId() {
+        return officialId;
+    }
+
+    public void setOfficialId(String officialId) {
+        this.officialId = officialId;
     }
 
     public void setAmount(BigDecimal amount) {
@@ -100,13 +135,18 @@ public class Refund extends AbstractAuditingEntity implements Serializable {
         return 31;
     }
 
+
+
     @Override
     public String toString() {
         return "Refund{" +
-            "id=" + getId() +
+            "id=" +  getId()  +
             ", amount=" + getAmount() +
-            ", status='" + getStatus() + "'" +
-            ", refundId='" + getRefundId() + "'" +
-            "}";
+            ", status=" +  getStatus() +
+            ", refundId='" + getRefundId() + '\'' +
+            ", billerId='" + getBillerId() + '\'' +
+            ", bankId='" + getBankId() + '\'' +
+            ", officialId='" + getOfficialId() + '\'' +
+            '}';
     }
 }
