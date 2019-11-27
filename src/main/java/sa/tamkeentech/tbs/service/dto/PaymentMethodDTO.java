@@ -19,9 +19,9 @@ public class PaymentMethodDTO implements Serializable {
 
     private Long id;
 
-    @NotNull
     private String name;
 
+    @NotNull
     private String code;
 
 }
