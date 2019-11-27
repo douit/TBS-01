@@ -3,7 +3,9 @@ import io.swagger.annotations.ApiModel;
 import java.time.Instant;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 import java.util.Objects;
+import java.util.Set;
 
 import lombok.*;
 import sa.tamkeentech.tbs.domain.enumeration.InvoiceStatus;
@@ -21,7 +23,7 @@ public class InvoiceDTO implements Serializable {
 
     private Long id;
 
-    private String customerId;
+    private CustomerDTO customer;
 
     private InvoiceStatus status;
 
@@ -35,8 +37,12 @@ public class InvoiceDTO implements Serializable {
 
     private BigDecimal amount;
 
-    private Long discountId;
+    private DiscountDTO discount;
 
-    private Long clientId;
+    private ClientDTO client;
+
+    private Set<PaymentDTO> payments;
+
+    private ZonedDateTime createdDate;
 
 }

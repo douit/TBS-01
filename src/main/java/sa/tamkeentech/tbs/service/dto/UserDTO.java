@@ -10,6 +10,7 @@ import javax.validation.constraints.NotBlank;
 
 import javax.validation.constraints.*;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -45,11 +46,11 @@ public class UserDTO {
 
     private String createdBy;
 
-    private Instant createdDate;
+    private ZonedDateTime createdDate;
 
     private String lastModifiedBy;
 
-    private Instant lastModifiedDate;
+    private ZonedDateTime lastModifiedDate;
 
     private Set<String> authorities;
 
@@ -147,11 +148,11 @@ public class UserDTO {
         this.createdBy = createdBy;
     }
 
-    public Instant getCreatedDate() {
+    public ZonedDateTime getCreatedDate() {
         return createdDate;
     }
 
-    public void setCreatedDate(Instant createdDate) {
+    public void setCreatedDate(ZonedDateTime createdDate) {
         this.createdDate = createdDate;
     }
 
@@ -163,11 +164,11 @@ public class UserDTO {
         this.lastModifiedBy = lastModifiedBy;
     }
 
-    public Instant getLastModifiedDate() {
+    public ZonedDateTime getLastModifiedDate() {
         return lastModifiedDate;
     }
 
-    public void setLastModifiedDate(Instant lastModifiedDate) {
+    public void setLastModifiedDate(ZonedDateTime lastModifiedDate) {
         this.lastModifiedDate = lastModifiedDate;
     }
 

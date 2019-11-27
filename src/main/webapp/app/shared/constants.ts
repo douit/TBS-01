@@ -19,7 +19,26 @@ export class DatatableOptions {
 }
 
 export class LoadingOptions {
-    static BUTTON = {
-        STYLE: LoadingButtonStyles.ZOOM_IN
-    };
+  static BUTTON = {
+    STYLE: LoadingButtonStyles.ZOOM_IN
+  };
+}
+  export enum PaymentStatus {
+  PENDING = 'PENDING',
+  PAID = 'PAID',
+  UNPAID = 'UNPAID',
+  REFUNDED = 'REFUNDED'
+}
+
+export enum PaymentMethod {
+  SADAD = 'SADAD',
+  VISA = 'VISA',
+  CASH = 'CASH'
+}
+
+export enum InvoiceStatus {
+  NEW = 'NEW',
+  FAILED = 'FAILED',
+  CREATED = 'CREATED',
+  EXPIRED = 'EXPIRED',
 }

@@ -20,7 +20,14 @@
       "status": "Status",
       "expirationDate": "Expiration Date",
       "invoice": "Invoice",
-      "paymentMethod": "Payment Method"
+      "paymentMethod": "Payment Method",
+      "paymentStatus": {
+        "null": "",
+        "UNPAID": "UNPAID",
+        "PAID": "PAID",
+        "PENDING": "PENDING",
+        "REFUNDED": "REFUNDED"
+      }
     }
   }
 }

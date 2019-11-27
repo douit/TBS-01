@@ -7,6 +7,7 @@ import { HasAnyAuthorityDirective } from './auth/has-any-authority.directive';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { DatatableTotalEntriesComponent } from 'app/shared/datatable/datatable-total-entries/datatable-total-entries.component';
 import { DatatableDirective } from 'app/shared/directives/datatable.directive';
+import { TbsDateTimePipe } from 'app/shared/pipes/tbs-date-time/tbs-date-time.pipe';
 
 @NgModule({
   imports: [
@@ -20,7 +21,8 @@ import { DatatableDirective } from 'app/shared/directives/datatable.directive';
     /*JhiLoginModalComponent,*/
     HasAnyAuthorityDirective,
     DatatableTotalEntriesComponent,
-    DatatableDirective
+    DatatableDirective,
+    TbsDateTimePipe
   ],
   // entryComponents: [JhiLoginModalComponent],
   exports: [
@@ -32,7 +34,8 @@ import { DatatableDirective } from 'app/shared/directives/datatable.directive';
     HasAnyAuthorityDirective,
     NgxDatatableModule,
     DatatableTotalEntriesComponent,
-    DatatableDirective
+    DatatableDirective,
+    TbsDateTimePipe
   ]
 })
 export class TbsSharedModule {}

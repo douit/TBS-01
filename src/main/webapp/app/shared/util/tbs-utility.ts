@@ -8,28 +8,7 @@ import { format } from 'libphonenumber-js';
 
 export class _tbs {
 
-    static TripStatus = {
-        DELIVERED: 'DELIVERED',
-        TO_PICKUP: 'TO_PICKUP',
-        NEAR_PICKUP: 'NEAR_PICKUP',
-        AT_PICKUP: 'AT_PICKUP',
-        TO_DESTINATION: 'TO_DESTINATION',
-        NEAR_DESTINATION: 'NEAR_DESTINATION',
-        AT_DESTINATION: 'AT_DESTINATION',
-        CANCELLED: 'CANCELLED'
-    };
-
-    static DispatchStatus = {
-        NEW_ROUND: 'NEW_ROUND',
-        DISPATCHED: 'DISPATCHED',
-        UNDISPATCHED: 'UNDISPATCHED',
-        MANUAL: 'MANUAL',
-        FORCED: 'FORCED',
-        CANCELLED: 'CANCELLED'
-    };
-
-
-    static copyArray<T>(o: Array<T>): Array<T> {
+  static copyArray<T>(o: Array<T>): Array<T> {
         return _tbs.mapThenCopy(o, item => item);
     }
 

@@ -1,14 +1,16 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpResponse } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import {Injectable} from '@angular/core';
+import {HttpClient, HttpResponse} from '@angular/common/http';
+import {Observable} from 'rxjs';
 import * as moment from 'moment';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { DATE_FORMAT } from 'app/shared/constants/input.constants';
-import { map } from 'rxjs/operators';
+import {map} from 'rxjs/operators';
 
-import { SERVER_API_URL } from 'app/app.constants';
-import { createRequestOption } from 'app/shared/util/request-util';
-import { IInvoice } from 'app/shared/model/invoice.model';
+import {SERVER_API_URL} from 'app/app.constants';
+import {createRequestOption} from 'app/shared/util/request-util';
+import {IInvoice} from 'app/shared/model/invoice.model';
+import {DataTableInput} from 'app/shared/model/datatable/datatable-input';
+import {_tbs} from 'app/shared/util/tbs-utility';
+import {Pageable} from 'app/shared/model/pageable';
 
 type EntityResponseType = HttpResponse<IInvoice>;
 type EntityArrayResponseType = HttpResponse<IInvoice[]>;
@@ -18,6 +20,10 @@ export class InvoiceService {
   public resourceUrl = SERVER_API_URL + 'api/invoices';
 
   constructor(protected http: HttpClient) {}
+
+  getList(datatableInput: DataTableInput): Observable<Pageable<IInvoice>> {
+    return this.http.get<Pageable<IInvoice>>(`${this.resourceUrl}/datatable?${_tbs.serializeDataTableRequest(datatableInput)}`);
+  }
 
   create(invoice: IInvoice): Observable<EntityResponseType> {
     const copy = this.convertDateFromClient(invoice);

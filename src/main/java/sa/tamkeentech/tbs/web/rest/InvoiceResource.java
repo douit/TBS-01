@@ -1,5 +1,7 @@
 package sa.tamkeentech.tbs.web.rest;
 
+import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
+import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
 import sa.tamkeentech.tbs.security.SecurityUtils;
 import sa.tamkeentech.tbs.service.InvoiceService;
 import sa.tamkeentech.tbs.web.rest.errors.BadRequestAlertException;
@@ -125,5 +127,11 @@ public class InvoiceResource {
         log.debug("REST request to delete Invoice : {}", id);
         invoiceService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString())).build();
+    }
+
+    // @PreAuthorize("isAuthenticated()")
+    @GetMapping("/invoices/datatable")
+    public DataTablesOutput<InvoiceDTO> getAllItems(DataTablesInput input) {
+        return invoiceService.get(input);
     }
 }

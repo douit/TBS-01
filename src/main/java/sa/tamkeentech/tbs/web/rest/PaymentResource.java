@@ -1,5 +1,7 @@
 package sa.tamkeentech.tbs.web.rest;
 
+import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
+import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
 import sa.tamkeentech.tbs.service.PaymentService;
 import sa.tamkeentech.tbs.service.dto.PaymentStatusResponseDTO;
 import sa.tamkeentech.tbs.web.rest.errors.BadRequestAlertException;
@@ -110,6 +112,12 @@ public class PaymentResource {
         log.debug("REST request to get Payment : {}", id);
         Optional<PaymentDTO> paymentDTO = paymentService.findOne(id);
         return ResponseUtil.wrapOrNotFound(paymentDTO);
+    }
+
+    // @PreAuthorize("isAuthenticated()")
+    @GetMapping("/api/payments/datatable")
+    public DataTablesOutput<PaymentDTO> getAllItems(DataTablesInput input) {
+        return paymentService.get(input);
     }
 
 }

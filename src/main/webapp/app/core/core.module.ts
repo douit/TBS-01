@@ -16,6 +16,7 @@ import { NgbDateAdapter, NgbDatepickerConfig } from '@ng-bootstrap/ng-bootstrap'
 import { NgbDateMomentAdapter } from '../shared/util/datepicker-adapter';
 
 import { fontAwesomeIcons } from './icons/font-awesome-icons';
+import {TbsDateTimePipe} from '../shared/pipes/tbs-date-time/tbs-date-time.pipe';
 
 @NgModule({
   imports: [
@@ -50,7 +51,8 @@ import { fontAwesomeIcons } from './icons/font-awesome-icons';
     },
     { provide: NgbDateAdapter, useClass: NgbDateMomentAdapter },
     FindLanguageFromKeyPipe,
-    DatePipe
+    DatePipe,
+    TbsDateTimePipe
   ]
 })
 export class TbsCoreModule {

@@ -2,6 +2,7 @@ package sa.tamkeentech.tbs.service.dto;
 import java.time.Instant;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -32,8 +33,16 @@ public class PaymentDTO implements Serializable {
     @NotBlank
     private Long invoiceId;
 
+    private InvoiceDTO invoice;
+
     private String redirectUrl;
 
     private String transactionId;
+
+    private PaymentMethodDTO paymentMethod;
+
+    private BigDecimal amount;
+
+    private ZonedDateTime lastModifiedDate;
 
 }

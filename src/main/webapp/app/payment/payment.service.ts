@@ -1,14 +1,16 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpResponse } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import {Injectable} from '@angular/core';
+import {HttpClient, HttpResponse} from '@angular/common/http';
+import {Observable} from 'rxjs';
 import * as moment from 'moment';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { DATE_FORMAT } from 'app/shared/constants/input.constants';
-import { map } from 'rxjs/operators';
+import {map} from 'rxjs/operators';
 
-import { SERVER_API_URL } from 'app/app.constants';
-import { createRequestOption } from 'app/shared/util/request-util';
-import { IPayment } from 'app/shared/model/payment.model';
+import {SERVER_API_URL} from 'app/app.constants';
+import {createRequestOption} from 'app/shared/util/request-util';
+import {IPayment} from 'app/shared/model/payment.model';
+import {DataTableInput} from 'app/shared/model/datatable/datatable-input';
+import {_tbs} from 'app/shared/util/tbs-utility';
+import {Pageable} from 'app/shared/model/pageable';
 
 type EntityResponseType = HttpResponse<IPayment>;
 type EntityArrayResponseType = HttpResponse<IPayment[]>;
@@ -19,6 +21,10 @@ export class PaymentService {
   public resourceUrlCreditCard = '/billing/payments/credit-card';
 
   constructor(protected http: HttpClient) {}
+
+  getList(datatableInput: DataTableInput): Observable<Pageable<IPayment>> {
+    return this.http.get<Pageable<IPayment>>(`${this.resourceUrl}/datatable?${_tbs.serializeDataTableRequest(datatableInput)}`);
+  }
 
   create(payment: IPayment): Observable<EntityResponseType> {
     const copy = this.convertDateFromClient(payment);

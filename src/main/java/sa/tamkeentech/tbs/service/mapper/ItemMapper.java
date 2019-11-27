@@ -9,17 +9,17 @@ import org.mapstruct.*;
 /**
  * Mapper for the entity {@link Item} and its DTO {@link ItemDTO}.
  */
-@Mapper(componentModel = "spring", uses = {CategoryMapper.class, ClientMapper.class})
+@Mapper(componentModel = "spring", uses = {CategoryMapper.class, ClientMapper.class, TaxMapper.class})
 public interface ItemMapper extends EntityMapper<ItemDTO, Item> {
 
-    @Mapping(source = "category.id", target = "categoryId")
-    @Mapping(source = "client.id", target = "clientId")
+    // @Mapping(source = "category.id", target = "categoryId")
+    // @Mapping(source = "client.id", target = "clientId")
     ItemDTO toDto(Item item);
 
-    @Mapping(target = "taxes", ignore = true)
+    // @Mapping(target = "taxes", ignore = true)
     @Mapping(target = "removeTax", ignore = true)
-    @Mapping(source = "categoryId", target = "category")
-    @Mapping(source = "clientId", target = "client")
+    // @Mapping(source = "categoryId", target = "category")
+    // @Mapping(source = "clientId", target = "client")
     Item toEntity(ItemDTO itemDTO);
 
     default Item fromId(Long id) {

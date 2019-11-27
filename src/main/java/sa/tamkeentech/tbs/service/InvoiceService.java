@@ -6,6 +6,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
+import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -248,7 +250,7 @@ public class InvoiceService {
             throw new TbsRunTimeException("Bill does not exist");
         }
         InvoiceItem invoiceItem = invoice.get().getInvoiceItems().get(0);
-        String issueDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date.from(invoice.get().getCreatedDate()));
+        String issueDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date.from(invoice.get().getCreatedDate().toInstant()));
         return InvoiceStatusDTO.builder()
             .billNumber(billNumber.toString())
             .vat(invoice.get().getAmount().subtract(invoice.get().getSubtotal()))
@@ -260,6 +262,10 @@ public class InvoiceService {
             .companyName("تمكين للتقنيات")
             .issueDate(issueDate)
             .build();
+    }
+
+    public DataTablesOutput<InvoiceDTO> get(DataTablesInput input) {
+        return invoiceMapper.toDto(invoiceRepository.findAll(input));
     }
 
 }

@@ -34,62 +34,6 @@
                             <span jhiTranslate="tbsApp.item.home.notFound">No items found</span>
                         </div>-->
 
-    <!--<div class="table-responsive" *ngIf="items?.length > 0">
-        <table class="table table-striped" aria-describedby="page-heading">
-            <thead>
-            <tr>
-            <th><span jhiTranslate="global.field.id">ID</span></th>
-            <th><span jhiTranslate="tbsApp.item.name">Name</span></th>
-            <th><span jhiTranslate="tbsApp.item.description">Description</span></th>
-            <th><span jhiTranslate="tbsApp.item.price">Price</span></th>
-            <th><span jhiTranslate="tbsApp.item.defaultQuantity">Default Quantity</span></th>
-            <th><span jhiTranslate="tbsApp.item.category">Category</span></th>
-            <th><span jhiTranslate="tbsApp.item.client">Client</span></th>
-            <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr *ngFor="let item of items ;trackBy: trackId">
-                <td><a [routerLink]="['/item', item.id, 'view' ]">{{item.id}}</a></td>
-                <td>{{item.name}}</td>
-                <td>{{item.description}}</td>
-                <td>{{item.price}}</td>
-                <td>{{item.defaultQuantity}}</td>
-                <td>
-                    <div *ngIf="item.categoryId">
-                        <a [routerLink]="['/category', item.categoryId , 'view' ]" >{{item.categoryId}}</a>
-                    </div>
-                </td>
-                <td>
-                    <div *ngIf="item.clientId">
-                        <a [routerLink]="['/client', item.clientId , 'view' ]" >{{item.clientId}}</a>
-                    </div>
-                </td>
-                <td class="text-right td-actions">
-                    <div class="btn-group">
-                        <button mat-raised-button type="submit"
-                                [routerLink]="['/item', item.id, 'view' ]"
-                                class="btn btn-info  btn-link">
-                            <i class="material-icons">visibility</i>
-                        </button>
-                        <button mat-raised-button type="submit"
-                                [routerLink]="['/item', item.id, 'edit']"
-                                class="btn btn-primary  btn-link">
-                            <i class="material-icons">edit</i>
-                        </button>
-                        <button mat-raised-button type="submit"
-                                [routerLink]="['/item', { outlets: { popup: item.id + '/delete'} }]"
-                                replaceUrl="true"
-                                queryParamsHandling="merge"
-                                class="btn btn-danger  btn-link">
-                            <i class="material-icons">close</i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    </div>-->
                         <div class="datatable-wrapper">
                             <div class="row">
                                 <div class="col-sm-4">
@@ -175,12 +119,8 @@
                             </div>
                         </div>
 
-
-</div>
-
-
-
-</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

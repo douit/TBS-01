@@ -26,7 +26,16 @@
       "discount": "Discount",
       "invoiceItem": "Invoice Item",
       "payment": "Payment",
-      "client": "Client"
+      "client": "Client",
+      "customer": "Customer",
+      "issueDate": "Issue date",
+      "invoiceStatus": {
+        "null": "",
+        "NEW": "NEW",
+        "FAILED": "FAILED",
+        "CREATED": "CREATED",
+        "EXPIRED": "EXPIRED"
+      }
     }
   }
 }

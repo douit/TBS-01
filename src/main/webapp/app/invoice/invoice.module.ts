@@ -7,11 +7,12 @@ import { InvoiceDetailComponent } from './invoice-detail.component';
 import { InvoiceUpdateComponent } from './invoice-update.component';
 import { InvoiceDeletePopupComponent, InvoiceDeleteDialogComponent } from './invoice-delete-dialog.component';
 import { invoiceRoute, invoicePopupRoute } from './invoice.route';
+import {MaterialModule} from 'app/app.module';
 
 const ENTITY_STATES = [...invoiceRoute, ...invoicePopupRoute];
 
 @NgModule({
-  imports: [TbsSharedModule, RouterModule.forChild(ENTITY_STATES)],
+  imports: [TbsSharedModule, RouterModule.forChild(ENTITY_STATES), MaterialModule],
   declarations: [
     InvoiceComponent,
     InvoiceDetailComponent,

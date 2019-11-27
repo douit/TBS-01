@@ -7,11 +7,12 @@ import { PaymentDetailComponent } from './payment-detail.component';
 import { PaymentUpdateComponent } from './payment-update.component';
 import { PaymentDeletePopupComponent, PaymentDeleteDialogComponent } from './payment-delete-dialog.component';
 import { paymentRoute, paymentPopupRoute } from './payment.route';
+import {MaterialModule} from 'app/app.module';
 
 const ENTITY_STATES = [...paymentRoute, ...paymentPopupRoute];
 
 @NgModule({
-  imports: [TbsSharedModule, RouterModule.forChild(ENTITY_STATES)],
+  imports: [TbsSharedModule, RouterModule.forChild(ENTITY_STATES), MaterialModule],
   declarations: [
     PaymentComponent,
     PaymentDetailComponent,

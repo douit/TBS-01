@@ -1,93 +1,147 @@
-<div>
-    <h2 id="page-heading">
-        <span jhiTranslate="tbsApp.invoice.home.title">Invoices</span>
-        <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-invoice" [routerLink]="['/invoice/new']">
-            <fa-icon [icon]="'plus'"></fa-icon>
-            <span  jhiTranslate="tbsApp.invoice.home.createLabel">
-            Create a new Invoice
-            </span>
-        </button>
-    </h2>
-    <jhi-alert></jhi-alert>
-    <br/>
-    <div class="alert alert-warning" *ngIf="invoices?.length === 0">
-        <span jhiTranslate="tbsApp.invoice.home.notFound">No invoices found</span>
-    </div>
-    <div class="table-responsive" *ngIf="invoices?.length > 0">
-        <table class="table table-striped" aria-describedby="page-heading">
-            <thead>
-            <tr jhiSort [(predicate)]="predicate" [(ascending)]="reverse" [callback]="transition.bind(this)">
-            <th jhiSortBy="id"><span jhiTranslate="global.field.id">ID</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th jhiSortBy="status"><span jhiTranslate="tbsApp.invoice.status">Status</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th jhiSortBy="number"><span jhiTranslate="tbsApp.invoice.number">Number</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th jhiSortBy="note"><span jhiTranslate="tbsApp.invoice.note">Note</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th jhiSortBy="dueDate"><span jhiTranslate="tbsApp.invoice.dueDate">Due Date</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th jhiSortBy="subtotal"><span jhiTranslate="tbsApp.invoice.subtotal">Subtotal</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th jhiSortBy="amount"><span jhiTranslate="tbsApp.invoice.amount">Amount</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th jhiSortBy="discountId"><span jhiTranslate="tbsApp.invoice.discount">Discount</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th jhiSortBy="customerId"><span jhiTranslate="tbsApp.invoice.customer">Customer</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th jhiSortBy="clientId"><span jhiTranslate="tbsApp.invoice.client">Client</span> <fa-icon [icon]="'sort'"></fa-icon></th>
-            <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr *ngFor="let invoice of invoices ;trackBy: trackId">
-                <td><a [routerLink]="['/invoice', invoice.id, 'view' ]">{{invoice.id}}</a></td>
-                <td jhiTranslate="{{'tbsApp.InvoiceStatus.' + invoice.status}}">{{invoice.status}}</td>
-                <td>{{invoice.number}}</td>
-                <td>{{invoice.note}}</td>
-                <td>{{invoice.dueDate | date:'medium'}}</td>
-                <td>{{invoice.subtotal}}</td>
-                <td>{{invoice.amount}}</td>
-                <td>
-                    <div *ngIf="invoice.discountId">
-                        <a [routerLink]="['/discount', invoice.discountId , 'view' ]" >{{invoice.discountId}}</a>
+<div class="main-content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <!--<div class="row">-->
+
+                    <div class="card-header card-header-text card-header-primary" data-background-color="primary-one">
+                        <div class="card-text">
+                            <h4 id="page-heading">
+                                <span jhiTranslate="tbsApp.invoice.home.title">Invoices</span>
+                            </h4>
+                        </div>
                     </div>
-                </td>
-                <td>
-                    <div *ngIf="invoice.customerId">
-                        <a [routerLink]="['/customer', invoice.customerId , 'view' ]" >{{invoice.customerId}}</a>
+
+
+                    <div class="col-sm-12">
+                        <div class="pull-right">
+                            <button [routerLink]="['/invoice/new']" id="jh-create-entity"
+                                    class="btn btn-success btn-round btn-fab btn-fab-mini"
+                                    title="Add Delivery Provider">
+                                <i class="material-icons">add</i>
+                            </button>
+                        </div>
                     </div>
-                </td>
-                <td>
-                    <div *ngIf="invoice.clientId">
-                        <a [routerLink]="['/client', invoice.clientId , 'view' ]" >{{invoice.clientId}}</a>
+
+                    <!-- </div>-->
+
+                    <div class="card-content">
+
+                        <jhi-alert></jhi-alert>
+                        <br/>
+                        <!--<div class="alert alert-warning" *ngIf="items?.length === 0">
+                            <span jhiTranslate="tbsApp.payment.home.notFound">No items found</span>
+                        </div>-->
+
+                        <div class="datatable-wrapper">
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <div class="datatable-length">
+                                        <div class="form-group label-floating">
+                                            <label class="control-label">{{ 'global.datatable.show_entries' | translate }}</label>
+                                            <mat-form-field>
+                                                <mat-select name="length" [(ngModel)]="datatable.length" (ngModelChange)="onPageSizeChanged()">
+                                                    <mat-option [value]=10>10</mat-option>
+                                                    <mat-option [value]=25>25</mat-option>
+                                                    <mat-option [value]=50>50</mat-option>
+                                                    <mat-option [value]=100>100</mat-option>
+                                                </mat-select>
+                                            </mat-form-field>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4" align="center">
+                                    <form class="form-inline">
+                                        <div class="form-group label-floating">
+                                            <label class="control-label">{{ 'global.datatable.search' | translate }}</label>
+                                            <input name="search" [(ngModel)]="datatable.search" type="text" class="form-control" style="padding-left: 5px;">
+                                        </div>
+                                        <button (click)="search()" class="btn btn-just-icon btn-info-second btn-round">
+                                            <i class="material-icons">search</i>
+                                        </button>
+                                        <button (click)="clearSearch()" class="btn btn-just-icon btn-round btn-info-second">
+                                            <i class="material-icons">clear</i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <div class="loader" *ngIf="busy">
+                                        <svg class="circular" viewBox="25 25 50 50">
+                                            <circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="2" stroke-miterlimit="10" />
+                                        </svg>
+                                    </div>
+
+                                    <div class="walem-ngx-datatable-wrapper">
+                                        <ngx-datatable #table class="walem-ngx-datatable" [columns]="datatable.visibleColumns" [headerHeight]="'auto'" [rowHeight]="'auto'" [summaryHeight]="'auto'" [summaryRow]="false" [summaryPosition]="'bottom'" [columnMode]="'flex'" [rows]="datatable.data" [footerHeight]="65" [externalPaging]="true" [externalSorting]="true" [count]="datatable.recordsFiltered" [limit]="datatable.length" (page)="onPageChanged($event)" (sort)="onSortChanged($event)">
+
+                                            <ngx-datatable-footer #footerRef>
+                                                <ng-template #pagerTempRef ngx-datatable-footer-template let-rowCount="rowCount" let-selectedCount="selectedCount" let-offset="offset" let-pageSize="pageSize" let-curPage="curPage">
+                                                    <div class="total-entries">
+                                                        <app-datatable-total-entries [rowCount]="rowCount" [offset]="offset" [pageSize]="pageSize" [curPage]="curPage">
+                                                        </app-datatable-total-entries>
+                                                    </div>
+                                                    <div class="datatable-pagination">
+                                                        <datatable-pager #pagerRef [pagerLeftArrowIcon]="'fa fa-angle-left'" [pagerRightArrowIcon]="'fa fa-angle-right'" [pagerPreviousIcon]="'fa fa-angle-double-left'" [pagerNextIcon]="'fa fa-angle-double-right'" [page]="curPage" [size]="pageSize" [count]="rowCount" (change)="table.onFooterPage($event)">
+                                                        </datatable-pager>
+                                                    </div>
+                                                </ng-template>
+                                            </ngx-datatable-footer>
+
+                                        </ngx-datatable>
+
+                                        <ng-template #headerTemplate let-column="column">
+                                            <span>{{ column.name }}</span>
+                                        </ng-template>
+
+                                        <ng-template #rowTemplate let-value="value">
+                                            <span>{{ value }}</span>
+                                        </ng-template>
+
+                                        <ng-template #nameRowTemplate let-row="row">
+                                            <div class="payment-name">{{ row.name }}</div>
+                                        </ng-template>
+
+                                        <ng-template #statusRowTemplate let-row="row">
+                                            <div class="badge" [ngClass]="{
+                                                    'badge--warning': row.status === InvoiceStatus.EXPIRED,
+                                                    'badge-success': row.status === InvoiceStatus.CREATED,
+                                                    'badge-info': row.status === InvoiceStatus.NEW,
+                                                    'badge-danger': row.status === InvoiceStatus.FAILED
+                                                }">
+                                                {{ 'tbsApp.invoice.invoiceStatus.' + row.status |
+                                                translate }}
+                                            </div>
+                                        </ng-template>
+
+                                        <ng-template #issueDateTemplate let-row="row">
+                                            <span>{{ row.createdDate | tbsDateTime }}</span>
+                                        </ng-template>
+
+                                        <ng-template #actionsRowTemplate let-row="row">
+                                            <div class="btn-group">
+                                                <button class="btn btn-info  btn-link" matTooltip="{{ 'global.datatable.view' | translate }}" [matTooltipPosition]="'above'" (click)="view(row)">
+                                                    <i class="material-icons">visibility</i>
+                                                </button>
+                                                <button class="btn btn-primary  btn-link" matTooltip="{{ 'global.datatable.edit' | translate }}" [matTooltipPosition]="'above'" (click)="edit(row)">
+                                                    <i class="material-icons">edit</i>
+                                                </button>
+                                                <!--<button class="btn btn-danger  btn-link" matTooltip="{{ 'global.datatable.delete' | translate }}" [matTooltipPosition]="'above'" (click)="delete(row)">
+                                                    <i class="material-icons">close</i>
+                                                </button>-->
+                                            </div>
+                                        </ng-template>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
-                </td>
-                <td class="text-right">
-                    <div class="btn-group">
-                        <button type="submit"
-                                [routerLink]="['/invoice', invoice.id, 'view' ]"
-                                class="btn btn-info btn-sm">
-                            <fa-icon [icon]="'eye'"></fa-icon>
-                            <span class="d-none d-md-inline" jhiTranslate="entity.action.view">View</span>
-                        </button>
-                        <button type="submit"
-                                [routerLink]="['/invoice', invoice.id, 'edit']"
-                                class="btn btn-primary btn-sm">
-                            <fa-icon [icon]="'pencil-alt'"></fa-icon>
-                            <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Edit</span>
-                        </button>
-                        <button type="submit"
-                                [routerLink]="['/invoice', { outlets: { popup: invoice.id + '/delete'} }]"
-                                replaceUrl="true"
-                                queryParamsHandling="merge"
-                                class="btn btn-danger btn-sm">
-                            <fa-icon [icon]="'times'"></fa-icon>
-                            <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Delete</span>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
-    <div [hidden]="invoices?.length === 0">
-        <div class="row justify-content-center">
-            <jhi-item-count [page]="page" [total]="totalItems" [itemsPerPage]="itemsPerPage"></jhi-item-count>
-        </div>
-        <div class="row justify-content-center">
-            <ngb-pagination [collectionSize]="totalItems" [(page)]="page" [pageSize]="itemsPerPage" [maxSize]="5" [rotate]="true" [boundaryLinks]="true" (pageChange)="loadPage(page)"></ngb-pagination>
+                </div>
+            </div>
         </div>
     </div>
 </div>

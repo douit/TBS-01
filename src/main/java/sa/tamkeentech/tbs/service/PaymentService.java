@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
+import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
+import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -328,6 +330,10 @@ public class PaymentService {
         } else {
             return new ResponseEntity<NotifiRespDTO>(resp,  HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    public DataTablesOutput<PaymentDTO> get(DataTablesInput input) {
+        return paymentMapper.toDto(paymentRepository.findAll(input));
     }
 
 }

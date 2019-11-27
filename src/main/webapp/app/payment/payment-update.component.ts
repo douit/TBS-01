@@ -33,7 +33,7 @@ export class PaymentUpdateComponent implements OnInit {
     status: [],
     expirationDate: [],
     invoiceId: [],
-    paymentMethodId: []
+    paymentMethod: []
   });
 
   constructor(
@@ -73,7 +73,7 @@ export class PaymentUpdateComponent implements OnInit {
       status: payment.status,
       expirationDate: payment.expirationDate != null ? payment.expirationDate.format(DATE_TIME_FORMAT) : null,
       invoiceId: payment.invoiceId,
-      paymentMethodId: payment.paymentMethodId
+      paymentMethod: payment.paymentMethod
     });
   }
 
@@ -102,7 +102,7 @@ export class PaymentUpdateComponent implements OnInit {
           ? moment(this.editForm.get(['expirationDate']).value, DATE_TIME_FORMAT)
           : undefined,
       invoiceId: this.editForm.get(['invoiceId']).value,
-      paymentMethodId: this.editForm.get(['paymentMethodId']).value
+      paymentMethod: this.editForm.get(['paymentMethod']).value
     };
   }
 
