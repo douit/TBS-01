@@ -39,8 +39,6 @@ public class PaymentDTO implements Serializable {
     private String redirectUrl;
 
     private String transactionId;
-    private PaymentMethod paymentMethod;
-
 
     private PaymentMethodDTO paymentMethod;
 
