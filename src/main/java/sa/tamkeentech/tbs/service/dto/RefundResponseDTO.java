@@ -11,7 +11,6 @@ import java.io.Serializable;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
 public class RefundResponseDTO implements Serializable {
     @JsonProperty("Id")
     private Long id;
