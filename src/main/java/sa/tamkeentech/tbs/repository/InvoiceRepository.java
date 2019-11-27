@@ -4,6 +4,7 @@ import sa.tamkeentech.tbs.domain.Invoice;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -14,7 +15,6 @@ import java.util.Optional;
 @Repository
 public interface InvoiceRepository extends JpaRepository<Invoice, Long>, DataTablesRepository<Invoice, Long> {
     Optional<Invoice> findByNumber(Long id);
-
     Optional<Invoice> findById(Long id);
 
 }

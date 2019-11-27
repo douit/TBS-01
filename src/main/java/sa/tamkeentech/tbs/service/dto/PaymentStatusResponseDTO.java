@@ -41,6 +41,7 @@ public class PaymentStatusResponseDTO implements Serializable {
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+
 class PaymentInternalInfo {
     @JsonProperty("StatusCode")
     private Integer code;

@@ -2,6 +2,7 @@ package sa.tamkeentech.tbs.service.dto;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Objects;
+
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 
 /**
@@ -10,12 +11,72 @@ import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 public class RefundDTO implements Serializable {
 
     private Long id;
-
     private BigDecimal amount;
-
     private PaymentStatus status;
-
     private String refundId;
+    private String billerId;
+    private String bankId;
+    private String officialId;
+    private int paymetTransactionId;
+    private int applicationId;
+    private String customerId;
+    private String customerIdType;
+
+    public String getCustomerId() {
+        return customerId;
+    }
+
+    public String getBillerId() {
+        return billerId;
+    }
+
+    public void setBillerId(String billerId) {
+        this.billerId = billerId;
+    }
+
+    public String getOfficialId() {
+        return officialId;
+    }
+
+    public void setOfficialId(String officialId) {
+        this.officialId = officialId;
+    }
+
+    public String getCustomerIdType() {
+        return customerIdType;
+    }
+
+    public void setCustomerIdType(String customerIdType) {
+        this.customerIdType = customerIdType;
+    }
+
+    public void setCustomerId(String customerId) {
+        this.customerId = customerId;
+    }
+
+    public int getPaymetTransactionId() {
+        return paymetTransactionId;
+    }
+
+    public void setPaymetTransactionId(int paymetTransactionId) {
+        this.paymetTransactionId = paymetTransactionId;
+    }
+
+    public String getBankId() {
+        return bankId;
+    }
+
+    public void setBankId(String bankId) {
+        this.bankId = bankId;
+    }
+
+    public int getApplicationId() {
+        return applicationId;
+    }
+
+    public void setApplicationId(int applicationId) {
+        this.applicationId = applicationId;
+    }
 
 
     public Long getId() {

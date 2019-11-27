@@ -101,7 +101,7 @@ public class PaymentService {
     public PaymentDTO createNewPayment(PaymentDTO paymentDTO) {
         log.debug("Request to save Payment : {}", paymentDTO);
         Payment payment = paymentMapper.toEntity(paymentDTO);
-        Optional<PaymentMethod> paymentMethod = paymentMethodService.findByCode(Constants.VISA);
+        Optional<PaymentMethod> paymentMethod = paymentMethodService.findByCode(paymentDTO.getPaymentMethod().getCode());
         payment.setPaymentMethod(paymentMethod.get());
 
         Optional<Invoice> invoice = invoiceRepository.findById(paymentDTO.getInvoiceId());

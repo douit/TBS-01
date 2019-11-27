@@ -1,5 +1,6 @@
 package sa.tamkeentech.tbs.web.rest;
 
+import org.springframework.boot.configurationprocessor.json.JSONException;
 import sa.tamkeentech.tbs.service.RefundService;
 import sa.tamkeentech.tbs.web.rest.errors.BadRequestAlertException;
 import sa.tamkeentech.tbs.service.dto.RefundDTO;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -46,12 +48,12 @@ public class RefundResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/refunds")
-    public ResponseEntity<RefundDTO> createRefund(@RequestBody RefundDTO refundDTO) throws URISyntaxException {
+    public ResponseEntity<RefundDTO> createRefund(@RequestBody RefundDTO refundDTO) throws URISyntaxException, IOException, JSONException {
         log.debug("REST request to save Refund : {}", refundDTO);
         if (refundDTO.getId() != null) {
             throw new BadRequestAlertException("A new refund cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        RefundDTO result = refundService.save(refundDTO);
+        RefundDTO result = refundService.createNewRefund(refundDTO);
         return ResponseEntity.created(new URI("/api/refunds/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
             .body(result);
