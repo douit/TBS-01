@@ -18,21 +18,18 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 // @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class PaymentStatusResponseDTO implements Serializable {
+public class RefundStatusCCResponseDTO implements Serializable {
 
     @JsonProperty("Code")
     private Long code;
 
-    @JsonProperty("BillNumber")
-    private String billNumber;
-
     @JsonProperty("TransactionNumber")
-    private String transactionId;
+    private String refundId;
 
     @JsonProperty("Description")
     private String description;
 
-    @JsonProperty("PaymentInternalInfo")
+    @JsonProperty("RefundLogInfo")
     private PaymentInternalInfo paymentInternalInfo;
 
     @Data

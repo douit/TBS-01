@@ -2,7 +2,10 @@ package sa.tamkeentech.tbs.web.rest;
 
 import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
 import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
+import sa.tamkeentech.tbs.config.Constants;
+import sa.tamkeentech.tbs.domain.PaymentMethod;
 import sa.tamkeentech.tbs.service.PaymentService;
+import sa.tamkeentech.tbs.service.dto.PaymentMethodDTO;
 import sa.tamkeentech.tbs.service.dto.PaymentStatusResponseDTO;
 import sa.tamkeentech.tbs.web.rest.errors.BadRequestAlertException;
 import sa.tamkeentech.tbs.service.dto.PaymentDTO;
@@ -52,6 +55,9 @@ public class PaymentResource {
         log.debug("REST request to save Payment : {}", paymentDTO);
         if (paymentDTO.getId() != null) {
             throw new BadRequestAlertException("A new payment cannot already have an ID", ENTITY_NAME, "idexists");
+        }
+        if (paymentDTO.getPaymentMethod() == null) {
+            paymentDTO.setPaymentMethod(PaymentMethodDTO.builder().code(Constants.VISA).build());
         }
         PaymentDTO result = paymentService.createNewPayment(paymentDTO);
         return ResponseEntity.created(new URI("/api/payments/" + result.getId()))
