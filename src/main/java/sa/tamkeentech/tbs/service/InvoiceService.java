@@ -26,6 +26,8 @@ import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.time.YearMonth;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -267,6 +269,26 @@ public class InvoiceService {
 
     public DataTablesOutput<InvoiceDTO> get(DataTablesInput input) {
         return invoiceMapper.toDto(invoiceRepository.findAll(input));
+    }
+
+    public List<Object[]> getMonthlyStat( ZonedDateTime lastDate) {
+        ZonedDateTime first = lastDate.withDayOfMonth(1);
+        YearMonth yearMonthObject = YearMonth.of(lastDate.getYear(), lastDate.getMonth());
+        ZonedDateTime last = lastDate.withDayOfMonth( yearMonthObject.lengthOfMonth());
+        List<Object[]> stats = invoiceRepository.getStatisticsByMonth(first, last);
+        return stats;
+    }
+
+    public List<Object[]> getAnnualyStat( ZonedDateTime lastDate) {
+        ZonedDateTime first = lastDate.withMonth(1).withDayOfMonth(1);
+        YearMonth yearMonthObject = YearMonth.of(lastDate.getYear(), lastDate.getMonth());
+        ZonedDateTime last = lastDate.withMonth(12).withDayOfMonth(31);
+        List<Object[]> stats = invoiceRepository.getStatisticsByMonth(first, last);
+        return stats;
+    }
+
+    public Long getPaidinvoice() {
+       return invoiceRepository.sumPaidInvoice();
     }
 
 }
