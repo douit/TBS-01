@@ -13,8 +13,8 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 public class StatisticsDTO {
-    private long numInvoice;
-    private long numPaid;
+    private long totalInvoice;
+    private long totalPaid;
     private BigDecimal amountRefund;
     private BigDecimal income;
 

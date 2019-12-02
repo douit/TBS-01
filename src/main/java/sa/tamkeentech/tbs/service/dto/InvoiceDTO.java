@@ -9,6 +9,7 @@ import java.util.Set;
 
 import lombok.*;
 import sa.tamkeentech.tbs.domain.enumeration.InvoiceStatus;
+import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 
 /**
  * A DTO for the {@link sa.tamkeentech.tbs.domain.Invoice} entity.
@@ -44,5 +45,8 @@ public class InvoiceDTO implements Serializable {
     private Set<PaymentDTO> payments;
 
     private ZonedDateTime createdDate;
+
+    private PaymentStatus paymentStatus;
+
 
 }
