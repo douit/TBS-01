@@ -2,6 +2,7 @@ package sa.tamkeentech.tbs.web.rest;
 
 import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
 import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
+import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 import sa.tamkeentech.tbs.security.SecurityUtils;
 import sa.tamkeentech.tbs.service.InvoiceService;
 import sa.tamkeentech.tbs.web.rest.errors.BadRequestAlertException;
@@ -99,6 +100,22 @@ public class InvoiceResource {
     public ResponseEntity<List<InvoiceDTO>> getAllInvoices(Pageable pageable) {
         log.debug("REST request to get a page of Invoices");
         Page<InvoiceDTO> page = invoiceService.findAll(pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    /**
+     * {@code GET  /invoices} : get all the invoices.
+     *
+
+     * @param pageable the pagination information.
+
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of invoices in body.
+     */
+    @GetMapping("/invoices/paymentStatus/{status}")
+    public ResponseEntity<List<InvoiceDTO>> getAllInvoicesByStatus(@PathVariable PaymentStatus status, Pageable pageable) {
+        log.debug("REST request to get a page of Invoices");
+        Page<InvoiceDTO> page = invoiceService.findByPaymentStatus(status, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }

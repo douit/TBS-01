@@ -70,7 +70,7 @@ export class CustomerTestCcComponent implements OnInit {
   ngOnInit() {
     this.isSaving = false;
     this.invoiceService
-      .query()
+      .queryByPaymentStatus('PENDING')
       .pipe(
         filter((mayBeOk: HttpResponse<IInvoice[]>) => mayBeOk.ok),
         map((response: HttpResponse<IInvoice[]>) => response.body)

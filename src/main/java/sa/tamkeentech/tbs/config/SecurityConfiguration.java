@@ -165,7 +165,6 @@ public class SecurityConfiguration {
                 .antMatchers("/content/**")
                 .antMatchers("/swagger-ui/index.html")
                 .antMatchers("/test/**")
-                .antMatchers("/api/statistics")
                 .antMatchers("/h2-console/**")
                 .antMatchers("/sadad/paymentnotification**");
         }

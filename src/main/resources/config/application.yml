@@ -159,7 +159,7 @@ tbs:
     sadad-account-prefix: '123'
     sadad-application-id: 0
     credit-card-url: 'http://172.25.70.72:301/api/OnlinePayment'
-    credit-card-refund-url: 'http://172.25.70.72:301/api/OnlinePayment/Refund
+    credit-card-refund-url: 'http://172.25.70.72:301/api/OnlinePayment/Refund'
     credit-card-biller-code: 'B1APP10092019'
   refund:
     sadad-url-refund: 'http://10.4.7.61:2020/Sender/api/Sadad/RefundLoadRq/test'

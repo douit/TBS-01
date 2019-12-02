@@ -1,8 +1,12 @@
 package sa.tamkeentech.tbs.repository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.datatables.repository.DataTablesRepository;
 import sa.tamkeentech.tbs.domain.Invoice;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
+import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
+import sun.awt.image.MultiResolutionCachedImage;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -39,4 +43,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long>, DataTab
         "    AND invoice.created_date <= ?2 " +
         "group by Month ORDER BY Month;", nativeQuery = true)
     List<Object[]> getStatisticsByYear(ZonedDateTime from, ZonedDateTime to);
+
+    Page<Invoice> findByPaymentStatusOrderByIdDesc(PaymentStatus status, Pageable pageable);
+
 }

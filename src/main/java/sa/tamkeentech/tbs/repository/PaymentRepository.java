@@ -17,5 +17,5 @@ public interface PaymentRepository extends JpaRepository<Payment, Long>, DataTab
 
     Payment findByTransactionId(String transactionId);
 
-    Optional<Payment> findFirstByInvoiceIDAndStatus(Long invoiceId, PaymentStatus status);
+    Optional<Payment> findFirstByInvoiceIdAndStatus(Long invoiceId, PaymentStatus status);
 }

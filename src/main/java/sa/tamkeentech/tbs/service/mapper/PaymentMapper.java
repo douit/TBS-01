@@ -16,7 +16,9 @@ public interface PaymentMapper extends EntityMapper<PaymentDTO, Payment> {
     // @Mapping(source = "paymentMethod.code", target = "paymentMethod")
     PaymentDTO toDto(Payment payment);
 
-    @Mapping(source = "invoiceId", target = "invoice")
+    // stackoverflow cause toString of invoiceItem
+    // @Mapping(source = "invoiceId", target = "invoice")
+    @Mapping(target = "invoice", ignore = true)
     // @Mapping(source = "paymentMethodId", target = "paymentMethod")
     Payment toEntity(PaymentDTO paymentDTO);
 

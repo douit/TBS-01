@@ -92,6 +92,13 @@ public class InvoiceService {
             .map(invoiceMapper::toDto);
     }
 
+    @Transactional(readOnly = true)
+    public Page<InvoiceDTO> findByPaymentStatus(PaymentStatus status, Pageable pageable) {
+        log.debug("Request to get all Invoices");
+        return invoiceRepository.findByPaymentStatusOrderByIdDesc(status, pageable)
+            .map(invoiceMapper::toDto);
+    }
+
 
     /**
      * Get one invoice by id.
