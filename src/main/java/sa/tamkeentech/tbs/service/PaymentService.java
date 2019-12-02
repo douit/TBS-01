@@ -25,6 +25,7 @@ import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.Invoice;
 import sa.tamkeentech.tbs.domain.Payment;
 import sa.tamkeentech.tbs.domain.PaymentMethod;
+import sa.tamkeentech.tbs.domain.enumeration.NotificationStatus;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.repository.PaymentRepository;
@@ -262,8 +263,6 @@ public class PaymentService {
             String jsonStr = billInfoContent.toString();
             post.setEntity(new StringEntity(jsonStr));
             HttpResponse response = client.execute(post);
-            /*HttpEntity entity = response.getEntity();
-            responseString = EntityUtils.toString(entity, "UTF-8");*/
             paymentResponseDTO = objectMapper.readValue(response.getEntity().getContent(), PaymentResponseDTO.class);
         } catch (JSONException | IOException e) {
             log.error("Payment gateway issue: {}", e.getCause());
@@ -287,9 +286,9 @@ public class PaymentService {
     public ResponseEntity<NotifiRespDTO> sendPaymentNotification(NotifiReqDTO req, String apiKey, String apiSecret) {
         log.debug("----Sadad Notification : {}", req);
         // Optional<Invoice> invoice = invoiceRepository.findById(Long.parseLong(req.getBillAccount())-7000000065l);
-        Optional<Invoice> invoice = invoiceRepository.findById(Long.parseLong(req.getBillAccount()));
+        Invoice invoice = invoiceRepository.findById(Long.parseLong(req.getBillAccount())).get();
         NotifiRespDTO resp = NotifiRespDTO.builder().statusId(1).build();
-        for (Payment payment : invoice.get().getPayments()) {
+        for (Payment payment : invoice.getPayments()) {
             if (payment.getStatus() == PaymentStatus.PAID) {
                 log.warn("Payment already received, Exit without updating Client app");
                 return new ResponseEntity<NotifiRespDTO>(resp,  HttpStatus.OK);
@@ -298,7 +297,7 @@ public class PaymentService {
 
         Optional<PaymentMethod> paymentMethod = paymentMethodService.findByCode(Constants.SADAD);
         Payment payment = Payment.builder()
-            .invoice(invoice.get())
+            .invoice(invoice)
             .status(PaymentStatus.PAID)
             .amount(new BigDecimal(req.getAmount()))
             .paymentMethod(paymentMethod.get())
@@ -326,6 +325,9 @@ public class PaymentService {
             ResponseEntity<NotifiRespDTO> response2= restTemplate.getForEntity(ResourceUrl + req.getBillAccount() + "&paymentdate=" + req.getPaymentDate() + "&token=" + response1.getBody().getAccess_token() , NotifiRespDTO.class);
             log.info("Succuss DVS update" + response2.getBody().getStatusId());
             // NotifiResp resp = (NotifiResp)response2.getBody(); // only for testing
+            invoice.setPaymentStatus(PaymentStatus.PAID);
+            invoice.setNotificationStatus(NotificationStatus.PAYMENT_NOTIFICATION_SUCCESS);
+            invoiceRepository.save(invoice);
             return new ResponseEntity<NotifiRespDTO>(resp,  HttpStatus.OK);
         } else {
             return new ResponseEntity<NotifiRespDTO>(resp,  HttpStatus.INTERNAL_SERVER_ERROR);

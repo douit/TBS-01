@@ -59,17 +59,6 @@ public class RefundResource {
             .body(result);
     }
 
-    @PostMapping("/billing/refunds/credit-card")
-    public ResponseEntity<RefundDTO> createCCRefund(@RequestBody RefundDTO refundDTO) throws URISyntaxException, IOException, JSONException {
-        log.debug("REST request to save Refund : {}", refundDTO);
-        if (refundDTO.getId() != null) {
-            throw new BadRequestAlertException("A new refund cannot already have an ID", ENTITY_NAME, "idexists");
-        }
-        RefundDTO result = refundService.createNewRefund(refundDTO);
-        return ResponseEntity.created(new URI("/api/refunds/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
-            .body(result);
-    }
 
     /**
      * {@code PUT  /refunds} : Updates an existing refund.

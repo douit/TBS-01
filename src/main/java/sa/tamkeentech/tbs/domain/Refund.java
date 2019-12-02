@@ -12,6 +12,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
+import sa.tamkeentech.tbs.domain.enumeration.RequestStatus;
 
 /**
  * A Refund.
@@ -38,7 +39,7 @@ public class Refund extends AbstractAuditingEntity implements Serializable {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private PaymentStatus status;
+    private RequestStatus status;
 
     @Column(name = "refund_id")
     private String refundId;

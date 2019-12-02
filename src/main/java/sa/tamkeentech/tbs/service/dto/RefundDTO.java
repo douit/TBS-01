@@ -1,7 +1,4 @@
 package sa.tamkeentech.tbs.service.dto;
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
@@ -9,7 +6,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
+import sa.tamkeentech.tbs.domain.enumeration.RequestStatus;
+
+import javax.validation.constraints.NotBlank;
+import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * A DTO for the {@link sa.tamkeentech.tbs.domain.Refund} entity.
@@ -23,14 +24,16 @@ import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 public class RefundDTO implements Serializable {
 
     private Long id;
+    @NotBlank
+    private Long invoiceId;
     private BigDecimal amount;
-    private PaymentStatus status;
+    private RequestStatus status;
     // private String refundId;
     // private String billerId;
     // private String bankId;
-    private String officialId;
-    private int paymetTransactionId;
-    private int applicationId;
-    private String customerId;
+    // private String officialId;
+    // private int paymetTransactionId;
+    // private int applicationId;
+    // private String customerId;
     // private String customerIdType;
 }

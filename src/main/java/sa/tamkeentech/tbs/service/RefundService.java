@@ -13,16 +13,22 @@ import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sa.tamkeentech.tbs.config.Constants;
+import sa.tamkeentech.tbs.domain.Invoice;
+import sa.tamkeentech.tbs.domain.Payment;
 import sa.tamkeentech.tbs.domain.Refund;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
+import sa.tamkeentech.tbs.domain.enumeration.RequestStatus;
+import sa.tamkeentech.tbs.repository.InvoiceRepository;
+import sa.tamkeentech.tbs.repository.PaymentRepository;
 import sa.tamkeentech.tbs.repository.RefundRepository;
-import sa.tamkeentech.tbs.service.dto.PaymentStatusResponseDTO;
 import sa.tamkeentech.tbs.service.dto.RefundDTO;
 import sa.tamkeentech.tbs.service.dto.RefundResponseDTO;
+import sa.tamkeentech.tbs.service.dto.RefundStatusCCResponseDTO;
 import sa.tamkeentech.tbs.service.mapper.RefundMapper;
+import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.LinkedList;
@@ -41,15 +47,24 @@ public class RefundService {
 
     private final RefundRepository refundRepository;
     private final ObjectMapper objectMapper;
-
+    private final PaymentRepository paymentRepository;
+    private final InvoiceRepository invoiceResitory;
     private final RefundMapper refundMapper;
     @Value("${tbs.refund.sadad-url-refund}")
     private String  sadadUrlRefund;
+    @Value("${tbs.payment.sadad-application-id}")
+    private Long sadadApplicationId;
+    @Value("${tbs.payment.credit-card-biller-code}")
+    private String billerCode;
+    @Value("${tbs.payment.credit-card-refund-url}")
+    private String creditCardRefundUrl;
 
-    public RefundService(RefundRepository refundRepository, RefundMapper refundMapper,ObjectMapper objectMapper) {
+    public RefundService(RefundRepository refundRepository, RefundMapper refundMapper, ObjectMapper objectMapper, PaymentRepository paymentRepository, InvoiceRepository invoiceResitory) {
         this.refundRepository = refundRepository;
         this.refundMapper = refundMapper;
         this.objectMapper = objectMapper;
+        this.paymentRepository = paymentRepository;
+        this.invoiceResitory = invoiceResitory;
     }
     /**
      * Create new refund.
@@ -57,44 +72,79 @@ public class RefundService {
      * @param refundDTO the entity to save.
      * @return the persisted entity.
      */
-    public RefundDTO createNewRefund(RefundDTO refundDTO) throws IOException, JSONException {
-        log.debug("Request to save Refund : {}", refundDTO);
+    @Transactional
+    public RefundDTO createNewRefund(RefundDTO refundDTO) {
+        log.debug("Request new Refund : {}", refundDTO);
+        if (refundDTO.getInvoiceId() == null) {
+            throw new TbsRunTimeException("Invoice Id is mandatory to process the refund");
+        }
+        Optional<Payment> payment = paymentRepository.findFirstByInvoiceIDAndStatus(refundDTO.getInvoiceId(), PaymentStatus.PAID);
+        Invoice invoice = payment.get().getInvoice();
+        if (!payment.isPresent()) {
+            throw new TbsRunTimeException("No successful payment for invoice: "+ refundDTO.getInvoiceId().toString());
+        }
         Refund refund = refundMapper.toEntity(refundDTO);
-        refund.setOfficialId(refundDTO.getCustomerId());
-        RefundResponseDTO refundResponseDTO = callRefundBySdad(refundDTO);
-        refund.setBillerId(refundResponseDTO.getBillerId());
-        if(refundResponseDTO.getStatus().getStatusCode() == 0){
-            refund.setStatus(PaymentStatus.PAID);
-        }else{
-            refund.setStatus(PaymentStatus.PENDING);
+        refund.setStatus(RequestStatus.CREATED);
+        refund = refundRepository.save(refund);
+        if (payment.get().getPaymentMethod().getCode().equalsIgnoreCase(Constants.SADAD)) {
+            int sadadResult;
+            try {
+                sadadResult = callRefundBySdad(refundDTO, refund.getId());
+            } catch (IOException | JSONException e) {
+                // ToDo add new exception 500 for sadad
+                throw new TbsRunTimeException("Sadad issue", e);
+            }
+            // ToDo add new exception 500 for sadad
+            // invoice = invoiceRepository.getOne(invoice.getId());
+            if (sadadResult != 200) {
+                refund.setStatus(RequestStatus.FAILED);
+                throw new TbsRunTimeException("Sadad refund creation error");
+            } else {
+                refund.setStatus(RequestStatus.CREATED);
+            }
+        } else {
+            RefundStatusCCResponseDTO refundResponseDTO = callRefundByCreditCard(refundDTO, refund.getId(), invoice.getId(), invoice.getClient().getPaymentKeyApp());
+            if (refundResponseDTO != null && Constants.CC_REFUND_SUCCESS_CODE.equals(refundResponseDTO.getCode())) {
+                refund.setStatus(RequestStatus.SUCCEEDED);
+                payment.get().setStatus(PaymentStatus.REFUNDED);
+                invoice.setPaymentStatus(PaymentStatus.REFUNDED);
+                paymentRepository.save(payment.get());
+                invoiceResitory.save(invoice);
+            } else {
+                refund.setStatus(RequestStatus.FAILED);
+            }
         }
         refund = refundRepository.save(refund);
+
+
         RefundDTO result = refundMapper.toDto(refund);
         return result;
     }
 
-    private RefundResponseDTO callRefundBySdad( RefundDTO refund) throws IOException,JSONException {
+    public int callRefundBySdad( RefundDTO refund, Long refundId) throws IOException,JSONException {
         HttpClient client = HttpClientBuilder.create().build();
         HttpPost post = new HttpPost(sadadUrlRefund);
         post.setHeader("Content-Type", "application/json");
         RefundResponseDTO refundResponseDTO = null;
         JSONObject RefundInfo = new JSONObject();
-        RefundInfo.put("refundId", refund.getRefundId());
-        RefundInfo.put("customerId", refund.getCustomerId());
-        RefundInfo.put("customerIdType", refund.getCustomerIdType());
+        // ToDo check if refundId must be unique per app ? other params ...
+        RefundInfo.put("refundId", refundId);
+        // RefundInfo.put("customerId", refund.getCustomerId());
+        // RefundInfo.put("customerIdType", refund.getCustomerIdType());
         RefundInfo.put("amount", refund.getAmount());
-        RefundInfo.put("paymetTransactionId", refund.getPaymetTransactionId());
+        // RefundInfo.put("paymetTransactionId", refund.getPaymetTransactionId());
         Calendar c = Calendar.getInstance();
         c.add(Calendar.DATE, 2);
         String expiryDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(c.getTime());
+        // ToDo is it the expiryDate of the invoice?
         RefundInfo.put("expirydate",expiryDate);
-        RefundInfo.put("bankId", refund.getBankId());
-        RefundInfo.put("applicationId", refund.getApplicationId());
+        // How to get bankId
+        // RefundInfo.put("bankId", refund.getBankId());
+        RefundInfo.put("applicationId", sadadApplicationId);
         String jsonStr = RefundInfo.toString();
         post.setEntity(new StringEntity(jsonStr));
         HttpResponse response;
         response = client.execute(post);
-        refundResponseDTO = objectMapper.readValue(response.getEntity().getContent(), RefundResponseDTO.class);
 
         log.debug("----Sadad request : {}", jsonStr);
         log.info("----Sadad response status code : {}", response.getStatusLine().getStatusCode());
@@ -102,8 +152,30 @@ public class RefundService {
             log.debug("----Sadad response content : {}", response.getEntity().getContent());
             log.debug("----Sadad response entity : {}", response.getEntity().toString());
         }
-        return  refundResponseDTO;
+        return response.getStatusLine().getStatusCode();
 
+    }
+
+    RefundStatusCCResponseDTO callRefundByCreditCard(RefundDTO refund, Long refundId, Long invoiceId, String appCode) {
+        HttpClient client = HttpClientBuilder.create().build();
+        HttpPost post = new HttpPost(creditCardRefundUrl);
+        post.setHeader("Content-Type", "application/json");
+        JSONObject billInfoContent = new JSONObject();
+        RefundStatusCCResponseDTO refundResponseDTO = null;
+        try {
+            billInfoContent.put("OriginalTransactionID", invoiceId);
+            billInfoContent.put("TransactionId ",refundId);
+            billInfoContent.put("BillerCode",billerCode);
+            billInfoContent.put("AppCode",appCode);
+            String jsonStr = billInfoContent.toString();
+            post.setEntity(new StringEntity(jsonStr));
+            HttpResponse response = client.execute(post);
+            refundResponseDTO = objectMapper.readValue(response.getEntity().getContent(), RefundStatusCCResponseDTO.class);
+        } catch (JSONException | IOException e) {
+            log.error("Payment gateway issue: {}", e.getCause());
+        }
+        log.info("************** response from credit Card ************ : " + refundResponseDTO);
+        return refundResponseDTO;
     }
 
     /**
