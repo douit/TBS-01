@@ -86,6 +86,7 @@ public class RefundService {
         }
         Refund refund = refundMapper.toEntity(refundDTO);
         refund.setStatus(RequestStatus.CREATED);
+        refund.setPayment(payment.get());
         refund = refundRepository.save(refund);
         if (payment.get().getPaymentMethod().getCode().equalsIgnoreCase(Constants.SADAD)) {
             int sadadResult;
@@ -105,7 +106,7 @@ public class RefundService {
             }
         } else {
             // RefundStatusCCResponseDTO refundResponseDTO = callRefundByCreditCard(refundDTO, refund.getId(), invoice.getId(), invoice.getClient().getPaymentKeyApp());
-            int returnCode = callRefundByCreditCard(refundDTO, refund.getId(), invoice.getId(), invoice.getClient().getPaymentKeyApp());
+            int returnCode = callRefundByCreditCard(refundDTO, payment.get().getTransactionId(), invoice.getId(), invoice.getClient().getPaymentKeyApp());
             // if (refundResponseDTO != null && Constants.CC_REFUND_SUCCESS_CODE.equals(refundResponseDTO.getCode())) {
             if (returnCode == 200) {
                 refund.setStatus(RequestStatus.SUCCEEDED);
@@ -159,7 +160,7 @@ public class RefundService {
 
     }
 
-    /*RefundStatusCCResponseDTO*/int callRefundByCreditCard(RefundDTO refund, Long refundId, Long invoiceId, String appCode) {
+    /*RefundStatusCCResponseDTO*/int callRefundByCreditCard(RefundDTO refund, String transactionId, Long invoiceId, String appCode) {
         HttpClient client = HttpClientBuilder.create().build();
         HttpPost post = new HttpPost(creditCardRefundUrl);
         post.setHeader("Content-Type", "application/json");
@@ -167,7 +168,7 @@ public class RefundService {
         RefundStatusCCResponseDTO refundResponseDTO = null;
         try {
             billInfoContent.put("OriginalTransactionID", invoiceId);
-            billInfoContent.put("TransactionId ",refundId);
+            billInfoContent.put("TransactionId ",Long.parseLong(transactionId));
             billInfoContent.put("BillerCode",billerCode);
             billInfoContent.put("AppCode",appCode);
             String jsonStr = billInfoContent.toString();

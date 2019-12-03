@@ -1,4 +1,5 @@
 package sa.tamkeentech.tbs.domain;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -53,5 +54,9 @@ public class Refund extends AbstractAuditingEntity implements Serializable {
     // official id of the owner who paid the bill
     @Column(name = "official_id")
     private String officialId;
+
+    @ManyToOne
+    @JsonIgnoreProperties("refunds")
+    private Payment payment;
 
 }

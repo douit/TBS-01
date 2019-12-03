@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <property name="now" value="now()" dbms="h2"/>
+
+    <changeSet id="20191203105213-1" author="Ahmed B" context="faker">
+        <addColumn
+            schemaName="public"
+            tableName="refund">
+            <column name="payment_id" type="bigint"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20191203105213-2" author="Ahmed B" context="faker">
+        <addForeignKeyConstraint baseColumnNames="payment_id"
+                                 baseTableName="refund"
+                                 constraintName="fk_refund_payment_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="payment"/>
+    </changeSet>
+
+</databaseChangeLog>

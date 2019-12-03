@@ -63,7 +63,8 @@ export class ChartsComponent implements OnInit {
 
         seq2 = 0;
     }
-    ngOnInit() {
+
+    ngOnInit(): void {
         /* ----------==========    Rounded Line Chart initialization    ==========---------- */
 
         const dataRoundedLineChart = {

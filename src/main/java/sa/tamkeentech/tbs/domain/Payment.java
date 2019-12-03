@@ -9,6 +9,8 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 
@@ -53,5 +55,9 @@ public class Payment extends AbstractAuditingEntity implements Serializable {
 
     @Column(name = "transaction_id")
     private String transactionId;
+
+    @OneToMany(mappedBy = "payment")
+    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    private Set<Refund> refunds = new HashSet<>();
 
 }

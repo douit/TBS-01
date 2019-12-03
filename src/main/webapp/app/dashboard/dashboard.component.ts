@@ -2,14 +2,13 @@ import {AfterViewInit, Component, OnInit} from '@angular/core';
 import {TableData} from '../md/md-table/md-table.component';
 import * as Chartist from 'chartist';
 import * as $ from 'jquery';
-import {HttpClient} from "@angular/common/http";
-import {IStatistics} from "app/shared/model/statistics.model";
-import {DashboardService} from "app/dashboard/dashboard.service";
-import {IChartStatistics} from "app/shared/model/chart-statistics.model";
+import {HttpClient} from '@angular/common/http';
+import {IStatistics} from 'app/shared/model/statistics.model';
+import {DashboardService} from 'app/dashboard/dashboard.service';
+import {IChartStatistics} from 'app/shared/model/chart-statistics.model';
 import * as moment from 'moment';
-import {IChartStatisticsRequest} from "app/shared/model/chart-statistics-request.model";
-import {TypeStatistics} from "app/shared/model/enumerations/type-statistics.model";
-import {falseIfMissing} from "protractor/built/util";
+import {IChartStatisticsRequest} from 'app/shared/model/chart-statistics-request.model';
+import {TypeStatistics} from 'app/shared/model/enumerations/type-statistics.model';
 
 
 // declare const $: any;
@@ -20,9 +19,9 @@ import {falseIfMissing} from "protractor/built/util";
 })
 export class DashboardComponent implements OnInit, AfterViewInit {
   // constructor(private navbarTitleService: NavbarTitleService, private notificationService: NotificationService) { }
-  dashboardService : DashboardService;
-  statistics : IStatistics ;
-  chartStatistics : IChartStatistics [] = [];
+  dashboardService: DashboardService;
+  statistics: IStatistics = {};
+  chartStatistics: IChartStatistics [] = [];
 
   dataMonthlyChart = {
     labels: []
@@ -34,7 +33,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     series: []
   };
 
-  constructor(private http:HttpClient,dashboardService : DashboardService ) {
+  constructor(private http: HttpClient, dashboardService: DashboardService ) {
     this.dashboardService = dashboardService;
   }
   public tableData: TableData;
@@ -97,31 +96,35 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
    getStatistics()  {
     this.dashboardService.getStatistics().subscribe(
-      res =>{
+      res => {
         this.statistics = res;
 
       },
-      res=>{
-        alert("An error has occurred when get statistics ")
+      res => {
+        alert('An error has occurred when get statistics ');
       }
     );
 
   }
-   getMonthlyChartStatistics(chartStatisticsRequest : IChartStatisticsRequest )  {
+   getMonthlyChartStatistics(chartStatisticsRequest: IChartStatisticsRequest )  {
     this.dashboardService.getChartStatistics(chartStatisticsRequest).subscribe(
-      res =>{
-        let totalInvoiceList = [];
-        let paidInvoiceList = [];
+      res => {
+        const totalInvoiceList = [];
+        const paidInvoiceList = [];
         let max = 0;
+        let i =0;
         res.forEach(statMonth => {
             totalInvoiceList.push(statMonth.totalInvoice);
             paidInvoiceList.push(statMonth.totalPaid);
             // daysList.push(statMonth.day);
             this.dataMonthlyChart.labels.push(statMonth.day);
-            if( max < statMonth.totalInvoice)
-              max =statMonth.totalInvoice;
-
+            if (max < statMonth.totalInvoice) {
+              max = statMonth.totalInvoice;
+            }
+            i++;
+          console.log('------Monthly: ' + i);
         });
+
       // this.dataMonthlyChart.labels =daysList;
        this.dataMonthlyChart.series.push(totalInvoiceList);
        this.dataMonthlyChart.series.push(paidInvoiceList);
@@ -145,7 +148,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         };
 
         const dataColouredBarsChart = {
-          labels: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17],
+          labels: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
           series: [
             [287, 385, 490, 554, 10, 698, 0, 0, 0, 100, 0]
 
@@ -158,30 +161,33 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
         this.startAnimationForLineChart(colouredBarsChart);
       },
-      res=>{
-        alert("An error has occurred when get statistics ")
+      res => {
+        alert('An error has occurred when get statistics');
       }
     );
 
   }
    getAnnualChartStatistics(chartStatisticsRequest: IChartStatisticsRequest) {
      this.dashboardService.getChartStatistics(chartStatisticsRequest).subscribe(
-       res =>{
-         let totalInvoiceList = [];
-         let paidInvoiceList = [];
+       res => {
+         const totalInvoiceList = [];
+         const paidInvoiceList = [];
          let max = 0;
+         let i=0;
          res.forEach(statYear => {
            totalInvoiceList.push(statYear.totalInvoice);
            paidInvoiceList.push(statYear.totalPaid);
-           if( max < statYear.totalInvoice)
-             max =statYear.totalInvoice;
-
+           if (max < statYear.totalInvoice) {
+           max = statYear.totalInvoice;
+           }
+           i++;
+           console.log('------Annual: ' + i);
          });
          this.dataAnnualChart.series.push(totalInvoiceList);
          this.dataAnnualChart.series.push(paidInvoiceList);
        },
-       res=>{
-       alert("An error has occurred when get statistics ")
+       res => {
+       alert('An error has occurred when get statistics');
      }
    );
 
@@ -214,12 +220,12 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
    }
   public ngOnInit() {
-   var chartMonthlyStatisticsRequest : IChartStatisticsRequest ={
+   const chartMonthlyStatisticsRequest: IChartStatisticsRequest = {
     date :  moment(),
      type: TypeStatistics.MONTHLY
     };
 
-    var chartAnnualStatisticsRequest : IChartStatisticsRequest ={
+    const chartAnnualStatisticsRequest: IChartStatisticsRequest = {
       date :  moment(),
       type: TypeStatistics.ANNUAL
     };
@@ -233,21 +239,21 @@ export class DashboardComponent implements OnInit, AfterViewInit {
        const breakCards = true;
        if (breakCards === true) {
            // We break the cards headers if there is too much stress on them :-)
-           $('[data-header-animation="true"]').each(function(){
+           $('[data-header-animation="true"]').each(function() {
                const $fix_button = $(this);
                const $card = $(this).parent('.card');
-               $card.find('.fix-broken-card').click(function(){
+               $card.find('.fix-broken-card').click(function() {
                    const $header = $(this).parent().parent().siblings('.card-header, .card-image');
                    $header.removeClass('hinge').addClass('fadeInDown');
 
                    $card.attr('data-count', 0);
 
-                   setTimeout(function(){
+                   setTimeout(function() {
                        $header.removeClass('fadeInDown animate');
                    }, 480);
                });
 
-               $card.mouseenter(function(){
+               $card.mouseenter(function() {
                    const $this = $(this);
                    const hover_count = parseInt($this.attr('data-count'), 10) + 1 || 0;
                    $this.attr('data-count', hover_count);
