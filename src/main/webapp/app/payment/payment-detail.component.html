@@ -25,8 +25,8 @@
                 </dd>
                 <dt><span jhiTranslate="tbsApp.payment.paymentMethod">Payment Method</span></dt>
                 <dd>
-                    <div *ngIf="payment.paymentMethodId">
-                        <a [routerLink]="['/payment-method', payment.paymentMethodId, 'view']">{{payment.paymentMethodId}}</a>
+                    <div *ngIf="payment.paymentMethod">
+                        <a [routerLink]="['/payment-method', payment.paymentMethod.id, 'view']">{{payment.paymentMethod.id}}</a>
                     </div>
                 </dd>
             </dl>

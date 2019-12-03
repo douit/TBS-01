@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sa.tamkeentech.tbs.config.Constants;
@@ -103,8 +104,10 @@ public class RefundService {
                 refund.setStatus(RequestStatus.CREATED);
             }
         } else {
-            RefundStatusCCResponseDTO refundResponseDTO = callRefundByCreditCard(refundDTO, refund.getId(), invoice.getId(), invoice.getClient().getPaymentKeyApp());
-            if (refundResponseDTO != null && Constants.CC_REFUND_SUCCESS_CODE.equals(refundResponseDTO.getCode())) {
+            // RefundStatusCCResponseDTO refundResponseDTO = callRefundByCreditCard(refundDTO, refund.getId(), invoice.getId(), invoice.getClient().getPaymentKeyApp());
+            int returnCode = callRefundByCreditCard(refundDTO, refund.getId(), invoice.getId(), invoice.getClient().getPaymentKeyApp());
+            // if (refundResponseDTO != null && Constants.CC_REFUND_SUCCESS_CODE.equals(refundResponseDTO.getCode())) {
+            if (returnCode == 200) {
                 refund.setStatus(RequestStatus.SUCCEEDED);
                 payment.get().setStatus(PaymentStatus.REFUNDED);
                 invoice.setPaymentStatus(PaymentStatus.REFUNDED);
@@ -156,7 +159,7 @@ public class RefundService {
 
     }
 
-    RefundStatusCCResponseDTO callRefundByCreditCard(RefundDTO refund, Long refundId, Long invoiceId, String appCode) {
+    /*RefundStatusCCResponseDTO*/int callRefundByCreditCard(RefundDTO refund, Long refundId, Long invoiceId, String appCode) {
         HttpClient client = HttpClientBuilder.create().build();
         HttpPost post = new HttpPost(creditCardRefundUrl);
         post.setHeader("Content-Type", "application/json");
@@ -169,13 +172,21 @@ public class RefundService {
             billInfoContent.put("AppCode",appCode);
             String jsonStr = billInfoContent.toString();
             post.setEntity(new StringEntity(jsonStr));
+            log.debug("++++Refund CC request : {}", jsonStr);
             HttpResponse response = client.execute(post);
+            if (response.getEntity() != null) {
+                log.debug("----Refund CC response content : {}", response.getEntity().getContent().toString());
+                log.debug("----Refund CC response Code : {}", response.getStatusLine().getStatusCode());
+            }
             refundResponseDTO = objectMapper.readValue(response.getEntity().getContent(), RefundStatusCCResponseDTO.class);
+            log.info("************** response from credit Card ************ : " + refundResponseDTO);
+            return response.getStatusLine().getStatusCode();
         } catch (JSONException | IOException e) {
             log.error("Payment gateway issue: {}", e.getCause());
         }
-        log.info("************** response from credit Card ************ : " + refundResponseDTO);
-        return refundResponseDTO;
+
+        //return refundResponseDTO;
+        return HttpStatus.EXPECTATION_FAILED.value();
     }
 
     /**

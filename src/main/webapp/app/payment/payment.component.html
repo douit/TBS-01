@@ -119,8 +119,8 @@
 
                                         <ng-template #paymentMethodRowTemplate let-value="value">
                                             <div><i style="color: #8FB1C7" class="fa" [ngClass]="{
-                                                    'fa-usd': value.code === PaymentMethod.VISA,
-                                                    'fa-credit-card': value.code === PaymentMethod.SADAD
+                                                    'fa-credit-card': value.code === PaymentMethod.VISA,
+                                                    'fa-usd': value.code === PaymentMethod.SADAD
                                             }"></i></div>
                                         </ng-template>
 
@@ -129,7 +129,8 @@
                                         </ng-template>
 
                                         <ng-template #invoiceRowTemplate let-value="value">
-                                            <div class="invoice-id" (click)="viewInvoice(value)">
+                                            <!--<div class="invoice-id" (click)="viewInvoice(value)">-->
+                                            <div class="invoice-id">
                                                 <a style="cursor: pointer; color: #5F7B89" routerLink="/invoice" [queryParams]='{search:value}'>{{ value }}</a>
                                             </div>
                                         </ng-template>

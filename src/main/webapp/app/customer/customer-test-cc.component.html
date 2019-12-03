@@ -6,19 +6,19 @@
             <button mat-button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <i class="material-icons">close</i>
             </button>
-            <span> Refund <b> in progress </b>, please wait... </span>
+            <span> {{operation}} <b> in progress </b>, please wait... </span>
         </div>
-        <div *ngIf="paymentStatus!=undefined && paymentStatus==true" class="alert alert-success">
+        <div *ngIf="operationStatus!=undefined && operationStatus==true" class="alert alert-success">
             <button mat-button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <i class="material-icons">close</i>
             </button>
-            <span>Your payment has been <b>successfully</b> completed.</span>
+            <span>Your {{operation}} has been <b>successfully</b> completed.</span>
         </div>
-        <div *ngIf="paymentStatus!=undefined && paymentStatus==false" class="alert alert-danger">
+        <div *ngIf="operationStatus!=undefined && operationStatus==false" class="alert alert-danger">
             <button mat-button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <i class="material-icons">close</i>
             </button>
-            <span>Your payment <b>failed</b>.</span>
+            <span>Your {{operation}} <b>failed</b>.</span>
         </div>
 
         <div class="row">
