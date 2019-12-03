@@ -57,26 +57,27 @@ public class StatisticsResource {
         return statisticsDTO;
     }
 
-    @GetMapping("/chartStatistics")
+    @PostMapping("/chartStatistics")
     @ResponseBody
-    public List<ChartStatisticsDTO> getChartStatistics(@RequestParam("Date")ZonedDateTime statisticsDate ,@RequestParam("Type") int typeSatistics){
+    public List<ChartStatisticsDTO> getChartStatistics(@RequestBody ChartStatisticsRequestDTO chartStatisticsRequest ){
         log.debug("Request to get Chart Statistics");
-        if(statisticsDate == null){
-            statisticsDate =ZonedDateTime.now();
+        if(chartStatisticsRequest.getDate() == null){
+            chartStatisticsRequest.setDate(ZonedDateTime.now());
+
         }
         Pageable pageable =Pageable.unpaged();
         List<ChartStatisticsDTO> chartStatisticsDTOList = new ArrayList<>();
-        if(typeSatistics == TypeStatistics.MONTHLY.getValue()){
-            List<Object[]> stats= invoiceService.getMonthlyStat(statisticsDate);
-            YearMonth yearMonthObject = YearMonth.of(statisticsDate.getYear(), statisticsDate.getMonth());
+        if(chartStatisticsRequest.getType() == TypeStatistics.MONTHLY){
+            List<Object[]> stats= invoiceService.getMonthlyStat(chartStatisticsRequest.getDate());
+            YearMonth yearMonthObject = YearMonth.of(chartStatisticsRequest.getDate().getYear(), chartStatisticsRequest.getDate().getMonth());
             for(int i =1 ;i<= yearMonthObject.lengthOfMonth(); i++){
                 ChartStatisticsDTO chartStatisticsDTO = ChartStatisticsDTO.builder()
-                    .duration(statisticsDate.withDayOfMonth(i).withHour(00).withMinute(00).withSecond(00).withNano(00))
+                    .duration(chartStatisticsRequest.getDate().withDayOfMonth(i).withHour(00).withMinute(00).withSecond(00).withNano(00))
                     .type(TypeStatistics.MONTHLY)
                     .day(i)
                     .month(yearMonthObject.getMonth().getValue())
-                    .totalInvoice(null)
-                    .totalPaid(null)
+                    .totalInvoice(BigInteger.ZERO)
+                    .totalPaid(BigInteger.ZERO)
                     .build();
                 stats.stream().filter(stat -> {
                     return chartStatisticsDTO.getDuration().getDayOfMonth() == ((Timestamp) stat[0]).getDate();
@@ -88,14 +89,14 @@ public class StatisticsResource {
             }
 
         }else{
-            List<Object[]> stats= invoiceService.getAnnualyStat(statisticsDate);
+            List<Object[]> stats= invoiceService.getAnnualyStat(chartStatisticsRequest.getDate());
             for(int i =1 ;i<= 12; i++){
                 ChartStatisticsDTO chartStatisticsDTO = ChartStatisticsDTO.builder()
-                    .duration(statisticsDate.withMonth(i))
+                    .duration(chartStatisticsRequest.getDate().withMonth(i))
                     .month(i)
                     .type(TypeStatistics.ANNUAL)
-                    .totalInvoice(null)
-                    .totalPaid(null)
+                    .totalInvoice(BigInteger.ZERO)
+                    .totalPaid(BigInteger.ZERO)
                     .build();
                 stats.stream().filter(stat -> {
                     return chartStatisticsDTO.getDuration().getMonth().getValue() == ((Timestamp) stat[0]).getMonth()+1;
