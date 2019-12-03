@@ -81,7 +81,7 @@ public class RefundService {
         Optional<Payment> payment = paymentRepository.findFirstByInvoiceIdAndStatus(refundDTO.getInvoiceId(), PaymentStatus.PAID);
         Invoice invoice = payment.get().getInvoice();
         if (!payment.isPresent()) {
-            throw new TbsRunTimeException("No successful payment for invoice: "+ refundDTO.getInvoiceId().toString());
+            throw new TbsRunTimeException("No successful payment for invoice or invoice already refunded: "+ refundDTO.getInvoiceId().toString());
         }
         Refund refund = refundMapper.toEntity(refundDTO);
         refund.setStatus(RequestStatus.CREATED);

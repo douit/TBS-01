@@ -1,5 +1,26 @@
 <div class="main-content">
     <div class="container-fluid">
+
+        <jhi-alert-error></jhi-alert-error>
+        <div *ngIf="isSaving" class="alert alert-info">
+            <button mat-button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <i class="material-icons">close</i>
+            </button>
+            <span> Refund <b> in progress </b>, please wait... </span>
+        </div>
+        <div *ngIf="paymentStatus!=undefined && paymentStatus==true" class="alert alert-success">
+            <button mat-button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <i class="material-icons">close</i>
+            </button>
+            <span>Your payment has been <b>successfully</b> completed.</span>
+        </div>
+        <div *ngIf="paymentStatus!=undefined && paymentStatus==false" class="alert alert-danger">
+            <button mat-button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <i class="material-icons">close</i>
+            </button>
+            <span>Your payment <b>failed</b>.</span>
+        </div>
+
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
@@ -10,33 +31,31 @@
                             </h4>
                         </div>
                     </div>
-
-
                     <div class="card-content">
                         <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
                             <div>
-                                <jhi-alert-error></jhi-alert-error>
+                                <!--<jhi-alert-error></jhi-alert-error>
                                 <div *ngIf="isSaving" class="alert alert-info">
                                     <button mat-button type="button" class="close" data-dismiss="alert" aria-label="Close">
                                         <i class="material-icons">close</i>
                                     </button>
                                     <span> Payment <b> in progress </b>, please wait... </span>
                                 </div>
-                                <div *ngIf="paymentStatus!=undefined && paymentStatus==true" class="alert alert-success">
+                                <div *ngIf="operationStatus!=undefined && operationStatus==true" class="alert alert-success">
                                     <button mat-button type="button" class="close" data-dismiss="alert" aria-label="Close">
                                         <i class="material-icons">close</i>
                                     </button>
-                                    <span>Your payment has been <b>successfully</b> completed.</span>
+                                    <span>Your {{operation}} has been <b>successfully</b> completed.</span>
                                 </div>
-                                <div *ngIf="paymentStatus!=undefined && paymentStatus==false" class="alert alert-danger">
+                                <div *ngIf="operationStatus!=undefined && operationStatus==false" class="alert alert-danger">
                                     <button mat-button type="button" class="close" data-dismiss="alert" aria-label="Close">
                                         <i class="material-icons">close</i>
                                     </button>
-                                    <span>Your payment <b>failed</b>.</span>
-                                </div>
+                                    <span>Your {{operation}} <b>failed</b>.</span>
+                                </div> -->
                                 <div class="form-group">
                                     <label class="form-control-label" jhiTranslate="tbsApp.payment.invoice" for="field_invoice">Invoice</label>
-                                    <select class="form-control" id="field_invoice" name="invoice" formControlName="invoiceId" [(ngModel)]="invoiceSelected" (change)="onChangeInvoice($event.target.value)">
+                                    <select class="form-control" id="field_invoice" name="invoice" formControlName="invoiceId" [(ngModel)]="invoiceSelected" (change)="onChangeInvoice($event.target.value, 'payment')">
                                         <option [ngValue]="null"></option>
                                         <option [ngValue]="invoiceOption" *ngFor="let invoiceOption of invoices; trackBy: invoiceOption">{{invoiceOption.id}}</option>
                                     </select>
@@ -62,5 +81,70 @@
                 </div>
             </div>
         </div>
+
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header card-header-text card-header-primary" data-background-color="primary-one">
+                        <div class="card-text">
+                            <h4 id="page-heading2">
+                                <span> Create a Credit card refund </span>
+                            </h4>
+                        </div>
+                    </div>
+
+
+                    <div class="card-content">
+                        <form name="editForm" role="form" novalidate (ngSubmit)="refund()" [formGroup]="editForm2">
+                            <div>
+                                <!--<jhi-alert-error></jhi-alert-error>
+                                <div *ngIf="isSaving" class="alert alert-info">
+                                    <button mat-button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <i class="material-icons">close</i>
+                                    </button>
+                                    <span> Refund <b> in progress </b>, please wait... </span>
+                                </div>
+                                <div *ngIf="paymentStatus!=undefined && paymentStatus==true" class="alert alert-success">
+                                    <button mat-button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <i class="material-icons">close</i>
+                                    </button>
+                                    <span>Your payment has been <b>successfully</b> completed.</span>
+                                </div>
+                                <div *ngIf="paymentStatus!=undefined && paymentStatus==false" class="alert alert-danger">
+                                    <button mat-button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <i class="material-icons">close</i>
+                                    </button>
+                                    <span>Your payment <b>failed</b>.</span>
+                                </div>-->
+                                <div class="form-group">
+                                    <label class="form-control-label" jhiTranslate="tbsApp.payment.invoice" for="field_invoice">Invoice</label>
+                                    <select class="form-control" id="invoiceIdRefund" name="invoice" formControlName="invoiceId" [(ngModel)]="invoiceRefundSelected" (change)="onChangeInvoice($event.target.value, 'refund')">
+                                        <option [ngValue]="null"></option>
+                                        <option [ngValue]="invoiceOption" *ngFor="let invoiceOption of invoicesPaid; trackBy: invoiceOption">{{invoiceOption.id}}</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-control-label" jhiTranslate="tbsApp.payment.amount" for="field_amount">Amount</label>
+                                    <input type="number" class="form-control" name="amount" id="field_amount_refund"
+                                           formControlName="amount" readonly/>
+                                </div>
+                            </div>
+                            <div>
+                                <button type="button" id="cancel-save2" class="btn btn-secondary"  (click)="previousState()">
+                                    <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
+                                </button>
+                                <button type="submit" id="save-entity2" [disabled]="editForm.invalid || isSaving" class="btn btn-primary">
+                                    <fa-icon [icon]="'save'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Save</span>
+                                </button>
+                            </div>
+                        </form>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>

@@ -102,23 +102,26 @@ public class PaymentService {
     @Transactional
     public PaymentDTO createNewPayment(PaymentDTO paymentDTO) {
         log.debug("Request to save Payment : {}", paymentDTO);
-        Invoice invoice = invoiceRepository.getOne(paymentDTO.getInvoiceId());
-        if (invoice == null) {
+        // Payment payment = paymentMapper.toEntity(paymentDTO);
+        // Optional<PaymentMethod> paymentMethod = paymentMethodService.findByCode(paymentDTO.getPaymentMethod().getCode());
+        // payment.setPaymentMethod(paymentMethod.get());
+
+        Optional<Invoice> invoice = invoiceRepository.findById(paymentDTO.getInvoiceId());
+        if (!invoice.isPresent()) {
             throw new TbsRunTimeException("Bill does not exist");
         }
 
         // call payment gateway
-        BigDecimal roundedAmount = invoice.getAmount().setScale(2, RoundingMode.HALF_UP);
-        String appCode = invoice.getClient().getPaymentKeyApp();
-        PaymentResponseDTO paymentResponseDTO = creditCardCall(invoice.getId(), appCode, roundedAmount.multiply(new BigDecimal("100")));
+        BigDecimal roundedAmount = invoice.get().getAmount().setScale(2, RoundingMode.HALF_UP);
+        String appCode = invoice.get().getClient().getPaymentKeyApp();
+        PaymentResponseDTO paymentResponseDTO = creditCardCall(invoice.get().getId(), appCode, roundedAmount.multiply(new BigDecimal("100")));
 
-        https://stackoverflow.com/questions/49170180/createdby-and-lastmodifieddate-are-no-longer-working-with-zoneddatetime
         Optional<PaymentMethod> paymentMethod = paymentMethodService.findByCode(paymentDTO.getPaymentMethod().getCode());
-        //Payment payment = paymentMapper.toEntity(paymentDTO);
-        Payment payment = Payment.builder().build();
+        Payment payment = paymentMapper.toEntity(paymentDTO);
+        // Payment payment = Payment.builder().build();
         payment.setPaymentMethod(paymentMethod.get());
-        payment.setInvoice(invoice);
-        payment.setAmount(invoice.getAmount());
+        payment.setInvoice(invoice.get());
+        payment.setAmount(invoice.get().getAmount());
         payment.setStatus(PaymentStatus.PENDING);
         if (paymentResponseDTO != null) {
             payment.setTransactionId(paymentResponseDTO.getTransactionId());

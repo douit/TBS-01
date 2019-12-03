@@ -11,6 +11,7 @@ import {IPayment} from 'app/shared/model/payment.model';
 import {DataTableInput} from 'app/shared/model/datatable/datatable-input';
 import {_tbs} from 'app/shared/util/tbs-utility';
 import {Pageable} from 'app/shared/model/pageable';
+import {IRefund} from "app/shared/model/refund.model";
 
 type EntityResponseType = HttpResponse<IPayment>;
 type EntityArrayResponseType = HttpResponse<IPayment[]>;
@@ -19,6 +20,7 @@ type EntityArrayResponseType = HttpResponse<IPayment[]>;
 export class PaymentService {
   public resourceUrl = SERVER_API_URL + 'api/payments';
   public resourceUrlCreditCard = '/billing/payments/credit-card';
+  public resourceUrlRefund = '/billing/refunds';
 
   constructor(protected http: HttpClient) {}
 
@@ -37,6 +39,13 @@ export class PaymentService {
     const copy = this.convertDateFromClient(payment);
     return this.http
       .post<IPayment>(this.resourceUrlCreditCard, copy, { observe: 'response' })
+      .pipe(map((res: EntityResponseType) => this.convertDateFromServer(res)));
+  }
+
+  createCcRefund(refund: IRefund): Observable<EntityResponseType> {
+    const copy = this.convertDateFromClient(refund);
+    return this.http
+      .post<IPayment>(this.resourceUrlRefund, copy, { observe: 'response' })
       .pipe(map((res: EntityResponseType) => this.convertDateFromServer(res)));
   }
 

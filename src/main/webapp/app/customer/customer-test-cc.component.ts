@@ -15,6 +15,7 @@ import { IInvoice } from 'app/shared/model/invoice.model';
 import { InvoiceService } from 'app/invoice/invoice.service';
 import { IPaymentMethod } from 'app/shared/model/payment-method.model';
 import { PaymentMethodService } from 'app/payment-method/payment-method.service';
+import {IRefund, Refund} from "app/shared/model/refund.model";
 
 @Component({
   selector: 'app-payment-test-cc',
@@ -25,6 +26,8 @@ export class CustomerTestCcComponent implements OnInit {
 
   invoices: IInvoice[];
 
+  invoicesPaid: IInvoice[];
+
   submitFormCC: String;
 
   // postURL = 'https://srstaging.stspayone.com/SmartRoutePaymentWeb/SRPayMsgHandler';
@@ -33,17 +36,23 @@ export class CustomerTestCcComponent implements OnInit {
 
   invoiceSelected: any;
 
+  invoiceRefundSelected: any;
+
   invoiceOption: any;
 
-  paymentStatus: boolean;
+  operationStatus: boolean;
 
   editForm = this.fb.group({
     invoiceId: [],
     amount: []
   });
 
-  /*ccForm = this.fb.group({
-  });*/
+  editForm2 = this.fb.group({
+    invoiceId: [],
+    amount: []
+  });
+
+  operation = 'payment';
   @ViewChild('ccForm', {static: true})
   ccForm: FormGroupDirective;
 
@@ -59,9 +68,9 @@ export class CustomerTestCcComponent implements OnInit {
     this.activatedRoute.queryParams.subscribe(params => {
       if (params['QSC']) {
         if (params['QSC'] == '1007') {
-          that.paymentStatus = true;
+          that.operationStatus = true;
         } else {
-          that.paymentStatus = false;
+          that.operationStatus = false;
         }
       }
     });
@@ -76,6 +85,14 @@ export class CustomerTestCcComponent implements OnInit {
         map((response: HttpResponse<IInvoice[]>) => response.body)
       )
       .subscribe((res: IInvoice[]) => (this.invoices = res), (res: HttpErrorResponse) => this.onError(res.message));
+
+    this.invoiceService
+      .queryByPaymentStatus('PAID')
+      .pipe(
+        filter((mayBeOk: HttpResponse<IInvoice[]>) => mayBeOk.ok),
+        map((response: HttpResponse<IInvoice[]>) => response.body)
+      )
+      .subscribe((res: IInvoice[]) => (this.invoicesPaid = res), (res: HttpErrorResponse) => this.onError(res.message));
   }
 
   previousState() {
@@ -83,21 +100,17 @@ export class CustomerTestCcComponent implements OnInit {
   }
 
   save() {
+    this.operation = 'payment';
     this.isSaving = true;
-    const payment = this.createFromForm();
+    const payment = this.createFromForm(this.editForm);
     this.subscribeToSaveResponse(this.paymentService.createCcPayment(payment));
   }
 
-  /*save2(form: any, e: any): void {
-    // Note that I added 'e' and calling the event target's .submit()
-      e.target.submit();
-    }*/
-
-  private createFromForm(): IPayment {
+  private createFromForm(editForm): IPayment {
     return {
-      ...new Payment(),
-      invoiceId: this.editForm.get(['invoiceId']).value.id,
-      amount: this.editForm.get(['amount']).value
+      ...new Refund(),
+      invoiceId: editForm.get(['invoiceId']).value.id,
+      amount: editForm.get(['amount']).value
     };
   }
 
@@ -110,10 +123,31 @@ export class CustomerTestCcComponent implements OnInit {
     window.location.href = res.body.redirectUrl;
   }
 
+  refund() {
+    this.operation = 'refund';
+    this.isSaving = true;
+    const refund = this.createFromForm(this.editForm2);
+    this.subscribeToRefundResponse(this.paymentService.createCcRefund(refund));
+  }
+
+  protected subscribeToRefundResponse(result: Observable<HttpResponse<IRefund>>) {
+    result.subscribe((res) => this.onRefundSuccess(res), (err) => this.onSaveError(err));
+  }
+
+  protected onRefundSuccess(res) {
+    this.isSaving = false;
+    if (res.requestStatus == 'SUCCEEDED') {
+      this.operationStatus = true;
+    } else {
+      this.operationStatus = false;
+    }
+  }
+
   protected onSaveError(err) {
     this.isSaving = false;
   }
   protected onError(errorMessage: string) {
+    this.operationStatus = false;
     this.jhiAlertService.error(errorMessage, null, null);
   }
 
@@ -125,9 +159,14 @@ export class CustomerTestCcComponent implements OnInit {
     return item.id;
   }
 
-  onChangeInvoice(val) {
+  onChangeInvoice(val, type) {
     console.log(val);
-    console.log(JSON.stringify(this.invoiceSelected));
-    this.editForm.patchValue({'amount' : (this.invoiceSelected != null) ? this.invoiceSelected.amount : 0});
+    if (type === 'payment') {
+      console.log(JSON.stringify(this.invoiceSelected));
+      this.editForm.patchValue({'amount' : (this.invoiceSelected != null) ? this.invoiceSelected.amount : 0});
+    } else {
+      console.log(JSON.stringify(this.invoiceRefundSelected));
+      this.editForm2.patchValue({'amount' : (this.invoiceRefundSelected != null) ? this.invoiceRefundSelected.amount : 0});
+    }
   }
 }
