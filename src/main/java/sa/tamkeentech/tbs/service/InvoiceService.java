@@ -290,7 +290,7 @@ public class InvoiceService {
         ZonedDateTime first = lastDate.withMonth(1).withDayOfMonth(1);
         YearMonth yearMonthObject = YearMonth.of(lastDate.getYear(), lastDate.getMonth());
         ZonedDateTime last = lastDate.withMonth(12).withDayOfMonth(31);
-        List<Object[]> stats = invoiceRepository.getStatisticsByMonth(first, last);
+        List<Object[]> stats = invoiceRepository.getStatisticsByYear(first, last);
         return stats;
     }
 

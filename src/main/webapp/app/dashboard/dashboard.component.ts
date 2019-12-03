@@ -1,10 +1,17 @@
-import { Component, OnInit, AfterViewInit } from '@angular/core';
-import { TableData } from '../md/md-table/md-table.component';
-import { LegendItem, ChartType } from '../md/md-chart/md-chart.component';
-
+import {AfterViewInit, Component, OnInit} from '@angular/core';
+import {TableData} from '../md/md-table/md-table.component';
 import * as Chartist from 'chartist';
-
 import * as $ from 'jquery';
+import {HttpClient} from "@angular/common/http";
+import {IStatistics} from "app/shared/model/statistics.model";
+import {DashboardService} from "app/dashboard/dashboard.service";
+import {IChartStatistics} from "app/shared/model/chart-statistics.model";
+import * as moment from 'moment';
+import {IChartStatisticsRequest} from "app/shared/model/chart-statistics-request.model";
+import {TypeStatistics} from "app/shared/model/enumerations/type-statistics.model";
+import {falseIfMissing} from "protractor/built/util";
+
+
 // declare const $: any;
 
 @Component({
@@ -13,6 +20,23 @@ import * as $ from 'jquery';
 })
 export class DashboardComponent implements OnInit, AfterViewInit {
   // constructor(private navbarTitleService: NavbarTitleService, private notificationService: NotificationService) { }
+  dashboardService : DashboardService;
+  statistics : IStatistics ;
+  chartStatistics : IChartStatistics [] = [];
+
+  dataMonthlyChart = {
+    labels: []
+    ,
+    series: []
+  };
+  dataAnnualChart = {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    series: []
+  };
+
+  constructor(private http:HttpClient,dashboardService : DashboardService ) {
+    this.dashboardService = dashboardService;
+  }
   public tableData: TableData;
   startAnimationForLineChart(chart: any) {
       let seq: any, delays: any, durations: any;
@@ -69,94 +93,141 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
       seq2 = 0;
   }
-  // constructor(private navbarTitleService: NavbarTitleService) { }
-  public ngOnInit() {
-      this.tableData = {
-          headerRow: ['ID', 'Name', 'Salary', 'Country', 'City'],
-          dataRows: [
-              ['US', 'USA', '2.920	', '53.23%'],
-              ['DE', 'Germany', '1.300', '20.43%'],
-              ['AU', 'Australia', '760', '10.35%'],
-              ['GB', 'United Kingdom	', '690', '7.87%'],
-              ['RO', 'Romania', '600', '5.94%'],
-              ['BR', 'Brasil', '550', '4.34%']
-          ]
-       };
-      /* ----------==========     Daily Sales Chart initialization    ==========---------- */
 
-      const dataDailySalesChart = {
-          labels: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
-          series: [
-              [12, 17, 7, 17, 23, 18, 38]
-          ]
-      };
 
-     const optionsDailySalesChart = {
-          lineSmooth: Chartist.Interpolation.cardinal({
-              tension: 0
+   getStatistics()  {
+    this.dashboardService.getStatistics().subscribe(
+      res =>{
+        this.statistics = res;
+
+      },
+      res=>{
+        alert("An error has occurred when get statistics ")
+      }
+    );
+
+  }
+   getMonthlyChartStatistics(chartStatisticsRequest : IChartStatisticsRequest )  {
+    this.dashboardService.getChartStatistics(chartStatisticsRequest).subscribe(
+      res =>{
+        let totalInvoiceList = [];
+        let paidInvoiceList = [];
+        let max = 0;
+        res.forEach(statMonth => {
+            totalInvoiceList.push(statMonth.totalInvoice);
+            paidInvoiceList.push(statMonth.totalPaid);
+            // daysList.push(statMonth.day);
+            this.dataMonthlyChart.labels.push(statMonth.day);
+            if( max < statMonth.totalInvoice)
+              max =statMonth.totalInvoice;
+
+        });
+      // this.dataMonthlyChart.labels =daysList;
+       this.dataMonthlyChart.series.push(totalInvoiceList);
+       this.dataMonthlyChart.series.push(paidInvoiceList);
+
+        const optionsColouredBarsChart: any = {
+          lineSmooth: Chartist.Interpolation.simple({
+            divisor: 2,
+            fillHoles: false
           }),
-          low: 0,
-          high: 50, // creative tim: we recommend you to set the high sa the biggest value + something for a better look
-          chartPadding: { top: 0, right: 0, bottom: 0, left: 0},
-      };
-
-      const dailySalesChart = new Chartist.Line('#dailySalesChart', dataDailySalesChart, optionsDailySalesChart);
-
-      this.startAnimationForLineChart(dailySalesChart);
-      /* ----------==========     Completed Tasks Chart initialization    ==========---------- */
-
-      const dataCompletedTasksChart = {
-          labels: ['12p', '3p', '6p', '9p', '12p', '3a', '6a', '9a'],
-          series: [
-              [230, 750, 450, 300, 280, 240, 200, 190]
-          ]
-      };
-
-      const optionsCompletedTasksChart = {
-          lineSmooth: Chartist.Interpolation.cardinal({
-              tension: 0
-          }),
-          low: 0,
-          high: 1000, // creative tim: we recommend you to set the high sa the biggest value + something for a better
-          // look
-          chartPadding: { top: 0, right: 0, bottom: 0, left: 0}
-      };
-
-     const completedTasksChart = new Chartist.Line('#completedTasksChart', dataCompletedTasksChart,
-      optionsCompletedTasksChart);
-
-     this.startAnimationForLineChart(completedTasksChart);
-
-      /* ----------==========     Emails Subscription Chart initialization    ==========---------- */
-
-      const dataWebsiteViewsChart = {
-        labels: ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'],
-        series: [
-          [542, 443, 320, 780, 553, 453, 326, 434, 568, 610, 756, 895]
-
-        ]
-      };
-      const optionsWebsiteViewsChart = {
+          axisY: {
+            showGrid: true,
+            offset: 40
+          },
           axisX: {
-              showGrid: false
+            showGrid: false,
           },
           low: 0,
-          high: 1000,
-          chartPadding: { top: 0, right: 5, bottom: 0, left: 0}
-      };
-      const responsiveOptions: any = [
-        ['screen and (max-width: 640px)', {
-          seriesBarDistance: 5,
-          axisX: {
-            labelInterpolationFnc: function (value) {
-              return value[0];
-            }
-          }
-        }]
-      ];
-      const websiteViewsChart = new Chartist.Bar('#websiteViewsChart', dataWebsiteViewsChart, optionsWebsiteViewsChart, responsiveOptions);
+          high: max,
+          showPoint: true,
+          height: '300px'
+        };
 
-      this.startAnimationForBarChart(websiteViewsChart);
+        const dataColouredBarsChart = {
+          labels: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17],
+          series: [
+            [287, 385, 490, 554, 10, 698, 0, 0, 0, 100, 0]
+
+
+          ]
+        };
+
+        const colouredBarsChart = new Chartist.Line('#colouredBarsChart', this.dataMonthlyChart,
+          optionsColouredBarsChart);
+
+        this.startAnimationForLineChart(colouredBarsChart);
+      },
+      res=>{
+        alert("An error has occurred when get statistics ")
+      }
+    );
+
+  }
+   getAnnualChartStatistics(chartStatisticsRequest: IChartStatisticsRequest) {
+     this.dashboardService.getChartStatistics(chartStatisticsRequest).subscribe(
+       res =>{
+         let totalInvoiceList = [];
+         let paidInvoiceList = [];
+         let max = 0;
+         res.forEach(statYear => {
+           totalInvoiceList.push(statYear.totalInvoice);
+           paidInvoiceList.push(statYear.totalPaid);
+           if( max < statYear.totalInvoice)
+             max =statYear.totalInvoice;
+
+         });
+         this.dataAnnualChart.series.push(totalInvoiceList);
+         this.dataAnnualChart.series.push(paidInvoiceList);
+       },
+       res=>{
+       alert("An error has occurred when get statistics ")
+     }
+   );
+
+
+     const optionsMultipleBarsChart = {
+       seriesBarDistance: 10,
+       axisX: {
+         showGrid: false
+       },
+       height: '300px'
+     };
+
+     const responsiveOptionsMultipleBarsChart: any = [
+       ['screen and (max-width: 640px)', {
+         seriesBarDistance: 5,
+         axisX: {
+           labelInterpolationFnc: function (value: any) {
+             return value[0];
+           }
+         }
+       }]
+     ];
+
+     const multipleBarsChart = new Chartist.Bar('#multipleBarsChart', this.dataAnnualChart,
+       optionsMultipleBarsChart, responsiveOptionsMultipleBarsChart);
+
+     // start animation for the Emails Subscription Chart
+     this.startAnimationForBarChart(multipleBarsChart);
+
+
+   }
+  public ngOnInit() {
+   var chartMonthlyStatisticsRequest : IChartStatisticsRequest ={
+    date :  moment(),
+     type: TypeStatistics.MONTHLY
+    };
+
+    var chartAnnualStatisticsRequest : IChartStatisticsRequest ={
+      date :  moment(),
+      type: TypeStatistics.ANNUAL
+    };
+    this.getMonthlyChartStatistics(chartMonthlyStatisticsRequest);
+    this.getAnnualChartStatistics(chartAnnualStatisticsRequest);
+    this.getStatistics();
+
+
    }
    ngAfterViewInit() {
        const breakCards = true;
@@ -187,4 +258,6 @@ export class DashboardComponent implements OnInit, AfterViewInit {
            });
        }
    }
+
+
 }

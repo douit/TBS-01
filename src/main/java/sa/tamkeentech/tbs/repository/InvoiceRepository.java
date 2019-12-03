@@ -37,9 +37,9 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long>, DataTab
         "FROM invoice WHERE payment_status = 'PAID' ", nativeQuery = true)
     public BigDecimal sumIncome();
 
-    @Query(value = "SELECT date_trunc('month', invoice.created_date) As Month, count(*) As totalInvoice ," +
+    @Query(value = "SELECT date_trunc('month', invoice.created_date) As Month, count(*) As totalInvoice ,\n" +
         "sum(case when payment_status = 'PAID' then 1 else 0 end) As totalPaid" +
-        "FROM invoice WHERE invoice.created_date >= ?1 " +
+        " FROM invoice WHERE invoice.created_date >= ?1 " +
         "    AND invoice.created_date <= ?2 " +
         "group by Month ORDER BY Month;", nativeQuery = true)
     List<Object[]> getStatisticsByYear(ZonedDateTime from, ZonedDateTime to);
