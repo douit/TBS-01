@@ -167,10 +167,12 @@ public class RefundService {
         JSONObject billInfoContent = new JSONObject();
         RefundStatusCCResponseDTO refundResponseDTO = null;
         try {
-            billInfoContent.put("OriginalTransactionID", invoiceId);
-            billInfoContent.put("TransactionId ",Long.parseLong(transactionId));
-            billInfoContent.put("BillerCode",billerCode);
-            billInfoContent.put("AppCode",appCode);
+            Calendar rightNowDate = Calendar.getInstance();
+            billInfoContent.put("OriginalTransactionID", /*invoiceId*/ transactionId);
+            billInfoContent.put("TransactionId",invoiceId.toString() + rightNowDate.get(Calendar.MINUTE) + rightNowDate.get(Calendar.SECOND));
+            billInfoContent.put("BillerCode", billerCode);
+            billInfoContent.put("AppCode", appCode);
+            billInfoContent.put("Amount", refund.getAmount());
             String jsonStr = billInfoContent.toString();
             post.setEntity(new StringEntity(jsonStr));
             log.debug("++++Refund CC request : {}", jsonStr);
