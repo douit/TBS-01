@@ -35,42 +35,4 @@ public class OneItemInvoiceRespDTO implements Serializable {
     private String link ;
     private Long paymentMethod ;
 
-
-
-    /*@NotBlank
-    private String customerId;//req
-
-    @NotBlank
-    private String customerIdType;//req
-
-    private String customerName;//req
-
-    private String mobile;//req
-
-    private String email;//req
-
-    @NotBlank
-    private String itemName;//req
-
-    @NotNull
-    @DecimalMin(value = "0.0")
-    private BigDecimal price;//req
-
-    @NotNull
-    @Min(value= 1)
-    private Integer quantity;//req
-
-    @NotNull
-    private PaymentMethodDTO paymentMethod; // req name-code? + RESP
-
-    private String statusId; //RESP
-
-    private String shortDesc;//RESP
-
-    private String description;//RESP
-
-    private String billNumber; //RESP
-
-    private String link; //RESP*/
-
 }
