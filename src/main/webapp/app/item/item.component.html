@@ -15,7 +15,7 @@
 
 
                         <div class="col-sm-12">
-                            <div class="pull-right">
+                            <div class="pull-right ">
                                 <button [routerLink]="['/item/new']" id="jh-create-entity"
                                         class="btn btn-success btn-round btn-fab btn-fab-mini"
                                         title="Add Delivery Provider">
@@ -103,9 +103,9 @@
 
                                         <ng-template #actionsRowTemplate let-row="row">
                                             <div class="btn-group">
-                                                <button class="btn btn-info  btn-link" matTooltip="{{ 'global.datatable.view' | translate }}" [matTooltipPosition]="'above'" (click)="view(row)">
-                                                    <i class="material-icons">visibility</i>
-                                                </button>
+<!--                                                <button class="btn btn-info  btn-link" matTooltip="{{ 'global.datatable.view' | translate }}" [matTooltipPosition]="'above'" (click)="view(row)">-->
+<!--                                                    <i class="material-icons">visibility</i>-->
+<!--                                                </button>-->
                                                 <button class="btn btn-primary  btn-link" matTooltip="{{ 'global.datatable.edit' | translate }}" [matTooltipPosition]="'above'" (click)="edit(row)">
                                                     <i class="material-icons">edit</i>
                                                 </button>
@@ -114,6 +114,7 @@
                                                 </button>-->
                                             </div>
                                         </ng-template>
+
                                     </div>
                                 </div>
                             </div>

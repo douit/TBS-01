@@ -33,7 +33,7 @@ export class ItemComponent implements OnInit {
   @ViewChild('headerTemplate', {static: false}) headerTemplate;
   @ViewChild('rowTemplate', {static: false}) rowTemplate;
   @ViewChild('actionsRowTemplate', {static: true}) actionsRowTemplate;
-
+  @ViewChild('editRowTemplate', {static: true}) editRowTemplate;
   constructor(
     protected itemService: ItemService,
     protected jhiAlertService: JhiAlertService,
@@ -42,7 +42,8 @@ export class ItemComponent implements OnInit {
     private activatedRoute: ActivatedRoute,
     private translateService: TranslateService,
     private router: Router
-  ) {}
+  ) {
+  }
 
 
   ngOnInit() {
@@ -88,14 +89,14 @@ export class ItemComponent implements OnInit {
         prop: 'price',
         headerTemplate: this.headerTemplate,
         cellTemplate: this.rowTemplate
-      })/*,
+      }),
       new DatatableColumn({
         name: this.translateService.instant('global.datatable.actions'),
         sortable: false,
         searchable: false,
         headerTemplate: this.headerTemplate,
         cellTemplate: this.actionsRowTemplate
-      })*/
+      })
     ]);
   }
 
@@ -122,7 +123,7 @@ export class ItemComponent implements OnInit {
 
     pageQueryParams.fillDatatable(this.datatable);
 
-    this.router.navigate(['/item'], { queryParams: pageQueryParams });
+    this.router.navigate(['/item'], {queryParams: pageQueryParams});
   }
 
   search() {

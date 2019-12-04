@@ -1,58 +1,223 @@
-<div class="row justify-content-center">
-    <div class="col-8">
-        <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
-            <h2 id="jhi-item-heading" jhiTranslate="tbsApp.item.home.createOrEditLabel">Create or edit a Item</h2>
-            <div>
-                <jhi-alert-error></jhi-alert-error>
-                <div class="form-group" [hidden]="!editForm.get('id').value">
-                    <label for="id" jhiTranslate="global.field.id">ID</label>
-                    <input type="text" class="form-control" id="id" name="id" formControlName="id"
-                        readonly />
-                </div>
-                <div class="form-group">
-                    <label class="form-control-label" jhiTranslate="tbsApp.item.name" for="field_name">Name</label>
-                    <input type="text" class="form-control" name="name" id="field_name"
-                           formControlName="name"/>
-                </div>
-                <div class="form-group">
-                    <label class="form-control-label" jhiTranslate="tbsApp.item.description" for="field_description">Description</label>
-                    <input type="text" class="form-control" name="description" id="field_description"
-                           formControlName="description"/>
-                </div>
-                <div class="form-group">
-                    <label class="form-control-label" jhiTranslate="tbsApp.item.price" for="field_price">Price</label>
-                    <input type="number" class="form-control" name="price" id="field_price"
-                           formControlName="price"/>
-                </div>
-                <div class="form-group">
-                    <label class="form-control-label" jhiTranslate="tbsApp.item.defaultQuantity" for="field_defaultQuantity">Default Quantity</label>
-                    <input type="number" class="form-control" name="defaultQuantity" id="field_defaultQuantity"
-                           formControlName="defaultQuantity"/>
+<!--<div class="row justify-content-center">-->
+<!--    <div class="col-8">-->
+<!--        <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">-->
+<!--            <h2 id="jhi-item-heading" jhiTranslate="tbsApp.item.home.createOrEditLabel">Create or edit a Item</h2>-->
+<!--            <div>-->
+<!--                <jhi-alert-error></jhi-alert-error>-->
+<!--                <div class="form-group" [hidden]="!editForm.get('id').value">-->
+<!--                    <label for="id" jhiTranslate="global.field.id">ID</label>-->
+<!--                    <input type="text" class="form-control" id="id" name="id" formControlName="id"-->
+<!--                        readonly />-->
+<!--                </div>-->
+<!--                <div class="form-group">-->
+<!--                    <label class="form-control-label" jhiTranslate="tbsApp.item.name" for="field_name">Name</label>-->
+<!--                    <input type="text" class="form-control" name="name" id="field_name"-->
+<!--                           formControlName="name"/>-->
+<!--                </div>-->
+<!--                <div class="form-group">-->
+<!--                    <label class="form-control-label" jhiTranslate="tbsApp.item.description" for="field_description">Description</label>-->
+<!--                    <input type="text" class="form-control" name="description" id="field_description"-->
+<!--                           formControlName="description"/>-->
+<!--                </div>-->
+<!--                <div class="form-group">-->
+<!--                    <label class="form-control-label" jhiTranslate="tbsApp.item.price" for="field_price">Price</label>-->
+<!--                    <input type="number" class="form-control" name="price" id="field_price"-->
+<!--                           formControlName="price"/>-->
+<!--                </div>-->
+<!--                <div class="form-group">-->
+<!--                    <label class="form-control-label" jhiTranslate="tbsApp.item.defaultQuantity" for="field_defaultQuantity">Default Quantity</label>-->
+<!--                    <input type="number" class="form-control" name="defaultQuantity" id="field_defaultQuantity"-->
+<!--                           formControlName="defaultQuantity"/>-->
+<!--                </div>-->
+
+<!--                <div class="form-group">-->
+<!--                    <label class="form-control-label" jhiTranslate="tbsApp.item.category" for="field_category">Category</label>-->
+<!--                    <select class="form-control" id="field_category" name="category" formControlName="categoryId">-->
+<!--                        <option [ngValue]="null"></option>-->
+<!--                        <option [ngValue]="categoryOption.id" *ngFor="let categoryOption of categories; trackBy: trackCategoryById">{{categoryOption.id}}</option>-->
+<!--                    </select>-->
+<!--                </div>-->
+<!--                <div class="form-group">-->
+<!--                    <label class="form-control-label" jhiTranslate="tbsApp.item.client" for="field_client">Client</label>-->
+<!--                    <select class="form-control" id="field_client" name="client" formControlName="clientId">-->
+<!--                        <option [ngValue]="null"></option>-->
+<!--                        <option [ngValue]="clientOption.id" *ngFor="let clientOption of clients; trackBy: trackClientById">{{clientOption.id}}</option>-->
+<!--                    </select>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div>-->
+<!--                <button type="button" id="cancel-save" class="btn btn-secondary"  (click)="previousState()">-->
+<!--                    <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>-->
+<!--                </button>-->
+<!--                <button type="submit" id="save-entity" [disabled]="editForm.invalid || isSaving" class="btn btn-primary">-->
+<!--                    <fa-icon [icon]="'save'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Save</span>-->
+<!--                </button>-->
+<!--            </div>-->
+<!--        </form>-->
+<!--    </div>-->
+<!--</div>-->
+
+<div class="main-content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <!--<div class="row">-->
+
+                    <div class="card-header card-header-text card-header-primary" data-background-color="primary-one">
+                        <div class="card-text">
+                            <h4 id="page-heading">
+                                <span jhiTranslate="tbsApp.item.home.title">Add New Item</span>
+                            </h4>
+                        </div>
+                    </div>
+
+                    <form name="editForm"  (ngSubmit)="save()" [formGroup]="editForm">
+
+                                <h3 class="ml-4">Create an
+                                    Item</h3>
+
+                        <div class="card-body">
+                            <div class="row">
+                                <label class="col-sm-2 col-form-label">Name </label>
+                                <div class="col-sm-7">
+                                    <mat-form-field class="example-full-width has-label"
+                                                    [ngClass]="{'has-success':validTextType===true}"
+                                                    [ngClass]="displayFieldCss(type, 'text')">
+                                        <input type="text"
+                                               matInput
+                                               id="name"
+                                               (ngModelChange)="textValidationType($event)"
+                                               formControlName="name">
+                                        <!-- <app-field-error-display [displayError]="isFieldValid(type, 'text')" errorMsg="Required text">
+                                         </app-field-error-display>-->
+                                    </mat-form-field>
+                                </div>
+
+                            </div>
+
+                            <div class="row">
+                                <label class="col-sm-2 col-form-label">Description</label>
+                                <div class="col-sm-7">
+                                    <mat-form-field class="example-full-width has-label"
+                                                    [ngClass]="{'has-success':validNumberType===true}"
+                                                    [ngClass]="displayFieldCss(type, 'number')">
+                                        <input type="text" name="description" class="input-lg"
+                                               matInput
+                                               (ngModelChange)="numberValidationType($event)"
+                                               formControlName="description">
+                                        <!--<app-field-error-display [displayError]="isFieldValid(type, 'number')" errorMsg="Add a number!">
+                                        </app-field-error-display>-->
+                                    </mat-form-field>
+                                </div>
+
+                            </div>
+
+                            <div class="row">
+
+                                <label class="col-sm-2 col-form-label">Price</label>
+                                <div class="col-sm-2">
+                                    <mat-form-field class="example-full-width"
+                                                    [ngClass]="{'has-success':validSourceType===true}"
+                                                    [ngClass]="displayFieldCss(type, 'password')">
+                                        <input type="text"
+                                               matInput
+                                               name="price"
+                                               (ngModelChange)="sourceValidationType($event)"
+                                               formControlName="price">
+                                        <!-- <app-field-error-display [displayError]="isFieldValid(type, 'password')" errorMsg="IdSource is required">
+                                         </app-field-error-display>-->
+                                    </mat-form-field>
+                                </div>
+                                <label class="col-sm-2 col-form-label">DefaultQuantity</label>
+                                <div class="col-sm-2">
+                                    <mat-form-field class="example-full-width"
+                                                    [ngClass]="{'has-success':validDestinationType===true}"
+                                                    [ngClass]="displayFieldCss(type, 'confirmPassword')">
+                                        <input type="text"
+                                               matInput
+                                               name="defaultQuantity"
+                                               (ngModelChange)="confirmDestinationValidationType($event)"
+                                               formControlName="defaultQuantity">
+                                        <!--<app-field-error-display [displayError]="isFieldValid(type, 'confirmPassword')" errorMsg=" IdSource mismatch!">
+                                        </app-field-error-display>-->
+                                    </mat-form-field>
+                                </div>
+
+                            </div>
+
+                            <div class="row">
+                                <label class="col-sm-2 col-form-label">Category</label>
+                                <div class="col-sm-7">
+                                    <mat-form-field>
+                                        <mat-label>Select an option</mat-label>
+                                        <mat-select class="form-control" id="field_category" name="category"
+                                                    formControlName="category">
+                                            <mat-option [value]="null">None</mat-option>
+                                            <mat-option [value]="categoryOption"
+                                                        *ngFor="let categoryOption of categories; trackBy: trackCategoryById">{{categoryOption.name}}</mat-option>
+
+                                        </mat-select>
+                                    </mat-form-field>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <label class="col-sm-2 col-form-label">Clint</label>
+                                <div class="col-sm-7">
+                                    <mat-form-field>
+                                        <mat-label>Select an option</mat-label>
+                                        <mat-select class="form-control" id="field_client" name="clint"
+                                                    formControlName="client">
+                                            <mat-option [value]="null">None</mat-option>
+                                            <mat-option [value]="clientOption"
+                                                        *ngFor="let clientOption of clients; trackBy: trackClientById">{{clientOption.name}}</mat-option>
+                                        </mat-select>
+                                    </mat-form-field>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <label class="col-sm-2 col-form-label">Tax</label>
+                                <div class="col-sm-7">
+                                    <ng-multiselect-dropdown
+                                        [placeholder]="'Chose Tax'"
+                                        [data]="dropdownList"
+                                        [(ngModel)]="selectedItems"
+                                        [settings]="dropdownSettings"
+                                        (onSelect)="onItemSelect($event)"
+                                        (onSelectAll)="onSelectAll($event)"
+                                    >
+                                    </ng-multiselect-dropdown>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="row">
+                            <div class="col-sm-4" >
+                            </div>
+                            <div class="col-sm-4" align="center">
+                            <button type="button" id="cancel-save" class="btn btn-dark"   (click)="previousState()">
+                                <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span
+                                jhiTranslate="entity.action.cancel">Cancel</span>
+                            </button>
+
+
+                            <button type="submit" id="save-entity" [disabled]="editForm.invalid || isSaving"
+                                    class="btn btn-primary">
+                                <fa-icon [icon]="'save'"></fa-icon>&nbsp;<span
+                                jhiTranslate="entity.action.save">Save</span>
+                            </button>
+                            </div>
+                        </div>
+
+                    </form>
+
+
                 </div>
 
-                <div class="form-group">
-                    <label class="form-control-label" jhiTranslate="tbsApp.item.category" for="field_category">Category</label>
-                    <select class="form-control" id="field_category" name="category" formControlName="categoryId">
-                        <option [ngValue]="null"></option>
-                        <option [ngValue]="categoryOption.id" *ngFor="let categoryOption of categories; trackBy: trackCategoryById">{{categoryOption.id}}</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-control-label" jhiTranslate="tbsApp.item.client" for="field_client">Client</label>
-                    <select class="form-control" id="field_client" name="client" formControlName="clientId">
-                        <option [ngValue]="null"></option>
-                        <option [ngValue]="clientOption.id" *ngFor="let clientOption of clients; trackBy: trackClientById">{{clientOption.id}}</option>
-                    </select>
-                </div>
             </div>
-            <div>
-                <button type="button" id="cancel-save" class="btn btn-secondary"  (click)="previousState()">
-                    <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
-                </button>
-                <button type="submit" id="save-entity" [disabled]="editForm.invalid || isSaving" class="btn btn-primary">
-                    <fa-icon [icon]="'save'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Save</span>
-                </button>
-            </div>
-        </form>
+        </div>
     </div>
 </div>
+

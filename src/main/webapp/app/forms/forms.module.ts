@@ -25,12 +25,15 @@ import { FieldErrorDisplayComponent } from './validationforms/field-error-displa
     TagInputModule,
     MaterialModule
   ],
+  exports: [
+    FieldErrorDisplayComponent
+  ],
   declarations: [
-      ExtendedFormsComponent,
-      RegularFormsComponent,
-      ValidationFormsComponent,
-      WizardComponent,
-      FieldErrorDisplayComponent
+    ExtendedFormsComponent,
+    RegularFormsComponent,
+    ValidationFormsComponent,
+    WizardComponent,
+    FieldErrorDisplayComponent
   ]
 })
 

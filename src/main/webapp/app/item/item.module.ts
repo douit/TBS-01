@@ -8,11 +8,12 @@ import { ItemUpdateComponent } from './item-update.component';
 import { ItemDeletePopupComponent, ItemDeleteDialogComponent } from './item-delete-dialog.component';
 import { itemRoute, itemPopupRoute } from './item.route';
 import {MaterialModule} from 'app/app.module';
+import {NgMultiSelectDropDownModule} from "ng-multiselect-dropdown";
 
 const ENTITY_STATES = [...itemRoute, ...itemPopupRoute];
 
 @NgModule({
-  imports: [TbsSharedModule, RouterModule.forChild(ENTITY_STATES), MaterialModule],
+  imports: [TbsSharedModule, RouterModule.forChild(ENTITY_STATES), MaterialModule, NgMultiSelectDropDownModule],
   declarations: [ItemComponent, ItemDetailComponent, ItemUpdateComponent, ItemDeleteDialogComponent, ItemDeletePopupComponent],
   entryComponents: [ItemComponent, ItemUpdateComponent, ItemDeleteDialogComponent, ItemDeletePopupComponent]
 })

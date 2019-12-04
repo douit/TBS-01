@@ -47,7 +47,7 @@ export const ROUTES: RouteInfo[] = [{
         title: 'Test Credit Card Payment',
         type: 'link',
         icontype: 'widgets'
-}/*, {
+}, {
         path: '/components',
         title: 'Components',
         type: 'sub',
@@ -127,7 +127,7 @@ export const ROUTES: RouteInfo[] = [{
             {path: 'lock', title: 'Lock Screen Page', ab:''},
             {path: 'user', title: 'User Page', ab:''}
         ]
-    }*/
+    }
 ];
 @Component({
     selector: 'app-sidebar-cmp',
