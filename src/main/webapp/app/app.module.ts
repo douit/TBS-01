@@ -57,6 +57,7 @@ import { TbsCoreModule } from './core/core.module';
 
 import { AppRoutes } from './app.routing';
 import {TbsLandingModule} from './tbs-landing/tbs-landing.module';
+import {NgMultiSelectDropDownModule} from "ng-multiselect-dropdown";
 
 @NgModule({
   exports: [
@@ -111,8 +112,10 @@ export class MaterialModule {}
         SidebarModule,
         NavbarModule,
         FooterModule,
-        FixedpluginModule// ,
-        // TbsLandingModule
+        FixedpluginModule,
+        NgMultiSelectDropDownModule.forRoot(),
+
+      // TbsLandingModule
     ],
     declarations: [
         AppComponent,

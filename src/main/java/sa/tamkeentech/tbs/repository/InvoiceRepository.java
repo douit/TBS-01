@@ -1,12 +1,13 @@
 package sa.tamkeentech.tbs.repository;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.datatables.repository.DataTablesRepository;
-import sa.tamkeentech.tbs.domain.Invoice;
-import org.springframework.data.jpa.repository.*;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import sa.tamkeentech.tbs.domain.Invoice;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
-import sun.awt.image.MultiResolutionCachedImage;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
