@@ -15,7 +15,8 @@ import { IInvoice } from 'app/shared/model/invoice.model';
 import { InvoiceService } from 'app/invoice/invoice.service';
 import { IPaymentMethod } from 'app/shared/model/payment-method.model';
 import { PaymentMethodService } from 'app/payment-method/payment-method.service';
-import {IRefund, Refund} from "app/shared/model/refund.model";
+import {IRefund, Refund} from 'app/shared/model/refund.model';
+import {RequestStatus} from 'app/shared/model/enumerations/request-status.model';
 
 @Component({
   selector: 'app-payment-test-cc',
@@ -119,7 +120,7 @@ export class CustomerTestCcComponent implements OnInit {
   }
 
   protected onSaveSuccess(res) {
-    this.isSaving = false;
+    // this.isSaving = false;
     window.location.href = res.body.redirectUrl;
   }
 
@@ -136,9 +137,12 @@ export class CustomerTestCcComponent implements OnInit {
 
   protected onRefundSuccess(res) {
     this.isSaving = false;
-    if (res.requestStatus == 'SUCCEEDED') {
+    console.log('----' + res.body.status);
+    if (res.body.status === RequestStatus.SUCCEEDED) {
+      console.log('----  True');
       this.operationStatus = true;
     } else {
+      console.log('----  False');
       this.operationStatus = false;
     }
   }
