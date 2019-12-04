@@ -63,14 +63,13 @@ public class StatisticsResource {
         log.debug("Request to get Chart Statistics");
         if(chartStatisticsRequest.getDate() == null){
             chartStatisticsRequest.setDate(ZonedDateTime.now());
-
         }
-        Pageable pageable =Pageable.unpaged();
+        int currentDay = ZonedDateTime.now().getMonth().getValue();
         List<ChartStatisticsDTO> chartStatisticsDTOList = new ArrayList<>();
         if(chartStatisticsRequest.getType() == TypeStatistics.MONTHLY){
             List<Object[]> stats= invoiceService.getMonthlyStat(chartStatisticsRequest.getDate());
             YearMonth yearMonthObject = YearMonth.of(chartStatisticsRequest.getDate().getYear(), chartStatisticsRequest.getDate().getMonth());
-            for(int i =1 ;i<= yearMonthObject.lengthOfMonth(); i++){
+            for(int i =1 ;i<= yearMonthObject.lengthOfMonth() && i <= currentDay ; i++){
                 ChartStatisticsDTO chartStatisticsDTO = ChartStatisticsDTO.builder()
                     .duration(chartStatisticsRequest.getDate().withDayOfMonth(i).withHour(00).withMinute(00).withSecond(00).withNano(00))
                     .type(TypeStatistics.MONTHLY)

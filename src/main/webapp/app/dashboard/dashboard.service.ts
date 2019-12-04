@@ -1,10 +1,9 @@
-import {Injectable} from "@angular/core";
-import {SERVER_API_URL} from "app/app.constants";
-import {HttpClient} from "@angular/common/http";
-import {Observable} from "rxjs";
-import {Statistics} from "app/shared/model/statistics.model";
-import {IChartStatistics} from "app/shared/model/chart-statistics.model";
-import {Moment} from "moment";
+import {Injectable} from '@angular/core';
+import {SERVER_API_URL} from 'app/app.constants';
+import {HttpClient} from '@angular/common/http';
+import {Observable} from 'rxjs';
+import {Statistics} from 'app/shared/model/statistics.model';
+import {IChartStatistics} from 'app/shared/model/chart-statistics.model';
 
 @Injectable({ providedIn: 'root' })
 
@@ -19,8 +18,8 @@ export class DashboardService {
     return this.http.get<Statistics>(`${this.statisticsUrl}`);
   }
 
-  getChartStatistics(chartStatisticsRequest : IChartStatistics): Observable<IChartStatistics[]> {
-    return  this.http.post<IChartStatistics[]>(this.chartStatisticsUrl,chartStatisticsRequest);
+  getChartStatistics(chartStatisticsRequest: IChartStatistics): Observable<IChartStatistics[]> {
+    return  this.http.post<IChartStatistics[]>(this.chartStatisticsUrl, chartStatisticsRequest);
 
   }
 }

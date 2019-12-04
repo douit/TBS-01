@@ -112,17 +112,13 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         const totalInvoiceList = [];
         const paidInvoiceList = [];
         let max = 0;
-        let i =0;
         res.forEach(statMonth => {
             totalInvoiceList.push(statMonth.totalInvoice);
             paidInvoiceList.push(statMonth.totalPaid);
-            // daysList.push(statMonth.day);
             this.dataMonthlyChart.labels.push(statMonth.day);
             if (max < statMonth.totalInvoice) {
               max = statMonth.totalInvoice;
             }
-            i++;
-          console.log('------Monthly: ' + i);
         });
 
       // this.dataMonthlyChart.labels =daysList;
@@ -136,29 +132,19 @@ export class DashboardComponent implements OnInit, AfterViewInit {
           }),
           axisY: {
             showGrid: true,
-            offset: 40
+            offset: 40,
+            onlyInteger: true
           },
           axisX: {
             showGrid: false,
           },
           low: 0,
-          high: max,
+          high: this.roundToNearestTenUp(max),
           showPoint: true,
           height: '300px'
         };
 
-        const dataColouredBarsChart = {
-          labels: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
-          series: [
-            [287, 385, 490, 554, 10, 698, 0, 0, 0, 100, 0]
-
-
-          ]
-        };
-
-        const colouredBarsChart = new Chartist.Line('#colouredBarsChart', this.dataMonthlyChart,
-          optionsColouredBarsChart);
-
+        const colouredBarsChart = new Chartist.Line('#colouredBarsChart', this.dataMonthlyChart, optionsColouredBarsChart);
         this.startAnimationForLineChart(colouredBarsChart);
       },
       res => {
@@ -173,18 +159,44 @@ export class DashboardComponent implements OnInit, AfterViewInit {
          const totalInvoiceList = [];
          const paidInvoiceList = [];
          let max = 0;
-         let i=0;
          res.forEach(statYear => {
            totalInvoiceList.push(statYear.totalInvoice);
            paidInvoiceList.push(statYear.totalPaid);
            if (max < statYear.totalInvoice) {
            max = statYear.totalInvoice;
            }
-           i++;
-           console.log('------Annual: ' + i);
          });
          this.dataAnnualChart.series.push(totalInvoiceList);
          this.dataAnnualChart.series.push(paidInvoiceList);
+
+         const optionsMultipleBarsChart = {
+           seriesBarDistance: 10,
+           axisX: {
+             showGrid: false
+           },
+           axisY: {
+             onlyInteger: true
+           },
+           height: '300px'
+         };
+
+         const responsiveOptionsMultipleBarsChart: any = [
+           ['screen and (max-width: 640px)', {
+             seriesBarDistance: 5,
+             axisX: {
+               labelInterpolationFnc: function (value: any) {
+                 return value[0];
+               }
+             },
+             high: this.roundToNearestTenUp(max)
+           }]
+         ];
+
+         const multipleBarsChart = new Chartist.Bar('#multipleBarsChart', this.dataAnnualChart, optionsMultipleBarsChart,
+           responsiveOptionsMultipleBarsChart);
+         // start animation for the Emails Subscription Chart
+         this.startAnimationForBarChart(multipleBarsChart);
+
        },
        res => {
        alert('An error has occurred when get statistics');
@@ -192,33 +204,9 @@ export class DashboardComponent implements OnInit, AfterViewInit {
    );
 
 
-     const optionsMultipleBarsChart = {
-       seriesBarDistance: 10,
-       axisX: {
-         showGrid: false
-       },
-       height: '300px'
-     };
-
-     const responsiveOptionsMultipleBarsChart: any = [
-       ['screen and (max-width: 640px)', {
-         seriesBarDistance: 5,
-         axisX: {
-           labelInterpolationFnc: function (value: any) {
-             return value[0];
-           }
-         }
-       }]
-     ];
-
-     const multipleBarsChart = new Chartist.Bar('#multipleBarsChart', this.dataAnnualChart,
-       optionsMultipleBarsChart, responsiveOptionsMultipleBarsChart);
-
-     // start animation for the Emails Subscription Chart
-     this.startAnimationForBarChart(multipleBarsChart);
-
 
    }
+
   public ngOnInit() {
    const chartMonthlyStatisticsRequest: IChartStatisticsRequest = {
     date :  moment(),
@@ -232,9 +220,8 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     this.getMonthlyChartStatistics(chartMonthlyStatisticsRequest);
     this.getAnnualChartStatistics(chartAnnualStatisticsRequest);
     this.getStatistics();
-
-
    }
+
    ngAfterViewInit() {
        const breakCards = true;
        if (breakCards === true) {
@@ -264,6 +251,10 @@ export class DashboardComponent implements OnInit, AfterViewInit {
            });
        }
    }
+
+   roundToNearestTenUp(num: number) {
+    return ((Math.round(num / 10) + 1) * 10);
+  }
 
 
 }
