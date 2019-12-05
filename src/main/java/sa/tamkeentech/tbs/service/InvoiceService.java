@@ -157,7 +157,8 @@ public class InvoiceService {
                         throw new TbsRunTimeException("Sadad bill creation error");
                     }
                     invoice.setStatus(InvoiceStatus.CREATED);
-                    invoiceRepository.save(invoice);
+                    // ToDO save again issue
+                    //invoiceRepository.save(invoice);
                     oneItemInvoiceRespDTO.setStatusId(1);
                     oneItemInvoiceRespDTO.setShortDesc("success");
                     oneItemInvoiceRespDTO.setDescription("");

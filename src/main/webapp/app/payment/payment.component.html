@@ -107,7 +107,7 @@
 
                                         <ng-template #statusRowTemplate let-row="row">
                                             <div class="badge" [ngClass]="{
-                                                    'badge--warning': row.status === PaymentStatus.REFUNDED,
+                                                    'badge-warning': row.status === PaymentStatus.REFUNDED,
                                                     'badge-success': row.status === PaymentStatus.PAID,
                                                     'badge-info': row.status === PaymentStatus.PENDING,
                                                     'badge-danger': row.status === PaymentStatus.UNPAID
