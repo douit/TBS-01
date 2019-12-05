@@ -9,15 +9,15 @@ import sa.tamkeentech.tbs.service.dto.InvoiceDTO;
 /**
  * Mapper for the entity {@link Invoice} and its DTO {@link InvoiceDTO}.
  */
-@Mapper(componentModel = "spring", uses = {DiscountMapper.class, CustomerMapper.class, ClientMapper.class, PaymentMapper.class})
+@Mapper(componentModel = "spring", uses = {DiscountMapper.class, CustomerMapper.class, ClientMapper.class, PaymentMapper.class, InvoiceItemMapper.class})
 public interface InvoiceMapper extends EntityMapper<InvoiceDTO, Invoice> {
 
 
-    @Mapping(target = "payments", ignore = true)
+    // @Mapping(target = "payments", ignore = true)
     InvoiceDTO toDto(Invoice invoice);
 
     @Mapping(target = "invoiceItems", ignore = true)
-    @Mapping(target = "payments", ignore = true)
+    // @Mapping(target = "payments", ignore = true)
     Invoice toEntity(InvoiceDTO invoiceDTO);
 
     default Invoice fromId(Long id) {

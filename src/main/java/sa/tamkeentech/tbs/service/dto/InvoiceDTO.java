@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -32,7 +33,9 @@ public class InvoiceDTO implements Serializable {
 
     private String note;
 
-    private Instant dueDate;
+    private ZonedDateTime dueDate;
+
+    private ZonedDateTime expiryDate;
 
     private BigDecimal subtotal;
 
@@ -40,13 +43,11 @@ public class InvoiceDTO implements Serializable {
 
     private DiscountDTO discount;
 
-    private ClientDTO client;
-
-    private Set<PaymentDTO> payments;
-
     private ZonedDateTime createdDate;
 
     private PaymentStatus paymentStatus;
+
+    private List<InvoiceItemDTO> invoiceItems;
 
 
 }

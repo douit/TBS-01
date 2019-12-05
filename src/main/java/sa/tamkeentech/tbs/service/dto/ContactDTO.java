@@ -19,7 +19,6 @@ public class ContactDTO implements Serializable {
 
     private String city;
 
-
     private Long countryId;
 
     public Long getId() {

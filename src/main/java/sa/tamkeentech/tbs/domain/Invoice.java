@@ -10,6 +10,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -66,10 +67,10 @@ public class Invoice extends AbstractAuditingEntity implements Serializable {
     private String note;
 
     @Column(name = "due_date")
-    private Instant dueDate;
+    private ZonedDateTime dueDate;
 
     @Column(name = "expiry_date")
-    private Instant expiryDate;
+    private ZonedDateTime expiryDate;
 
     @Column(name = "subtotal", precision = 21, scale = 2)
     private BigDecimal subtotal;
