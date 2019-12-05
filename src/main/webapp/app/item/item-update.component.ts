@@ -28,6 +28,8 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
 })
 export class ItemUpdateComponent implements OnInit {
   isSaving: boolean;
+  selectedCategory: ICategory;
+  selectedClient: IClient;
   validSourceType: boolean = false;
   categories: ICategory[];
   type : FormGroup;
@@ -74,15 +76,14 @@ export class ItemUpdateComponent implements OnInit {
 
   ngOnInit() {
     this.dropdownList = [
-      { item_id: 1, item_text: 'Mumbai' },
-      { item_id: 2, item_text: 'Bangaluru' },
-      { item_id: 3, item_text: 'Pune' },
-      { item_id: 4, item_text: 'Navsari' },
-      { item_id: 5, item_text: 'New Delhi' }
+      { item_id: 1, item_text: 'KSA Tax' },
+      { item_id: 2, item_text: 'KSA Tax' },
+
     ];
     this.selectedItems = [
-      { item_id: 3, item_text: 'Pune' },
-      { item_id: 4, item_text: 'Navsari' }
+      { item_id: 1, item_text: 'KSA Tax' },
+      { item_id: 2, item_text: 'KSA Tax' }
+
     ];
     this.dropdownSettings = {
       singleSelection: false,
@@ -95,6 +96,7 @@ export class ItemUpdateComponent implements OnInit {
     };
     this.isSaving = false;
     this.activatedRoute.data.subscribe(({ item }) => {
+
       this.updateForm(item);
     });
     this.categoryService
@@ -119,15 +121,19 @@ export class ItemUpdateComponent implements OnInit {
     console.log(items);
   }
   updateForm(item: IItem) {
+    this.selectedCategory= item.category;
+    this.selectedClient = item.client;
     this.editForm.patchValue({
       id: item.id,
       name: item.name,
       description: item.description,
       price: item.price,
       defaultQuantity: item.defaultQuantity,
-      categoryId: item.categoryId,
-      clientId: item.clientId
+      category: item.category,
+      client: item.client,
+
     });
+
   }
 
   previousState() {
@@ -291,6 +297,8 @@ export class ItemUpdateComponent implements OnInit {
       this.validNumberType = false;
     }
   }
-
+  compareObjects(selectClient: IClient, client: IClient): boolean {
+    return selectClient.name === client.name && selectClient.id === client.id;
+  }
 
 }
