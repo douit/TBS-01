@@ -79,7 +79,7 @@
 
                         <div class="card-body">
                             <div class="row">
-                                <label class="col-sm-2 col-form-label">Name </label>
+                                <label class="col-sm-2 col-form-label">Code </label>
                                 <div class="col-sm-7">
                                     <mat-form-field class="example-full-width has-label"
                                                     [ngClass]="{'has-success':validTextType===true}"
@@ -97,7 +97,7 @@
                             </div>
 
                             <div class="row">
-                                <label class="col-sm-2 col-form-label">Description</label>
+                                <label class="col-sm-2 col-form-label">Name</label>
                                 <div class="col-sm-7">
                                     <mat-form-field class="example-full-width has-label"
                                                     [ngClass]="{'has-success':validNumberType===true}"
@@ -150,9 +150,10 @@
                                 <label class="col-sm-2 col-form-label">Category</label>
                                 <div class="col-sm-7">
                                     <mat-form-field>
-                                        <mat-label>Select an option</mat-label>
+                                        <mat-label *ngIf="selectedCategory == null">Select an option</mat-label>
+                                        <mat-label *ngIf="selectedCategory != null">{{selectedCategory.name}}</mat-label>
                                         <mat-select class="form-control" id="field_category" name="category"
-                                                    formControlName="category">
+                                                    formControlName="category" selected="category">
                                             <mat-option [value]="null">None</mat-option>
                                             <mat-option [value]="categoryOption"
                                                         *ngFor="let categoryOption of categories; trackBy: trackCategoryById">{{categoryOption.name}}</mat-option>
@@ -165,12 +166,14 @@
                                 <label class="col-sm-2 col-form-label">Clint</label>
                                 <div class="col-sm-7">
                                     <mat-form-field>
-                                        <mat-label>Select an option</mat-label>
+                                        <mat-label *ngIf="selectedClient == null">Select an option</mat-label>
+                                        <mat-label *ngIf="selectedClient != null">{{selectedClient.name}}</mat-label>
                                         <mat-select class="form-control" id="field_client" name="clint"
-                                                    formControlName="client">
+                                                    formControlName="client" [(value)]="selectedClient">
+
                                             <mat-option [value]="null">None</mat-option>
                                             <mat-option [value]="clientOption"
-                                                        *ngFor="let clientOption of clients; trackBy: trackClientById">{{clientOption.name}}</mat-option>
+                                                        *ngFor="let clientOption of clients; trackBy: trackClientById" >{{clientOption.name}}</mat-option>
                                         </mat-select>
                                     </mat-form-field>
                                 </div>
