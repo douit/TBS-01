@@ -39,8 +39,6 @@ public class Invoice extends AbstractAuditingEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    public static final long DIFF = 6999996000L;
-
     @Id
     /*@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequence_generator_invoice")
     @SequenceGenerator(name = "sequence_generator_invoice", sequenceName="sequence_generator_invoice", allocationSize = 1)*/
@@ -62,6 +60,9 @@ public class Invoice extends AbstractAuditingEntity implements Serializable {
 
     @Column(name = "bill_id")
     private Long number;
+
+    @Column(name = "account_id")
+    private Long accountId;
 
     @Column(name = "note")
     private String note;
