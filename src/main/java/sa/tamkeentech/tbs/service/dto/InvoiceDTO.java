@@ -1,4 +1,5 @@
 package sa.tamkeentech.tbs.service.dto;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
 import java.time.Instant;
 import java.io.Serializable;
@@ -21,6 +22,7 @@ import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = {"id"})
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class InvoiceDTO implements Serializable {
 
     private Long id;
@@ -42,6 +44,8 @@ public class InvoiceDTO implements Serializable {
     private BigDecimal amount;
 
     private DiscountDTO discount;
+
+    private ClientDTO client;
 
     private ZonedDateTime createdDate;
 

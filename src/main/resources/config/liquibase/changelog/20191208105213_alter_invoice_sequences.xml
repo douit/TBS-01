@@ -33,10 +33,13 @@
         <sql dbms="postgresql">
             ALTER TABLE invoice_item DISABLE TRIGGER ALL;
             ALTER TABLE invoice DISABLE TRIGGER ALL;
+            ALTER TABLE payment DISABLE TRIGGER ALL;
             update invoice set id = id - 7000000000;
             update invoice_item set invoice_id = invoice_id - 7000000000;
+            update payment set invoice_id = invoice_id - 7000000000;
             ALTER TABLE invoice_item ENABLE TRIGGER ALL;
             ALTER TABLE invoice ENABLE TRIGGER ALL;
+            ALTER TABLE payment ENABLE TRIGGER ALL;
         </sql>
     </changeSet>
 
