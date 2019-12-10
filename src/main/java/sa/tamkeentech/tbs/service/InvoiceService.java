@@ -131,7 +131,7 @@ public class InvoiceService {
         invoiceRepository.deleteById(id);
     }
 
-    @TBSEventPub(eventName = Constants.CREATE_INVOICE_EVENT, identifier = "billNumber")
+    @TBSEventPub(eventName = Constants.CREATE_INVOICE_EVENT, principal = "customerId", identifier = "billNumber")
     public OneItemInvoiceRespDTO saveOneItemInvoice(OneItemInvoiceDTO oneItemInvoiceDTO) {
 
         Invoice invoice = addNewInvoice(oneItemInvoiceDTO);
