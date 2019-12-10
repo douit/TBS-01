@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <property name="now" value="now()" dbms="h2"/>
+
+    <changeSet id="20191209105213-1" author="Ahmed B" context="faker">
+        <sql dbms="postgresql">
+            create table if not exists revinfo
+            (
+            rev      integer not null
+            constraint revinfo_pkey
+            primary key,
+            revtstmp bigint
+            );
+
+            create table if not exists invoice_aud
+            (
+            id                    bigint  not null,
+            rev                   integer not null constraint fk_invoice_revinfo_id  references revinfo,
+            revtype               smallint,
+            customer_id           bigint,
+            status                varchar(255),
+            bill_id               bigint,
+            note                  varchar(255),
+            due_date              timestamp,
+            subtotal              numeric(21,2),
+            grand_total           numeric(21,2),
+            discount_id           bigint,
+            client_id             bigint,
+            created_by            varchar(50),
+            created_date          timestamp,
+            last_modified_by      varchar(50),
+            last_modified_date    timestamp,
+            tax_fees              numeric(21,2),
+            expiry_date           timestamp,
+            notification_status   varchar(255),
+            payment_status        varchar(255),
+            account_id            bigint,
+            constraint invoice_aud_pkey primary key (id, rev)
+            );
+
+
+            create table if not exists payment_aud
+            (
+            id                    bigint  not null,
+            rev                   integer not null constraint fk_payment_revinfo_id  references revinfo,
+            revtype               smallint,
+            amount numeric(21,2),
+            status varchar(255),
+            expiration_date timestamp,
+            invoice_id bigint,
+            payment_method_id bigint,
+            created_by varchar(50),
+            created_date timestamp,
+            last_modified_by varchar(50),
+            last_modified_date timestamp,
+            transaction_id varchar(255),
+            constraint payment_aud_pkey primary key (id, rev)
+            );
+
+            create table if not exists refund_aud
+            (
+            id                    bigint  not null,
+            rev                   integer not null constraint fk_refund_revinfo_id  references revinfo,
+            revtype               smallint,
+            amount numeric(21,2),
+            status varchar(255),
+            refund_id varchar(255),
+            created_by varchar(50),
+            created_date timestamp,
+            last_modified_by varchar(50),
+            last_modified_date timestamp,
+            biller_id varchar(255),
+            bank_id varchar(255),
+            official_id varchar(255),
+            payment_id bigint,
+            constraint refund_aud_pkey primary key (id, rev)
+            );
+
+        </sql>
+    </changeSet>
+
+
+</databaseChangeLog>

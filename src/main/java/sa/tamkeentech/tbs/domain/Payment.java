@@ -12,6 +12,9 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.NotAudited;
+import org.hibernate.envers.RelationTargetAuditMode;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 
 /**
@@ -25,6 +28,7 @@ import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = {"id"})
+// @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
 public class Payment extends AbstractAuditingEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -58,6 +62,7 @@ public class Payment extends AbstractAuditingEntity implements Serializable {
 
     @OneToMany(mappedBy = "payment")
     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    @NotAudited
     private Set<Refund> refunds = new HashSet<>();
 
 }

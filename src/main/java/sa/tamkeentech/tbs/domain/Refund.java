@@ -12,6 +12,8 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.RelationTargetAuditMode;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 import sa.tamkeentech.tbs.domain.enumeration.RequestStatus;
 
@@ -25,6 +27,7 @@ import sa.tamkeentech.tbs.domain.enumeration.RequestStatus;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+// @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
 public class Refund extends AbstractAuditingEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;

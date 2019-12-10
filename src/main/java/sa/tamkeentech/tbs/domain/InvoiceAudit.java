@@ -1,53 +1,42 @@
 package sa.tamkeentech.tbs.domain;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
-
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.NotAudited;
+import org.hibernate.envers.RelationTargetAuditMode;
+import sa.tamkeentech.tbs.domain.embeddable.InvoiceAuditPrimaryKey;
+import sa.tamkeentech.tbs.domain.enumeration.InvoiceStatus;
+import sa.tamkeentech.tbs.domain.enumeration.NotificationStatus;
+import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 
 import javax.persistence.*;
-
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.hibernate.annotations.GenerationTime;
-import org.hibernate.annotations.Generated;
-import org.hibernate.envers.Audited;
-import org.hibernate.envers.NotAudited;
-import org.hibernate.envers.RelationTargetAuditMode;
-import sa.tamkeentech.tbs.domain.enumeration.InvoiceStatus;
-import sa.tamkeentech.tbs.domain.enumeration.NotificationStatus;
-import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
-
 /**
  * The Employee entity.
  */
 @Entity
-@Table(name = "invoice")
-@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-@Getter
-@Setter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode(of = {"id"})
-@Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
-public class Invoice extends AbstractAuditingEntity implements Serializable {
+@Table(name = "invoice_aud")
+@Data
+@EqualsAndHashCode
+public class InvoiceAudit implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @Id
-    /*@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequence_generator_invoice")
-    @SequenceGenerator(name = "sequence_generator_invoice", sequenceName="sequence_generator_invoice", allocationSize = 1)*/
-    // No rollback for sequence so invoice will be created even if Sadad is down
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @EmbeddedId
+    private InvoiceAuditPrimaryKey invoiceAuditPrimaryKey;
+
+    @Column(name = "revtype")
+    private int revisionType;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
@@ -92,16 +81,6 @@ public class Invoice extends AbstractAuditingEntity implements Serializable {
     @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "customer_id")
     private Customer customer;
-
-    @OneToMany(mappedBy = "invoice", fetch = FetchType.EAGER, cascade=CascadeType.ALL)
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-    @NotAudited
-    private List<InvoiceItem> invoiceItems = new ArrayList<>();
-
-    @OneToMany(mappedBy = "invoice")
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-    @NotAudited
-    private Set<Payment> payments = new HashSet<>();
 
     @ManyToOne
     @JsonIgnoreProperties("invoices")
