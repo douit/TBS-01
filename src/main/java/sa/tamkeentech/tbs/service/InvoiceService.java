@@ -20,6 +20,7 @@ import sa.tamkeentech.tbs.security.SecurityUtils;
 import sa.tamkeentech.tbs.service.dto.*;
 import sa.tamkeentech.tbs.service.mapper.InvoiceMapper;
 import sa.tamkeentech.tbs.service.mapper.ItemMapper;
+import sa.tamkeentech.tbs.service.util.SequenceUtil;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
 import javax.swing.text.html.Option;
@@ -258,7 +259,7 @@ public class InvoiceService {
 
     public OneItemInvoiceRespDTO saveOneItemInvoice(OneItemInvoiceDTO oneItemInvoiceDTO) {
 
-        Invoice invoice = addNewOneInvoice(oneItemInvoiceDTO);
+        Invoice invoice = addNewInvoice(oneItemInvoiceDTO);
         // Payment
         // Payment method
         Optional<PaymentMethod> paymentMethod = paymentMethodService.findById(oneItemInvoiceDTO.getPaymentMethodId());
@@ -270,10 +271,9 @@ public class InvoiceService {
             String paymentMethodCode = paymentMethod.get().getCode();
             switch (paymentMethodCode) {
                 case Constants.SADAD:
-                    String billId = paymentService.getSadadBillAccount(invoice.getId()).toString();
                     int sadadResult;
                     try {
-                        sadadResult = paymentService.sadadCall(paymentService.getSadadBillId(invoice.getId()), paymentService.getSadadBillAccount(invoice.getId()).toString(), invoice.getAmount());
+                        sadadResult = paymentService.sadadCall(invoice.getNumber(), invoice.getAccountId().toString(), invoice.getAmount());
                     } catch (IOException | JSONException e) {
                         // ToDo add new exception 500 for sadad
                         throw new TbsRunTimeException("Sadad issue", e);
@@ -294,7 +294,7 @@ public class InvoiceService {
                     oneItemInvoiceRespDTO.setStatusId(1);
                     oneItemInvoiceRespDTO.setShortDesc("success");
                     oneItemInvoiceRespDTO.setDescription("");
-                    oneItemInvoiceRespDTO.setBillNumber(billId);
+                    oneItemInvoiceRespDTO.setBillNumber(invoice.getNumber().toString());
                 break;
                 case Constants.VISA:
                     log.info("CC payment method");
@@ -311,10 +311,13 @@ public class InvoiceService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    Invoice addNewOneInvoice(OneItemInvoiceDTO oneItemInvoiceDTO) {
+    Invoice addNewInvoice(OneItemInvoiceDTO oneItemInvoiceDTO) {
         // Client
         String appName = SecurityUtils.getCurrentUserLogin().orElse("");
         Optional<Client> client =  clientService.getClientByClientId(appName);
+
+        // get bill seq
+        Long seq = sequenceUtil.getNextInvoiceNumber(client.get().getClientId());
 
         // Customer check if exists else create new
         Optional<Customer> customer = customerService.findByIdentifier(oneItemInvoiceDTO.getCustomerId());
@@ -328,6 +331,8 @@ public class InvoiceService {
         }
 
         Invoice invoice = Invoice.builder()
+            .accountId(seq + Constants.CLIENT_SADAD_CONFIG.valueOf(client.get().getClientId().toString()).getInitialAccountId())
+            .number(seq + Constants.CLIENT_SADAD_CONFIG.valueOf(client.get().getClientId().toString()).getInitialBillId())
             .client(client.get())
             .customer(customer.get())
             .paymentStatus(PaymentStatus.PENDING)

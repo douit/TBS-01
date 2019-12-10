@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <property name="now" value="now()" dbms="h2"/>
+
+    <changeSet id="20191208105213-1" author="Ahmed B" context="faker">
+        <addColumn
+            schemaName="public"
+            tableName="invoice">
+            <column name="account_id" type="bigint"/>
+        </addColumn>
+    </changeSet>
+
+
+    <changeSet id="00000000000000" author="Ahmed B">
+        <createSequence sequenceName="invoice_musaned_id_seq" incrementBy="1" minValue="1"/>
+        <createSequence sequenceName="invoice_ajir_id_seq" incrementBy="1" minValue="1"/>
+        <createSequence sequenceName="invoice_tahaqaq_id_seq" incrementBy="1" minValue="1"/>
+    </changeSet>
+
+
+    <changeSet id="20191208105213-2" author="Ahmed B" context="faker">
+        <sql dbms="postgresql">update invoice set account_id = id;</sql>
+        <sql dbms="postgresql">update invoice set bill_id = (id - 6999996000);</sql>
+        <sql dbms="postgresql">select setval('invoice_tahaqaq_id_seq', max(id)-7000000000) from invoice;</sql>
+        <sql dbms="postgresql">select setval('invoice_id_seq', max(id)-7000000000) from invoice;</sql>
+
+        <sql dbms="postgresql">
+            ALTER TABLE invoice_item DISABLE TRIGGER ALL;
+            ALTER TABLE invoice DISABLE TRIGGER ALL;
+            ALTER TABLE payment DISABLE TRIGGER ALL;
+            update invoice set id = id - 7000000000;
+            update invoice_item set invoice_id = invoice_id - 7000000000;
+            update payment set invoice_id = invoice_id - 7000000000;
+            ALTER TABLE invoice_item ENABLE TRIGGER ALL;
+            ALTER TABLE invoice ENABLE TRIGGER ALL;
+            ALTER TABLE payment ENABLE TRIGGER ALL;
+        </sql>
+    </changeSet>
+
+
+</databaseChangeLog>

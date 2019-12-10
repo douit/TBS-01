@@ -64,7 +64,7 @@ public class StatisticsResource {
         if(chartStatisticsRequest.getDate() == null){
             chartStatisticsRequest.setDate(ZonedDateTime.now());
         }
-        int currentDay = ZonedDateTime.now().getMonth().getValue();
+        int currentDay = ZonedDateTime.now().getDayOfMonth();
         List<ChartStatisticsDTO> chartStatisticsDTOList = new ArrayList<>();
         if(chartStatisticsRequest.getType() == TypeStatistics.MONTHLY){
             List<Object[]> stats= invoiceService.getMonthlyStat(chartStatisticsRequest.getDate());

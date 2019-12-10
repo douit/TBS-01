@@ -83,8 +83,6 @@ public class PaymentService {
     private String billerCode;
 
 
-    public static final Long DIFF_ACCOUNT_BILL_ID = 6999996000l;
-
     public PaymentService(PaymentRepository paymentRepository, PaymentMapper paymentMapper, InvoiceRepository invoiceRepository, PaymentMethodService paymentMethodService, ObjectMapper objectMapper) {
         this.paymentRepository = paymentRepository;
         this.paymentMapper = paymentMapper;
@@ -275,16 +273,6 @@ public class PaymentService {
         log.info("************** response from credit Card ************ : " + paymentResponseDTO);
         return paymentResponseDTO;
     }
-
-    public Long getSadadBillAccount(Long billId) {
-        return billId;
-    }
-
-    public Long getSadadBillId(Long billId) {
-        return billId - DIFF_ACCOUNT_BILL_ID;
-    }
-
-    //  diff = 7000000065l - 4065l =  6999996000
 
 
     @Transactional

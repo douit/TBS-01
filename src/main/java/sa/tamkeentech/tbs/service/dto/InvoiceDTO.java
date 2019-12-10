@@ -19,6 +19,7 @@ import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @EqualsAndHashCode(of = {"id"})
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class InvoiceDTO implements Serializable {
 
     private Long id;
@@ -40,6 +41,8 @@ public class InvoiceDTO implements Serializable {
     private BigDecimal amount;
 
     private DiscountDTO discount;
+
+    private ClientDTO client;
 
     private ZonedDateTime createdDate;
 
