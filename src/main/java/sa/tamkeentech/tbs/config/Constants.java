@@ -20,9 +20,7 @@ public final class Constants {
     public static final String CC_PAYMENT_SUCCESS_CODE = "1007";
     public static final String CC_REFUND_SUCCESS_CODE = "7004";
 
-    /*public static final String CLIENT_MUSANED = "MUSANED";
-    public static final String CLIENT_AJIR = "AJIR";
-    public static final String CLIENT_TAHAQAQ = "TAHAQAQ";*/
+    public static final String CREATE_INVOICE_EVENT = "CREATE_INVOICE_EVENT";
 
     public enum CLIENT_SADAD_CONFIG {
         MUSANED(5000000000l, 1000l),

@@ -13,7 +13,11 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.*;
-import sa.tamkeentech.tbs.domain.enumeration.*;
+import sa.tamkeentech.tbs.domain.enumeration.DiscountType;
+import sa.tamkeentech.tbs.domain.enumeration.InvoiceStatus;
+import sa.tamkeentech.tbs.domain.enumeration.NotificationStatus;
+import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
+import sa.tamkeentech.tbs.event.TBSEventPub;
 import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.security.SecurityUtils;
 import sa.tamkeentech.tbs.service.dto.InvoiceDTO;
@@ -127,7 +131,7 @@ public class InvoiceService {
         invoiceRepository.deleteById(id);
     }
 
-
+    @TBSEventPub(eventName = Constants.CREATE_INVOICE_EVENT, identifier = "billNumber")
     public OneItemInvoiceRespDTO saveOneItemInvoice(OneItemInvoiceDTO oneItemInvoiceDTO) {
 
         Invoice invoice = addNewInvoice(oneItemInvoiceDTO);
@@ -165,7 +169,7 @@ public class InvoiceService {
                     oneItemInvoiceRespDTO.setStatusId(1);
                     oneItemInvoiceRespDTO.setShortDesc("success");
                     oneItemInvoiceRespDTO.setDescription("");
-                    oneItemInvoiceRespDTO.setBillNumber(invoice.getNumber().toString());
+                    oneItemInvoiceRespDTO.setBillNumber(invoice.getAccountId().toString());
                 break;
                 case Constants.VISA:
                     log.info("CC payment method");
