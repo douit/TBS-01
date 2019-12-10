@@ -15,6 +15,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import sa.tamkeentech.tbs.security.SecurityUtils;
 import sa.tamkeentech.tbs.service.InvoiceService;
 import sa.tamkeentech.tbs.service.dto.InvoiceDTO;
+import sa.tamkeentech.tbs.service.dto.InvoiceItemsResponseDTO;
 import sa.tamkeentech.tbs.service.dto.OneItemInvoiceDTO;
 import sa.tamkeentech.tbs.service.dto.OneItemInvoiceRespDTO;
 import sa.tamkeentech.tbs.web.rest.errors.BadRequestAlertException;
@@ -29,7 +30,7 @@ import java.util.Optional;
  * REST controller for managing {@link sa.tamkeentech.tbs.domain.Invoice}.
  */
 @RestController
-@RequestMapping("/api/app")
+@RequestMapping("/billing")
 public class InvoiceAppResource {
 
     private final Logger log = LoggerFactory.getLogger(InvoiceAppResource.class);
@@ -59,6 +60,27 @@ public class InvoiceAppResource {
             throw new BadRequestAlertException("A new invoice cannot already have an ID", ENTITY_NAME, "idexists");
         }
         OneItemInvoiceRespDTO result = invoiceService.saveOneItemInvoice(oneItemInvoiceDTO);
+        String id = (result.getBillNumber()!= null)? result.getBillNumber().toString(): "";
+        return ResponseEntity.created(new URI("/api/invoices/" + result.getBillNumber()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, id))
+            .body(result);
+    }
+
+    /**
+     * {@code POST  /invoiceItems} : Create a new invoice.
+     *
+     * @param invoiceDTO the InvoiceDTO to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new invoiceDTO, or with status {@code 400 (Bad Request)} if the invoice has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+
+    @PostMapping("/invoice")
+    public ResponseEntity<InvoiceItemsResponseDTO> creatInvoice(@Valid @RequestBody InvoiceDTO invoiceDTO) throws URISyntaxException {
+        log.debug("REST request to save Invoice Items : {}", invoiceDTO);
+        if (invoiceDTO.getBillNumber() != null) {
+            throw new BadRequestAlertException("A new invoice cannot already have an ID", ENTITY_NAME, "idexists");
+        }
+        InvoiceItemsResponseDTO result = invoiceService.saveInvoice(invoiceDTO);
         String id = (result.getBillNumber()!= null)? result.getBillNumber().toString(): "";
         return ResponseEntity.created(new URI("/api/invoices/" + result.getBillNumber()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, id))

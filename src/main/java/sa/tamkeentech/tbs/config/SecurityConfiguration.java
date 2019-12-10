@@ -161,6 +161,7 @@ public class SecurityConfiguration {
             web.ignoring()
                 .antMatchers(HttpMethod.OPTIONS, "/**")
                 .antMatchers("/app/**/*.{js,html}")
+                .antMatchers("/api/app/**")
                 .antMatchers("/i18n/**")
                 .antMatchers("/content/**")
                 .antMatchers("/swagger-ui/index.html")

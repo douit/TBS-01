@@ -85,7 +85,7 @@ public class ItemService {
         itemRepository.deleteById(id);
     }
 
-    public Optional<Item> findByNameAndClient(String itemName, Long id) {
+    public Optional<ItemDTO> findByNameAndClient(String itemName, Long id) {
         return itemRepository.findByNameAndClientId(itemName, id);
     }
 
