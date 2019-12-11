@@ -5,6 +5,8 @@ import sa.tamkeentech.tbs.domain.PersistentAuditEvent;
 import org.springframework.boot.actuate.audit.AuditEvent;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.stereotype.Component;
+import sa.tamkeentech.tbs.domain.PersistentAuditEventData;
+import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
 import java.util.*;
 
@@ -38,6 +40,8 @@ public class AuditEventConverter {
         if (persistentAuditEvent == null) {
             return null;
         }
+
+
         return new AuditEvent(persistentAuditEvent.getAuditEventDate(), persistentAuditEvent.getPrincipal(),
             persistentAuditEvent.getAuditEventType(), convertDataToObjects(persistentAuditEvent.getData()));
     }
@@ -66,13 +70,21 @@ public class AuditEventConverter {
      * @param data the data to convert.
      * @return a map of {@link String}, {@link String}.
      */
-    public Map<String, String> convertDataToStrings(Map<String, Object> data) {
+    public Map<String, String> convertDataToStrings(Map<String, Object> data, PersistentAuditEvent persistentAuditEvent) {
         Map<String, String> results = new HashMap<>();
 
         if (data != null) {
             for (Map.Entry<String, Object> entry : data.entrySet()) {
                 // Extract the data that will be saved.
-                if (entry.getValue() instanceof WebAuthenticationDetails) {
+                if (entry.getKey().equals("successful")){
+                    persistentAuditEvent.setSuccessful(Boolean.valueOf(entry.getValue().toString()));
+                } else if (entry.getKey().equals("referenceId")) {
+                    persistentAuditEvent.setRefId(Long.valueOf(entry.getValue().toString()));
+                } else if (entry.getValue() instanceof TbsRunTimeException) {
+                    //ToDo customize error message
+                    TbsRunTimeException exception = (TbsRunTimeException) entry.getValue();
+                    results.put(entry.getKey(), exception.getMessage());
+                } else if (entry.getValue() instanceof WebAuthenticationDetails) {
                     WebAuthenticationDetails authenticationDetails = (WebAuthenticationDetails) entry.getValue();
                     results.put("remoteAddress", authenticationDetails.getRemoteAddress());
                     results.put("sessionId", authenticationDetails.getSessionId());

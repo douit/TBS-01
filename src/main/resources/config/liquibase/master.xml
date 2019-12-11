@@ -43,9 +43,8 @@
     <include file="config/liquibase/changelog/20191112105213_alter_entity_invoice.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20191119105213_alter_entity_client.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20191125012342_alter_entity_refund.xml" relativeToChangelogFile="false"/>
-
     <include file="config/liquibase/changelog/20191203105213_alter_entity_refund.xml" relativeToChangelogFile="false"/>
-
     <include file="config/liquibase/changelog/20191208105213_alter_invoice_sequences.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20191211105213_alter_entity_audit.xml" relativeToChangelogFile="false"/>
 
 </databaseChangeLog>

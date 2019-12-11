@@ -20,7 +20,6 @@ public final class Constants {
     public static final String CC_PAYMENT_SUCCESS_CODE = "1007";
     public static final String CC_REFUND_SUCCESS_CODE = "7004";
 
-    public static final String CREATE_INVOICE_EVENT = "CREATE_INVOICE_EVENT";
 
     public enum CLIENT_SADAD_CONFIG {
         MUSANED(5000000000l, 1000l),
@@ -45,6 +44,35 @@ public final class Constants {
     }
 
     public static final String INVOICE_DEFAULT_SEQ = "invoice_%s_id_seq";
+
+    /**
+     * The ProcessStatus enumeration.
+     */
+    public enum EventType {
+
+        INVOICE_CREATE("Create invoice by client app"),
+
+        SADAD_INITIATE("Upload invoice to Sadad"),
+        SADAD_NOTIFICATION("Receive payment notification from Sadad"),
+
+        CREDIT_CARD_INITIATE("Upload invoice to the payment provider"),
+        CREDIT_CARD_NOTIFICATION("Receive payment notification from the payment provider"),
+
+        INVOICE_REFUND_REQUEST("Refund request by client app"),
+
+        SADAD_REFUND_REQUEST("Send Refund request to Sadad"),
+        SADAD_REFUND_NOTIFICATION("Receive Refund notification from Sadad"),
+
+        CREDIT_CARD_REFUND_REQUEST("Send Refund request to the payment provider");
+
+        EventType (String description) {
+            this.description = description;
+        }
+
+        String description;
+
+
+    }
 
     private Constants() {
     }

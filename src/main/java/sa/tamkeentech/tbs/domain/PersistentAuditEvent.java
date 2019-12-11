@@ -5,6 +5,7 @@ import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -29,6 +30,13 @@ public class PersistentAuditEvent implements Serializable {
     @Column(nullable = false)
     private String principal;
 
+    @Column(name = "ref_id")
+    private Long refId;
+
+    @NotNull
+    @Column(nullable = false)
+    private boolean successful = false;
+
     @Column(name = "event_date")
     private Instant auditEventDate;
 
@@ -40,6 +48,10 @@ public class PersistentAuditEvent implements Serializable {
     @Column(name = "value")
     @CollectionTable(name = "persistent_audit_evt_data", joinColumns=@JoinColumn(name="event_id"))
     private Map<String, String> data = new HashMap<>();
+
+    /*@OneToMany(mappedBy = "event", fetch = FetchType.EAGER, cascade=CascadeType.ALL)
+    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    private List<PersistentAuditEventData> data = new ArrayList<>();*/
 
     public Long getId() {
         return id;
@@ -72,6 +84,29 @@ public class PersistentAuditEvent implements Serializable {
     public void setAuditEventType(String auditEventType) {
         this.auditEventType = auditEventType;
     }
+
+    public Long getRefId() {
+        return refId;
+    }
+
+    public boolean isSuccessful() {
+        return successful;
+    }
+
+    public void setRefId(Long refId) {
+        this.refId = refId;
+    }
+
+    public void setSuccessful(boolean successful) {
+        this.successful = successful;
+    }
+    /*public Map<String, String> getData() {
+        return data;
+    }
+
+    public void setData(Map<String, String> data) {
+        this.data = data;
+    }*/
 
     public Map<String, String> getData() {
         return data;

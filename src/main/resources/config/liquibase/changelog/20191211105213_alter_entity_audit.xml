@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <property name="now" value="now()" dbms="h2"/>
+
+    <changeSet id="20191211105213-1" author="Ahmed B" context="faker">
+        <modifyDataType
+            columnName="value"
+            newDataType="varchar(2000)"
+            tableName="persistent_audit_evt_data"/>
+
+        <addColumn
+            schemaName="public"
+            tableName="persistent_audit_event">
+            <column name="ref_id" type="bigint"/>
+        </addColumn>
+
+        <addColumn
+            schemaName="public"
+            tableName="persistent_audit_event">
+            <column name="successful" type="boolean" defaultValue="false"/>
+        </addColumn>
+
+    </changeSet>
+
+    <changeSet id="20191211105213-2" author="Ahmed B" context="faker">
+        <dropColumn tableName="invoice" columnName="notification_status"/>
+    </changeSet>
+
+</databaseChangeLog>

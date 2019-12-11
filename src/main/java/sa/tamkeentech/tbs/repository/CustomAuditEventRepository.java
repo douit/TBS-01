@@ -1,9 +1,5 @@
 package sa.tamkeentech.tbs.repository;
 
-import sa.tamkeentech.tbs.config.Constants;
-import sa.tamkeentech.tbs.config.audit.AuditEventConverter;
-import sa.tamkeentech.tbs.domain.PersistentAuditEvent;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.actuate.audit.AuditEvent;
@@ -11,9 +7,14 @@ import org.springframework.boot.actuate.audit.AuditEventRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import sa.tamkeentech.tbs.config.Constants;
+import sa.tamkeentech.tbs.config.audit.AuditEventConverter;
+import sa.tamkeentech.tbs.domain.PersistentAuditEvent;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * An implementation of Spring Boot's {@link AuditEventRepository}.
@@ -26,7 +27,7 @@ public class CustomAuditEventRepository implements AuditEventRepository {
     /**
      * Should be the same as in Liquibase migration.
      */
-    protected static final int EVENT_DATA_COLUMN_MAX_LENGTH = 255;
+    protected static final int EVENT_DATA_COLUMN_MAX_LENGTH = 2000;
 
     private final PersistenceAuditEventRepository persistenceAuditEventRepository;
 
@@ -58,7 +59,7 @@ public class CustomAuditEventRepository implements AuditEventRepository {
             persistentAuditEvent.setPrincipal(event.getPrincipal());
             persistentAuditEvent.setAuditEventType(event.getType());
             persistentAuditEvent.setAuditEventDate(event.getTimestamp());
-            Map<String, String> eventData = auditEventConverter.convertDataToStrings(event.getData());
+            Map<String, String> eventData = auditEventConverter.convertDataToStrings(event.getData(), persistentAuditEvent);
             persistentAuditEvent.setData(truncate(eventData));
             persistenceAuditEventRepository.save(persistentAuditEvent);
         }
@@ -69,7 +70,6 @@ public class CustomAuditEventRepository implements AuditEventRepository {
      */
     private Map<String, String> truncate(Map<String, String> data) {
         Map<String, String> results = new HashMap<>();
-
         if (data != null) {
             for (Map.Entry<String, String> entry : data.entrySet()) {
                 String value = entry.getValue();

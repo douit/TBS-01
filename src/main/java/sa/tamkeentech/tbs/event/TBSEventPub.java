@@ -1,5 +1,8 @@
 package sa.tamkeentech.tbs.event;
 
+import sa.tamkeentech.tbs.config.Constants;
+
+import javax.validation.constraints.NotNull;
 import java.lang.annotation.*;
 
 /**
@@ -11,8 +14,12 @@ import java.lang.annotation.*;
 @Documented
 public @interface TBSEventPub {
 
-    String identifier() default "id";
+    // principal must be part of the request
+    String principal() default "principalId";
 
-    String eventName() default "";
+    // principal must be part of the response
+    String referenceId() default "referenceId";
+
+    Constants.EventType eventName();
 
 }

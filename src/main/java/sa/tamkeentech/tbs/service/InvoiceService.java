@@ -1,6 +1,6 @@
 package sa.tamkeentech.tbs.service;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.configurationprocessor.json.JSONException;
@@ -15,7 +15,6 @@ import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.*;
 import sa.tamkeentech.tbs.domain.enumeration.DiscountType;
 import sa.tamkeentech.tbs.domain.enumeration.InvoiceStatus;
-import sa.tamkeentech.tbs.domain.enumeration.NotificationStatus;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 import sa.tamkeentech.tbs.event.TBSEventPub;
 import sa.tamkeentech.tbs.repository.InvoiceRepository;
@@ -25,6 +24,7 @@ import sa.tamkeentech.tbs.service.dto.InvoiceStatusDTO;
 import sa.tamkeentech.tbs.service.dto.OneItemInvoiceDTO;
 import sa.tamkeentech.tbs.service.dto.OneItemInvoiceRespDTO;
 import sa.tamkeentech.tbs.service.mapper.InvoiceMapper;
+import sa.tamkeentech.tbs.service.util.EventPublisherService;
 import sa.tamkeentech.tbs.service.util.SequenceUtil;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
@@ -63,7 +63,9 @@ public class InvoiceService {
 
     private final SequenceUtil sequenceUtil;
 
-    public InvoiceService(InvoiceRepository invoiceRepository, InvoiceMapper invoiceMapper, ClientService clientService, CustomerService customerService, PaymentMethodService paymentMethodService, ItemService itemService, PaymentService paymentService, SequenceUtil sequenceUtil) {
+    private final EventPublisherService eventPublisherService;
+
+    public InvoiceService(InvoiceRepository invoiceRepository, InvoiceMapper invoiceMapper, ClientService clientService, CustomerService customerService, PaymentMethodService paymentMethodService, ItemService itemService, PaymentService paymentService, SequenceUtil sequenceUtil, EventPublisherService eventPublisherService) {
         this.invoiceRepository = invoiceRepository;
         this.invoiceMapper = invoiceMapper;
         this.clientService = clientService;
@@ -72,6 +74,7 @@ public class InvoiceService {
         this.itemService = itemService;
         this.paymentService = paymentService;
         this.sequenceUtil = sequenceUtil;
+        this.eventPublisherService = eventPublisherService;
     }
 
     /**
@@ -131,10 +134,11 @@ public class InvoiceService {
         invoiceRepository.deleteById(id);
     }
 
-    @TBSEventPub(eventName = Constants.CREATE_INVOICE_EVENT, principal = "customerId", identifier = "billNumber")
+    @TBSEventPub(eventName = Constants.EventType.INVOICE_CREATE, principal = "customerId", referenceId = "billNumber")
     public OneItemInvoiceRespDTO saveOneItemInvoice(OneItemInvoiceDTO oneItemInvoiceDTO) {
 
         Invoice invoice = addNewInvoice(oneItemInvoiceDTO);
+        //Invoice invoice = eventPublisherService.addNewInvoice(oneItemInvoiceDTO);
         // Payment
         // Payment method
         Optional<PaymentMethod> paymentMethod = paymentMethodService.findById(oneItemInvoiceDTO.getPaymentMethodId());
@@ -148,7 +152,7 @@ public class InvoiceService {
                 case Constants.SADAD:
                     int sadadResult;
                     try {
-                        sadadResult = paymentService.sadadCall(invoice.getNumber(), invoice.getAccountId().toString(), invoice.getAmount());
+                        sadadResult = paymentService.prepareRequestAndCallSadad(invoice.getNumber(), invoice.getAccountId().toString(), invoice.getAmount(), oneItemInvoiceDTO.getCustomerId());
                     } catch (IOException | JSONException e) {
                         // ToDo add new exception 500 for sadad
                         throw new TbsRunTimeException("Sadad issue", e);
@@ -186,7 +190,8 @@ public class InvoiceService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    Invoice addNewInvoice(OneItemInvoiceDTO oneItemInvoiceDTO) {
+    // @TBSEventPub(eventName = Constants.EventType.INVOICE_CREATE, principal = "customerId", referenceId = "accountId")
+    public Invoice addNewInvoice(OneItemInvoiceDTO oneItemInvoiceDTO) {
         // Client
         String appName = SecurityUtils.getCurrentUserLogin().orElse("");
         Optional<Client> client =  clientService.getClientByClientId(appName);
@@ -211,7 +216,6 @@ public class InvoiceService {
             .client(client.get())
             .customer(customer.get())
             .paymentStatus(PaymentStatus.PENDING)
-            .notificationStatus(NotificationStatus.PAYMENT_NOTIFICATION_NEW)
             .status(InvoiceStatus.NEW)
             .build();
 

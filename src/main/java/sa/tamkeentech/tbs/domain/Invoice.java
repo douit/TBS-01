@@ -1,26 +1,20 @@
 package sa.tamkeentech.tbs.domain;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
-
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import sa.tamkeentech.tbs.domain.enumeration.InvoiceStatus;
+import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 
 import javax.persistence.*;
-
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.hibernate.annotations.GenerationTime;
-import org.hibernate.annotations.Generated;
-import sa.tamkeentech.tbs.domain.enumeration.InvoiceStatus;
-import sa.tamkeentech.tbs.domain.enumeration.NotificationStatus;
-import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 
 /**
  * The Employee entity.
@@ -53,10 +47,6 @@ public class Invoice extends AbstractAuditingEntity implements Serializable {
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_status")
     private PaymentStatus paymentStatus;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "notification_status")
-    private NotificationStatus notificationStatus;
 
     @Column(name = "bill_id")
     private Long number;

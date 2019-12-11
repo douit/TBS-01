@@ -3,8 +3,10 @@ package sa.tamkeentech.tbs.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,15 +27,12 @@ import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.Invoice;
 import sa.tamkeentech.tbs.domain.Payment;
 import sa.tamkeentech.tbs.domain.PaymentMethod;
-import sa.tamkeentech.tbs.domain.enumeration.NotificationStatus;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.repository.PaymentRepository;
 import sa.tamkeentech.tbs.service.dto.*;
 import sa.tamkeentech.tbs.service.mapper.PaymentMapper;
-
-import org.apache.http.client.HttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
+import sa.tamkeentech.tbs.service.util.EventPublisherService;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
 import java.io.IOException;
@@ -66,6 +65,7 @@ public class PaymentService {
 
     private final ObjectMapper objectMapper;
 
+    private final EventPublisherService eventPublisherService;
 
     @Value("${tbs.payment.sadad-url}")
     private String sadadUrl;
@@ -83,12 +83,13 @@ public class PaymentService {
     private String billerCode;
 
 
-    public PaymentService(PaymentRepository paymentRepository, PaymentMapper paymentMapper, InvoiceRepository invoiceRepository, PaymentMethodService paymentMethodService, ObjectMapper objectMapper) {
+    public PaymentService(PaymentRepository paymentRepository, PaymentMapper paymentMapper, InvoiceRepository invoiceRepository, PaymentMethodService paymentMethodService, ObjectMapper objectMapper, EventPublisherService eventPublisherService) {
         this.paymentRepository = paymentRepository;
         this.paymentMapper = paymentMapper;
         this.invoiceRepository = invoiceRepository;
         this.paymentMethodService = paymentMethodService;
         this.objectMapper = objectMapper;
+        this.eventPublisherService = eventPublisherService;
     }
 
     /**
@@ -209,11 +210,7 @@ public class PaymentService {
     }
 
 
-    public int sadadCall(Long sadadBillId, String sadadAccount , BigDecimal amount) throws IOException, JSONException {
-        HttpClient client = HttpClientBuilder.create().build();
-        HttpPost post = new HttpPost(sadadUrl);
-        post.setHeader("Content-Type", "application/json");
-        //JSONObject accountInfo = new JSONObject();
+    public int prepareRequestAndCallSadad(Long sadadBillId, String sadadAccount , BigDecimal amount, String principal) throws IOException, JSONException {
 
         JSONObject billInfo = new JSONObject();
         JSONObject billInfoContent = new JSONObject();
@@ -234,23 +231,36 @@ public class PaymentService {
         // applicationId 0 for test
         billInfoContent.put("applicationId",sadadApplicationId);
         billInfo.put("BillInfo", billInfoContent);
-        String jsonStr = billInfo.toString();
-        post.setEntity(new StringEntity(jsonStr));
+        TBSEventReqDTO<String> req = new TBSEventReqDTO();
+        req.setPrincipalId(principal);
+        req.setReferenceId(sadadAccount);
+        req.setReq(billInfo.toString());
+        // return callSadad(req).getResp();
+        return eventPublisherService.callSadad(req).getResp();
+
+    }
+
+    /*@TBSEventPub(eventName = Constants.EventType.SADAD_INITIATE)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public TBSEventRespDTO<Integer> callSadad(TBSEventReqDTO<String> eventReq) throws IOException, JSONException {
+        HttpClient client = HttpClientBuilder.create().build();
+        HttpPost post = new HttpPost(sadadUrl);
+        post.setHeader("Content-Type", "application/json");
+        post.setEntity(new StringEntity(eventReq.getReq()));
         HttpResponse response;
         response = client.execute(post);
-       /* if (response.getStatusLine().getStatusCode() == 200){
-            return true ;
-        }
-            return false;*/
-        log.debug("----Sadad request : {}", jsonStr);
+
+        log.debug("----Sadad request : {}", eventReq);
         log.info("----Sadad response status code : {}", response.getStatusLine().getStatusCode());
         if (response.getEntity() != null) {
             log.debug("----Sadad response content : {}", response.getEntity().getContent());
             log.debug("----Sadad response entity : {}", response.getEntity().toString());
         }
 
-        return response.getStatusLine().getStatusCode();
-    }
+        TBSEventRespDTO<Integer> eventResp = new TBSEventRespDTO();
+        eventResp.setResp(response.getStatusLine().getStatusCode());
+        return eventResp;
+    }*/
 
     public PaymentResponseDTO creditCardCall( Long invoiceId , String appCode, BigDecimal amount) {
         HttpClient client = HttpClientBuilder.create().build();
@@ -319,7 +329,6 @@ public class PaymentService {
             log.info("Succuss DVS update" + response2.getBody().getStatusId());
             // NotifiResp resp = (NotifiResp)response2.getBody(); // only for testing
             invoice.setPaymentStatus(PaymentStatus.PAID);
-            invoice.setNotificationStatus(NotificationStatus.PAYMENT_NOTIFICATION_SUCCESS);
             invoiceRepository.save(invoice);
             return new ResponseEntity<NotifiRespDTO>(resp,  HttpStatus.OK);
         } else {

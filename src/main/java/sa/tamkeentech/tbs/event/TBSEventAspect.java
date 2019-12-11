@@ -58,20 +58,70 @@ public class TBSEventAspect {
         });
     }
 
-    @AfterThrowing ......
-    // ToDo
+    @AfterThrowing(value = "@annotation(TBSEventPub)", throwing = "error")
+    public void fireAnEvent(final JoinPoint joinPoint, Throwable error) {
+        CompletableFuture.supplyAsync(() -> {
+            if (joinPoint.getSignature() instanceof MethodSignature) {
+                Method targetMethod = ((MethodSignature) joinPoint.getSignature()).getMethod();
+                TBSEventPub event = AnnotationUtils.findAnnotation(targetMethod, TBSEventPub.class);
+                if (event != null) {
+                    return fireAnException(joinPoint, event, error);
+                }
+                return null;
+            } else {
+                //this should never happen.
+                throw new TbsRunTimeException("Target is not method! The annotation is might be placed in wrong place!");
+            }
+        });
+    }
 
     private CompletableFuture<Boolean> fireAnEvent(JoinPoint joinPoint, TBSEventPub event, Object result) {
+        final String eventName = (event.eventName() != null ? event.eventName().name() : springAOPUtil.simpleClassAndMethodName(joinPoint.getSignature()));
 
-        final String eventName = (!event.eventName().isEmpty() ? event.eventName() : springAOPUtil.simpleClassAndMethodName(joinPoint.getSignature()));
-        final String identifier = (!event.identifier().isEmpty() && result != null ? beanPropertyUtils.getPropStr(result, event.identifier()) : "");
-        log.debug("defaultEvent: {}, identifier: {}", eventName, identifier);
-        // Method params
+        // try to extract referenceId from req else try resp
+        String referenceId = "";
+        Object referenceObject = beanPropertyUtils.getProp(joinPoint.getArgs()[0], event.referenceId());
+        if (referenceObject != null) {
+            referenceId = referenceObject.toString();
+        } else if (result != null) {
+            referenceId = beanPropertyUtils.getProp(result, event.referenceId()).toString();
+        }
+
+        // extract prop from input
+        final String principal = (!event.principal().isEmpty() && joinPoint.getArgs().length > 0 ?
+            beanPropertyUtils.getProp(joinPoint.getArgs()[0], event.principal()).toString() : "");
+
+        log.debug("defaultEvent: {}, identifier: {}", eventName, principal);
+        // Method principal
         Map<String, Object> paramValues = extractParams(joinPoint, event);
+        paramValues.put("result", result);
+        paramValues.put("successful", true);
+        paramValues.put("referenceId", referenceId);
         log.debug("paramValues: {}", paramValues);
+        return persistEvent(principal, eventName, paramValues);
+    }
 
+    private CompletableFuture<Boolean> fireAnException(JoinPoint joinPoint, TBSEventPub event, Throwable error) {
+        final String eventName = (event.eventName() != null ? event.eventName().name() : springAOPUtil.simpleClassAndMethodName(joinPoint.getSignature()));
+        // extract prop from first parameter
+        final String principal = (!event.principal().isEmpty() && joinPoint.getArgs().length > 0 ?
+            beanPropertyUtils.getProp(joinPoint.getArgs()[0], event.principal()).toString() : "");
+        Map<String, Object> paramValues = extractParams(joinPoint, event);
 
-        return persistEvent(identifier, eventName, paramValues);
+        // try to extract referenceId from req else try resp
+        String referenceId = "";
+        Object referenceObject = beanPropertyUtils.getProp(joinPoint.getArgs()[0], event.referenceId());
+        if (referenceObject != null) {
+            referenceId = referenceObject.toString();
+            paramValues.put("referenceId", referenceId);
+        }
+        log.debug("defaultEvent: {}, identifier: {}", eventName, principal);
+        // Method params
+
+        paramValues.put("result", error);
+        paramValues.put("successful", false);
+        log.debug("paramValues: {}", paramValues);
+        return persistEvent(principal, eventName, paramValues);
     }
 
     @Async
