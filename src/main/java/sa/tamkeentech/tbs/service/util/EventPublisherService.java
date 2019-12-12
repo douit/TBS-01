@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import sa.tamkeentech.tbs.config.Constants;
-import sa.tamkeentech.tbs.event.TBSEventPub;
+import sa.tamkeentech.tbs.aop.event.TBSEventPub;
 import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.service.ClientService;
 import sa.tamkeentech.tbs.service.CustomerService;

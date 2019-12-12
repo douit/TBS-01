@@ -1,8 +1,7 @@
-package sa.tamkeentech.tbs.event;
+package sa.tamkeentech.tbs.aop.event;
 
 import sa.tamkeentech.tbs.config.Constants;
 
-import javax.validation.constraints.NotNull;
 import java.lang.annotation.*;
 
 /**

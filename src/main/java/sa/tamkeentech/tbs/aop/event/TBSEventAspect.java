@@ -1,4 +1,4 @@
-package sa.tamkeentech.tbs.event;
+package sa.tamkeentech.tbs.aop.event;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -7,7 +7,6 @@ import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.boot.actuate.audit.AuditEvent;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -41,7 +40,7 @@ public class TBSEventAspect {
     private AuditEventPublisher auditPublisher;
 
     @Async
-    @AfterReturning(value = "@annotation(TBSEventPub)", returning = "result", argNames = "joinPoint,result")
+    @AfterReturning(value = "@annotation(sa.tamkeentech.tbs.aop.event.TBSEventPub)", returning = "result", argNames = "joinPoint,result")
     public void fireAnEvent(final JoinPoint joinPoint, final Object result) {
         CompletableFuture.supplyAsync(() -> {
             if (joinPoint.getSignature() instanceof MethodSignature) {
@@ -58,7 +57,7 @@ public class TBSEventAspect {
         });
     }
 
-    @AfterThrowing(value = "@annotation(TBSEventPub)", throwing = "error")
+    @AfterThrowing(value = "@annotation(sa.tamkeentech.tbs.aop.event.TBSEventPub)", throwing = "error")
     public void fireAnEvent(final JoinPoint joinPoint, Throwable error) {
         CompletableFuture.supplyAsync(() -> {
             if (joinPoint.getSignature() instanceof MethodSignature) {

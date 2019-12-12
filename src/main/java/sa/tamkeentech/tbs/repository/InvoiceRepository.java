@@ -23,6 +23,7 @@ import java.util.Optional;
 public interface InvoiceRepository extends JpaRepository<Invoice, Long>, DataTablesRepository<Invoice, Long> {
     Optional<Invoice> findByNumber(Long id);
     Optional<Invoice> findById(Long id);
+    Optional<Invoice> findByAccountId(Long accountId);
 
     @Query(value = "SELECT date_trunc('day', invoice.created_date) As Day , count(*) As totalInvoice , \n" +
         "        sum(case when payment_status = 'PAID' then 1 else 0 end ) As PaidInvoice"+

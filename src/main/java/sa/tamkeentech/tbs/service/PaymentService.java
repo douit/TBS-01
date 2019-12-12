@@ -240,28 +240,6 @@ public class PaymentService {
 
     }
 
-    /*@TBSEventPub(eventName = Constants.EventType.SADAD_INITIATE)
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public TBSEventRespDTO<Integer> callSadad(TBSEventReqDTO<String> eventReq) throws IOException, JSONException {
-        HttpClient client = HttpClientBuilder.create().build();
-        HttpPost post = new HttpPost(sadadUrl);
-        post.setHeader("Content-Type", "application/json");
-        post.setEntity(new StringEntity(eventReq.getReq()));
-        HttpResponse response;
-        response = client.execute(post);
-
-        log.debug("----Sadad request : {}", eventReq);
-        log.info("----Sadad response status code : {}", response.getStatusLine().getStatusCode());
-        if (response.getEntity() != null) {
-            log.debug("----Sadad response content : {}", response.getEntity().getContent());
-            log.debug("----Sadad response entity : {}", response.getEntity().toString());
-        }
-
-        TBSEventRespDTO<Integer> eventResp = new TBSEventRespDTO();
-        eventResp.setResp(response.getStatusLine().getStatusCode());
-        return eventResp;
-    }*/
-
     public PaymentResponseDTO creditCardCall( Long invoiceId , String appCode, BigDecimal amount) {
         HttpClient client = HttpClientBuilder.create().build();
         HttpPost post = new HttpPost(creditCardUrl);
@@ -288,8 +266,7 @@ public class PaymentService {
     @Transactional
     public ResponseEntity<NotifiRespDTO> sendPaymentNotification(NotifiReqDTO req, String apiKey, String apiSecret) {
         log.debug("----Sadad Notification : {}", req);
-        // Optional<Invoice> invoice = invoiceRepository.findById(Long.parseLong(req.getBillAccount())-7000000065l);
-        Invoice invoice = invoiceRepository.findById(Long.parseLong(req.getBillAccount())).get();
+        Invoice invoice = invoiceRepository.findByAccountId(Long.parseLong(req.getBillAccount())).get();
         NotifiRespDTO resp = NotifiRespDTO.builder().statusId(1).build();
         for (Payment payment : invoice.getPayments()) {
             if (payment.getStatus() == PaymentStatus.PAID) {

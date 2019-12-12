@@ -38,7 +38,7 @@ public class Item extends AbstractAuditingEntity implements Serializable {
     @Column(name = "default_quantity")
     private Integer defaultQuantity;
 
-    @OneToMany(mappedBy = "item")
+    @OneToMany(mappedBy = "item", fetch = FetchType.EAGER)
     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     private Set<Tax> taxes = new HashSet<>();
 
