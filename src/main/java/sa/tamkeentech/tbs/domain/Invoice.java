@@ -82,7 +82,7 @@ public class Invoice extends AbstractAuditingEntity implements Serializable {
     @Column(name = "tax_fees", precision = 21, scale = 2)
     private BigDecimal taxFees;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(unique = true)
     private Discount discount;
 

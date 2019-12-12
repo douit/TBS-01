@@ -51,12 +51,13 @@ public class InvoiceService {
     private final PaymentMethodService paymentMethodService;
 
     private final ItemService itemService;
-    private final TaxService taxService;
+
     private final ItemMapper itemMapper;
 
     private final PaymentService paymentService;
 
-    public InvoiceService(InvoiceRepository invoiceRepository, InvoiceMapper invoiceMapper, ClientService clientService, CustomerService customerService, PaymentMethodService paymentMethodService, ItemService itemService, PaymentService paymentService, TaxService taxService, ItemMapper itemMapper) {
+    private final SequenceUtil sequenceUtil;
+    public InvoiceService(InvoiceRepository invoiceRepository, SequenceUtil sequenceUtil, InvoiceMapper invoiceMapper, ClientService clientService, CustomerService customerService, PaymentMethodService paymentMethodService, ItemService itemService, PaymentService paymentService, ItemMapper itemMapper) {
         this.invoiceRepository = invoiceRepository;
         this.invoiceMapper = invoiceMapper;
         this.clientService = clientService;
@@ -64,7 +65,7 @@ public class InvoiceService {
         this.paymentMethodService = paymentMethodService;
         this.itemService = itemService;
         this.paymentService = paymentService;
-        this.taxService=taxService;
+         this.sequenceUtil=  sequenceUtil;
         this.itemMapper=itemMapper;
     }
 
@@ -126,9 +127,8 @@ public class InvoiceService {
     }
 
     public InvoiceItemsResponseDTO saveInvoice(InvoiceDTO invoiceDTO) {
-        // Client
-        String appName = SecurityUtils.getCurrentUserLogin().orElse("");
-        Optional<Client> client =  clientService.getClientByClientId(appName);
+
+        Invoice invoice = creatNewInvoice(invoiceDTO);
 
         // Payment
         // Payment method
@@ -137,124 +137,171 @@ public class InvoiceService {
         InvoiceItemsResponseDTO invoiceItemsResponseDTO= InvoiceItemsResponseDTO.builder()
             .paymentMethod(invoiceDTO.getPaymentMethod().getId()).build();
 
-        if (paymentMethod.isPresent()) {
-            String paymentMethodCode = paymentMethod.get().getCode();
-            switch (paymentMethodCode) {
-                case Constants.SADAD:
-                    String billId = paymentService.getSadadBillAccount(invoiceDTO.getId()).toString();
-                    int sadadResult;
-                    try {
-                        sadadResult = paymentService.sadadCall(paymentService.getSadadBillId(invoiceDTO.getId()), billId, invoiceDTO.getAmount());
-                    } catch (IOException | JSONException e) {
+        if(invoiceDTO.getAmount().equals(invoice.getAmount())){
+            if (paymentMethod.isPresent()) {
+                String paymentMethodCode = paymentMethod.get().getCode();
+                switch (paymentMethodCode) {
+                    case Constants.SADAD:
+                        int sadadResult;
+                        try {
+                            sadadResult = paymentService.sadadCall(invoice.getNumber(), invoice.getAccountId().toString(), invoice.getAmount());
+                        } catch (IOException | JSONException e) {
+                            // ToDo add new exception 500 for sadad
+                            throw new TbsRunTimeException("Sadad issue", e);
+                        }
                         // ToDo add new exception 500 for sadad
-                        throw new TbsRunTimeException("Sadad issue", e);
-                    }
-                    // ToDo add new exception 500 for sadad
-                    // invoice = invoiceRepository.getOne(invoice.getId());
-                    if (sadadResult != 200) {
-                        invoiceItemsResponseDTO.setStatusId(sadadResult);
-                        invoiceItemsResponseDTO.setShortDesc("error");
-                        invoiceItemsResponseDTO.setDescription("error_message");
-                        invoiceDTO.setStatus(InvoiceStatus.FAILED);
-                        // invoiceRepository.save(invoice);
-                        throw new TbsRunTimeException("Sadad bill creation error");
-                    }
-                    invoiceDTO.setStatus(InvoiceStatus.CREATED);
-                    // ToDO save again issue
-                    //invoiceRepository.save(invoice);
-                    invoiceItemsResponseDTO.setStatusId(1);
-                    invoiceItemsResponseDTO.setShortDesc("success");
-                    invoiceItemsResponseDTO.setDescription("");
-                    invoiceItemsResponseDTO.setBillNumber(billId);
-                    break;
-                case Constants.VISA:
-                    log.info("CC payment method");
-                    break;
-                default:
-                    log.info("Cash payment method");
+                        // invoice = invoiceRepository.getOne(invoice.getId());
+                        if (sadadResult != 200) {
+                            invoiceItemsResponseDTO.setStatusId(sadadResult);
+                            invoiceItemsResponseDTO.setShortDesc("error");
+                            invoiceItemsResponseDTO.setDescription("error_message");
+                            invoice.setStatus(InvoiceStatus.FAILED);
+                            // invoiceRepository.save(invoice);
+                            throw new TbsRunTimeException("Sadad bill creation error");
+                        }
+                        invoice.setStatus(InvoiceStatus.CREATED);
+                        // ToDO save again issue
+                        //invoiceRepository.save(invoice);
+                        invoiceItemsResponseDTO.setStatusId(1);
+                        invoiceItemsResponseDTO.setShortDesc("success");
+                        invoiceItemsResponseDTO.setDescription("");
+                        invoiceItemsResponseDTO.setBillNumber(invoice.getAccountId().toString());
+                        break;
+                    case Constants.VISA:
+                        log.info("CC payment method");
+                        break;
+                    default:
+                        log.info("Cash payment method");
 
+                }
+            } else {
+                throw new TbsRunTimeException("Unknown payment method");
             }
-        } else {
-            throw new TbsRunTimeException("Unknown payment method");
+        }else {
+            invoiceItemsResponseDTO.setShortDesc("error");
+            invoiceItemsResponseDTO.setDescription("error_message");
+            invoice.setStatus(InvoiceStatus.FAILED);
+            throw new TbsRunTimeException("Wrong invoice amount");
         }
 
-        Invoice invoice = invoiceMapper.toEntity(invoiceDTO);
-        invoice.setNotificationStatus(NotificationStatus.PAYMENT_NOTIFICATION_NEW);
-        invoice.setStatus(InvoiceStatus.NEW);
-        invoice.setClient(client.get());
-        invoice.setPaymentStatus(PaymentStatus.PENDING);
-
-
-        BigDecimal totalPrice = null;
-
-        // Set amount with discount for each item :
-            for(InvoiceItemDTO invoiceItemDTO : invoiceDTO.getInvoiceItems()){
-
-                BigDecimal itemPrice = itemService.findByNameAndClient(invoiceItemDTO.getName(), client.get().getId()).get().getPrice();
-
-                //Add Discount for each item :
-                if(invoiceItemDTO.getDiscount().getValue() != null){
-                    if(invoiceItemDTO.getDiscount().getIPercentage() == false){
-                       invoiceItemDTO.setAmount(itemPrice.subtract(invoiceItemDTO.getDiscount().getValue()));
-
-                    }
-                    // Percentage Discount
-                    else{
-                        BigDecimal discountRate = new BigDecimal("100").subtract(invoiceItemDTO.getDiscount().getValue());
-                        BigDecimal discountPercentage = totalPrice.multiply(discountRate).multiply(new BigDecimal("100"));
-                        invoiceItemDTO.setAmount(discountPercentage);
-                    }
-                }else {
-                    invoiceItemDTO.setAmount(itemPrice);
-                }
-                //Count total price :
-                totalPrice = totalPrice.add(invoiceItemDTO.getAmount().multiply(new BigDecimal(invoiceItemDTO.getQuantity())));
-
-            }
-
-        //Add Discount if price <> item
-        if (invoiceDTO.getAmount() != null) {
-
-            if (invoiceDTO.getAmount().compareTo(totalPrice) < 0) {
-                BigDecimal discountAmount = totalPrice.subtract(invoiceDTO.getAmount());
-                if(invoiceDTO.getDiscount().getIPercentage() == false){
-                    Discount discount = Discount.builder().iPercentage(false).type(DiscountType.INVOICE).value(discountAmount).build();
-                    invoice.setDiscount(discount);
-                    totalPrice = invoiceDTO.getAmount();
-                }
-                // Percentage Discount
-                else {
-                    BigDecimal discountRate = new BigDecimal("100").subtract(invoiceDTO.getDiscount().getValue());
-                    BigDecimal discountPercentage = totalPrice.multiply(discountRate).multiply(new BigDecimal("100"));
-                    Discount discount = Discount.builder().iPercentage(true).type(DiscountType.INVOICE).value(discountPercentage).build();
-                    invoice.setDiscount(discount);
-                    totalPrice = invoiceDTO.getAmount();
-                }
-
-            }
-        } else {
-            invoiceDTO.setAmount(totalPrice);
-        }
-
-        // Adding vat
-        BigDecimal totalTaxes = BigDecimal.ZERO;
-        for(InvoiceItemDTO invoiceItemDTO : invoiceDTO.getInvoiceItems()){
-            if (invoiceItemDTO.getTaxRate() != null) {
-                        totalPrice = totalPrice.add(invoiceItemDTO.getAmount().multiply(new BigDecimal(invoiceItemDTO.getQuantity())));
-                        totalTaxes = totalTaxes.add(invoiceItemDTO.getTaxRate());
-            }
-        }
-
-
-
-
-        invoice.setTaxFees(totalTaxes);
-        invoice.setAmount(totalPrice);
-        invoiceRepository.saveAndFlush(invoice);
         return invoiceItemsResponseDTO;
 
     }
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    Invoice creatNewInvoice(InvoiceDTO invoiceDTO) {
+        // Client
+        String appName = SecurityUtils.getCurrentUserLogin().orElse("");
+        Optional<Client> client =  clientService.getClientByClientId(appName);
+        // get bill seq
+        Long seq = sequenceUtil.getNextInvoiceNumber(client.get().getClientId());
 
+        // Customer check if exists else create new
+        Optional<Customer> customer = customerService.findByIdentifier(invoiceDTO.getCustomer().getIdentity());
+        if (!customer.isPresent()) {
+            customer = Optional.of(Customer.builder()
+                .identity(invoiceDTO.getCustomer().getIdentity())
+                // .identityType(IdentityType.valueOf(oneItemInvoiceDTO.getCustomerIdType().toUpperCase()))
+                .name(invoiceDTO.getCustomer().getName())
+                .contact(Contact.builder().email(invoiceDTO.getCustomer().getEmail()).phone(invoiceDTO.getCustomer().getPhone()).build())
+                .build());
+        }
+
+        List<InvoiceItem> invoiceItemList = new ArrayList<InvoiceItem>();
+        Invoice invoice = Invoice.builder()
+            .accountId(seq + Constants.CLIENT_SADAD_CONFIG.valueOf(client.get().getClientId().toString()).getInitialAccountId())
+            .number(seq + Constants.CLIENT_SADAD_CONFIG.valueOf(client.get().getClientId().toString()).getInitialBillId())
+            .client(client.get())
+            .customer(customer.get())
+            .paymentStatus(PaymentStatus.PENDING)
+            .notificationStatus(NotificationStatus.PAYMENT_NOTIFICATION_NEW)
+            .status(InvoiceStatus.NEW)
+            .invoiceItems(invoiceItemList)
+            .build();
+
+        BigDecimal subTotalInvoice = BigDecimal.ZERO;
+        //invoiceItem
+        BigDecimal totalPriceInvoice = BigDecimal.ZERO;
+
+        for(InvoiceItemDTO invoiceItemDTO : invoiceDTO.getInvoiceItems()){
+
+            Optional<Item> item = itemService.findByNameAndClient(invoiceItemDTO.getName(), client.get().getId());
+            if (!item.isPresent()) {
+                throw new TbsRunTimeException("Unknown item: "+ invoiceItemDTO.getName());
+            }
+            InvoiceItem invoiceItem= InvoiceItem.builder()
+                .item(item.get())
+                .amount(item.get().getPrice())
+                .name(item.get().getName())
+                .description(item.get().getDescription())
+                .quantity(invoiceItemDTO.getQuantity())
+                .build();
+
+            BigDecimal totalInvoiceItem = invoiceItem.getAmount().multiply(new BigDecimal(invoiceItem.getQuantity()));
+            BigDecimal discountValue = BigDecimal.ZERO;
+            //Add sub discount for each item invoice  :
+            if(invoiceItemDTO.getDiscount().getValue().compareTo(BigDecimal.ZERO)>0){
+                if(invoiceItemDTO.getDiscount().getIsPercentage() == false){
+                    Discount discount = Discount.builder().isPercentage(false).type(DiscountType.ITEM).value(invoiceItemDTO.getDiscount().getValue()).build();
+                    invoiceItem.setDiscount(discount);
+                     discountValue = invoiceItemDTO.getDiscount().getValue().multiply(new BigDecimal(invoiceItemDTO.getQuantity()));
+                    totalInvoiceItem = totalInvoiceItem.subtract(discountValue);
+                }
+                // Percentage Discount
+                else{
+                    Discount discount = Discount.builder().isPercentage(true).type(DiscountType.ITEM).value(invoiceItemDTO.getDiscount().getValue()).build();
+                    invoiceItem.setDiscount(discount);
+                    BigDecimal discountRate = invoiceItemDTO.getDiscount().getValue().divide(new BigDecimal("100"));
+                    discountValue =totalInvoiceItem.multiply(discountRate);
+                    totalInvoiceItem= totalInvoiceItem.subtract(totalInvoiceItem.multiply(discountRate));
+
+
+                }
+            }
+            //Add total discount
+            if(invoiceDTO.getDiscount().getValue().compareTo(BigDecimal.ZERO) >0){
+                if(invoiceDTO.getDiscount().getIsPercentage() == false){
+                    Discount discount = Discount.builder().isPercentage(false).type(DiscountType.ITEM).value(invoiceDTO.getDiscount().getValue()).build();
+                    invoice.setDiscount(discount);
+                    totalInvoiceItem = totalInvoiceItem.subtract(invoice.getDiscount().getValue().multiply(new BigDecimal(invoiceItemDTO.getQuantity())));
+
+                }else{
+                    Discount discount = Discount.builder().isPercentage(true).type(DiscountType.ITEM).value(invoiceDTO.getDiscount().getValue()).build();
+                    invoice.setDiscount(discount);
+                    BigDecimal discountRate = invoice.getDiscount().getValue().divide(new BigDecimal("100"));
+                    discountValue =totalInvoiceItem.multiply(discountRate);
+                    totalInvoiceItem = totalInvoiceItem.subtract(discountValue);
+                }
+
+            }
+
+            BigDecimal totalTaxes = BigDecimal.ZERO;
+            // Adding vat
+            if (CollectionUtils.isNotEmpty(item.get().getTaxes())) {
+                invoiceItem.setTaxName("total_tax");
+                for (Tax tax : item.get().getTaxes()) {
+                    if (tax.getRate().compareTo(BigDecimal.ZERO) > 0 ) {
+                        totalTaxes= totalTaxes.add(tax.getRate());
+                    }
+                }
+                invoiceItem.setTaxRate(totalTaxes);
+
+                BigDecimal taxRate = invoiceItem.getTaxRate().divide(new BigDecimal("100"));
+                BigDecimal taxesValue = totalInvoiceItem.multiply(taxRate);
+                totalInvoiceItem = totalInvoiceItem.add(taxesValue);
+            }
+            invoiceItemList.add(invoiceItem);
+            subTotalInvoice =subTotalInvoice.add(invoiceItem.getAmount().multiply(new BigDecimal(invoiceItem.getQuantity())));
+            totalPriceInvoice = totalPriceInvoice.add(totalInvoiceItem);
+        }
+
+        invoice.setInvoiceItems(invoiceItemList);
+        invoice.setAmount(totalPriceInvoice);
+        invoice.setSubtotal(subTotalInvoice);
+        invoice.setNotificationStatus(NotificationStatus.PAYMENT_NOTIFICATION_NEW);
+        invoice.setStatus(InvoiceStatus.NEW);
+        invoice.setPaymentStatus(PaymentStatus.PENDING);
+        return invoiceRepository.saveAndFlush(invoice);
+    }
 
 
     public OneItemInvoiceRespDTO saveOneItemInvoice(OneItemInvoiceDTO oneItemInvoiceDTO) {
@@ -266,7 +313,6 @@ public class InvoiceService {
 
         OneItemInvoiceRespDTO oneItemInvoiceRespDTO= OneItemInvoiceRespDTO.builder()
             .paymentMethod(oneItemInvoiceDTO.getPaymentMethodId()).build();
-
         if (paymentMethod.isPresent()) {
             String paymentMethodCode = paymentMethod.get().getCode();
             switch (paymentMethodCode) {
@@ -341,12 +387,12 @@ public class InvoiceService {
             .build();
 
         //invoiceItem
-        Optional<ItemDTO> item = itemService.findByNameAndClient(oneItemInvoiceDTO.getItemName(), client.get().getId());
+        Optional<Item> item = itemService.findByNameAndClient(oneItemInvoiceDTO.getItemName(), client.get().getId());
         if (!item.isPresent()) {
             throw new TbsRunTimeException("Unknown item: "+ oneItemInvoiceDTO.getItemName());
         }
         InvoiceItem invoiceItem = InvoiceItem.builder()
-            .item(itemMapper.toEntity(item.get()))
+            .item(item.get())
             .amount(item.get().getPrice())
             .name(item.get().getName())
             .description(item.get().getDescription())
@@ -361,10 +407,12 @@ public class InvoiceService {
         if (oneItemInvoiceDTO.getPrice() != null) {
             if (oneItemInvoiceDTO.getPrice().compareTo(item.get().getPrice().multiply(BigDecimal.valueOf(oneItemInvoiceDTO.getQuantity()))) < 0) {
                 BigDecimal discountAmount = item.get().getPrice().multiply(new BigDecimal(oneItemInvoiceDTO.getQuantity())).subtract(oneItemInvoiceDTO.getPrice());
-                Discount discount = Discount.builder().iPercentage(false).type(DiscountType.ITEM).value(discountAmount).build();
+                Discount discount = Discount.builder().isPercentage(false).type(DiscountType.ITEM).value(discountAmount).build();
                 invoiceItem.setDiscount(discount);
                 totalPrice = oneItemInvoiceDTO.getPrice();
             }
+
+
         } else {
             totalPrice = item.get().getPrice();
             invoiceItem.setQuantity(1);
@@ -373,7 +421,7 @@ public class InvoiceService {
         // adding vat
         BigDecimal totalTaxes = BigDecimal.ZERO;
         if (CollectionUtils.isNotEmpty(item.get().getTaxes())) {
-            for (TaxDTO tax: item.get().getTaxes()) {
+            for (Tax tax: item.get().getTaxes()) {
                 if (tax.getRate() != null) {
                     totalPrice = totalPrice.add(item.get().getPrice().multiply(tax.getRate().divide(new BigDecimal("100"))));
                     totalTaxes = totalTaxes.add(tax.getRate());
@@ -387,7 +435,7 @@ public class InvoiceService {
         invoice.setInvoiceItems(Arrays.asList(invoiceItem));
         invoice.setSubtotal(item.get().getPrice());
         invoice.setAmount(totalPrice);
-        return invoiceRepository.saveAndFlush(invoice);
+        return invoiceRepository.save(invoice);
     }
 
 

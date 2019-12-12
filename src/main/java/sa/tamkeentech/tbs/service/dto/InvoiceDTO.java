@@ -17,7 +17,6 @@ import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 @ApiModel(description = "The InvoiceDTO entity.")
 @Data
 @AllArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
 @EqualsAndHashCode(of = {"id"})
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class InvoiceDTO implements Serializable {
