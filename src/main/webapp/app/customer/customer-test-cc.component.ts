@@ -110,7 +110,7 @@ export class CustomerTestCcComponent implements OnInit {
   private createFromForm(editForm): IPayment {
     return {
       ...new Refund(),
-      invoiceId: editForm.get(['invoiceId']).value.id,
+      invoiceId: editForm.get(['invoiceId']).value.accountId,
       amount: editForm.get(['amount']).value
     };
   }

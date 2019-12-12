@@ -136,10 +136,14 @@ public class TBSEventAspect {
         String[] params = ((MethodSignature) joinPoint.getSignature()).getParameterNames();
         Object[] values = joinPoint.getArgs();
 
-        if (params != null) {
+        // Get only first param
+        if (params != null && params.length > 0) {
+            paramValue.put(params[0], values[0]);
+        }
+        /*if (params != null) {
             for (int idx = 0; idx < params.length; idx++)
                 paramValue.put(params[idx], values[idx]);
-        }
+        }*/
         return paramValue;
     }
 

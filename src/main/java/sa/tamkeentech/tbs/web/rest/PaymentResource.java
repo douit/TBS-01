@@ -59,7 +59,7 @@ public class PaymentResource {
         if (paymentDTO.getPaymentMethod() == null) {
             paymentDTO.setPaymentMethod(PaymentMethodDTO.builder().code(Constants.VISA).build());
         }
-        PaymentDTO result = paymentService.createNewPayment(paymentDTO);
+        PaymentDTO result = paymentService.prepareCreditCardPayment(paymentDTO);
         return ResponseEntity.created(new URI("/api/payments/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
             .body(result);

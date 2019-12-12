@@ -138,7 +138,7 @@ public class InvoiceService {
     public OneItemInvoiceRespDTO saveOneItemInvoice(OneItemInvoiceDTO oneItemInvoiceDTO) {
 
         Invoice invoice = addNewInvoice(oneItemInvoiceDTO);
-        //Invoice invoice = eventPublisherService.addNewInvoice(oneItemInvoiceDTO);
+
         // Payment
         // Payment method
         Optional<PaymentMethod> paymentMethod = paymentMethodService.findById(oneItemInvoiceDTO.getPaymentMethodId());
@@ -152,7 +152,7 @@ public class InvoiceService {
                 case Constants.SADAD:
                     int sadadResult;
                     try {
-                        sadadResult = paymentService.prepareRequestAndCallSadad(invoice.getNumber(), invoice.getAccountId().toString(), invoice.getAmount(), oneItemInvoiceDTO.getCustomerId());
+                        sadadResult = paymentService.sendEventAndCallSadad(invoice.getNumber(), invoice.getAccountId().toString(), invoice.getAmount(), oneItemInvoiceDTO.getCustomerId());
                     } catch (IOException | JSONException e) {
                         // ToDo add new exception 500 for sadad
                         throw new TbsRunTimeException("Sadad issue", e);
@@ -272,7 +272,7 @@ public class InvoiceService {
 
     public InvoiceStatusDTO getOneItemInvoice(Long billNumber) {
         // Optional<Invoice> invoice = invoiceRepository.findById(billNumber-7000000065l);
-        Optional<Invoice> invoice = invoiceRepository.findById(billNumber);
+        Optional<Invoice> invoice = invoiceRepository.findByAccountId(billNumber);
         if (!invoice.isPresent()) {
             throw new TbsRunTimeException("Bill does not exist");
         }
@@ -309,10 +309,6 @@ public class InvoiceService {
         ZonedDateTime last = lastDate.withMonth(12).withDayOfMonth(31);
         List<Object[]> stats = invoiceRepository.getStatisticsByYear(first, last);
         return stats;
-    }
-
-    public Long getPaidinvoice() {
-       return invoiceRepository.sumPaidInvoice();
     }
 
 }

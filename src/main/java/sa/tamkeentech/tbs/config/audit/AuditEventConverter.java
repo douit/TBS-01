@@ -6,6 +6,9 @@ import org.springframework.boot.actuate.audit.AuditEvent;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.stereotype.Component;
 import sa.tamkeentech.tbs.domain.PersistentAuditEventData;
+import sa.tamkeentech.tbs.service.dto.NotifiRespDTO;
+import sa.tamkeentech.tbs.service.dto.TBSEventReqDTO;
+import sa.tamkeentech.tbs.service.dto.TBSEventRespDTO;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
 import java.util.*;
@@ -81,9 +84,14 @@ public class AuditEventConverter {
                 } else if (entry.getKey().equals("referenceId")) {
                     persistentAuditEvent.setRefId(Long.valueOf(entry.getValue().toString()));
                 } else if (entry.getValue() instanceof TbsRunTimeException) {
-                    //ToDo customize error message
                     TbsRunTimeException exception = (TbsRunTimeException) entry.getValue();
                     results.put(entry.getKey(), exception.getMessage());
+                } else if (entry.getValue() instanceof TBSEventReqDTO) {
+                    TBSEventReqDTO req = (TBSEventReqDTO) entry.getValue();
+                    results.put(entry.getKey(), req.getReq().toString());
+                } else if (entry.getValue() instanceof TBSEventRespDTO) {
+                    TBSEventRespDTO resp = (TBSEventRespDTO) entry.getValue();
+                    results.put(entry.getKey(), resp.getResp().toString());
                 } else if (entry.getValue() instanceof WebAuthenticationDetails) {
                     WebAuthenticationDetails authenticationDetails = (WebAuthenticationDetails) entry.getValue();
                     results.put("remoteAddress", authenticationDetails.getRemoteAddress());

@@ -99,25 +99,27 @@ public class PaymentService {
      * @return the persisted entity.
      */
     @Transactional
-    public PaymentDTO createNewPayment(PaymentDTO paymentDTO) {
+    public PaymentDTO prepareCreditCardPayment(PaymentDTO paymentDTO) {
         log.debug("Request to save Payment : {}", paymentDTO);
-        // Payment payment = paymentMapper.toEntity(paymentDTO);
-        // Optional<PaymentMethod> paymentMethod = paymentMethodService.findByCode(paymentDTO.getPaymentMethod().getCode());
-        // payment.setPaymentMethod(paymentMethod.get());
-
-        Optional<Invoice> invoice = invoiceRepository.findById(paymentDTO.getInvoiceId());
+        Optional<Invoice> invoice = invoiceRepository.findByAccountId(paymentDTO.getInvoiceId());
         if (!invoice.isPresent()) {
             throw new TbsRunTimeException("Bill does not exist");
         }
 
+        TBSEventReqDTO<PaymentDTO> reqNotification = TBSEventReqDTO.<PaymentDTO>builder().principalId(invoice.get().getCustomer().getIdentity())
+            .referenceId(invoice.get().getAccountId().toString()).req(paymentDTO).build();
+
+        return eventPublisherService.initiateCreditCardPaymentEvent(reqNotification, invoice).getResp();
+    }
+
+    public PaymentDTO initiateCreditCardPayment(PaymentDTO req, Optional<Invoice> invoice) {
         // call payment gateway
         BigDecimal roundedAmount = invoice.get().getAmount().setScale(2, RoundingMode.HALF_UP);
         String appCode = invoice.get().getClient().getPaymentKeyApp();
         PaymentResponseDTO paymentResponseDTO = creditCardCall(invoice.get().getId(), appCode, roundedAmount.multiply(new BigDecimal("100")));
 
-        Optional<PaymentMethod> paymentMethod = paymentMethodService.findByCode(paymentDTO.getPaymentMethod().getCode());
-        Payment payment = paymentMapper.toEntity(paymentDTO);
-        // Payment payment = Payment.builder().build();
+        Optional<PaymentMethod> paymentMethod = paymentMethodService.findByCode(req.getPaymentMethod().getCode());
+        Payment payment = paymentMapper.toEntity(req);
         payment.setPaymentMethod(paymentMethod.get());
         payment.setInvoice(invoice.get());
         payment.setAmount(invoice.get().getAmount());
@@ -210,7 +212,7 @@ public class PaymentService {
     }
 
 
-    public int prepareRequestAndCallSadad(Long sadadBillId, String sadadAccount , BigDecimal amount, String principal) throws IOException, JSONException {
+    public int sendEventAndCallSadad(Long sadadBillId, String sadadAccount , BigDecimal amount, String principal) throws IOException, JSONException {
 
         JSONObject billInfo = new JSONObject();
         JSONObject billInfoContent = new JSONObject();
@@ -231,13 +233,28 @@ public class PaymentService {
         // applicationId 0 for test
         billInfoContent.put("applicationId",sadadApplicationId);
         billInfo.put("BillInfo", billInfoContent);
-        TBSEventReqDTO<String> req = new TBSEventReqDTO();
-        req.setPrincipalId(principal);
-        req.setReferenceId(sadadAccount);
-        req.setReq(billInfo.toString());
-        // return callSadad(req).getResp();
-        return eventPublisherService.callSadad(req).getResp();
+        TBSEventReqDTO<String> req = TBSEventReqDTO.<String>builder()
+            .principalId(principal).referenceId(sadadAccount).req(billInfo.toString()).build();
+        return eventPublisherService.callSadadEvent(req).getResp();
 
+    }
+
+    public Integer callSadad(String req) throws IOException, JSONException {
+        HttpClient client = HttpClientBuilder.create().build();
+        HttpPost post = new HttpPost(sadadUrl);
+        post.setHeader("Content-Type", "application/json");
+        post.setEntity(new StringEntity(req));
+        HttpResponse response;
+        response = client.execute(post);
+
+        log.debug("----Sadad request : {}", req);
+        log.info("----Sadad response status code : {}", response.getStatusLine().getStatusCode());
+        if (response.getEntity() != null) {
+            log.debug("----Sadad response content : {}", response.getEntity().getContent());
+            log.debug("----Sadad response entity : {}", response.getEntity().toString());
+        }
+
+        return response.getStatusLine().getStatusCode();
     }
 
     public PaymentResponseDTO creditCardCall( Long invoiceId , String appCode, BigDecimal amount) {
@@ -263,54 +280,61 @@ public class PaymentService {
     }
 
 
+    // ToDo divide into 2 parts: receive from connector | notify client
     @Transactional
-    public ResponseEntity<NotifiRespDTO> sendPaymentNotification(NotifiReqDTO req, String apiKey, String apiSecret) {
+    public ResponseEntity<NotifiRespDTO> sendEventAndPaymentNotification(NotifiReqDTO req, String apiKey, String apiSecret) {
         log.debug("----Sadad Notification : {}", req);
         Invoice invoice = invoiceRepository.findByAccountId(Long.parseLong(req.getBillAccount())).get();
+
+        TBSEventReqDTO<NotifiReqDTO> reqNotification = TBSEventReqDTO.<NotifiReqDTO>builder()
+            .principalId(invoice.getCustomer().getIdentity()).referenceId(invoice.getAccountId().toString())
+            .req(req).build();
+        NotifiRespDTO resp = eventPublisherService.sendPaymentNotification(reqNotification, invoice).getResp();
+
+        return new ResponseEntity<NotifiRespDTO>(resp,  HttpStatus.OK);
+    }
+
+    public NotifiRespDTO sendPaymentNotification(NotifiReqDTO reqNotification, Invoice invoice) {
         NotifiRespDTO resp = NotifiRespDTO.builder().statusId(1).build();
         for (Payment payment : invoice.getPayments()) {
             if (payment.getStatus() == PaymentStatus.PAID) {
                 log.warn("Payment already received, Exit without updating Client app");
-                return new ResponseEntity<NotifiRespDTO>(resp,  HttpStatus.OK);
+                return resp;
             }
         }
-
         Optional<PaymentMethod> paymentMethod = paymentMethodService.findByCode(Constants.SADAD);
         Payment payment = Payment.builder()
             .invoice(invoice)
             .status(PaymentStatus.PAID)
-            .amount(new BigDecimal(req.getAmount()))
+            .amount(new BigDecimal(reqNotification.getAmount()))
             .paymentMethod(paymentMethod.get())
             //.expirationDate()
             .build();
         paymentRepository.save(payment);
 
-        if (payment.getId() != null) {
-            log.info("Successful TBS update bill: {}", req.getBillAccount());
-            RestTemplate rt1 = new RestTemplate();
-            HttpHeaders headers1 = new HttpHeaders();
-            headers1.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-            MultiValueMap<String, String> map1= new LinkedMultiValueMap<String, String>();
-            map1.add("grant_type", "client_credentials");
-            map1.add("client_id", "tamkeen-billing-system");
-            //map1.add("client_secret", "06f4c17f-5c4a-492a-9a8e-a10eafec66c6"); // staging
-            map1.add("client_secret", "076a2d1c-15c6-4abf-80a7-0b181f18d617"); // production
-            org.springframework.http.HttpEntity<MultiValueMap<String, String>> request1 = new org.springframework.http.HttpEntity<MultiValueMap<String, String>>(map1, headers1);
-            //uri = "https://sso.tamkeen.land/auth/realms/tamkeen/protocol/openid-connect/token"; // staging
-            String uri = "https://accounts.wahid.sa/auth/realms/wahid/protocol/openid-connect/token"; // production
-            ResponseEntity<TokenResponseDTO> response1 = rt1.postForEntity( uri, request1 , TokenResponseDTO.class );
-            // log.info("DVS Token" +  response1.getBody().getAccess_token());
-            RestTemplate restTemplate = new RestTemplate();
-            String ResourceUrl = "http://10.60.71.16:8880/dvs/?billnumber=";
-            ResponseEntity<NotifiRespDTO> response2= restTemplate.getForEntity(ResourceUrl + req.getBillAccount() + "&paymentdate=" + req.getPaymentDate() + "&token=" + response1.getBody().getAccess_token() , NotifiRespDTO.class);
-            log.info("Succuss DVS update" + response2.getBody().getStatusId());
-            // NotifiResp resp = (NotifiResp)response2.getBody(); // only for testing
-            invoice.setPaymentStatus(PaymentStatus.PAID);
-            invoiceRepository.save(invoice);
-            return new ResponseEntity<NotifiRespDTO>(resp,  HttpStatus.OK);
-        } else {
-            return new ResponseEntity<NotifiRespDTO>(resp,  HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        log.info("Successful TBS update bill: {}", reqNotification.getBillAccount());
+        RestTemplate rt1 = new RestTemplate();
+        HttpHeaders headers1 = new HttpHeaders();
+        headers1.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        MultiValueMap<String, String> map1= new LinkedMultiValueMap<String, String>();
+        map1.add("grant_type", "client_credentials");
+        map1.add("client_id", "tamkeen-billing-system");
+        //map1.add("client_secret", "06f4c17f-5c4a-492a-9a8e-a10eafec66c6"); // staging
+        map1.add("client_secret", "076a2d1c-15c6-4abf-80a7-0b181f18d617"); // production
+        org.springframework.http.HttpEntity<MultiValueMap<String, String>> request1 = new org.springframework.http.HttpEntity<MultiValueMap<String, String>>(map1, headers1);
+        //uri = "https://sso.tamkeen.land/auth/realms/tamkeen/protocol/openid-connect/token"; // staging
+        String uri = "https://accounts.wahid.sa/auth/realms/wahid/protocol/openid-connect/token"; // production
+        ResponseEntity<TokenResponseDTO> response1 = rt1.postForEntity( uri, request1 , TokenResponseDTO.class );
+        // log.info("DVS Token" +  response1.getBody().getAccess_token());
+        RestTemplate restTemplate = new RestTemplate();
+        String ResourceUrl = "http://10.60.71.16:8880/dvs/?billnumber=";
+        ResponseEntity<NotifiRespDTO> response2= restTemplate.getForEntity(ResourceUrl + reqNotification.getBillAccount() + "&paymentdate="
+            + reqNotification.getPaymentDate() + "&token=" + response1.getBody().getAccess_token() , NotifiRespDTO.class);
+        log.info("Succuss DVS update" + response2.getBody().getStatusId());
+        // NotifiResp resp = (NotifiResp)response2.getBody(); // only for testing
+        invoice.setPaymentStatus(PaymentStatus.PAID);
+        invoiceRepository.save(invoice);
+        return resp;
     }
 
     public DataTablesOutput<PaymentDTO> get(DataTablesInput input) {

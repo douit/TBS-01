@@ -1,5 +1,6 @@
 package sa.tamkeentech.tbs.service.util;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -7,22 +8,36 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.configurationprocessor.json.JSONException;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.aop.event.TBSEventPub;
+import sa.tamkeentech.tbs.domain.Invoice;
+import sa.tamkeentech.tbs.domain.Payment;
+import sa.tamkeentech.tbs.domain.PaymentMethod;
+import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 import sa.tamkeentech.tbs.repository.InvoiceRepository;
-import sa.tamkeentech.tbs.service.ClientService;
-import sa.tamkeentech.tbs.service.CustomerService;
-import sa.tamkeentech.tbs.service.ItemService;
-import sa.tamkeentech.tbs.service.PaymentService;
-import sa.tamkeentech.tbs.service.dto.TBSEventReqDTO;
-import sa.tamkeentech.tbs.service.dto.TBSEventRespDTO;
+import sa.tamkeentech.tbs.repository.PaymentRepository;
+import sa.tamkeentech.tbs.service.*;
+import sa.tamkeentech.tbs.service.dto.*;
+import sa.tamkeentech.tbs.service.mapper.PaymentMapper;
+import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Optional;
 
 @Service
 public class EventPublisherService {
@@ -37,38 +52,53 @@ public class EventPublisherService {
 
     private final InvoiceRepository invoiceRepository;
 
+    private final PaymentMethodService paymentMethodService;
+
+    private final PaymentRepository paymentRepository;
+
+    @Autowired
+    @Lazy
+    PaymentService paymentService;
+
+    @Autowired
+    @Lazy
+    PaymentMapper paymentMapper;
+
+
     private final Logger log = LoggerFactory.getLogger(PaymentService.class);
 
     @Value("${tbs.payment.sadad-url}")
     private String sadadUrl;
 
-    public EventPublisherService(SequenceUtil sequenceUtil, ClientService clientService, CustomerService customerService, ItemService itemService, InvoiceRepository invoiceRepository) {
+    public EventPublisherService(SequenceUtil sequenceUtil, ClientService clientService, CustomerService customerService, ItemService itemService, InvoiceRepository invoiceRepository, PaymentMethodService paymentMethodService, PaymentRepository paymentRepository) {
         this.sequenceUtil = sequenceUtil;
         this.clientService = clientService;
         this.customerService = customerService;
         this.itemService = itemService;
         this.invoiceRepository = invoiceRepository;
+        this.paymentMethodService = paymentMethodService;
+        this.paymentRepository = paymentRepository;
     }
 
     @TBSEventPub(eventName = Constants.EventType.SADAD_INITIATE)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public TBSEventRespDTO<Integer> callSadad(TBSEventReqDTO<String> eventReq) throws IOException, JSONException {
-        HttpClient client = HttpClientBuilder.create().build();
-        HttpPost post = new HttpPost(sadadUrl);
-        post.setHeader("Content-Type", "application/json");
-        post.setEntity(new StringEntity(eventReq.getReq()));
-        HttpResponse response;
-        response = client.execute(post);
+    public TBSEventRespDTO<Integer> callSadadEvent(TBSEventReqDTO<String> eventReq) throws IOException, JSONException {
+        Integer sadadResp = paymentService.callSadad(eventReq.getReq());
+        TBSEventRespDTO<Integer> eventResp = TBSEventRespDTO.<Integer>builder().resp(sadadResp).build();
+        return eventResp;
+    }
 
-        log.debug("----Sadad request : {}", eventReq);
-        log.info("----Sadad response status code : {}", response.getStatusLine().getStatusCode());
-        if (response.getEntity() != null) {
-            log.debug("----Sadad response content : {}", response.getEntity().getContent());
-            log.debug("----Sadad response entity : {}", response.getEntity().toString());
-        }
+    @TBSEventPub(eventName = Constants.EventType.SADAD_NOTIFICATION)
+    public TBSEventRespDTO<NotifiRespDTO> sendPaymentNotification(TBSEventReqDTO<NotifiReqDTO> reqNotification, Invoice invoice) {
+        NotifiRespDTO resp = paymentService.sendPaymentNotification(reqNotification.getReq(), invoice);
+        TBSEventRespDTO<NotifiRespDTO> eventResp = TBSEventRespDTO.<NotifiRespDTO>builder().resp(resp).build();
+        return eventResp;
+    }
 
-        TBSEventRespDTO<Integer> eventResp = new TBSEventRespDTO();
-        eventResp.setResp(response.getStatusLine().getStatusCode());
+    @TBSEventPub(eventName = Constants.EventType.CREDIT_CARD_INITIATE)
+    public TBSEventRespDTO<PaymentDTO> initiateCreditCardPaymentEvent(TBSEventReqDTO<PaymentDTO> reqNotification, Optional<Invoice> invoice) {
+        PaymentDTO result = paymentService.initiateCreditCardPayment(reqNotification.getReq(), invoice);
+        TBSEventRespDTO<PaymentDTO> eventResp = TBSEventRespDTO.<PaymentDTO>builder().resp(result).build();
         return eventResp;
     }
 }

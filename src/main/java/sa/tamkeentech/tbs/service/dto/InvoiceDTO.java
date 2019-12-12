@@ -33,6 +33,8 @@ public class InvoiceDTO implements Serializable {
 
     private Long number;
 
+    private Long accountId;
+
     private String note;
 
     private ZonedDateTime dueDate;
