@@ -88,10 +88,10 @@ public class AuditEventConverter {
                     results.put(entry.getKey(), exception.getMessage());
                 } else if (entry.getValue() instanceof TBSEventReqDTO) {
                     TBSEventReqDTO req = (TBSEventReqDTO) entry.getValue();
-                    results.put(entry.getKey(), req.getReq().toString());
+                    results.put("request", req.getReq().toString());
                 } else if (entry.getValue() instanceof TBSEventRespDTO) {
                     TBSEventRespDTO resp = (TBSEventRespDTO) entry.getValue();
-                    results.put(entry.getKey(), resp.getResp().toString());
+                    results.put("response", resp.getResp().toString());
                 } else if (entry.getValue() instanceof WebAuthenticationDetails) {
                     WebAuthenticationDetails authenticationDetails = (WebAuthenticationDetails) entry.getValue();
                     results.put("remoteAddress", authenticationDetails.getRemoteAddress());

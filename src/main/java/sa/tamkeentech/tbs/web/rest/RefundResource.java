@@ -53,7 +53,7 @@ public class RefundResource {
         if (refundDTO.getId() != null) {
             throw new BadRequestAlertException("A new refund cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        RefundDTO result = refundService.createNewRefund(refundDTO);
+        RefundDTO result = refundService.createNewRefundAndSendEvent(refundDTO);
         return ResponseEntity.created(new URI("/api/refunds/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
             .body(result);

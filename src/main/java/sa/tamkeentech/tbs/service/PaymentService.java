@@ -1,6 +1,7 @@
 package sa.tamkeentech.tbs.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import net.bytebuddy.implementation.bytecode.Throw;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -36,6 +37,7 @@ import sa.tamkeentech.tbs.service.util.EventPublisherService;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
@@ -116,7 +118,12 @@ public class PaymentService {
         // call payment gateway
         BigDecimal roundedAmount = invoice.get().getAmount().setScale(2, RoundingMode.HALF_UP);
         String appCode = invoice.get().getClient().getPaymentKeyApp();
-        PaymentResponseDTO paymentResponseDTO = creditCardCall(invoice.get().getId(), appCode, roundedAmount.multiply(new BigDecimal("100")));
+        PaymentResponseDTO paymentResponseDTO = null;
+        try {
+            paymentResponseDTO = sendEventAndCreditCardCall(invoice, appCode, roundedAmount.multiply(new BigDecimal("100")));
+        } catch (JSONException | IOException e) {
+            throw new TbsRunTimeException("Payment gateway issue: "+ e.getCause());
+        }
 
         Optional<PaymentMethod> paymentMethod = paymentMethodService.findByCode(req.getPaymentMethod().getCode());
         Payment payment = paymentMapper.toEntity(req);
@@ -144,10 +151,19 @@ public class PaymentService {
      * @param paymentStatusResponseDTO
      * @return
      */
-    public PaymentDTO updateCreditCardPayment(PaymentStatusResponseDTO paymentStatusResponseDTO) {
+    public PaymentDTO updateCreditCardPaymentAndSendEvent(PaymentStatusResponseDTO paymentStatusResponseDTO) {
         log.debug("Request to update status Payment : {}", paymentStatusResponseDTO);
         Payment payment = paymentRepository.findByTransactionId(paymentStatusResponseDTO.getTransactionId());
         Invoice invoice = payment.getInvoice();
+
+        TBSEventReqDTO<PaymentStatusResponseDTO> reqNotification = TBSEventReqDTO.<PaymentStatusResponseDTO>builder().principalId(invoice.getCustomer().getIdentity())
+            .referenceId(invoice.getAccountId().toString()).req(paymentStatusResponseDTO).build();
+
+        return eventPublisherService.creditCardNotificationEvent(reqNotification, payment, invoice).getResp();
+    }
+
+    public PaymentDTO updateCreditCardPayment(PaymentStatusResponseDTO paymentStatusResponseDTO, Payment payment, Invoice invoice) {
+        log.debug("Request to update status Payment : {}", paymentStatusResponseDTO);
         if (Constants.CC_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode().toString())) {
             payment.setStatus(PaymentStatus.PAID);
             invoice.setPaymentStatus(PaymentStatus.PAID);
@@ -257,24 +273,31 @@ public class PaymentService {
         return response.getStatusLine().getStatusCode();
     }
 
-    public PaymentResponseDTO creditCardCall( Long invoiceId , String appCode, BigDecimal amount) {
+    public PaymentResponseDTO sendEventAndCreditCardCall(Optional<Invoice> invoice , String appCode, BigDecimal amount) throws JSONException, IOException {
+
+        JSONObject billInfoContent = new JSONObject();
+        billInfoContent.put("BillNumber", invoice.get().getAccountId());
+        billInfoContent.put("Amount",amount);
+        billInfoContent.put("BillerCode",billerCode);
+        billInfoContent.put("AppCode",appCode);
+
+        TBSEventReqDTO<String> req = TBSEventReqDTO.<String>builder()
+            .principalId(invoice.get().getCustomer().getIdentity()).referenceId(invoice.get().getAccountId().toString()).req(billInfoContent.toString()).build();
+        PaymentResponseDTO resp = eventPublisherService.callCreditCardInitiateEvent(req).getResp();
+        return resp;
+
+    }
+
+    public PaymentResponseDTO callCreditCard(String jsonStr) throws IOException {
         HttpClient client = HttpClientBuilder.create().build();
         HttpPost post = new HttpPost(creditCardUrl);
         post.setHeader("Content-Type", "application/json");
-        JSONObject billInfoContent = new JSONObject();
         PaymentResponseDTO paymentResponseDTO = null;
-        try {
-            billInfoContent.put("BillNumber", invoiceId);
-            billInfoContent.put("Amount",amount);
-            billInfoContent.put("BillerCode",billerCode);
-            billInfoContent.put("AppCode",appCode);
-            String jsonStr = billInfoContent.toString();
-            post.setEntity(new StringEntity(jsonStr));
-            HttpResponse response = client.execute(post);
-            paymentResponseDTO = objectMapper.readValue(response.getEntity().getContent(), PaymentResponseDTO.class);
-        } catch (JSONException | IOException e) {
-            log.error("Payment gateway issue: {}", e.getCause());
-        }
+
+        post.setEntity(new StringEntity(jsonStr));
+        HttpResponse response = client.execute(post);
+        paymentResponseDTO = objectMapper.readValue(response.getEntity().getContent(), PaymentResponseDTO.class);
+
         log.info("************** response from credit Card ************ : " + paymentResponseDTO);
         return paymentResponseDTO;
     }

@@ -67,7 +67,7 @@ public class PaymentResource {
 
     @PostMapping("/billing/payments/status")
     public ResponseEntity<PaymentDTO> updatePaymentStatus(@RequestBody PaymentStatusResponseDTO paymentStatusResponseDTO) throws URISyntaxException {
-        PaymentDTO result = paymentService.updateCreditCardPayment(paymentStatusResponseDTO);
+        PaymentDTO result = paymentService.updateCreditCardPaymentAndSendEvent(paymentStatusResponseDTO);
         return ResponseEntity.created(new URI("/api/payments/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
             .body(result);

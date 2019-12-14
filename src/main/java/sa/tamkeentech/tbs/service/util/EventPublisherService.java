@@ -64,6 +64,14 @@ public class EventPublisherService {
     @Lazy
     PaymentMapper paymentMapper;
 
+    @Autowired
+    @Lazy
+    InvoiceService invoiceService;
+
+    @Autowired
+    @Lazy
+    RefundService refundService;
+
 
     private final Logger log = LoggerFactory.getLogger(PaymentService.class);
 
@@ -78,6 +86,13 @@ public class EventPublisherService {
         this.invoiceRepository = invoiceRepository;
         this.paymentMethodService = paymentMethodService;
         this.paymentRepository = paymentRepository;
+    }
+
+    @TBSEventPub(eventName = Constants.EventType.INVOICE_CREATE)
+    public TBSEventRespDTO<OneItemInvoiceRespDTO> saveOneItemInvoiceEvent(TBSEventReqDTO<OneItemInvoiceDTO> eventReq) {
+        OneItemInvoiceRespDTO resp = invoiceService.saveOneItemInvoice(eventReq.getReq());
+        TBSEventRespDTO<OneItemInvoiceRespDTO> eventResp = TBSEventRespDTO.<OneItemInvoiceRespDTO>builder().referenceId(resp.getBillNumber()).resp(resp).build();
+        return eventResp;
     }
 
     @TBSEventPub(eventName = Constants.EventType.SADAD_INITIATE)
@@ -95,10 +110,39 @@ public class EventPublisherService {
         return eventResp;
     }
 
-    @TBSEventPub(eventName = Constants.EventType.CREDIT_CARD_INITIATE)
+    @TBSEventPub(eventName = Constants.EventType.CREDIT_CARD_PAYMENT_REQUEST)
     public TBSEventRespDTO<PaymentDTO> initiateCreditCardPaymentEvent(TBSEventReqDTO<PaymentDTO> reqNotification, Optional<Invoice> invoice) {
         PaymentDTO result = paymentService.initiateCreditCardPayment(reqNotification.getReq(), invoice);
         TBSEventRespDTO<PaymentDTO> eventResp = TBSEventRespDTO.<PaymentDTO>builder().resp(result).build();
+        return eventResp;
+    }
+
+    @TBSEventPub(eventName = Constants.EventType.CREDIT_CARD_INITIATE)
+    public TBSEventRespDTO<PaymentResponseDTO> callCreditCardInitiateEvent(TBSEventReqDTO<String> event) throws IOException {
+        PaymentResponseDTO result = paymentService.callCreditCard(event.getReq());
+        TBSEventRespDTO<PaymentResponseDTO> eventResp = TBSEventRespDTO.<PaymentResponseDTO>builder().resp(result).build();
+        return eventResp;
+    }
+
+    @TBSEventPub(eventName = Constants.EventType.CREDIT_CARD_NOTIFICATION)
+    public TBSEventRespDTO<PaymentDTO> creditCardNotificationEvent(TBSEventReqDTO<PaymentStatusResponseDTO> reqNotification, Payment payment, Invoice invoice) {
+        PaymentDTO result = paymentService.updateCreditCardPayment(reqNotification.getReq(), payment, invoice);
+        TBSEventRespDTO<PaymentDTO> eventResp = TBSEventRespDTO.<PaymentDTO>builder().resp(result).build();
+        return eventResp;
+    }
+
+    @TBSEventPub(eventName = Constants.EventType.INVOICE_REFUND_REQUEST)
+    public TBSEventRespDTO<RefundDTO> createNewRefund(RefundDTO refundDTO, Invoice invoice, Optional<Payment> payment) {
+        RefundDTO result = refundService.createNewRefund(refundDTO, invoice, payment);
+        TBSEventRespDTO<RefundDTO> eventResp = TBSEventRespDTO.<RefundDTO>builder().resp(result).build();
+        return eventResp;
+    }
+
+    @TBSEventPub(eventName = Constants.EventType.CREDIT_CARD_REFUND_REQUEST)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public TBSEventRespDTO<Integer> callRefundByCreditCardEvent(TBSEventReqDTO<String> eventReq) throws IOException, JSONException {
+        Integer sadadResp = refundService.callRefundByCreditCard(eventReq.getReq());
+        TBSEventRespDTO<Integer> eventResp = TBSEventRespDTO.<Integer>builder().resp(sadadResp).build();
         return eventResp;
     }
 }

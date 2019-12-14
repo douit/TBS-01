@@ -50,20 +50,21 @@ public final class Constants {
      */
     public enum EventType {
 
-        INVOICE_CREATE("Create invoice by client app"),
+        INVOICE_CREATE("Create invoice by client app"), //ok
 
-        SADAD_INITIATE("Upload invoice to Sadad"),
-        SADAD_NOTIFICATION("Receive payment notification from Sadad"),
+        SADAD_INITIATE("Upload invoice to Sadad"), //ok
+        SADAD_NOTIFICATION("Receive payment notification from Sadad"), //ok
 
-        CREDIT_CARD_INITIATE("Upload invoice to the payment provider"),
-        CREDIT_CARD_NOTIFICATION("Receive payment notification from the payment provider"),
+        CREDIT_CARD_PAYMENT_REQUEST("Request new credit card payment by client app"), //ok
+        CREDIT_CARD_INITIATE("Upload invoice to the payment provider"), //ok
+        CREDIT_CARD_NOTIFICATION("Receive payment notification from the payment provider"), //ok
 
-        INVOICE_REFUND_REQUEST("Refund request by client app"),
+        INVOICE_REFUND_REQUEST("Refund request by client app"), // ok
 
-        SADAD_REFUND_REQUEST("Send Refund request to Sadad"),
-        SADAD_REFUND_NOTIFICATION("Receive Refund notification from Sadad"),
+        SADAD_REFUND_REQUEST("Send Refund request to Sadad"), // ..
+        SADAD_REFUND_NOTIFICATION("Receive Refund notification from Sadad"), // ..
 
-        CREDIT_CARD_REFUND_REQUEST("Send Refund request to the payment provider");
+        CREDIT_CARD_REFUND_REQUEST("Send Refund request to the payment provider"); // ok
 
         EventType (String description) {
             this.description = description;

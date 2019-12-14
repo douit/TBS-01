@@ -19,10 +19,7 @@ import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 import sa.tamkeentech.tbs.aop.event.TBSEventPub;
 import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.security.SecurityUtils;
-import sa.tamkeentech.tbs.service.dto.InvoiceDTO;
-import sa.tamkeentech.tbs.service.dto.InvoiceStatusDTO;
-import sa.tamkeentech.tbs.service.dto.OneItemInvoiceDTO;
-import sa.tamkeentech.tbs.service.dto.OneItemInvoiceRespDTO;
+import sa.tamkeentech.tbs.service.dto.*;
 import sa.tamkeentech.tbs.service.mapper.InvoiceMapper;
 import sa.tamkeentech.tbs.service.util.EventPublisherService;
 import sa.tamkeentech.tbs.service.util.SequenceUtil;
@@ -134,7 +131,13 @@ public class InvoiceService {
         invoiceRepository.deleteById(id);
     }
 
-    @TBSEventPub(eventName = Constants.EventType.INVOICE_CREATE, principal = "customerId", referenceId = "billNumber")
+
+    public OneItemInvoiceRespDTO saveOneItemInvoiceAndSendEvent(OneItemInvoiceDTO oneItemInvoiceDTO) {
+        TBSEventReqDTO<OneItemInvoiceDTO> reqNotification = TBSEventReqDTO.<OneItemInvoiceDTO>builder().principalId(oneItemInvoiceDTO.getCustomerId())
+            .req(oneItemInvoiceDTO).build();
+        return eventPublisherService.saveOneItemInvoiceEvent(reqNotification).getResp();
+    }
+
     public OneItemInvoiceRespDTO saveOneItemInvoice(OneItemInvoiceDTO oneItemInvoiceDTO) {
 
         Invoice invoice = addNewInvoice(oneItemInvoiceDTO);
@@ -174,10 +177,10 @@ public class InvoiceService {
                     oneItemInvoiceRespDTO.setShortDesc("success");
                     oneItemInvoiceRespDTO.setDescription("");
                     oneItemInvoiceRespDTO.setBillNumber(invoice.getAccountId().toString());
-                break;
+                    break;
                 case Constants.VISA:
                     log.info("CC payment method");
-                break;
+                    break;
                 default:
                     log.info("Cash payment method");
 
@@ -190,7 +193,6 @@ public class InvoiceService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    // @TBSEventPub(eventName = Constants.EventType.INVOICE_CREATE, principal = "customerId", referenceId = "accountId")
     public Invoice addNewInvoice(OneItemInvoiceDTO oneItemInvoiceDTO) {
         // Client
         String appName = SecurityUtils.getCurrentUserLogin().orElse("");
