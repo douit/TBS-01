@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class InvoiceItemsResponseDTO {
+public class InvoiceResponseDTO {
 
     private static final long serialVersionUID = 1L;
     private int statusId;

@@ -4,7 +4,7 @@ import io.github.jhipster.web.util.HeaderUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.service.InvoiceService;
@@ -21,7 +21,6 @@ import java.net.URISyntaxException;
  * REST controller for managing {@link sa.tamkeentech.tbs.domain.Invoice}.
  */
 @RestController
-//@RequestMapping("/billing")
 public class OneItemInvoiceAppResource {
 
     private final Logger log = LoggerFactory.getLogger(OneItemInvoiceAppResource.class);
@@ -54,12 +53,12 @@ public class OneItemInvoiceAppResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/billing/createbill")
-    public ResponseEntity<OneItemInvoiceRespDTO> createOneItemInvoice(@Valid @RequestBody OneItemInvoiceDTO oneItemInvoiceDTO) throws URISyntaxException {
+    public ResponseEntity<InvoiceResponseDTO> createOneItemInvoice(@Valid @RequestBody OneItemInvoiceDTO oneItemInvoiceDTO) throws URISyntaxException {
         log.debug("REST request to save Invoice : {}", oneItemInvoiceDTO);
         if (oneItemInvoiceDTO.getBillNumber() != null) {
             throw new BadRequestAlertException("A new invoice cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        OneItemInvoiceRespDTO result = invoiceService.saveOneItemInvoiceAndSendEvent(oneItemInvoiceDTO);
+        InvoiceResponseDTO result = invoiceService.saveOneItemInvoiceAndSendEvent(oneItemInvoiceDTO);
         String id = (result.getBillNumber()!= null)? result.getBillNumber().toString(): "";
         return ResponseEntity.created(new URI("/billing/createbill" + result.getBillNumber()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, id))

@@ -4,9 +4,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.datatables.repository.DataTablesRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import sa.tamkeentech.tbs.domain.Invoice;
+import sa.tamkeentech.tbs.domain.enumeration.InvoiceStatus;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 
 import java.math.BigDecimal;
@@ -47,5 +49,9 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long>, DataTab
     List<Object[]> getStatisticsByYear(ZonedDateTime from, ZonedDateTime to);
 
     Page<Invoice> findByPaymentStatusOrderByIdDesc(PaymentStatus status, Pageable pageable);
+
+    @Modifying
+    @Query("update Invoice i set i.status = ?2 where i.id = ?1")
+    int setStatus(Long id, InvoiceStatus status);
 
 }

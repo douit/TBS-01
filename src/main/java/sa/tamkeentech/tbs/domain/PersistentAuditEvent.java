@@ -32,9 +32,8 @@ public class PersistentAuditEvent implements Serializable {
     @Column(name = "ref_id")
     private Long refId;
 
-    @NotNull
-    @Column(nullable = false)
-    private boolean successful = false;
+    @Column(name = "successful")
+    private boolean successful;
 
     @Column(name = "event_date")
     private Instant auditEventDate;

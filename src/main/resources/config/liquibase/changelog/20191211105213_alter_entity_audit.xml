@@ -23,7 +23,7 @@
         <addColumn
             schemaName="public"
             tableName="persistent_audit_event">
-            <column name="successful" type="boolean" defaultValue="false"/>
+            <column name="successful" type="boolean"/>
         </addColumn>
 
     </changeSet>

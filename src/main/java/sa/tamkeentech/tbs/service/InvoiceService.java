@@ -20,7 +20,6 @@ import sa.tamkeentech.tbs.service.dto.*;
 import sa.tamkeentech.tbs.service.mapper.InvoiceMapper;
 import sa.tamkeentech.tbs.service.mapper.ItemMapper;
 import sa.tamkeentech.tbs.service.util.EventPublisherService;
-import sa.tamkeentech.tbs.service.mapper.ItemMapper;
 import sa.tamkeentech.tbs.service.util.SequenceUtil;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
@@ -130,7 +129,13 @@ public class InvoiceService {
         invoiceRepository.deleteById(id);
     }
 
-    public InvoiceItemsResponseDTO saveInvoice(InvoiceDTO invoiceDTO) {
+    public InvoiceResponseDTO saveInvoiceAndSendEvent(InvoiceDTO invoiceDTO) {
+        TBSEventReqDTO<InvoiceDTO> reqNotification = TBSEventReqDTO.<InvoiceDTO>builder().principalId(invoiceDTO.getCustomer().getIdentity())
+            .req(invoiceDTO).build();
+        return eventPublisherService.saveInvoiceEvent(reqNotification).getResp();
+    }
+
+    public InvoiceResponseDTO saveInvoice(InvoiceDTO invoiceDTO) {
 
         Invoice invoice = creatNewInvoice(invoiceDTO);
 
@@ -138,7 +143,7 @@ public class InvoiceService {
         // Payment method
         Optional<PaymentMethod> paymentMethod = paymentMethodService.findById(invoiceDTO.getPaymentMethod().getId());
 
-        InvoiceItemsResponseDTO invoiceItemsResponseDTO= InvoiceItemsResponseDTO.builder()
+        InvoiceResponseDTO invoiceItemsResponseDTO= InvoiceResponseDTO.builder()
             .paymentMethod(invoiceDTO.getPaymentMethod().getId()).build();
 
         if(invoiceDTO.getAmount().equals(invoice.getAmount())){
@@ -148,24 +153,21 @@ public class InvoiceService {
                     case Constants.SADAD:
                         int sadadResult;
                         try {
-                            sadadResult = paymentService.sadadCall(invoice.getNumber(), invoice.getAccountId().toString(), invoice.getAmount());
+                            sadadResult = paymentService.sendEventAndCallSadad(invoice.getNumber(), invoice.getAccountId().toString(), invoice.getAmount(), invoiceDTO.getCustomer().getIdentity());
                         } catch (IOException | JSONException e) {
-                            // ToDo add new exception 500 for sadad
                             throw new TbsRunTimeException("Sadad issue", e);
                         }
-                        // ToDo add new exception 500 for sadad
-                        // invoice = invoiceRepository.getOne(invoice.getId());
+                        InvoiceStatus status;
                         if (sadadResult != 200) {
                             invoiceItemsResponseDTO.setStatusId(sadadResult);
                             invoiceItemsResponseDTO.setShortDesc("error");
                             invoiceItemsResponseDTO.setDescription("error_message");
-                            invoice.setStatus(InvoiceStatus.FAILED);
-                            // invoiceRepository.save(invoice);
+                            status = InvoiceStatus.FAILED;
+                            updateInvoice(invoice.getId(), status);
                             throw new TbsRunTimeException("Sadad bill creation error");
                         }
-                        invoice.setStatus(InvoiceStatus.CREATED);
-                        // ToDO save again issue
-                        //invoiceRepository.save(invoice);
+                        status =  InvoiceStatus.CREATED;
+                        updateInvoice(invoice.getId(), status);
                         invoiceItemsResponseDTO.setStatusId(1);
                         invoiceItemsResponseDTO.setShortDesc("success");
                         invoiceItemsResponseDTO.setDescription("");
@@ -191,7 +193,7 @@ public class InvoiceService {
         return invoiceItemsResponseDTO;
 
     }
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.REQUIRES_NEW, noRollbackFor=TbsRunTimeException.class)
     Invoice creatNewInvoice(InvoiceDTO invoiceDTO) {
         // Client
         String appName = SecurityUtils.getCurrentUserLogin().orElse("");
@@ -217,7 +219,6 @@ public class InvoiceService {
             .client(client.get())
             .customer(customer.get())
             .paymentStatus(PaymentStatus.PENDING)
-            .notificationStatus(NotificationStatus.PAYMENT_NOTIFICATION_NEW)
             .status(InvoiceStatus.NEW)
             .invoiceItems(invoiceItemList)
             .build();
@@ -301,27 +302,26 @@ public class InvoiceService {
         invoice.setInvoiceItems(invoiceItemList);
         invoice.setAmount(totalPriceInvoice);
         invoice.setSubtotal(subTotalInvoice);
-        invoice.setNotificationStatus(NotificationStatus.PAYMENT_NOTIFICATION_NEW);
         invoice.setStatus(InvoiceStatus.NEW);
         invoice.setPaymentStatus(PaymentStatus.PENDING);
         return invoiceRepository.saveAndFlush(invoice);
     }
 
 
-    public OneItemInvoiceRespDTO saveOneItemInvoiceAndSendEvent(OneItemInvoiceDTO oneItemInvoiceDTO) {
+    public InvoiceResponseDTO saveOneItemInvoiceAndSendEvent(OneItemInvoiceDTO oneItemInvoiceDTO) {
         TBSEventReqDTO<OneItemInvoiceDTO> reqNotification = TBSEventReqDTO.<OneItemInvoiceDTO>builder().principalId(oneItemInvoiceDTO.getCustomerId())
             .req(oneItemInvoiceDTO).build();
         return eventPublisherService.saveOneItemInvoiceEvent(reqNotification).getResp();
     }
 
-    public OneItemInvoiceRespDTO saveOneItemInvoice(OneItemInvoiceDTO oneItemInvoiceDTO) {
+    public InvoiceResponseDTO saveOneItemInvoice(OneItemInvoiceDTO oneItemInvoiceDTO) {
 
         Invoice invoice = addNewInvoice(oneItemInvoiceDTO);
         // Payment
         // Payment method
         Optional<PaymentMethod> paymentMethod = paymentMethodService.findById(oneItemInvoiceDTO.getPaymentMethodId());
 
-        OneItemInvoiceRespDTO oneItemInvoiceRespDTO= OneItemInvoiceRespDTO.builder()
+        InvoiceResponseDTO oneItemInvoiceRespDTO= InvoiceResponseDTO.builder()
             .paymentMethod(oneItemInvoiceDTO.getPaymentMethodId()).build();
         if (paymentMethod.isPresent()) {
             String paymentMethodCode = paymentMethod.get().getCode();
@@ -334,19 +334,17 @@ public class InvoiceService {
                         // ToDo add new exception 500 for sadad
                         throw new TbsRunTimeException("Sadad issue", e);
                     }
-                    // ToDo add new exception 500 for sadad
-                    // invoice = invoiceRepository.getOne(invoice.getId());
+                    InvoiceStatus status;
                     if (sadadResult != 200) {
                         oneItemInvoiceRespDTO.setStatusId(sadadResult);
                         oneItemInvoiceRespDTO.setShortDesc("error");
                         oneItemInvoiceRespDTO.setDescription("error_message");
-                        invoice.setStatus(InvoiceStatus.FAILED);
-                        // invoiceRepository.save(invoice);
+                        status = InvoiceStatus.FAILED;
+                        updateInvoice(invoice.getId(), status);
                         throw new TbsRunTimeException("Sadad bill creation error");
                     }
-                    invoice.setStatus(InvoiceStatus.CREATED);
-                    // ToDO save again issue
-                    //invoiceRepository.save(invoice);
+                    status = InvoiceStatus.CREATED;
+                    updateInvoice(invoice.getId(), status);
                     oneItemInvoiceRespDTO.setStatusId(1);
                     oneItemInvoiceRespDTO.setShortDesc("success");
                     oneItemInvoiceRespDTO.setDescription("");
@@ -367,6 +365,15 @@ public class InvoiceService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public int updateInvoice(Long invoiceId, InvoiceStatus status) {
+        // Invoice invoice = invoiceRepository.getOne(invoiceId);
+        // invoice.setStatus(status);
+        // return invoice;
+        // return invoiceRepository.saveAndFlush(invoice);
+        return  invoiceRepository.setStatus(invoiceId, status);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW, noRollbackFor=TbsRunTimeException.class)
     public Invoice addNewInvoice(OneItemInvoiceDTO oneItemInvoiceDTO) {
         // Client
         String appName = SecurityUtils.getCurrentUserLogin().orElse("");
