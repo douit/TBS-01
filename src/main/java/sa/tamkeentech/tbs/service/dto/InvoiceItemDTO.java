@@ -1,10 +1,11 @@
 package sa.tamkeentech.tbs.service.dto;
+
 import io.swagger.annotations.ApiModel;
 import lombok.*;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.Objects;
+
 
 /**
  * A DTO for the {@link sa.tamkeentech.tbs.domain.InvoiceItem} entity.
@@ -20,6 +21,8 @@ public class InvoiceItemDTO implements Serializable {
     private Long id;
 
     private Long itemId;
+
+    private String itemCode;
 
     private String name;
 

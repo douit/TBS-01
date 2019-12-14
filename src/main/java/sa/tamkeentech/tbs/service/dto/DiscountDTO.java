@@ -20,7 +20,7 @@ public class DiscountDTO implements Serializable {
 
     private Long id;
 
-    private Boolean iPercentage;
+    private Boolean isPercentage;
 
     private BigDecimal value;
 

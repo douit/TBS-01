@@ -32,7 +32,7 @@ public class Discount extends AbstractAuditingEntity implements Serializable {
     private Long id;
 
     @Column(name = "i_percentage")
-    private Boolean iPercentage;
+    private Boolean isPercentage;
 
     @Column(name = "value", precision = 21, scale = 2)
     private BigDecimal value;

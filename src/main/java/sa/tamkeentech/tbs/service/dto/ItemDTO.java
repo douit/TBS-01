@@ -32,4 +32,8 @@ public class ItemDTO implements Serializable {
     private ClientDTO client;
 
     private Set<TaxDTO> taxes;
+
+    private Integer quantity;
+
+
 }

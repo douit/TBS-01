@@ -3,6 +3,7 @@ import org.springframework.data.jpa.datatables.repository.DataTablesRepository;
 import sa.tamkeentech.tbs.domain.Item;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
+import sa.tamkeentech.tbs.service.dto.ItemDTO;
 
 import java.util.Optional;
 
@@ -15,5 +16,6 @@ import java.util.Optional;
 public interface ItemRepository extends JpaRepository<Item, Long>, DataTablesRepository<Item, Long> {
 
     Optional<Item> findByNameAndClientId(String itemName, Long id);
+
 
 }
