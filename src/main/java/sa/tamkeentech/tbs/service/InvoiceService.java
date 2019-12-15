@@ -373,9 +373,6 @@ public class InvoiceService {
         String appName = SecurityUtils.getCurrentUserLogin().orElse("");
         Optional<Client> client =  clientService.getClientByClientId(appName);
 
-        // get bill seq
-        Long seq = sequenceUtil.getNextInvoiceNumber(client.get().getClientId());
-
         // Customer check if exists else create new
         Optional<Customer> customer = customerService.findByIdentifier(oneItemInvoiceDTO.getCustomerId());
         if (!customer.isPresent()) {
@@ -388,6 +385,15 @@ public class InvoiceService {
             customerRepository.save(customer.get());
         }
 
+        //invoiceItem
+        Optional<Item> item = itemService.findByNameAndClient(oneItemInvoiceDTO.getItemName(), client.get().getId());
+        if (!item.isPresent()) {
+            throw new TbsRunTimeException("Unknown item: "+ oneItemInvoiceDTO.getItemName());
+        }
+
+        // get bill seq
+        Long seq = sequenceUtil.getNextInvoiceNumber(client.get().getClientId());
+
         Invoice invoice = Invoice.builder()
             .accountId(seq + Constants.CLIENT_SADAD_CONFIG.valueOf(client.get().getClientId().toString()).getInitialAccountId())
             .number(seq + Constants.CLIENT_SADAD_CONFIG.valueOf(client.get().getClientId().toString()).getInitialBillId())
@@ -397,11 +403,6 @@ public class InvoiceService {
             .status(InvoiceStatus.NEW)
             .build();
 
-        //invoiceItem
-        Optional<Item> item = itemService.findByNameAndClient(oneItemInvoiceDTO.getItemName(), client.get().getId());
-        if (!item.isPresent()) {
-            throw new TbsRunTimeException("Unknown item: "+ oneItemInvoiceDTO.getItemName());
-        }
         InvoiceItem invoiceItem = InvoiceItem.builder()
             .item(item.get())
             .amount(item.get().getPrice())
