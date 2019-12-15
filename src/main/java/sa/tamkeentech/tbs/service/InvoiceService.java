@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.*;
 import sa.tamkeentech.tbs.domain.enumeration.*;
+import sa.tamkeentech.tbs.repository.CustomerRepository;
 import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.security.SecurityUtils;
 import sa.tamkeentech.tbs.service.dto.*;
@@ -34,7 +35,9 @@ import java.util.*;
  * Service Implementation for managing {@link Invoice}.
  */
 @Service
-@Transactional
+// To Solve invoice not persisted issue remove this transactional
+// But need to make the save logic bloc transactioal --> issue of existing customer -> detached ...
+// @Transactional
 public class InvoiceService {
 
     private final Logger log = LoggerFactory.getLogger(InvoiceService.class);
@@ -51,7 +54,7 @@ public class InvoiceService {
 
     private final ItemService itemService;
 
-    private final ItemMapper itemMapper;
+    private final CustomerRepository customerRepository;
 
     private final PaymentService paymentService;
 
@@ -59,7 +62,7 @@ public class InvoiceService {
 
     private final EventPublisherService eventPublisherService;
 
-    public InvoiceService(InvoiceRepository invoiceRepository, InvoiceMapper invoiceMapper, ClientService clientService, CustomerService customerService, PaymentMethodService paymentMethodService, ItemService itemService, PaymentService paymentService, SequenceUtil sequenceUtil, EventPublisherService eventPublisherService, ItemMapper itemMapper) {
+    public InvoiceService(InvoiceRepository invoiceRepository, InvoiceMapper invoiceMapper, ClientService clientService, CustomerService customerService, PaymentMethodService paymentMethodService, ItemService itemService, PaymentService paymentService, SequenceUtil sequenceUtil, EventPublisherService eventPublisherService, CustomerRepository customerRepository) {
         this.invoiceRepository = invoiceRepository;
         this.invoiceMapper = invoiceMapper;
         this.clientService = clientService;
@@ -69,7 +72,7 @@ public class InvoiceService {
         this.paymentService = paymentService;
         this.sequenceUtil = sequenceUtil;
         this.eventPublisherService = eventPublisherService;
-        this.itemMapper=itemMapper;
+        this.customerRepository = customerRepository;
     }
 
     /**
@@ -364,15 +367,6 @@ public class InvoiceService {
         return oneItemInvoiceRespDTO;
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public int updateInvoice(Long invoiceId, InvoiceStatus status) {
-        // Invoice invoice = invoiceRepository.getOne(invoiceId);
-        // invoice.setStatus(status);
-        // return invoice;
-        // return invoiceRepository.saveAndFlush(invoice);
-        return  invoiceRepository.setStatus(invoiceId, status);
-    }
-
     @Transactional(propagation = Propagation.REQUIRES_NEW, noRollbackFor=TbsRunTimeException.class)
     public Invoice addNewInvoice(OneItemInvoiceDTO oneItemInvoiceDTO) {
         // Client
@@ -391,6 +385,7 @@ public class InvoiceService {
                 .name(oneItemInvoiceDTO.getCustomerName())
                 .contact(Contact.builder().email(oneItemInvoiceDTO.getEmail()).phone(oneItemInvoiceDTO.getMobile()).build())
                 .build());
+            customerRepository.save(customer.get());
         }
 
         Invoice invoice = Invoice.builder()
@@ -442,7 +437,6 @@ public class InvoiceService {
                 }
             }
         }
-        // Add tax to invoice Item ToDo
         invoiceItem.setTaxName("Total_Taxes");
         invoiceItem.setTaxRate(totalTaxes);
 
@@ -450,6 +444,11 @@ public class InvoiceService {
         invoice.setSubtotal(item.get().getPrice());
         invoice.setAmount(totalPrice);
         return invoiceRepository.saveAndFlush(invoice);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public int updateInvoice(Long invoiceId, InvoiceStatus status) {
+        return  invoiceRepository.setStatus(invoiceId, status);
     }
 
 

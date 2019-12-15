@@ -76,7 +76,7 @@ public class Invoice extends AbstractAuditingEntity implements Serializable {
     @JoinColumn(unique = true)
     private Discount discount;
 
-    @ManyToOne(cascade = CascadeType.PERSIST)
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "customer_id")
     private Customer customer;
 
