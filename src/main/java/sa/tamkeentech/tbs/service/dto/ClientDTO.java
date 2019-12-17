@@ -1,11 +1,19 @@
 package sa.tamkeentech.tbs.service.dto;
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 import java.util.Objects;
+
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import sa.tamkeentech.tbs.domain.enumeration.DateUnit;
+
+
 
 /**
  * A DTO for the {@link sa.tamkeentech.tbs.domain.Client} entity.
  */
+
+
 public class ClientDTO implements Serializable {
 
     private Long id;
@@ -24,6 +32,25 @@ public class ClientDTO implements Serializable {
 
     private String vatNumber;
 
+    private String clientToken;
+
+    private ZonedDateTime tokenModifiedDate;
+
+    public String getClientToken() {
+        return clientToken;
+    }
+
+    public void setClientToken(String clientToken) {
+        this.clientToken = clientToken;
+    }
+
+    public ZonedDateTime getTokenModifiedDate() {
+        return tokenModifiedDate;
+    }
+
+    public void setTokenModifiedDate(ZonedDateTime tokenModifiedDate) {
+        this.tokenModifiedDate = tokenModifiedDate;
+    }
 
     public Long getId() {
         return id;

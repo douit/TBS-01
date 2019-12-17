@@ -11,10 +11,10 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring", uses = {ItemMapper.class})
 public interface TaxMapper extends EntityMapper<TaxDTO, Tax> {
 
-    @Mapping(source = "item.id", target = "itemId")
+
     TaxDTO toDto(Tax tax);
 
-    @Mapping(source = "itemId", target = "item")
+
     Tax toEntity(TaxDTO taxDTO);
 
     default Tax fromId(Long id) {

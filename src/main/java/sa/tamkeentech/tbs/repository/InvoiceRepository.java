@@ -8,9 +8,11 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import sa.tamkeentech.tbs.domain.Client;
 import sa.tamkeentech.tbs.domain.Invoice;
 import sa.tamkeentech.tbs.domain.enumeration.InvoiceStatus;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
+import sa.tamkeentech.tbs.service.dto.ClientDTO;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -27,6 +29,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long>, DataTab
     Optional<Invoice> findByNumber(Long id);
     Optional<Invoice> findById(Long id);
     Optional<Invoice> findByAccountId(Long accountId);
+    List<Optional<Invoice>>  findByStatusAndClient(InvoiceStatus invoiceStatus , Client client );
 
     @Query(value = "SELECT date_trunc('day', invoice.created_date) As Day , count(*) As totalInvoice , \n" +
         "        sum(case when payment_status = 'PAID' then 1 else 0 end ) As PaidInvoice"+

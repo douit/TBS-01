@@ -23,4 +23,26 @@
         </update>
     </changeSet>
 
+
+
+    <changeSet id="20191119105213-3" author="Abdullah" context="faker">
+        <addColumn
+            schemaName="public"
+            tableName="client">
+            <column name="client_token" type="varchar(255)"/>
+        </addColumn>
+        <addColumn
+        schemaName="public"
+        tableName="client">
+        <column name="token_modified_date" type="varchar(255)"/>
+    </addColumn>
+    </changeSet>
+
+    <changeSet id="20191119105213-4" author="Abdullah" context="faker">
+        <modifyDataType columnName="token_modified_date"
+                        newDataType="timestamp"
+                        tableName="client"/>
+
+    </changeSet>
+
 </databaseChangeLog>

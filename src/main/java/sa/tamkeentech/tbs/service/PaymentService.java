@@ -3,11 +3,13 @@ package sa.tamkeentech.tbs.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.bytebuddy.implementation.bytecode.Throw;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.checkerframework.checker.units.qual.Current;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,19 +21,24 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import sa.tamkeentech.tbs.config.Constants;
+import sa.tamkeentech.tbs.domain.Client;
 import sa.tamkeentech.tbs.domain.Invoice;
 import sa.tamkeentech.tbs.domain.Payment;
 import sa.tamkeentech.tbs.domain.PaymentMethod;
+import sa.tamkeentech.tbs.domain.enumeration.InvoiceStatus;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.repository.PaymentRepository;
+import sa.tamkeentech.tbs.security.SecurityUtils;
 import sa.tamkeentech.tbs.service.dto.*;
+import sa.tamkeentech.tbs.service.mapper.ClientMapper;
 import sa.tamkeentech.tbs.service.mapper.PaymentMapper;
 import sa.tamkeentech.tbs.service.util.EventPublisherService;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
@@ -41,10 +48,11 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -66,7 +74,8 @@ public class PaymentService {
     private final PaymentMethodService paymentMethodService;
 
     private final ObjectMapper objectMapper;
-
+    private final ClientService clientService;
+    private final ClientMapper clientMapper;
     private final EventPublisherService eventPublisherService;
 
     @Value("${tbs.payment.sadad-url}")
@@ -85,13 +94,15 @@ public class PaymentService {
     private String billerCode;
 
 
-    public PaymentService(PaymentRepository paymentRepository, PaymentMapper paymentMapper, InvoiceRepository invoiceRepository, PaymentMethodService paymentMethodService, ObjectMapper objectMapper, EventPublisherService eventPublisherService) {
+    public PaymentService(PaymentRepository paymentRepository, PaymentMapper paymentMapper, InvoiceRepository invoiceRepository, PaymentMethodService paymentMethodService, ObjectMapper objectMapper, EventPublisherService eventPublisherService, ClientService clientService,ClientMapper clientMapper ) {
         this.paymentRepository = paymentRepository;
         this.paymentMapper = paymentMapper;
         this.invoiceRepository = invoiceRepository;
         this.paymentMethodService = paymentMethodService;
         this.objectMapper = objectMapper;
         this.eventPublisherService = eventPublisherService;
+        this.clientService = clientService;
+        this.clientMapper = clientMapper;
     }
 
     /**
@@ -336,30 +347,83 @@ public class PaymentService {
         paymentRepository.save(payment);
 
         log.info("Successful TBS update bill: {}", reqNotification.getBillAccount());
-        RestTemplate rt1 = new RestTemplate();
-        HttpHeaders headers1 = new HttpHeaders();
-        headers1.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        MultiValueMap<String, String> map1= new LinkedMultiValueMap<String, String>();
-        map1.add("grant_type", "client_credentials");
-        map1.add("client_id", "tamkeen-billing-system");
-        //map1.add("client_secret", "06f4c17f-5c4a-492a-9a8e-a10eafec66c6"); // staging
-        map1.add("client_secret", "076a2d1c-15c6-4abf-80a7-0b181f18d617"); // production
-        org.springframework.http.HttpEntity<MultiValueMap<String, String>> request1 = new org.springframework.http.HttpEntity<MultiValueMap<String, String>>(map1, headers1);
-        //uri = "https://sso.tamkeen.land/auth/realms/tamkeen/protocol/openid-connect/token"; // staging
-        String uri = "https://accounts.wahid.sa/auth/realms/wahid/protocol/openid-connect/token"; // production
-        ResponseEntity<TokenResponseDTO> response1 = rt1.postForEntity( uri, request1 , TokenResponseDTO.class );
-        // log.info("DVS Token" +  response1.getBody().getAccess_token());
-        RestTemplate restTemplate = new RestTemplate();
-        String ResourceUrl = "http://10.60.71.16:8880/dvs/?billnumber=";
-        ResponseEntity<NotifiRespDTO> response2= restTemplate.getForEntity(ResourceUrl + reqNotification.getBillAccount() + "&paymentdate="
-            + reqNotification.getPaymentDate() + "&token=" + response1.getBody().getAccess_token() , NotifiRespDTO.class);
-        log.info("Succuss DVS update" + response2.getBody().getStatusId());
-        // NotifiResp resp = (NotifiResp)response2.getBody(); // only for testing
+
         invoice.setPaymentStatus(PaymentStatus.PAID);
         invoiceRepository.save(invoice);
         return resp;
     }
 
+    @Scheduled(cron = "*  5  *  *  * ?")
+    public void sendPaymentNotificationToClint(){
+        // Client
+
+        List<ClientDTO> clients =  clientService.findAll();
+        for(ClientDTO client : clients){
+            Date currentDate = new Date();
+            Date tokenModifiedDate = new Date();
+            if(client.getTokenModifiedDate() != null){
+                 tokenModifiedDate = Date.from(client.getTokenModifiedDate().toInstant());
+
+            }
+            long diff = currentDate.getTime() - tokenModifiedDate.getTime();
+            long diffMinutes = diff / (60 * 1000) % 60;
+            long diffHours = diff / (60 * 60 * 1000) % 24;
+            long diffDays = diff / (24 * 60 * 60 * 1000);
+
+            List<Optional<Invoice>> invoices = invoiceRepository.findByStatusAndClient(InvoiceStatus.WITTING,clientMapper.toEntity(client));
+
+            String token = null;
+            if(diffDays >=1 || diffHours >= 1 || diffMinutes > 59 || client.getClientToken() == null && invoices.size() >=1){
+                RestTemplate rt1 = new RestTemplate();
+                HttpHeaders headers1 = new HttpHeaders();
+                headers1.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+                MultiValueMap<String, String> map1 = new LinkedMultiValueMap<String, String>();
+                map1.add("grant_type", "client_credentials");
+                map1.add("client_id", "tamkeen-billing-system");
+                //map1.add("client_secret", "06f4c17f-5c4a-492a-9a8e-a10eafec66c6"); // staging
+                map1.add("client_secret", "076a2d1c-15c6-4abf-80a7-0b181f18d617"); // production
+                org.springframework.http.HttpEntity<MultiValueMap<String, String>> request1 = new org.springframework.http.HttpEntity<MultiValueMap<String, String>>(map1, headers1);
+              //  String uri = "https://sso.tamkeen.land/auth/realms/tamkeen/protocol/openid-connect/token"; // staging
+//                String uri = "https://accounts.wahid.sa/auth/realms/wahid/protocol/openid-connect/token"; // production
+//                ResponseEntity<TokenResponseDTO> response1 = rt1.postForEntity(uri, request1, TokenResponseDTO.class);
+//                token = response1.getBody().getAccess_token();
+                token = "wedefbhbfhdnhfbdh";
+                client.setClientToken(token);
+                client.setTokenModifiedDate(currentDate.toInstant().atZone(ZoneId.systemDefault()));
+
+                // log.info("DVS Token" + token);
+            }else{
+                token = client.getClientToken();
+                client.setTokenModifiedDate(currentDate.toInstant().atZone(ZoneId.systemDefault()));
+
+            }
+            clientService.save(client);
+
+               for (Optional<Invoice> invoice : invoices) {
+                   for (Payment payment : invoice.get().getPayments()) {
+                       if (payment.getStatus() == PaymentStatus.PAID) {
+                           RestTemplate restTemplate = new RestTemplate();
+                           String pattern = " dd/MM/yyyy hh:mm:ss a";
+                           SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+                           String paymentDate = simpleDateFormat.format(Date.from(payment.getCreatedDate().toInstant()));
+                           log.info("paymentDate" + paymentDate);
+                           // String ResourceUrl = "http://10.60.71.16:8880/dvs/?billnumber=";
+                           // ResponseEntity<NotifiRespDTO> response2= restTemplate.getForEntity(ResourceUrl + invoice.getAccountId().toString() + "&paymentdate="
+                           //   +  paymentDate + "&token=" + token , NotifiRespDTO.class);
+                           //log.info("Succuss DVS update" + response2.getBody().getStatusId());
+                           // NotifiResp resp = (NotifiResp)response2.getBody(); // only for testing
+//                    if(response2.getBody().getStatusId() == 200){
+//                        invoice.setStatus(InvoiceStatus.CLIENT_NOTIFIED);
+//                    }
+                       }
+                   }
+               }
+
+
+
+        }
+
+    }
     public DataTablesOutput<PaymentDTO> get(DataTablesInput input) {
         return paymentMapper.toDto(paymentRepository.findAll(input));
     }
