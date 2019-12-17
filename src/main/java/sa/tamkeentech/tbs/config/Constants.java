@@ -61,7 +61,7 @@ public final class Constants {
 
         INVOICE_REFUND_REQUEST("Refund request by client app"), // ok
 
-        SADAD_REFUND_REQUEST("Send Refund request to Sadad"), // ..
+        SADAD_REFUND_REQUEST("Send Refund request to Sadad"), // ok
         SADAD_REFUND_NOTIFICATION("Receive Refund notification from Sadad"), // ..
 
         CREDIT_CARD_REFUND_REQUEST("Send Refund request to the payment provider"); // ok

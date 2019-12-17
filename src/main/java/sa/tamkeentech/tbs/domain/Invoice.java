@@ -21,7 +21,7 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "invoice")
-@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 //@Data
 @Getter
 @Setter
@@ -34,9 +34,6 @@ public class Invoice extends AbstractAuditingEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    /*@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequence_generator_invoice")
-    @SequenceGenerator(name = "sequence_generator_invoice", sequenceName="sequence_generator_invoice", allocationSize = 1)*/
-    // No rollback for sequence so invoice will be created even if Sadad is down
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 

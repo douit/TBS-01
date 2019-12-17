@@ -19,7 +19,7 @@ import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
  */
 @Entity
 @Table(name = "payment")
-@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Data
 @Builder
 @NoArgsConstructor
@@ -55,6 +55,9 @@ public class Payment extends AbstractAuditingEntity implements Serializable {
 
     @Column(name = "transaction_id")
     private String transactionId;
+
+    @Column(name = "bank_id")
+    private String bankId;
 
     @OneToMany(mappedBy = "payment")
     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)

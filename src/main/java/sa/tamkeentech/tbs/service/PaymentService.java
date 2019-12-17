@@ -255,7 +255,7 @@ public class PaymentService {
 
     }
 
-    public Integer callSadad(String req) throws IOException, JSONException {
+    public Integer callSadad(String req) throws IOException {
         HttpClient client = HttpClientBuilder.create().build();
         HttpPost post = new HttpPost(sadadUrl);
         post.setHeader("Content-Type", "application/json");
@@ -266,7 +266,6 @@ public class PaymentService {
         log.debug("----Sadad request : {}", req);
         log.info("----Sadad response status code : {}", response.getStatusLine().getStatusCode());
         if (response.getEntity() != null) {
-            log.debug("----Sadad response content : {}", response.getEntity().getContent());
             log.debug("----Sadad response entity : {}", response.getEntity().toString());
         }
 

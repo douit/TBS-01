@@ -163,4 +163,5 @@ tbs:
     credit-card-biller-code: 'B1APP10092019'
   refund:
     sadad-url-refund: 'http://10.4.7.61:2020/Sender/api/Sadad/RefundLoadRq/test'
+    sadad-shared-folder: '/sadad_share/'
 

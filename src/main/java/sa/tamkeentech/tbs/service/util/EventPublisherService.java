@@ -121,20 +121,29 @@ public class EventPublisherService {
         return eventResp;
     }
 
+    // both CC and Sadad
     @TBSEventPub(eventName = Constants.EventType.INVOICE_REFUND_REQUEST)
-    public TBSEventRespDTO<RefundDTO> createNewRefund(RefundDTO refundDTO, Invoice invoice, Optional<Payment> payment) {
-        RefundDTO result = refundService.createNewRefund(refundDTO, invoice, payment);
+    public TBSEventRespDTO<RefundDTO> createNewRefund(TBSEventReqDTO<RefundDTO> eventReq, Invoice invoice, Optional<Payment> payment) {
+        RefundDTO result = refundService.createNewRefund(eventReq.getReq(), invoice, payment);
         TBSEventRespDTO<RefundDTO> eventResp = TBSEventRespDTO.<RefundDTO>builder().resp(result).build();
         return eventResp;
     }
 
     @TBSEventPub(eventName = Constants.EventType.CREDIT_CARD_REFUND_REQUEST)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public TBSEventRespDTO<Integer> callRefundByCreditCardEvent(TBSEventReqDTO<String> eventReq) throws IOException, JSONException {
+    public TBSEventRespDTO<Integer> callRefundByCreditCardEvent(TBSEventReqDTO<String> eventReq) throws IOException {
         Integer sadadResp = refundService.callRefundByCreditCard(eventReq.getReq());
         TBSEventRespDTO<Integer> eventResp = TBSEventRespDTO.<Integer>builder().resp(sadadResp).build();
         return eventResp;
     }
 
-    // ToDo Sadad Refund Req / initiate / Notifcation
+    @TBSEventPub(eventName = Constants.EventType.SADAD_REFUND_REQUEST)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public TBSEventRespDTO<Integer> callSadadRefundEvent(TBSEventReqDTO<String> eventReq) throws IOException {
+        Integer sadadResp = refundService.callRefundBySdad(eventReq.getReq());
+        TBSEventRespDTO<Integer> eventResp = TBSEventRespDTO.<Integer>builder().resp(sadadResp).build();
+        return eventResp;
+    }
+
+    // ToDo Sadad Refund Notifcation &&&&&  Client notification
 }

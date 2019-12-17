@@ -20,7 +20,7 @@ import sa.tamkeentech.tbs.domain.enumeration.RequestStatus;
  */
 @Entity
 @Table(name = "refund")
-@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Data
 @Builder
 @AllArgsConstructor

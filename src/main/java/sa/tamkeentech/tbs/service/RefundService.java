@@ -14,9 +14,16 @@ import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 import sa.tamkeentech.tbs.config.Constants;
+import sa.tamkeentech.tbs.domain.Customer;
 import sa.tamkeentech.tbs.domain.Invoice;
 import sa.tamkeentech.tbs.domain.Payment;
 import sa.tamkeentech.tbs.domain.Refund;
@@ -26,20 +33,19 @@ import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.repository.PaymentRepository;
 import sa.tamkeentech.tbs.repository.RefundRepository;
 import sa.tamkeentech.tbs.service.dto.RefundDTO;
-import sa.tamkeentech.tbs.service.dto.RefundResponseDTO;
 import sa.tamkeentech.tbs.service.dto.RefundStatusCCResponseDTO;
 import sa.tamkeentech.tbs.service.dto.TBSEventReqDTO;
 import sa.tamkeentech.tbs.service.mapper.RefundMapper;
 import sa.tamkeentech.tbs.service.util.EventPublisherService;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -64,6 +70,8 @@ public class RefundService {
     private String billerCode;
     @Value("${tbs.payment.credit-card-refund-url}")
     private String creditCardRefundUrl;
+    @Value("${tbs.refund.sadad-shared-folder}")
+    private String sadadSharedFolder;
 
     @Autowired
     @Lazy
@@ -95,14 +103,21 @@ public class RefundService {
         TBSEventReqDTO<RefundDTO> reqNotification = TBSEventReqDTO.<RefundDTO>builder()
             .principalId(invoice.getCustomer().getIdentity()).referenceId(invoice.getAccountId().toString())
             .req(refundDTO).build();
-        RefundDTO resp = eventPublisherService.createNewRefund(refundDTO, invoice, payment).getResp();
+        RefundDTO resp = eventPublisherService.createNewRefund(reqNotification, invoice, payment).getResp();
         return resp;
     }
 
 
     public RefundDTO createNewRefund(RefundDTO refundDTO, Invoice invoice, Optional<Payment> payment) {
+        // check if there is a payment
         if (!payment.isPresent()) {
             throw new TbsRunTimeException("No successful payment for invoice or invoice already refunded: "+ refundDTO.getInvoiceId().toString());
+        }
+        // check if there is a previous refund
+        for (Refund refund : payment.get().getRefunds()) {
+            if (refund.getStatus() == RequestStatus.PENDING || refund.getStatus() == RequestStatus.SUCCEEDED) {
+                throw new TbsRunTimeException("There is an existing refund for invoice: " + refundDTO.getInvoiceId() + " with status: "+ refund.getStatus().name());
+            }
         }
         Refund refund = refundMapper.toEntity(refundDTO);
         refund.setStatus(RequestStatus.CREATED);
@@ -111,7 +126,7 @@ public class RefundService {
         if (payment.get().getPaymentMethod().getCode().equalsIgnoreCase(Constants.SADAD)) {
             int sadadResult;
             try {
-                sadadResult = callRefundBySdad(refundDTO, refund.getId());
+                sadadResult = sendEventAndCallRefundBySdad(refund, invoice);
             } catch (IOException | JSONException e) {
                 // ToDo add new exception 500 for sadad
                 throw new TbsRunTimeException("Sadad issue", e);
@@ -122,7 +137,7 @@ public class RefundService {
                 refund.setStatus(RequestStatus.FAILED);
                 throw new TbsRunTimeException("Sadad refund creation error");
             } else {
-                refund.setStatus(RequestStatus.CREATED);
+                refund.setStatus(RequestStatus.PENDING);
             }
         } else {
             // RefundStatusCCResponseDTO refundResponseDTO = callRefundByCreditCard(refundDTO, refund.getId(), invoice.getId(), invoice.getClient().getPaymentKeyApp());
@@ -146,36 +161,42 @@ public class RefundService {
     }
 
 
-    public int callRefundBySdad( RefundDTO refund, Long refundId) throws IOException,JSONException {
+    public int sendEventAndCallRefundBySdad(Refund refund, Invoice invoice) throws IOException,JSONException {
+        JSONObject refundInfo = new JSONObject();
+        // ToDo check if refundId must be unique per app ? other params ...
+        Customer customer =invoice.getCustomer();
+        refundInfo.put("refundId", refund.getId());
+        refundInfo.put("customerId", customer.getIdentity());
+        refundInfo.put("customerIdType", customer.getIdentityType().name());
+        refundInfo.put("amount", refund.getPayment().getAmount());
+        refundInfo.put("paymetTransactionId", refund.getPayment().getTransactionId());
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.DATE, 30);
+        String expiryDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(c.getTime());
+        // ExpiryDate of the invoice, not related to invoice
+        refundInfo.put("expirydate",expiryDate);
+        refundInfo.put("bankId", refund.getPayment().getBankId());
+        refundInfo.put("applicationId", sadadApplicationId);
+
+        TBSEventReqDTO<String> req = TBSEventReqDTO.<String>builder()
+            .principalId(customer.getIdentity()).referenceId(invoice.getAccountId().toString()).req(refundInfo.toString()).build();
+        return eventPublisherService.callSadadRefundEvent(req).getResp();
+
+    }
+
+    public int callRefundBySdad(String req) throws IOException {
         HttpClient client = HttpClientBuilder.create().build();
         HttpPost post = new HttpPost(sadadUrlRefund);
         post.setHeader("Content-Type", "application/json");
-        RefundResponseDTO refundResponseDTO = null;
-        JSONObject RefundInfo = new JSONObject();
-        // ToDo check if refundId must be unique per app ? other params ...
-        RefundInfo.put("refundId", refundId);
-        // RefundInfo.put("customerId", refund.getCustomerId());
-        // RefundInfo.put("customerIdType", refund.getCustomerIdType());
-        RefundInfo.put("amount", refund.getAmount());
-        // RefundInfo.put("paymetTransactionId", refund.getPaymetTransactionId());
-        Calendar c = Calendar.getInstance();
-        c.add(Calendar.DATE, 2);
-        String expiryDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(c.getTime());
-        // ToDo is it the expiryDate of the invoice?
-        RefundInfo.put("expirydate",expiryDate);
-        // How to get bankId
-        // RefundInfo.put("bankId", refund.getBankId());
-        RefundInfo.put("applicationId", sadadApplicationId);
-        String jsonStr = RefundInfo.toString();
-        post.setEntity(new StringEntity(jsonStr));
+        post.setEntity(new StringEntity(req));
         HttpResponse response;
         response = client.execute(post);
 
-        log.debug("----Sadad request : {}", jsonStr);
-        log.info("----Sadad response status code : {}", response.getStatusLine().getStatusCode());
+        log.debug("----Sadad refund request : {}", req);
+        log.info("----Sadad refund response status code : {}", response.getStatusLine().getStatusCode());
         if (response.getEntity() != null) {
-            log.debug("----Sadad response content : {}", response.getEntity().getContent());
-            log.debug("----Sadad response entity : {}", response.getEntity().toString());
+            log.debug("----Sadad refund response content : {}", response.getEntity().getContent());
+            log.debug("----Sadad refund response entity : {}", response.getEntity().toString());
         }
         return response.getStatusLine().getStatusCode();
 
@@ -273,5 +294,69 @@ public class RefundService {
     public void delete(Long id) {
         log.debug("Request to delete Refund : {}", id);
         refundRepository.deleteById(id);
+    }
+
+    /**
+     * Sync Sadad refunds every hour.
+     * <p>
+     * This is scheduled to get fired every hour, at 01:00 - 02:00 ...
+     */
+    // @Scheduled(cron = "0 0 * * * ?")
+    @Scheduled(cron = "0 * * * * ?")
+    public void syncSadadRefund() {
+        File directory = new File(sadadSharedFolder);
+        Calendar currentDate = Calendar.getInstance();
+        String currentDateFormatted = new SimpleDateFormat("yyyy-MM-dd").format(currentDate.getTime());
+
+        Calendar previousDay = Calendar.getInstance();
+        previousDay.add(Calendar.DATE, -8); // ToDo must be -1 test 09
+        String previousDayFormatted = new SimpleDateFormat("yyyy-MM-dd").format(previousDay.getTime());
+
+        String filePrefixCurrentDay = new StringBuilder("blrrrq-").append(currentDateFormatted).toString();
+        String filePrefixPreviousDayDay = new StringBuilder("blrrrq-").append(previousDayFormatted).toString();
+
+        File[] files = directory.listFiles((File dir, String name) -> {
+            String lowercaseName = name.toLowerCase();
+            if ((lowercaseName.startsWith(filePrefixCurrentDay) || lowercaseName.startsWith(filePrefixPreviousDayDay))
+                && lowercaseName.endsWith(".xml")) {
+                return true;
+            }
+            return false;
+        });
+        if (files == null) {
+            return;
+        }
+        for (File file : files) {
+            Date lastMod = new Date(file.lastModified());
+            log.info("Processing Sadad File: " + file.getName() + ", Date: " + lastMod);
+            int totalRefund = 0;
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = null;
+            try {
+                builder = factory.newDocumentBuilder();
+                Document document = builder.parse(file);
+                NodeList nodeList = document.getDocumentElement().getElementsByTagName("ReconRefundRec");
+                for (int i = 0; i < nodeList.getLength(); i++) {
+                    Node refundRecordNode = nodeList.item(i);
+
+                    // RefundStatus node
+                    Node refundStatusNode = ((Element) refundRecordNode).getElementsByTagName("RefundStatus").item(0);
+                    // Get the value of RefundStatusCode.
+                    String status = ((Element) refundStatusNode).getElementsByTagName("RefundStatusCode")
+                        .item(0).getChildNodes().item(0).getNodeValue();
+                    if (status.equalsIgnoreCase("reconciled")) {
+                        // ReconRefundInfo node
+                        Node refundInfoNode = ((Element) refundRecordNode).getElementsByTagName("ReconRefundInfo").item(0);
+                        String refundId = ((Element) refundInfoNode).getElementsByTagName("RefundId")
+                            .item(0).getChildNodes().item(0).getNodeValue();
+                        log.info("------ Refund {} is reconciled", refundId);
+                        totalRefund ++;
+                    }
+                }
+            } catch (ParserConfigurationException | SAXException | IOException e) {
+                e.printStackTrace();
+            }
+            log.info("Finish Processing Sadad File: " + file.getName() + ", TotalRefund: " +  totalRefund);
+        }
     }
 }
