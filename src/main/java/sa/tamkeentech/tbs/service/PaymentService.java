@@ -341,6 +341,8 @@ public class PaymentService {
             .status(PaymentStatus.PAID)
             .amount(new BigDecimal(reqNotification.getAmount()))
             .paymentMethod(paymentMethod.get())
+            .bankId(reqNotification.getBankId())
+            .transactionId(reqNotification.getTransactionPaymentId())
             //.expirationDate()
             .build();
         paymentRepository.save(payment);
