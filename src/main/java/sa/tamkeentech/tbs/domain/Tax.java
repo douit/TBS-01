@@ -7,6 +7,7 @@ import javax.persistence.*;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Set;
 
 /**
  * A Tax.
@@ -33,9 +34,9 @@ public class Tax extends AbstractAuditingEntity implements Serializable {
     @Column(name = "rate", precision = 21, scale = 2)
     private BigDecimal rate;
 
-    @ManyToOne
-    @JsonIgnoreProperties("taxes")
-    private Item item;
+
+    @ManyToMany(mappedBy="taxes")
+    private Set<Item> items;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
     public Long getId() {
@@ -85,17 +86,17 @@ public class Tax extends AbstractAuditingEntity implements Serializable {
         this.rate = rate;
     }
 
-    public Item getItem() {
-        return item;
+    public Set<Item> getItem() {
+        return items;
     }
 
-    public Tax item(Item item) {
-        this.item = item;
+    public Tax item(Set<Item> item) {
+        this.items = item;
         return this;
     }
 
-    public void setItem(Item item) {
-        this.item = item;
+    public void setItem(Set<Item> item) {
+        this.items = item;
     }
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here, do not remove
 

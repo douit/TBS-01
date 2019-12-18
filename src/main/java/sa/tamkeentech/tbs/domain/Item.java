@@ -1,4 +1,5 @@
 package sa.tamkeentech.tbs.domain;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -38,7 +39,11 @@ public class Item extends AbstractAuditingEntity implements Serializable {
     @Column(name = "default_quantity")
     private Integer defaultQuantity;
 
-    @OneToMany(mappedBy = "item", fetch = FetchType.EAGER)
+
+    @ManyToMany
+    @JoinTable(name = "item_tax",
+        joinColumns = { @JoinColumn(name = "fk_item") },
+        inverseJoinColumns = { @JoinColumn(name = "fk_tax")})
     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     private Set<Tax> taxes = new HashSet<>();
 
@@ -120,17 +125,17 @@ public class Item extends AbstractAuditingEntity implements Serializable {
         return this;
     }
 
-    public Item addTax(Tax tax) {
-        this.taxes.add(tax);
-        tax.setItem(this);
-        return this;
-    }
-
-    public Item removeTax(Tax tax) {
-        this.taxes.remove(tax);
-        tax.setItem(null);
-        return this;
-    }
+//    public Item addTax(Tax tax) {
+//        this.taxes.add(tax);
+//        tax.setItem(this);
+//        return this;
+//    }
+//
+//    public Item removeTax(Tax tax) {
+//        this.taxes.remove(tax);
+//        tax.setItem(null);
+//        return this;
+//    }
 
     public void setTaxes(Set<Tax> taxes) {
         this.taxes = taxes;

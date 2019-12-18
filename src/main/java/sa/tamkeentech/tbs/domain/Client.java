@@ -1,4 +1,5 @@
 package sa.tamkeentech.tbs.domain;
+
 import lombok.*;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -6,6 +7,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import javax.persistence.*;
 
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 
 import sa.tamkeentech.tbs.domain.enumeration.DateUnit;
 
@@ -54,5 +56,11 @@ public class Client implements Serializable {
 
     @Column(name = "payment_key_app")
     private String paymentKeyApp;
+
+    @Column(name = "client_token")
+    private String clientToken;
+
+    @Column(name = "token_modified_date")
+    private ZonedDateTime tokenModifiedDate;
 
 }
