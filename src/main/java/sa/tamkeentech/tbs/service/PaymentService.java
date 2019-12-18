@@ -354,7 +354,7 @@ public class PaymentService {
         return resp;
     }
 
-    @Scheduled(cron = "5  *  *  *  * ?")
+    @Scheduled(cron = "*  5  *  *  * ?")
     public void sendPaymentNotificationToClintJob(){
 
         List<ClientDTO> clients =  clientService.findAll();
