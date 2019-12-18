@@ -23,12 +23,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import sa.tamkeentech.tbs.config.Constants;
-import sa.tamkeentech.tbs.domain.Customer;
-import sa.tamkeentech.tbs.domain.Invoice;
-import sa.tamkeentech.tbs.domain.Payment;
-import sa.tamkeentech.tbs.domain.Refund;
+import sa.tamkeentech.tbs.domain.*;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 import sa.tamkeentech.tbs.domain.enumeration.RequestStatus;
+import sa.tamkeentech.tbs.repository.FileSyncLogRepository;
 import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.repository.PaymentRepository;
 import sa.tamkeentech.tbs.repository.RefundRepository;
@@ -45,6 +43,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -62,6 +62,7 @@ public class RefundService {
     private final PaymentRepository paymentRepository;
     private final InvoiceRepository invoiceResitory;
     private final RefundMapper refundMapper;
+    private final FileSyncLogRepository fileSyncLogRepository;
     @Value("${tbs.refund.sadad-url-refund}")
     private String  sadadUrlRefund;
     @Value("${tbs.payment.sadad-application-id}")
@@ -77,12 +78,13 @@ public class RefundService {
     @Lazy
     EventPublisherService eventPublisherService;
 
-    public RefundService(RefundRepository refundRepository, RefundMapper refundMapper, ObjectMapper objectMapper, PaymentRepository paymentRepository, InvoiceRepository invoiceResitory) {
+    public RefundService(RefundRepository refundRepository, RefundMapper refundMapper, ObjectMapper objectMapper, PaymentRepository paymentRepository, InvoiceRepository invoiceResitory, FileSyncLogRepository fileSyncLogRepository) {
         this.refundRepository = refundRepository;
         this.refundMapper = refundMapper;
         this.objectMapper = objectMapper;
         this.paymentRepository = paymentRepository;
         this.invoiceResitory = invoiceResitory;
+        this.fileSyncLogRepository = fileSyncLogRepository;
     }
     /**
      * Create new refund.
@@ -301,15 +303,16 @@ public class RefundService {
      * <p>
      * This is scheduled to get fired every hour, at 01:00 - 02:00 ...
      */
-    // @Scheduled(cron = "0 0 * * * ?")
-    @Scheduled(cron = "0 * * * * ?")
+    @Scheduled(cron = "0 0 * * * ?")
     public void syncSadadRefund() {
+        log.info("----Start Sadad Refund Sync");
+        boolean successful = true;
         File directory = new File(sadadSharedFolder);
         Calendar currentDate = Calendar.getInstance();
         String currentDateFormatted = new SimpleDateFormat("yyyy-MM-dd").format(currentDate.getTime());
 
         Calendar previousDay = Calendar.getInstance();
-        previousDay.add(Calendar.DATE, -8); // ToDo must be -1 test 09
+        previousDay.add(Calendar.DATE, -1);
         String previousDayFormatted = new SimpleDateFormat("yyyy-MM-dd").format(previousDay.getTime());
 
         String filePrefixCurrentDay = new StringBuilder("blrrrq-").append(currentDateFormatted).toString();
@@ -319,7 +322,9 @@ public class RefundService {
             String lowercaseName = name.toLowerCase();
             if ((lowercaseName.startsWith(filePrefixCurrentDay) || lowercaseName.startsWith(filePrefixPreviousDayDay))
                 && lowercaseName.endsWith(".xml")) {
-                return true;
+                if (!fileSyncLogRepository.findByFileName(name).isPresent()) {
+                    return true;
+                }
             }
             return false;
         });
@@ -328,7 +333,9 @@ public class RefundService {
         }
         for (File file : files) {
             Date lastMod = new Date(file.lastModified());
-            log.info("Processing Sadad File: " + file.getName() + ", Date: " + lastMod);
+            // ZonedDateTime lastModZoneDate = ZonedDateTime.ofInstant(lastMod.toInstant(), ZoneId.of("Asia/Riyadh"));
+            ZonedDateTime lastModZoneDate = ZonedDateTime.ofInstant(lastMod.toInstant(), ZoneId.systemDefault());
+            log.info("----Processing Sadad File: " + file.getName() + ", Date: " + lastModZoneDate);
             int totalRefund = 0;
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = null;
@@ -349,13 +356,27 @@ public class RefundService {
                         Node refundInfoNode = ((Element) refundRecordNode).getElementsByTagName("ReconRefundInfo").item(0);
                         String refundId = ((Element) refundInfoNode).getElementsByTagName("RefundId")
                             .item(0).getChildNodes().item(0).getNodeValue();
-                        log.info("------ Refund {} is reconciled", refundId);
-                        totalRefund ++;
+                        if(refundRepository.setStatus(refundId, RequestStatus.SUCCEEDED) > 0) {
+                            log.info("++++++ Refund {} is reconciled and updated", refundId);
+                            totalRefund ++;
+                        } else {
+                            log.info("------ Refund {} is reconciled and ignored", refundId);
+                        }
+
                     }
                 }
             } catch (ParserConfigurationException | SAXException | IOException e) {
+                successful = false;
                 e.printStackTrace();
             }
+            FileSyncLog fileSyncLog = FileSyncLog.builder()
+                .fileName(file.getName())
+                .dateCreated(lastModZoneDate)
+                .dateExecuted(ZonedDateTime.now())
+                .type("SADAD_REFUND")
+                .totalReconciled(totalRefund)
+                .successful(successful).build();
+            fileSyncLogRepository.save(fileSyncLog);
             log.info("Finish Processing Sadad File: " + file.getName() + ", TotalRefund: " +  totalRefund);
         }
     }

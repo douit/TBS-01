@@ -41,9 +41,10 @@
 
     </changeSet>
 
-    <changeSet id="20191216075115-2" author="Ahmed B">
+    <!-- Auto created -->
+    <!--<changeSet id="20191216075115-2" author="Ahmed B">
         <createSequence sequenceName="file_sync_log_id_seq" incrementBy="1" minValue="1"/>
-    </changeSet>
+    </changeSet>-->
 
 
 
