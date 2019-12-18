@@ -12,6 +12,9 @@ import org.mapstruct.*;
 public interface RefundMapper extends EntityMapper<RefundDTO, Refund> {
 
 
+    @Mapping(source = "refund.payment.invoice.accountId", target = "accountId")
+    @Mapping(source = "refund.payment.invoice.customer.identity", target = "customerId")
+    RefundDTO toDto(Refund refund);
 
     default Refund fromId(Long id) {
         if (id == null) {

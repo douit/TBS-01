@@ -95,10 +95,10 @@ public class RefundService {
     @Transactional
     public RefundDTO createNewRefundAndSendEvent(RefundDTO refundDTO) {
         log.debug("Request new Refund : {}", refundDTO);
-        if (refundDTO.getInvoiceId() == null) {
+        if (refundDTO.getAccountId() == null) {
             throw new TbsRunTimeException("Invoice Id is mandatory to process the refund");
         }
-        Optional<Payment> payment = paymentRepository.findFirstByInvoiceIdAndStatus(refundDTO.getInvoiceId(), PaymentStatus.PAID);
+        Optional<Payment> payment = paymentRepository.findFirstByInvoiceIdAndStatus(refundDTO.getAccountId(), PaymentStatus.PAID);
         Invoice invoice = payment.get().getInvoice();
 
 
@@ -113,12 +113,12 @@ public class RefundService {
     public RefundDTO createNewRefund(RefundDTO refundDTO, Invoice invoice, Optional<Payment> payment) {
         // check if there is a payment
         if (!payment.isPresent()) {
-            throw new TbsRunTimeException("No successful payment for invoice or invoice already refunded: "+ refundDTO.getInvoiceId().toString());
+            throw new TbsRunTimeException("No successful payment for invoice or invoice already refunded: "+ refundDTO.getAccountId().toString());
         }
         // check if there is a previous refund
         for (Refund refund : payment.get().getRefunds()) {
             if (refund.getStatus() == RequestStatus.PENDING || refund.getStatus() == RequestStatus.SUCCEEDED) {
-                throw new TbsRunTimeException("There is an existing refund for invoice: " + refundDTO.getInvoiceId() + " with status: "+ refund.getStatus().name());
+                throw new TbsRunTimeException("There is an existing refund for invoice: " + refundDTO.getAccountId() + " with status: "+ refund.getStatus().name());
             }
         }
         Refund refund = refundMapper.toEntity(refundDTO);
@@ -298,12 +298,26 @@ public class RefundService {
         refundRepository.deleteById(id);
     }
 
+    public Boolean updateSadadRefundAndSendEvent(RefundDTO refundDTO) {
+        TBSEventReqDTO<RefundDTO> reqNotification = TBSEventReqDTO.<RefundDTO>builder().principalId(refundDTO.getCustomerId())
+            .referenceId(refundDTO.getAccountId().toString()).req(refundDTO).build();
+        return eventPublisherService.updateSadadRefund(reqNotification).getResp();
+    }
+
+    public Boolean updateSadadRefund(Long id) {
+        if (refundRepository.setStatus(id, RequestStatus.SUCCEEDED) > 0) {
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Sync Sadad refunds every hour.
      * <p>
      * This is scheduled to get fired every hour, at 01:00 - 02:00 ...
      */
-    @Scheduled(cron = "0 0 * * * ?")
+    // @Scheduled(cron = "0 0 * * * ?")
+    @Scheduled(cron = "0 * * * * ?")
     public void syncSadadRefund() {
         log.info("----Start Sadad Refund Sync");
         boolean successful = true;
@@ -356,7 +370,10 @@ public class RefundService {
                         Node refundInfoNode = ((Element) refundRecordNode).getElementsByTagName("ReconRefundInfo").item(0);
                         String refundId = ((Element) refundInfoNode).getElementsByTagName("RefundId")
                             .item(0).getChildNodes().item(0).getNodeValue();
-                        if(refundRepository.setStatus(refundId, RequestStatus.SUCCEEDED) > 0) {
+                        Optional<Refund> refund = refundRepository.findByRefundId(refundId);
+                        if(refund.isPresent() && refund.get().getStatus() == RequestStatus.PENDING) {
+                            RefundDTO refundDTO = refundMapper.toDto(refund.get());
+                            updateSadadRefundAndSendEvent(refundDTO);
                             log.info("++++++ Refund {} is reconciled and updated", refundId);
                             totalRefund ++;
                         } else {

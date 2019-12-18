@@ -145,5 +145,11 @@ public class EventPublisherService {
         return eventResp;
     }
 
-    // ToDo Sadad Refund Notifcation &&&&&  Client notification
+    @TBSEventPub(eventName = Constants.EventType.SADAD_REFUND_NOTIFICATION)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public TBSEventRespDTO<Boolean> updateSadadRefund(TBSEventReqDTO<RefundDTO> reqNotification) {
+        Boolean sadadSadadRefundResp = refundService.updateSadadRefund(reqNotification.getReq().getId());
+        TBSEventRespDTO<Boolean> eventResp = TBSEventRespDTO.<Boolean>builder().resp(sadadSadadRefundResp).build();
+        return eventResp;
+    }
 }

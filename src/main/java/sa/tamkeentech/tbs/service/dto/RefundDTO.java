@@ -25,7 +25,8 @@ public class RefundDTO implements Serializable {
 
     private Long id;
     @NotBlank
-    private Long invoiceId;
+    private Long accountId;
+    private String customerId;
     private BigDecimal amount;
     private RequestStatus status;
 }
