@@ -350,78 +350,79 @@ public class PaymentService {
 
         invoice.setPaymentStatus(PaymentStatus.PAID);
         invoiceRepository.save(invoice);
+        sendPaymentNotificationToClint(clientMapper.toDto(invoice.getClient()) ,invoice.getAccountId(),payment);
         return resp;
     }
 
-    @Scheduled(cron = "*  5  *  *  * ?")
-    public void sendPaymentNotificationToClint(){
-        // Client
+    @Scheduled(cron = "5  *  *  *  * ?")
+    public void sendPaymentNotificationToClintJob(){
 
         List<ClientDTO> clients =  clientService.findAll();
-        for(ClientDTO client : clients){
-            Date currentDate = new Date();
-            Date tokenModifiedDate = new Date();
-            if(client.getTokenModifiedDate() != null){
-                 tokenModifiedDate = Date.from(client.getTokenModifiedDate().toInstant());
-
+        for(ClientDTO clientDTO : clients){
+            List<Optional<Invoice>> invoices = invoiceRepository.findByStatusAndClient(InvoiceStatus.WITTING,clientMapper.toEntity(clientDTO));
+            for (Optional<Invoice> invoice : invoices) {
+                for (Payment payment : invoice.get().getPayments()) {
+                    if (payment.getStatus() == PaymentStatus.PAID) {
+                        sendPaymentNotificationToClint(clientDTO,invoice.get().getAccountId(),payment);
+                    }
+                }
             }
-            long diff = currentDate.getTime() - tokenModifiedDate.getTime();
-            long diffMinutes = diff / (60 * 1000) % 60;
-            long diffHours = diff / (60 * 60 * 1000) % 24;
-            long diffDays = diff / (24 * 60 * 60 * 1000);
+        }
 
-            List<Optional<Invoice>> invoices = invoiceRepository.findByStatusAndClient(InvoiceStatus.WITTING,clientMapper.toEntity(client));
+    }
 
-            String token = null;
-            if(diffDays >=1 || diffHours >= 1 || diffMinutes > 59 || client.getClientToken() == null && invoices.size() >=1){
-                RestTemplate rt1 = new RestTemplate();
-                HttpHeaders headers1 = new HttpHeaders();
-                headers1.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-                MultiValueMap<String, String> map1 = new LinkedMultiValueMap<String, String>();
-                map1.add("grant_type", "client_credentials");
-                map1.add("client_id", "tamkeen-billing-system");
-                //map1.add("client_secret", "06f4c17f-5c4a-492a-9a8e-a10eafec66c6"); // staging
-                map1.add("client_secret", "076a2d1c-15c6-4abf-80a7-0b181f18d617"); // production
-                org.springframework.http.HttpEntity<MultiValueMap<String, String>> request1 = new org.springframework.http.HttpEntity<MultiValueMap<String, String>>(map1, headers1);
-              //  String uri = "https://sso.tamkeen.land/auth/realms/tamkeen/protocol/openid-connect/token"; // staging
-//                String uri = "https://accounts.wahid.sa/auth/realms/wahid/protocol/openid-connect/token"; // production
-//                ResponseEntity<TokenResponseDTO> response1 = rt1.postForEntity(uri, request1, TokenResponseDTO.class);
-//                token = response1.getBody().getAccess_token();
-                token = "wedefbhbfhdnhfbdh";
-                client.setClientToken(token);
-                client.setTokenModifiedDate(currentDate.toInstant().atZone(ZoneId.systemDefault()));
+    public void sendPaymentNotificationToClint(ClientDTO client , Long accountId , Payment payment){
+        Date currentDate = new Date();
+        Date tokenModifiedDate = new Date();
+        if (client.getTokenModifiedDate() != null) {
+            tokenModifiedDate = Date.from(client.getTokenModifiedDate().toInstant());
 
-                // log.info("DVS Token" + token);
-            }else{
-                token = client.getClientToken();
-                client.setTokenModifiedDate(currentDate.toInstant().atZone(ZoneId.systemDefault()));
+        }
+        long diff = currentDate.getTime() - tokenModifiedDate.getTime();
+        long diffMinutes = diff / (60 * 1000) % 60;
+        long diffHours = diff / (60 * 60 * 1000) % 24;
+        long diffDays = diff / (24 * 60 * 60 * 1000);
 
-            }
+
+        String token = null;
+        if (diffDays >= 1 || diffHours >= 1 || diffMinutes > 59 || client.getClientToken() == null ) {
+            RestTemplate rt1 = new RestTemplate();
+            HttpHeaders headers1 = new HttpHeaders();
+            headers1.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            MultiValueMap<String, String> map1 = new LinkedMultiValueMap<String, String>();
+            map1.add("grant_type", "client_credentials");
+            map1.add("client_id", "tamkeen-billing-system");
+            //map1.add("client_secret", "06f4c17f-5c4a-492a-9a8e-a10eafec66c6"); // staging
+            map1.add("client_secret", "076a2d1c-15c6-4abf-80a7-0b181f18d617"); // production
+            org.springframework.http.HttpEntity<MultiValueMap<String, String>> request1 = new org.springframework.http.HttpEntity<MultiValueMap<String, String>>(map1, headers1);
+            //  String uri = "https://sso.tamkeen.land/auth/realms/tamkeen/protocol/openid-connect/token"; // staging
+            String uri = "https://accounts.wahid.sa/auth/realms/wahid/protocol/openid-connect/token"; // production
+            ResponseEntity<TokenResponseDTO> response1 = rt1.postForEntity(uri, request1, TokenResponseDTO.class);
+            token = response1.getBody().getAccess_token();
+            client.setClientToken(token);
+            client.setTokenModifiedDate(currentDate.toInstant().atZone(ZoneId.systemDefault()));
             clientService.save(client);
 
-               for (Optional<Invoice> invoice : invoices) {
-                   for (Payment payment : invoice.get().getPayments()) {
-                       if (payment.getStatus() == PaymentStatus.PAID) {
-                           RestTemplate restTemplate = new RestTemplate();
-                           String pattern = " dd/MM/yyyy hh:mm:ss a";
-                           SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
-                           String paymentDate = simpleDateFormat.format(Date.from(payment.getCreatedDate().toInstant()));
-                           log.info("paymentDate" + paymentDate);
-                           // String ResourceUrl = "http://10.60.71.16:8880/dvs/?billnumber=";
-                           // ResponseEntity<NotifiRespDTO> response2= restTemplate.getForEntity(ResourceUrl + invoice.getAccountId().toString() + "&paymentdate="
-                           //   +  paymentDate + "&token=" + token , NotifiRespDTO.class);
-                           //log.info("Succuss DVS update" + response2.getBody().getStatusId());
-                           // NotifiResp resp = (NotifiResp)response2.getBody(); // only for testing
+            // log.info("DVS Token" + token);
+        } else {
+            token = client.getClientToken();
+        }
+
+
+        RestTemplate restTemplate = new RestTemplate();
+        String pattern = " dd/MM/yyyy hh:mm:ss a";
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+        String paymentDate = simpleDateFormat.format(Date.from(payment.getCreatedDate().toInstant()));
+        // String ResourceUrl = "http://10.60.71.16:8880/dvs/?billnumber=";
+        // ResponseEntity<NotifiRespDTO> response2= restTemplate.getForEntity(ResourceUrl + accountId.toString() + "&paymentdate="
+        //   +  paymentDate + "&token=" + token , NotifiRespDTO.class);
+        //log.info("Succuss DVS update" + response2.getBody().getStatusId());
+        // NotifiResp resp = (NotifiResp)response2.getBody(); // only for testing
 //                    if(response2.getBody().getStatusId() == 200){
 //                        invoice.setStatus(InvoiceStatus.CLIENT_NOTIFIED);
 //                    }
-                       }
-                   }
-               }
 
 
-
-        }
 
     }
     public DataTablesOutput<PaymentDTO> get(DataTablesInput input) {
