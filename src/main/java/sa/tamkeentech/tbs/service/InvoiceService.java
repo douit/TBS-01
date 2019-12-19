@@ -153,6 +153,7 @@ public class InvoiceService {
         if(invoiceDTO.getAmount().equals(invoice.getAmount())){
             if (paymentMethod.isPresent()) {
                 String paymentMethodCode = paymentMethod.get().getCode();
+                InvoiceStatus status;
                 switch (paymentMethodCode) {
                     case Constants.SADAD:
                         int sadadResult;
@@ -161,7 +162,6 @@ public class InvoiceService {
                         } catch (IOException | JSONException e) {
                             throw new TbsRunTimeException("Sadad issue", e);
                         }
-                        InvoiceStatus status;
                         if (sadadResult != 200) {
                             invoiceItemsResponseDTO.setStatusId(sadadResult);
                             invoiceItemsResponseDTO.setShortDesc("error");
@@ -170,20 +170,24 @@ public class InvoiceService {
                             updateInvoice(invoice.getId(), status);
                             throw new TbsRunTimeException("Sadad bill creation error");
                         }
-                        status =  InvoiceStatus.CREATED;
-                        updateInvoice(invoice.getId(), status);
-                        invoiceItemsResponseDTO.setStatusId(1);
-                        invoiceItemsResponseDTO.setShortDesc("success");
-                        invoiceItemsResponseDTO.setDescription("");
                         invoiceItemsResponseDTO.setBillNumber(invoice.getAccountId().toString());
                         break;
                     case Constants.VISA:
+                        PaymentDTO paymentDTO = PaymentDTO.builder().invoiceId(invoice.getAccountId()).build();
+                        paymentDTO = paymentService.prepareCreditCardPayment(paymentDTO);
+                        invoiceItemsResponseDTO.setLink(paymentDTO.getRedirectUrl());
                         log.info("CC payment method");
+
                         break;
                     default:
                         log.info("Cash payment method");
-
+                        break;
                 }
+                status =  InvoiceStatus.CREATED;
+                updateInvoice(invoice.getId(), status);
+                invoiceItemsResponseDTO.setStatusId(1);
+                invoiceItemsResponseDTO.setShortDesc("success");
+                invoiceItemsResponseDTO.setDescription("");
             } else {
                 throw new TbsRunTimeException("Unknown payment method");
             }
