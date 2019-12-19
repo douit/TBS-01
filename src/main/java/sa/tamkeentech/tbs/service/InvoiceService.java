@@ -1,6 +1,7 @@
 package sa.tamkeentech.tbs.service;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.configurationprocessor.json.JSONException;
@@ -140,7 +141,7 @@ public class InvoiceService {
 
     public InvoiceResponseDTO saveInvoice(InvoiceDTO invoiceDTO) {
 
-        Invoice invoice = creatNewInvoice(invoiceDTO);
+        Invoice invoice = createNewInvoice(invoiceDTO);
 
         // Payment
         // Payment method
@@ -197,19 +198,23 @@ public class InvoiceService {
 
     }
     @Transactional(propagation = Propagation.REQUIRES_NEW, noRollbackFor=TbsRunTimeException.class)
-    Invoice creatNewInvoice(InvoiceDTO invoiceDTO) {
+    Invoice createNewInvoice(InvoiceDTO invoiceDTO) {
         // Client
         String appName = SecurityUtils.getCurrentUserLogin().orElse("");
         Optional<Client> client =  clientService.getClientByClientId(appName);
         // get bill seq
         Long seq = sequenceUtil.getNextInvoiceNumber(client.get().getClientId());
 
+        // check if Customer Type not null
+        if (invoiceDTO.getCustomer().getIdentityType() == null) {
+            throw new TbsRunTimeException("Customer Type is mandatory");
+        }
         // Customer check if exists else create new
         Optional<Customer> customer = customerService.findByIdentifier(invoiceDTO.getCustomer().getIdentity());
         if (!customer.isPresent()) {
             customer = Optional.of(Customer.builder()
                 .identity(invoiceDTO.getCustomer().getIdentity())
-                // .identityType(IdentityType.valueOf(oneItemInvoiceDTO.getCustomerIdType().toUpperCase()))
+                .identityType(invoiceDTO.getCustomer().getIdentityType())
                 .name(invoiceDTO.getCustomer().getName())
                 .contact(Contact.builder().email(invoiceDTO.getCustomer().getEmail()).phone(invoiceDTO.getCustomer().getPhone()).build())
                 .build());
@@ -319,7 +324,7 @@ public class InvoiceService {
 
     public InvoiceResponseDTO saveOneItemInvoice(OneItemInvoiceDTO oneItemInvoiceDTO) {
 
-        Invoice invoice = addNewInvoice(oneItemInvoiceDTO);
+        Invoice invoice = addNewOneItemInvoice(oneItemInvoiceDTO);
         // Payment
         // Payment method
         Optional<PaymentMethod> paymentMethod = paymentMethodService.findById(oneItemInvoiceDTO.getPaymentMethodId());
@@ -368,7 +373,7 @@ public class InvoiceService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW, noRollbackFor=TbsRunTimeException.class)
-    public Invoice addNewInvoice(OneItemInvoiceDTO oneItemInvoiceDTO) {
+    public Invoice addNewOneItemInvoice(OneItemInvoiceDTO oneItemInvoiceDTO) {
         // Client
         String appName = SecurityUtils.getCurrentUserLogin().orElse("");
         Optional<Client> client =  clientService.getClientByClientId(appName);
@@ -382,6 +387,15 @@ public class InvoiceService {
                 .name(oneItemInvoiceDTO.getCustomerName())
                 .contact(Contact.builder().email(oneItemInvoiceDTO.getEmail()).phone(oneItemInvoiceDTO.getMobile()).build())
                 .build());
+            if (StringUtils.isNotEmpty(oneItemInvoiceDTO.getCustomerIdType()) &&  oneItemInvoiceDTO.getCustomerIdType().startsWith(IdentityType.IQA.name())) {
+                customer.get().setIdentityType(IdentityType.IQA);
+            } else if (StringUtils.isNotEmpty(oneItemInvoiceDTO.getCustomerIdType()) &&  oneItemInvoiceDTO.getCustomerIdType().startsWith(IdentityType.NAT.name())) {
+                customer.get().setIdentityType(IdentityType.NAT);
+            } else if (oneItemInvoiceDTO.getCustomerId().startsWith("2")) {
+                customer.get().setIdentityType(IdentityType.IQA);
+            } else {
+                customer.get().setIdentityType(IdentityType.NAT);
+            }
             customerRepository.save(customer.get());
         }
 
