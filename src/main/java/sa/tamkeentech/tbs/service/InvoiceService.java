@@ -20,7 +20,7 @@ import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.security.SecurityUtils;
 import sa.tamkeentech.tbs.service.dto.*;
 import sa.tamkeentech.tbs.service.mapper.InvoiceMapper;
-import sa.tamkeentech.tbs.service.mapper.ItemMapper;
+import sa.tamkeentech.tbs.service.mapper.PaymentMethodMapper;
 import sa.tamkeentech.tbs.service.util.EventPublisherService;
 import sa.tamkeentech.tbs.service.util.SequenceUtil;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
@@ -63,7 +63,9 @@ public class InvoiceService {
 
     private final EventPublisherService eventPublisherService;
 
-    public InvoiceService(InvoiceRepository invoiceRepository, InvoiceMapper invoiceMapper, ClientService clientService, CustomerService customerService, PaymentMethodService paymentMethodService, ItemService itemService, PaymentService paymentService, SequenceUtil sequenceUtil, EventPublisherService eventPublisherService, CustomerRepository customerRepository) {
+    private final PaymentMethodMapper paymentMethodMapper;
+
+    public InvoiceService(InvoiceRepository invoiceRepository, InvoiceMapper invoiceMapper, ClientService clientService, CustomerService customerService, PaymentMethodService paymentMethodService, ItemService itemService, PaymentService paymentService, SequenceUtil sequenceUtil, EventPublisherService eventPublisherService, CustomerRepository customerRepository, PaymentMethodMapper paymentMethodMapper) {
         this.invoiceRepository = invoiceRepository;
         this.invoiceMapper = invoiceMapper;
         this.clientService = clientService;
@@ -74,6 +76,7 @@ public class InvoiceService {
         this.sequenceUtil = sequenceUtil;
         this.eventPublisherService = eventPublisherService;
         this.customerRepository = customerRepository;
+        this.paymentMethodMapper = paymentMethodMapper;
     }
 
     /**
@@ -145,59 +148,47 @@ public class InvoiceService {
 
         // Payment
         // Payment method
-        Optional<PaymentMethod> paymentMethod = paymentMethodService.findById(invoiceDTO.getPaymentMethod().getId());
+        Optional<PaymentMethod> paymentMethod = paymentMethodService.findByCode(invoiceDTO.getPaymentMethod().getCode());
 
         InvoiceResponseDTO invoiceItemsResponseDTO= InvoiceResponseDTO.builder()
             .paymentMethod(invoiceDTO.getPaymentMethod().getId()).build();
 
-        if(invoiceDTO.getAmount().equals(invoice.getAmount())){
-            if (paymentMethod.isPresent()) {
-                String paymentMethodCode = paymentMethod.get().getCode();
-                InvoiceStatus status;
-                switch (paymentMethodCode) {
-                    case Constants.SADAD:
-                        int sadadResult;
-                        try {
-                            sadadResult = paymentService.sendEventAndCallSadad(invoice.getNumber(), invoice.getAccountId().toString(), invoice.getAmount(), invoiceDTO.getCustomer().getIdentity());
-                        } catch (IOException | JSONException e) {
-                            throw new TbsRunTimeException("Sadad issue", e);
-                        }
-                        if (sadadResult != 200) {
-                            invoiceItemsResponseDTO.setStatusId(sadadResult);
-                            invoiceItemsResponseDTO.setShortDesc("error");
-                            invoiceItemsResponseDTO.setDescription("error_message");
-                            status = InvoiceStatus.FAILED;
-                            updateInvoice(invoice.getId(), status);
-                            throw new TbsRunTimeException("Sadad bill creation error");
-                        }
-                        invoiceItemsResponseDTO.setBillNumber(invoice.getAccountId().toString());
-                        break;
-                    case Constants.VISA:
-                        PaymentDTO paymentDTO = PaymentDTO.builder().invoiceId(invoice.getAccountId()).build();
-                        paymentDTO = paymentService.prepareCreditCardPayment(paymentDTO);
-                        invoiceItemsResponseDTO.setLink(paymentDTO.getRedirectUrl());
-                        log.info("CC payment method");
+        if (paymentMethod.isPresent()) {
+            String paymentMethodCode = paymentMethod.get().getCode();
+            InvoiceStatus status;
+            switch (paymentMethodCode) {
+                case Constants.SADAD:
+                    int sadadResult;
+                    try {
+                        sadadResult = paymentService.sendEventAndCallSadad(invoice.getNumber(), invoice.getAccountId().toString(), invoice.getAmount(), invoiceDTO.getCustomer().getIdentity());
+                    } catch (IOException | JSONException e) {
+                        throw new TbsRunTimeException("Sadad issue", e);
+                    }
+                    if (sadadResult != 200) {
+                        throw new TbsRunTimeException("Sadad bill creation error");
+                    }
+                    break;
+                case Constants.VISA:
+                    PaymentMethodDTO paymentMethodDTO = paymentMethodMapper.toDto(paymentMethod.get());
+                    PaymentDTO paymentDTO = PaymentDTO.builder().invoiceId(invoice.getAccountId()).paymentMethod(paymentMethodDTO).build();
+                    paymentDTO = paymentService.prepareCreditCardPayment(paymentDTO);
+                    invoiceItemsResponseDTO.setLink(paymentDTO.getRedirectUrl());
+                    log.info("CC payment method");
 
-                        break;
-                    default:
-                        log.info("Cash payment method");
-                        break;
-                }
-                status =  InvoiceStatus.CREATED;
-                updateInvoice(invoice.getId(), status);
-                invoiceItemsResponseDTO.setStatusId(1);
-                invoiceItemsResponseDTO.setShortDesc("success");
-                invoiceItemsResponseDTO.setDescription("");
-            } else {
-                throw new TbsRunTimeException("Unknown payment method");
+                    break;
+                default:
+                    log.info("Cash payment method");
+                    break;
             }
-        }else {
-            invoiceItemsResponseDTO.setShortDesc("error");
-            invoiceItemsResponseDTO.setDescription("error_message");
-            invoice.setStatus(InvoiceStatus.FAILED);
-            throw new TbsRunTimeException("Wrong invoice amount");
+            status =  InvoiceStatus.CREATED;
+            updateInvoice(invoice.getId(), status);
+            invoiceItemsResponseDTO.setStatusId(1);
+            invoiceItemsResponseDTO.setShortDesc("success");
+            invoiceItemsResponseDTO.setDescription("");
+            invoiceItemsResponseDTO.setBillNumber(invoice.getAccountId().toString());
+        } else {
+            throw new TbsRunTimeException("Unknown payment method");
         }
-
         return invoiceItemsResponseDTO;
 
     }
@@ -206,8 +197,6 @@ public class InvoiceService {
         // Client
         String appName = SecurityUtils.getCurrentUserLogin().orElse("");
         Optional<Client> client =  clientService.getClientByClientId(appName);
-        // get bill seq
-        Long seq = sequenceUtil.getNextInvoiceNumber(client.get().getClientId());
 
         // check if Customer Type not null
         if (invoiceDTO.getCustomer().getIdentityType() == null) {
@@ -222,12 +211,11 @@ public class InvoiceService {
                 .name(invoiceDTO.getCustomer().getName())
                 .contact(Contact.builder().email(invoiceDTO.getCustomer().getEmail()).phone(invoiceDTO.getCustomer().getPhone()).build())
                 .build());
+            customerRepository.save(customer.get());
         }
 
         List<InvoiceItem> invoiceItemList = new ArrayList<InvoiceItem>();
         Invoice invoice = Invoice.builder()
-            .accountId(seq + Constants.CLIENT_SADAD_CONFIG.valueOf(client.get().getClientId().toString()).getInitialAccountId())
-            .number(seq + Constants.CLIENT_SADAD_CONFIG.valueOf(client.get().getClientId().toString()).getInitialBillId())
             .client(client.get())
             .customer(customer.get())
             .paymentStatus(PaymentStatus.PENDING)
@@ -241,7 +229,7 @@ public class InvoiceService {
 
         for(InvoiceItemDTO invoiceItemDTO : invoiceDTO.getInvoiceItems()){
 
-            Optional<Item> item = itemService.findByNameAndClient(invoiceItemDTO.getName(), client.get().getId());
+            Optional<Item> item = itemService.findByNameAndClient(invoiceItemDTO.getItemCode(), client.get().getId());
             if (!item.isPresent()) {
                 throw new TbsRunTimeException("Unknown item: "+ invoiceItemDTO.getName());
             }
@@ -251,45 +239,43 @@ public class InvoiceService {
                 .name(item.get().getName())
                 .description(item.get().getDescription())
                 .quantity(invoiceItemDTO.getQuantity())
+                .invoice(invoice)
                 .build();
 
             BigDecimal totalInvoiceItem = invoiceItem.getAmount().multiply(new BigDecimal(invoiceItem.getQuantity()));
             BigDecimal discountValue = BigDecimal.ZERO;
-            //Add sub discount for each item invoice  :
-            if(invoiceItemDTO.getDiscount().getValue().compareTo(BigDecimal.ZERO)>0){
-                if(invoiceItemDTO.getDiscount().getIsPercentage() == false){
+            // Add sub discount for each item invoice  :
+            // Item discount is Tax exclusive -> apply discount then add tax
+            if (invoiceItemDTO.getDiscount().getValue().compareTo(BigDecimal.ZERO)>0) {
+                if (invoiceItemDTO.getDiscount().getIsPercentage() == false) {
                     Discount discount = Discount.builder().isPercentage(false).type(DiscountType.ITEM).value(invoiceItemDTO.getDiscount().getValue()).build();
                     invoiceItem.setDiscount(discount);
                      discountValue = invoiceItemDTO.getDiscount().getValue().multiply(new BigDecimal(invoiceItemDTO.getQuantity()));
                     totalInvoiceItem = totalInvoiceItem.subtract(discountValue);
                 }
                 // Percentage Discount
-                else{
+                else {
                     Discount discount = Discount.builder().isPercentage(true).type(DiscountType.ITEM).value(invoiceItemDTO.getDiscount().getValue()).build();
                     invoiceItem.setDiscount(discount);
                     BigDecimal discountRate = invoiceItemDTO.getDiscount().getValue().divide(new BigDecimal("100"));
                     discountValue =totalInvoiceItem.multiply(discountRate);
                     totalInvoiceItem= totalInvoiceItem.subtract(totalInvoiceItem.multiply(discountRate));
-
-
                 }
             }
             //Add total discount
-            if(invoiceDTO.getDiscount().getValue().compareTo(BigDecimal.ZERO) >0){
-                if(invoiceDTO.getDiscount().getIsPercentage() == false){
+            /*if(invoiceDTO.getDiscount().getValue().compareTo(BigDecimal.ZERO) >0) {
+                if (invoiceDTO.getDiscount().getIsPercentage() == false) {
                     Discount discount = Discount.builder().isPercentage(false).type(DiscountType.ITEM).value(invoiceDTO.getDiscount().getValue()).build();
                     invoice.setDiscount(discount);
                     totalInvoiceItem = totalInvoiceItem.subtract(invoice.getDiscount().getValue().multiply(new BigDecimal(invoiceItemDTO.getQuantity())));
-
-                }else{
+                } else {
                     Discount discount = Discount.builder().isPercentage(true).type(DiscountType.ITEM).value(invoiceDTO.getDiscount().getValue()).build();
                     invoice.setDiscount(discount);
                     BigDecimal discountRate = invoice.getDiscount().getValue().divide(new BigDecimal("100"));
                     discountValue =totalInvoiceItem.multiply(discountRate);
                     totalInvoiceItem = totalInvoiceItem.subtract(discountValue);
                 }
-
-            }
+            }*/
 
             BigDecimal totalTaxes = BigDecimal.ZERO;
             // Adding vat
@@ -311,6 +297,30 @@ public class InvoiceService {
             totalPriceInvoice = totalPriceInvoice.add(totalInvoiceItem);
         }
 
+        // Invoice discount is Tax inclusive  -> add tax then apply discount
+        if(invoiceDTO.getDiscount().getValue().compareTo(BigDecimal.ZERO) >0){
+            if (invoiceDTO.getDiscount().getIsPercentage() == false){
+                Discount discount = Discount.builder().isPercentage(false).type(DiscountType.INVOICE).value(invoiceDTO.getDiscount().getValue()).build();
+                invoice.setDiscount(discount);
+                totalPriceInvoice = totalPriceInvoice.subtract(invoice.getDiscount().getValue());
+            }else{
+                Discount discount = Discount.builder().isPercentage(true).type(DiscountType.INVOICE).value(invoiceDTO.getDiscount().getValue()).build();
+                invoice.setDiscount(discount);
+                BigDecimal discountRate = invoice.getDiscount().getValue().divide(new BigDecimal("100"));
+                BigDecimal discountValue = subTotalInvoice.multiply(discountRate);
+                totalPriceInvoice = totalPriceInvoice.subtract(discountValue);
+            }
+        }
+
+
+        if(invoiceDTO.getAmount().compareTo(totalPriceInvoice) != 0) {
+            throw new TbsRunTimeException("Wrong invoice amount");
+        }
+
+        // get bill seq
+        Long seq = sequenceUtil.getNextInvoiceNumber(client.get().getClientId());
+        invoice.setAccountId(seq + Constants.CLIENT_SADAD_CONFIG.valueOf(client.get().getClientId().toString()).getInitialAccountId());
+        invoice.setNumber(seq + Constants.CLIENT_SADAD_CONFIG.valueOf(client.get().getClientId().toString()).getInitialBillId());
         invoice.setInvoiceItems(invoiceItemList);
         invoice.setAmount(totalPriceInvoice);
         invoice.setSubtotal(subTotalInvoice);
@@ -337,6 +347,7 @@ public class InvoiceService {
             .paymentMethod(oneItemInvoiceDTO.getPaymentMethodId()).build();
         if (paymentMethod.isPresent()) {
             String paymentMethodCode = paymentMethod.get().getCode();
+            InvoiceStatus status;
             switch (paymentMethodCode) {
                 case Constants.SADAD:
                     int sadadResult;
@@ -346,7 +357,6 @@ public class InvoiceService {
                         // ToDo add new exception 500 for sadad
                         throw new TbsRunTimeException("Sadad issue", e);
                     }
-                    InvoiceStatus status;
                     if (sadadResult != 200) {
                         oneItemInvoiceRespDTO.setStatusId(sadadResult);
                         oneItemInvoiceRespDTO.setShortDesc("error");
@@ -355,20 +365,24 @@ public class InvoiceService {
                         updateInvoice(invoice.getId(), status);
                         throw new TbsRunTimeException("Sadad bill creation error");
                     }
-                    status = InvoiceStatus.CREATED;
-                    updateInvoice(invoice.getId(), status);
-                    oneItemInvoiceRespDTO.setStatusId(1);
-                    oneItemInvoiceRespDTO.setShortDesc("success");
-                    oneItemInvoiceRespDTO.setDescription("");
-                    oneItemInvoiceRespDTO.setBillNumber(invoice.getAccountId().toString());
                     break;
                 case Constants.VISA:
                     log.info("CC payment method");
+                    PaymentMethodDTO paymentMethodDTO = paymentMethodMapper.toDto(paymentMethod.get());
+                    PaymentDTO paymentDTO = PaymentDTO.builder().invoiceId(invoice.getAccountId()).paymentMethod(paymentMethodDTO).build();
+                    paymentDTO = paymentService.prepareCreditCardPayment(paymentDTO);
+                    oneItemInvoiceRespDTO.setLink(paymentDTO.getRedirectUrl());
                 break;
                 default:
                     log.info("Cash payment method");
 
             }
+            status = InvoiceStatus.CREATED;
+            updateInvoice(invoice.getId(), status);
+            oneItemInvoiceRespDTO.setStatusId(1);
+            oneItemInvoiceRespDTO.setShortDesc("success");
+            oneItemInvoiceRespDTO.setDescription("");
+            oneItemInvoiceRespDTO.setBillNumber(invoice.getAccountId().toString());
         } else {
             throw new TbsRunTimeException("Unknown payment method");
         }

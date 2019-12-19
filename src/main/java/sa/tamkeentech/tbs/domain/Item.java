@@ -40,7 +40,7 @@ public class Item extends AbstractAuditingEntity implements Serializable {
     private Integer defaultQuantity;
 
 
-    @ManyToMany
+    @ManyToMany( fetch = FetchType.EAGER)
     @JoinTable(name = "item_tax",
         joinColumns = { @JoinColumn(name = "item_id") },
         inverseJoinColumns = { @JoinColumn(name = "tax_id")})

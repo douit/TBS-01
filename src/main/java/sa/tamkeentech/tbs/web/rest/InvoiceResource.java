@@ -55,7 +55,7 @@ public class InvoiceResource {
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new invoiceDTO, or with status {@code 400 (Bad Request)} if the invoice has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PostMapping("/api/invoices")
+    /*@PostMapping("/api/invoices")
     public ResponseEntity<InvoiceDTO> createInvoice(@RequestBody InvoiceDTO invoiceDTO) throws URISyntaxException {
         log.debug("REST request to save Invoice : {}", invoiceDTO);
         if (invoiceDTO.getId() != null) {
@@ -65,7 +65,7 @@ public class InvoiceResource {
         return ResponseEntity.created(new URI("/api/invoices/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
             .body(result);
-    }
+    }*/
 
     /**
      * {@code PUT  /invoices} : Updates an existing invoice.
@@ -76,7 +76,7 @@ public class InvoiceResource {
      * or with status {@code 500 (Internal Server Error)} if the invoiceDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PutMapping("/api/invoices")
+    /*@PutMapping("/api/invoices")
     public ResponseEntity<InvoiceDTO> updateInvoice(@RequestBody InvoiceDTO invoiceDTO) throws URISyntaxException {
         log.debug("REST request to update Invoice : {}", invoiceDTO);
         if (invoiceDTO.getId() == null) {
@@ -86,7 +86,7 @@ public class InvoiceResource {
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, invoiceDTO.getId().toString()))
             .body(result);
-    }
+    }*/
 
     /**
      * {@code GET  /invoices} : get all the invoices.
