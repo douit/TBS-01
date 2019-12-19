@@ -2,6 +2,7 @@ package sa.tamkeentech.tbs.service.dto;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * A DTO for the {@link sa.tamkeentech.tbs.domain.Tax} entity.
@@ -16,8 +17,15 @@ public class TaxDTO implements Serializable {
 
     private BigDecimal rate;
 
+    private Set<ItemDTO> items;
 
-    private Long itemId;
+    public Set<ItemDTO> getItems() {
+        return items;
+    }
+
+    public void setItems(Set<ItemDTO> items) {
+        this.items = items;
+    }
 
     public Long getId() {
         return id;
@@ -51,14 +59,6 @@ public class TaxDTO implements Serializable {
         this.rate = rate;
     }
 
-    public Long getItemId() {
-        return itemId;
-    }
-
-    public void setItemId(Long itemId) {
-        this.itemId = itemId;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -80,14 +80,5 @@ public class TaxDTO implements Serializable {
         return Objects.hashCode(getId());
     }
 
-    @Override
-    public String toString() {
-        return "TaxDTO{" +
-            "id=" + getId() +
-            ", name='" + getName() + "'" +
-            ", description='" + getDescription() + "'" +
-            ", rate=" + getRate() +
-            ", item=" + getItemId() +
-            "}";
-    }
+
 }
