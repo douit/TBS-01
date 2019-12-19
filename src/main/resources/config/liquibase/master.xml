@@ -47,5 +47,7 @@
     <include file="config/liquibase/changelog/20191208105213_alter_invoice_sequences.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20191211105213_alter_entity_audit.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20191217105413_added_entity_itemTax.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20191218081113_alter_entity_tax.xml" relativeToChangelogFile="false"/>
+
 
 </databaseChangeLog>

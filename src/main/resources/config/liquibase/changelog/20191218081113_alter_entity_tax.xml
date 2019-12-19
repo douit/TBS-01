@@ -8,29 +8,14 @@
 
     <property name="now" value="now()" dbms="h2"/>
 
-
-
-    <!--
-        Added the entity itemTax.
-    -->
-    <changeSet id="20191217105413" author="Abdullah">
-        <createTable tableName="item_tax">
-            <column name="item_id" type="bigint">
-                <constraints nullable="false" />
-            </column>
-
-            <column name="tax_id" type="bigint">
-                <constraints nullable="false" />
-            </column>
-        </createTable>
-
-    </changeSet>
-    <changeSet id="20191217105413-1" author="Abdullah">
+    <changeSet id="20191218081113-1" author="Abdullah">
         <sql dbms="postgresql"
              endDelimiter="\nGO"
              splitStatements="true"
-             stripComments="true">INSERT INTO item_tax ( item_id, tax_id ) VALUES
-            ( '1','1' ), ( '2','1' ),( '3','1' ),( '4','1' ),( '5','1' ),( '6','1' ),( '7','1' ),( '8','1' )</sql>
+             stripComments="true">DELETE FROM tax WHERE (id) IN (2,3,4,5,6,7,8)</sql>
     </changeSet>
 
+    <changeSet id="20191218081113-2" author="Abdullah" context="faker">
+        <dropColumn tableName="tax" columnName="item_id"/>
+    </changeSet>
 </databaseChangeLog>

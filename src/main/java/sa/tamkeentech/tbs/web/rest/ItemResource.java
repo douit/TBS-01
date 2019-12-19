@@ -2,8 +2,11 @@ package sa.tamkeentech.tbs.web.rest;
 
 import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
 import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
-import org.springframework.security.access.prepost.PreAuthorize;
+import sa.tamkeentech.tbs.domain.Tax;
+import sa.tamkeentech.tbs.repository.TaxRepository;
 import sa.tamkeentech.tbs.service.ItemService;
+import sa.tamkeentech.tbs.service.dto.TaxDTO;
+import sa.tamkeentech.tbs.service.mapper.TaxMapper;
 import sa.tamkeentech.tbs.web.rest.errors.BadRequestAlertException;
 import sa.tamkeentech.tbs.service.dto.ItemDTO;
 
@@ -14,12 +17,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * REST controller for managing {@link sa.tamkeentech.tbs.domain.Item}.
@@ -36,9 +39,12 @@ public class ItemResource {
     private String applicationName;
 
     private final ItemService itemService;
-
-    public ItemResource(ItemService itemService) {
+    private final TaxRepository taxRepository;
+    private final TaxMapper taxMapper;
+    public ItemResource(ItemService itemService, TaxRepository taxRepository,  TaxMapper taxMapper) {
         this.itemService = itemService;
+        this.taxRepository = taxRepository;
+        this.taxMapper = taxMapper;
     }
 
     /**
@@ -54,6 +60,17 @@ public class ItemResource {
         if (itemDTO.getId() != null) {
             throw new BadRequestAlertException("A new item cannot already have an ID", ENTITY_NAME, "idexists");
         }
+        Set<TaxDTO> taxes = new HashSet<>();
+        for(TaxDTO taxDTO : itemDTO.getTaxes()){
+            if(taxRepository.findByName(taxDTO.getName()) != null){
+                Optional<Tax> tax =taxRepository.findByName(taxDTO.getName());
+                taxes.add(taxMapper.toDto(tax.get()));
+
+            }else{
+                throw new TbsRunTimeException("Tax doesn't exist");
+            }
+        }
+        itemDTO.setTaxes(taxes);
         ItemDTO result = itemService.save(itemDTO);
         return ResponseEntity.created(new URI("/api/items/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))

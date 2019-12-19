@@ -42,8 +42,8 @@ public class Item extends AbstractAuditingEntity implements Serializable {
 
     @ManyToMany
     @JoinTable(name = "item_tax",
-        joinColumns = { @JoinColumn(name = "fk_item") },
-        inverseJoinColumns = { @JoinColumn(name = "fk_tax")})
+        joinColumns = { @JoinColumn(name = "item_id") },
+        inverseJoinColumns = { @JoinColumn(name = "tax_id")})
     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     private Set<Tax> taxes = new HashSet<>();
 
