@@ -27,6 +27,7 @@ import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.time.YearMonth;
 import java.time.ZonedDateTime;
@@ -227,8 +228,13 @@ public class InvoiceService {
         //invoiceItem
         BigDecimal totalPriceInvoice = BigDecimal.ZERO;
 
+        // Net item price N = Item price I * Quantity Q
+        // Tax multiplier T = 1 + tax rate (1 + 0.05)
+        // Average Tax T= (N1*T1 + N2*T2 + ...) / (N1 + N2 + ...)
+        BigDecimal avgTax = BigDecimal.ZERO;
+        BigDecimal avgTaxNumerator = BigDecimal.ZERO;
+        BigDecimal avgTaxDenominator = BigDecimal.ZERO;
         for(InvoiceItemDTO invoiceItemDTO : invoiceDTO.getInvoiceItems()){
-
             Optional<Item> item = itemService.findByNameAndClient(invoiceItemDTO.getItemCode(), client.get().getId());
             if (!item.isPresent()) {
                 throw new TbsRunTimeException("Unknown item: "+ invoiceItemDTO.getName());
@@ -250,7 +256,7 @@ public class InvoiceService {
                 if (invoiceItemDTO.getDiscount().getIsPercentage() == false) {
                     Discount discount = Discount.builder().isPercentage(false).type(DiscountType.ITEM).value(invoiceItemDTO.getDiscount().getValue()).build();
                     invoiceItem.setDiscount(discount);
-                     discountValue = invoiceItemDTO.getDiscount().getValue().multiply(new BigDecimal(invoiceItemDTO.getQuantity()));
+                    discountValue = invoiceItemDTO.getDiscount().getValue().multiply(new BigDecimal(invoiceItemDTO.getQuantity()));
                     totalInvoiceItem = totalInvoiceItem.subtract(discountValue);
                 }
                 // Percentage Discount
@@ -276,7 +282,7 @@ public class InvoiceService {
                     totalInvoiceItem = totalInvoiceItem.subtract(discountValue);
                 }
             }*/
-
+            avgTaxDenominator = avgTaxDenominator.add(totalInvoiceItem);
             BigDecimal totalTaxes = BigDecimal.ZERO;
             // Adding vat
             if (CollectionUtils.isNotEmpty(item.get().getTaxes())) {
@@ -292,8 +298,9 @@ public class InvoiceService {
                 BigDecimal taxesValue = totalInvoiceItem.multiply(taxRate);
                 totalInvoiceItem = totalInvoiceItem.add(taxesValue);
             }
+            avgTaxNumerator = avgTaxNumerator.add(totalInvoiceItem);
             invoiceItemList.add(invoiceItem);
-            subTotalInvoice =subTotalInvoice.add(invoiceItem.getAmount().multiply(new BigDecimal(invoiceItem.getQuantity())));
+            // subTotalInvoice =subTotalInvoice.add(invoiceItem.getAmount().multiply(new BigDecimal(invoiceItem.getQuantity())));
             totalPriceInvoice = totalPriceInvoice.add(totalInvoiceItem);
         }
 
@@ -307,14 +314,19 @@ public class InvoiceService {
                 Discount discount = Discount.builder().isPercentage(true).type(DiscountType.INVOICE).value(invoiceDTO.getDiscount().getValue()).build();
                 invoice.setDiscount(discount);
                 BigDecimal discountRate = invoice.getDiscount().getValue().divide(new BigDecimal("100"));
-                BigDecimal discountValue = subTotalInvoice.multiply(discountRate);
+                BigDecimal discountValue = totalPriceInvoice.multiply(discountRate);
                 totalPriceInvoice = totalPriceInvoice.subtract(discountValue);
             }
         }
 
-
-        if(invoiceDTO.getAmount().compareTo(totalPriceInvoice) != 0) {
+        if(invoiceDTO.getAmount().compareTo(totalPriceInvoice.setScale(2, RoundingMode.HALF_UP)) != 0) {
             throw new TbsRunTimeException("Wrong invoice amount");
+        }
+
+        // calculate average tax
+        if (avgTaxDenominator.compareTo(BigDecimal.ZERO) > 0) {
+            avgTax = avgTaxNumerator.divide(avgTaxDenominator, RoundingMode.HALF_UP);
+            subTotalInvoice = totalPriceInvoice.divide(avgTax, RoundingMode.HALF_UP);
         }
 
         // get bill seq
