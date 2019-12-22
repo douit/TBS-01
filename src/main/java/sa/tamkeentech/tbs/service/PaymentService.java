@@ -332,6 +332,7 @@ public class PaymentService {
         for (Payment payment : invoice.getPayments()) {
             if (payment.getStatus() == PaymentStatus.PAID) {
                 log.warn("Payment already received, Exit without updating Client app");
+                resp.setStatusDescription("Payment already received, Exit without updating Client app");
                 return resp;
             }
         }

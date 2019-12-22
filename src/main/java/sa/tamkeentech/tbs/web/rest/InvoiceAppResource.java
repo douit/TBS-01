@@ -43,7 +43,7 @@ public class InvoiceAppResource {
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new invoiceDTO, or with status {@code 400 (Bad Request)} if the invoice has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PostMapping("/invoices")
+    @PostMapping("/invoice")
     public ResponseEntity<InvoiceResponseDTO> createOneItemInvoice(@Valid @RequestBody OneItemInvoiceDTO oneItemInvoiceDTO) throws URISyntaxException {
         log.debug("REST request to save Invoice : {}", oneItemInvoiceDTO);
         if (oneItemInvoiceDTO.getBillNumber() != null) {
@@ -64,7 +64,7 @@ public class InvoiceAppResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
 
-    @PostMapping("/invoice")
+    @PostMapping("/invoices")
     public ResponseEntity<InvoiceResponseDTO> creatInvoice(@Valid @RequestBody InvoiceDTO invoiceDTO) throws URISyntaxException {
         log.debug("REST request to save Invoice Items : {}", invoiceDTO);
         if (invoiceDTO.getBillNumber() != null) {
