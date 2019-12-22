@@ -6,15 +6,19 @@ import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
 import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sa.tamkeentech.tbs.domain.Category;
 import sa.tamkeentech.tbs.domain.Item;
+import sa.tamkeentech.tbs.domain.Tax;
+import sa.tamkeentech.tbs.repository.CategoryRepository;
 import sa.tamkeentech.tbs.repository.ItemRepository;
-import sa.tamkeentech.tbs.service.ItemService;
+import sa.tamkeentech.tbs.repository.TaxRepository;
 import sa.tamkeentech.tbs.service.dto.ItemDTO;
+import sa.tamkeentech.tbs.service.dto.TaxDTO;
 import sa.tamkeentech.tbs.service.mapper.ItemMapper;
+import sa.tamkeentech.tbs.service.mapper.TaxMapper;
+import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -30,9 +34,18 @@ public class ItemService {
 
     private final ItemMapper itemMapper;
 
-    public ItemService(ItemRepository itemRepository, ItemMapper itemMapper) {
+    private final TaxRepository taxRepository;
+
+    private final TaxMapper taxMapper;
+
+    private final CategoryRepository categoryRepository;
+
+    public ItemService(ItemRepository itemRepository, ItemMapper itemMapper, TaxRepository taxRepository, TaxMapper taxMapper, CategoryRepository categoryRepository) {
         this.itemRepository = itemRepository;
         this.itemMapper = itemMapper;
+        this.taxRepository = taxRepository;
+        this.taxMapper = taxMapper;
+        this.categoryRepository = categoryRepository;
     }
 
     /**
@@ -43,7 +56,23 @@ public class ItemService {
      */
     public ItemDTO save(ItemDTO itemDTO) {
         log.debug("Request to save Item : {}", itemDTO);
+        Optional<Category> category = categoryRepository.findByCode(itemDTO.getCategory().getCode());
+        if (!category.isPresent()) {
+            throw new TbsRunTimeException("Category doesn't exist");
+        }
+        Set<Tax> taxes = new HashSet<>();
+        for(TaxDTO taxDTO : itemDTO.getTaxes()){
+            Optional<Tax> tax = taxRepository.findByCode(taxDTO.getCode());
+            if (tax.isPresent()) {
+                taxes.add(tax.get());
+
+            } else {
+                throw new TbsRunTimeException("Tax doesn't exist");
+            }
+        }
         Item item = itemMapper.toEntity(itemDTO);
+        item.setTaxes(taxes);
+        item.setCategory(category.get());
         item = itemRepository.save(item);
         return itemMapper.toDto(item);
     }
@@ -85,8 +114,8 @@ public class ItemService {
         itemRepository.deleteById(id);
     }
 
-    public Optional<Item> findByNameAndClient(String itemName, Long id) {
-        return itemRepository.findByNameAndClientId(itemName, id);
+    public Optional<Item> findByCodeAndClient(String code, Long id) {
+        return itemRepository.findByCodeAndClientId(code, id);
     }
 
     public DataTablesOutput<ItemDTO> get(DataTablesInput input) {

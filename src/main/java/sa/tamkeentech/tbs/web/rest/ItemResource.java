@@ -1,28 +1,24 @@
 package sa.tamkeentech.tbs.web.rest;
 
-import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
-import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
-import sa.tamkeentech.tbs.domain.Tax;
-import sa.tamkeentech.tbs.repository.TaxRepository;
-import sa.tamkeentech.tbs.service.ItemService;
-import sa.tamkeentech.tbs.service.dto.TaxDTO;
-import sa.tamkeentech.tbs.service.mapper.TaxMapper;
-import sa.tamkeentech.tbs.web.rest.errors.BadRequestAlertException;
-import sa.tamkeentech.tbs.service.dto.ItemDTO;
-
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
+import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
+import sa.tamkeentech.tbs.repository.TaxRepository;
+import sa.tamkeentech.tbs.service.ItemService;
+import sa.tamkeentech.tbs.service.dto.ItemDTO;
+import sa.tamkeentech.tbs.service.mapper.TaxMapper;
+import sa.tamkeentech.tbs.web.rest.errors.BadRequestAlertException;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * REST controller for managing {@link sa.tamkeentech.tbs.domain.Item}.
@@ -40,12 +36,8 @@ public class ItemResource {
     private String applicationName;
 
     private final ItemService itemService;
-    private final TaxRepository taxRepository;
-    private final TaxMapper taxMapper;
     public ItemResource(ItemService itemService, TaxRepository taxRepository,  TaxMapper taxMapper) {
         this.itemService = itemService;
-        this.taxRepository = taxRepository;
-        this.taxMapper = taxMapper;
     }
 
     /**
@@ -61,17 +53,7 @@ public class ItemResource {
         if (itemDTO.getId() != null) {
             throw new BadRequestAlertException("A new item cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        Set<TaxDTO> taxes = new HashSet<>();
-        for(TaxDTO taxDTO : itemDTO.getTaxes()){
-            if(taxRepository.findByName(taxDTO.getName()) != null){
-                Optional<Tax> tax =taxRepository.findByName(taxDTO.getName());
-                taxes.add(taxMapper.toDto(tax.get()));
 
-            }else{
-                throw new TbsRunTimeException("Tax doesn't exist");
-            }
-        }
-        itemDTO.setTaxes(taxes);
         ItemDTO result = itemService.save(itemDTO);
         return ResponseEntity.created(new URI("/api/items/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
@@ -92,17 +74,6 @@ public class ItemResource {
         log.debug("REST request to update Item : {}", itemDTO);
         if (itemDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-        }
-        Set<TaxDTO> taxes = new HashSet<>();
-        for(TaxDTO taxDTO : itemDTO.getTaxes()){
-            if(taxRepository.findByName(taxDTO.getName()) != null){
-                Optional<Tax> tax =taxRepository.findByName(taxDTO.getName());
-                //if(taxMapper.toDto(tax.get()) != taxDTO){
-                    taxes.add(taxMapper.toDto(tax.get()));
-              //  }
-            }else{
-                throw new TbsRunTimeException("Tax doesn't exist");
-            }
         }
         ItemDTO result = itemService.save(itemDTO);
         return ResponseEntity.ok()

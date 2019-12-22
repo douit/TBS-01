@@ -33,8 +33,8 @@ public class InvoiceItem extends AbstractAuditingEntity implements Serializable 
     @Column(name = "name")
     private String name;
 
-    @Column(name = "description")
-    private String description;
+    @Column(name = "code")
+    private String code;
 
     @Column(name = "amount", precision = 21, scale = 2)
     private BigDecimal amount;

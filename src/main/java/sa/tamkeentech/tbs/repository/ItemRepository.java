@@ -15,7 +15,7 @@ import java.util.Optional;
 @Repository
 public interface ItemRepository extends JpaRepository<Item, Long>, DataTablesRepository<Item, Long> {
 
-    Optional<Item> findByNameAndClientId(String itemName, Long id);
+    Optional<Item> findByCodeAndClientId(String itemName, Long id);
 
 
 }

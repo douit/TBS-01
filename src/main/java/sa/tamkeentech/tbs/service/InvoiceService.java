@@ -235,7 +235,7 @@ public class InvoiceService {
         BigDecimal avgTaxNumerator = BigDecimal.ZERO;
         BigDecimal avgTaxDenominator = BigDecimal.ZERO;
         for(InvoiceItemDTO invoiceItemDTO : invoiceDTO.getInvoiceItems()){
-            Optional<Item> item = itemService.findByNameAndClient(invoiceItemDTO.getItemCode(), client.get().getId());
+            Optional<Item> item = itemService.findByCodeAndClient(invoiceItemDTO.getItemCode(), client.get().getId());
             if (!item.isPresent()) {
                 throw new TbsRunTimeException("Unknown item: "+ invoiceItemDTO.getName());
             }
@@ -243,7 +243,7 @@ public class InvoiceService {
                 .item(item.get())
                 .amount(item.get().getPrice())
                 .name(item.get().getName())
-                .description(item.get().getDescription())
+                .code(item.get().getCode())
                 .quantity(invoiceItemDTO.getQuantity())
                 .invoice(invoice)
                 .build();
@@ -435,7 +435,7 @@ public class InvoiceService {
         }
 
         //invoiceItem
-        Optional<Item> item = itemService.findByNameAndClient(oneItemInvoiceDTO.getItemName(), client.get().getId());
+        Optional<Item> item = itemService.findByCodeAndClient(oneItemInvoiceDTO.getItemName(), client.get().getId());
         if (!item.isPresent()) {
             throw new TbsRunTimeException("Unknown item: "+ oneItemInvoiceDTO.getItemName());
         }
@@ -456,7 +456,7 @@ public class InvoiceService {
             .item(item.get())
             .amount(item.get().getPrice())
             .name(item.get().getName())
-            .description(item.get().getDescription())
+            .code(item.get().getCode())
             .quantity(oneItemInvoiceDTO.getQuantity())
             .invoice(invoice)
             .build();

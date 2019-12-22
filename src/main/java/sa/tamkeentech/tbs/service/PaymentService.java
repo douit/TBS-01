@@ -77,9 +77,6 @@ public class PaymentService {
     @Value("${tbs.payment.sadad-url}")
     private String sadadUrl;
 
-    @Value("${tbs.payment.sadad-account-prefix}")
-    private String sadadAccountPrefix;
-
     @Value("${tbs.payment.sadad-application-id}")
     private Long sadadApplicationId;
 

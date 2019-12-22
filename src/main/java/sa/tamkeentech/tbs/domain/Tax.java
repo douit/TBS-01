@@ -1,5 +1,6 @@
 package sa.tamkeentech.tbs.domain;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.*;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -12,6 +13,12 @@ import java.util.Set;
 /**
  * A Tax.
  */
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(of = {"id"})
 @Entity
 @Table(name = "tax")
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
@@ -25,104 +32,17 @@ public class Tax extends AbstractAuditingEntity implements Serializable {
     @SequenceGenerator(name = "sequence_generator", sequenceName="sequence_generator")*/
     private Long id;
 
+    @Column(name = "code")
+    private String code;
+
     @Column(name = "name")
     private String name;
-
-    @Column(name = "description")
-    private String description;
 
     @Column(name = "rate", precision = 21, scale = 2)
     private BigDecimal rate;
 
 
-    @ManyToMany(mappedBy="taxes")
-    private Set<Item> items;
+    /*@ManyToMany(mappedBy="taxes")
+    private Set<Item> items;*/
 
-    // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public Tax name(String name) {
-        this.name = name;
-        return this;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public Tax description(String description) {
-        this.description = description;
-        return this;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public BigDecimal getRate() {
-        return rate;
-    }
-
-    public Tax rate(BigDecimal rate) {
-        this.rate = rate;
-        return this;
-    }
-
-    public void setRate(BigDecimal rate) {
-        this.rate = rate;
-    }
-
-    public Set<Item> getItem() {
-        return items;
-    }
-
-    public Tax item(Set<Item> item) {
-        this.items = item;
-        return this;
-    }
-
-    public void setItem(Set<Item> item) {
-        this.items = item;
-    }
-    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here, do not remove
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof Tax)) {
-            return false;
-        }
-        return id != null && id.equals(((Tax) o).id);
-    }
-
-    @Override
-    public int hashCode() {
-        return 31;
-    }
-
-    @Override
-    public String toString() {
-        return "Tax{" +
-            "id=" + getId() +
-            ", name='" + getName() + "'" +
-            ", description='" + getDescription() + "'" +
-            ", rate=" + getRate() +
-            "}";
-    }
 }

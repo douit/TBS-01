@@ -14,4 +14,5 @@ public interface TaxRepository extends JpaRepository<Tax, Long> {
 
     Optional<Tax> findByName(String name);
 
+    Optional<Tax> findByCode(String name);
 }

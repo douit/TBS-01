@@ -12,6 +12,7 @@ import org.mapstruct.*;
 public interface TaxMapper extends EntityMapper<TaxDTO, Tax> {
 
 
+    // @Mapping(target = "items", ignore = true)
     TaxDTO toDto(Tax tax);
 
 
