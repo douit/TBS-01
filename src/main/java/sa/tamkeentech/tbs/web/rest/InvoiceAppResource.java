@@ -1,9 +1,11 @@
 package sa.tamkeentech.tbs.web.rest;
 
 import io.github.jhipster.web.util.HeaderUtil;
+import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sa.tamkeentech.tbs.service.InvoiceService;
@@ -14,6 +16,7 @@ import sa.tamkeentech.tbs.web.rest.errors.BadRequestAlertException;
 import javax.validation.Valid;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Optional;
 
 /**
  * REST controller for managing {@link sa.tamkeentech.tbs.domain.Invoice}.
@@ -90,6 +93,14 @@ public class InvoiceAppResource {
     @PostMapping(value="/sadad/paymentnotification")
     ResponseEntity<NotifiRespDTO>  getPaymentNotification(@RequestBody NotifiReqDTO req, @RequestHeader(value="TBS-ApiKey")  String apiKey , @RequestHeader(value="TBS-ApiSecret")  String apiSecret)  throws Exception {
         return paymentService.sendEventAndPaymentNotification(req, apiKey, apiSecret);
+    }
+
+    // possible values SADAD or VISA
+    @GetMapping("/billing/payment/{paymentMethodCode}")
+    public ResponseEntity<InvoiceResponseDTO> getPayment(@PathVariable String paymentMethodCode) {
+        log.debug("REST request to change payment method Payment to : {}", paymentMethodCode);
+        InvoiceResponseDTO resp = paymentService.changePaymentMethod(paymentMethodCode);
+        new ResponseEntity<InvoiceResponseDTO>(resp,  HttpStatus.OK);
     }
 
 

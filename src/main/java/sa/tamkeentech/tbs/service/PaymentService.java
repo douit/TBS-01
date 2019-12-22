@@ -430,4 +430,16 @@ public class PaymentService {
         return paymentMapper.toDto(paymentRepository.findAll(input));
     }
 
+    public InvoiceResponseDTO changePaymentMethod(String paymentMethodCode) {
+
+        if (!Constants.SADAD.equals(paymentMethodCode) && !Constants.VISA.equals(paymentMethodCode)) {
+            throw new TbsRunTimeException("Unkown payment method");
+        }
+        if (paymentMethodCode.equals(Constants.SADAD)) {
+            check if Sadad already called in event
+        } else {
+            call initiate cc
+        }
+        InvoiceResponseDTO.builder().billNumber().link().statusId(1).shortDesc("success").build();
+    }
 }
