@@ -9,9 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sa.tamkeentech.tbs.service.InvoiceService;
 import sa.tamkeentech.tbs.service.PaymentService;
-import sa.tamkeentech.tbs.service.dto.InvoiceDTO;
-import sa.tamkeentech.tbs.service.dto.InvoiceResponseDTO;
-import sa.tamkeentech.tbs.service.dto.OneItemInvoiceDTO;
+import sa.tamkeentech.tbs.service.dto.*;
 import sa.tamkeentech.tbs.web.rest.errors.BadRequestAlertException;
 
 import javax.validation.Valid;
@@ -22,7 +20,7 @@ import java.net.URISyntaxException;
  * REST controller for managing {@link sa.tamkeentech.tbs.domain.Invoice}.
  */
 @RestController
-@RequestMapping("/billing")
+// @RequestMapping("/billing")
 public class InvoiceAppResource {
 
     private final Logger log = LoggerFactory.getLogger(InvoiceAppResource.class);
@@ -49,7 +47,7 @@ public class InvoiceAppResource {
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new invoiceDTO, or with status {@code 400 (Bad Request)} if the invoice has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PostMapping("/invoices")
+    @PostMapping("/billing/invoices")
     public ResponseEntity<InvoiceResponseDTO> createOneItemInvoice(@Valid @RequestBody OneItemInvoiceDTO oneItemInvoiceDTO) throws URISyntaxException {
         log.debug("REST request to save Invoice : {}", oneItemInvoiceDTO);
         if (oneItemInvoiceDTO.getBillNumber() != null) {
@@ -70,7 +68,7 @@ public class InvoiceAppResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
 
-    @PostMapping("/invoice")
+    @PostMapping("/billing/invoice")
     public ResponseEntity<InvoiceResponseDTO> creatInvoice(@Valid @RequestBody InvoiceDTO invoiceDTO) throws URISyntaxException {
         log.debug("REST request to save Invoice Items : {}", invoiceDTO);
         if (invoiceDTO.getBillNumber() != null) {
@@ -83,8 +81,13 @@ public class InvoiceAppResource {
             .body(result);
     }
 
+    @PostMapping(value="/sadad/paymentnotification")
+    ResponseEntity<NotifiRespDTO>  getPaymentNotification(@RequestBody NotifiReqDTO req, @RequestHeader(value="TBS-ApiKey")  String apiKey , @RequestHeader(value="TBS-ApiSecret")  String apiSecret)  throws Exception {
+        return paymentService.sendEventAndPaymentNotification(req, apiKey, apiSecret);
+    }
+
     // possible values SADAD or VISA
-    @GetMapping("/changePaymentMethod/{referenceId}/{paymentMethodCode}")
+    @GetMapping("/billing/changePaymentMethod/{referenceId}/{paymentMethodCode}")
     public ResponseEntity<InvoiceResponseDTO> getPayment(@PathVariable String referenceId, @PathVariable String paymentMethodCode) {
         log.debug("REST request to change payment method Payment to : {}", paymentMethodCode);
         InvoiceResponseDTO resp = paymentService.changePaymentMethod(referenceId, paymentMethodCode);
