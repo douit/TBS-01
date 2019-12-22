@@ -20,6 +20,8 @@ public final class Constants {
     public static final String CC_PAYMENT_SUCCESS_CODE = "1007";
     public static final String CC_REFUND_SUCCESS_CODE = "7004";
 
+    public static Integer INVOICE_EXPIRY_DAYS = 2;
+
 
     public enum CLIENT_SADAD_CONFIG {
         MUSANED(5000000000l, 1000l),

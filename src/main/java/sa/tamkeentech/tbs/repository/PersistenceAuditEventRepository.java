@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Spring Data JPA repository for the {@link PersistentAuditEvent} entity.
@@ -28,4 +29,6 @@ public interface PersistenceAuditEventRepository extends JpaRepository<Persisten
     Page<PersistentAuditEvent> findAllByAuditEventDateBetween(Instant fromDate, Instant toDate, Pageable pageable);
 
     List<PersistentAuditEvent> findByAuditEventDateBefore(Instant before);
+
+    Optional<PersistentAuditEvent> findFirstByRefIdOrderByIdDesc(long refId);
 }

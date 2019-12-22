@@ -1,15 +1,12 @@
 package sa.tamkeentech.tbs.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.bytebuddy.implementation.bytecode.Throw;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.checkerframework.checker.units.qual.Current;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,30 +25,27 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import sa.tamkeentech.tbs.config.Constants;
-import sa.tamkeentech.tbs.domain.Client;
 import sa.tamkeentech.tbs.domain.Invoice;
 import sa.tamkeentech.tbs.domain.Payment;
 import sa.tamkeentech.tbs.domain.PaymentMethod;
+import sa.tamkeentech.tbs.domain.PersistentAuditEvent;
 import sa.tamkeentech.tbs.domain.enumeration.InvoiceStatus;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.repository.PaymentRepository;
-import sa.tamkeentech.tbs.security.SecurityUtils;
+import sa.tamkeentech.tbs.repository.PersistenceAuditEventRepository;
 import sa.tamkeentech.tbs.service.dto.*;
 import sa.tamkeentech.tbs.service.mapper.ClientMapper;
 import sa.tamkeentech.tbs.service.mapper.PaymentMapper;
+import sa.tamkeentech.tbs.service.mapper.PaymentMethodMapper;
 import sa.tamkeentech.tbs.service.util.EventPublisherService;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
-import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -77,6 +71,8 @@ public class PaymentService {
     private final ClientService clientService;
     private final ClientMapper clientMapper;
     private final EventPublisherService eventPublisherService;
+    private final PersistenceAuditEventRepository persistenceAuditEventRepository;
+    private final PaymentMethodMapper paymentMethodMapper;
 
     @Value("${tbs.payment.sadad-url}")
     private String sadadUrl;
@@ -94,7 +90,7 @@ public class PaymentService {
     private String billerCode;
 
 
-    public PaymentService(PaymentRepository paymentRepository, PaymentMapper paymentMapper, InvoiceRepository invoiceRepository, PaymentMethodService paymentMethodService, ObjectMapper objectMapper, EventPublisherService eventPublisherService, ClientService clientService,ClientMapper clientMapper ) {
+    public PaymentService(PaymentRepository paymentRepository, PaymentMapper paymentMapper, InvoiceRepository invoiceRepository, PaymentMethodService paymentMethodService, ObjectMapper objectMapper, EventPublisherService eventPublisherService, ClientService clientService, ClientMapper clientMapper, PersistenceAuditEventRepository persistenceAuditEventRepository, PaymentMethodMapper paymentMethodMapper) {
         this.paymentRepository = paymentRepository;
         this.paymentMapper = paymentMapper;
         this.invoiceRepository = invoiceRepository;
@@ -103,6 +99,8 @@ public class PaymentService {
         this.eventPublisherService = eventPublisherService;
         this.clientService = clientService;
         this.clientMapper = clientMapper;
+        this.persistenceAuditEventRepository = persistenceAuditEventRepository;
+        this.paymentMethodMapper = paymentMethodMapper;
     }
 
     /**
@@ -253,7 +251,7 @@ public class PaymentService {
         String dueDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(c1.getTime());
         billInfoContent.put("duedate", dueDate);
         Calendar c = Calendar.getInstance();
-        c.add(Calendar.DATE, 2);
+        c.add(Calendar.DATE, Constants.INVOICE_EXPIRY_DAYS);
         String expiryDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(c.getTime());
         billInfoContent.put("expirydate",expiryDate);
         billInfoContent.put("billStatus","BillNew");
@@ -430,16 +428,41 @@ public class PaymentService {
         return paymentMapper.toDto(paymentRepository.findAll(input));
     }
 
-    public InvoiceResponseDTO changePaymentMethod(String paymentMethodCode) {
+
+    public InvoiceResponseDTO changePaymentMethod(String referenceId, String paymentMethodCode) {
 
         if (!Constants.SADAD.equals(paymentMethodCode) && !Constants.VISA.equals(paymentMethodCode)) {
             throw new TbsRunTimeException("Unkown payment method");
         }
-        if (paymentMethodCode.equals(Constants.SADAD)) {
-            check if Sadad already called in event
-        } else {
-            call initiate cc
+        Optional<Invoice> invoice = invoiceRepository.findByAccountId(Long.parseLong(referenceId));
+        if (!invoice.isPresent()) {
+            throw new TbsRunTimeException("Bill does not exist");
         }
-        InvoiceResponseDTO.builder().billNumber().link().statusId(1).shortDesc("success").build();
+        InvoiceResponseDTO invoiceResponseDTO = InvoiceResponseDTO.builder().statusId(1).shortDesc("success").description("").build();
+        invoiceResponseDTO.setBillNumber(invoice.get().getAccountId().toString());
+        if (paymentMethodCode.equals(Constants.SADAD)) {
+            // check if Sadad already called in event
+            Optional<PersistentAuditEvent> event = persistenceAuditEventRepository.findFirstByRefIdOrderByIdDesc(Long.parseLong(referenceId));
+            if (!event.isPresent()) {
+                int sadadResult;
+
+                try {
+                    sadadResult = sendEventAndCallSadad(invoice.get().getNumber(), invoice.get().getAccountId().toString(), invoice.get().getAmount(), invoice.get().getCustomer().getIdentity());
+                } catch (IOException | JSONException e) {
+                    throw new TbsRunTimeException("Sadad issue", e);
+                }
+                if (sadadResult != 200) {
+                    throw new TbsRunTimeException("Sadad bill creation error");
+                }
+            }
+
+        } else {
+            Optional<PaymentMethod> paymentMethod = paymentMethodService.findByCode(paymentMethodCode);
+            PaymentMethodDTO paymentMethodDTO = paymentMethodMapper.toDto(paymentMethod.get());
+            PaymentDTO paymentDTO = PaymentDTO.builder().invoiceId(invoice.get().getAccountId()).paymentMethod(paymentMethodDTO).build();
+            paymentDTO = prepareCreditCardPayment(paymentDTO);
+            invoiceResponseDTO.setLink(paymentDTO.getRedirectUrl());
+        }
+        return invoiceResponseDTO;
     }
 }

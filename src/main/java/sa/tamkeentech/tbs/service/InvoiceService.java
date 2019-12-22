@@ -336,6 +336,11 @@ public class InvoiceService {
         invoice.setInvoiceItems(invoiceItemList);
         invoice.setAmount(totalPriceInvoice);
         invoice.setSubtotal(subTotalInvoice);
+        invoice.setTaxFees(totalPriceInvoice.subtract(subTotalInvoice));
+        // Now
+        invoice.setDueDate(ZonedDateTime.now());
+        // Now + 2days
+        invoice.setExpiryDate(ZonedDateTime.now().plusDays(Constants.INVOICE_EXPIRY_DAYS));
         invoice.setStatus(InvoiceStatus.NEW);
         invoice.setPaymentStatus(PaymentStatus.PENDING);
         return invoiceRepository.saveAndFlush(invoice);
@@ -488,6 +493,13 @@ public class InvoiceService {
         invoice.setInvoiceItems(Arrays.asList(invoiceItem));
         invoice.setSubtotal(item.get().getPrice());
         invoice.setAmount(totalPrice);
+        invoice.setTaxFees(totalPrice.subtract(item.get().getPrice()));
+        invoice.setStatus(InvoiceStatus.NEW);
+        invoice.setPaymentStatus(PaymentStatus.PENDING);
+        // Now
+        invoice.setDueDate(ZonedDateTime.now());
+        // Now + 2days
+        invoice.setExpiryDate(ZonedDateTime.now().plusDays(Constants.INVOICE_EXPIRY_DAYS));
         return invoiceRepository.saveAndFlush(invoice);
     }
 

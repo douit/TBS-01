@@ -50,6 +50,7 @@
     <include file="config/liquibase/changelog/20191216012342_alter_entity_payment_add_bank_id.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20191216075115_added_entity_file_sync_log.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20191218081113_alter_entity_tax.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20191222090413_alter_refund_seq.xml" relativeToChangelogFile="false"/>
 
 
 </databaseChangeLog>
