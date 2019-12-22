@@ -73,6 +73,8 @@ public class ItemService {
         Item item = itemMapper.toEntity(itemDTO);
         item.setTaxes(taxes);
         item.setCategory(category.get());
+        ---Set Client
+
         item = itemRepository.save(item);
         return itemMapper.toDto(item);
     }

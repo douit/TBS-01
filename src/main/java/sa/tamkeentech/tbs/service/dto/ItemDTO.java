@@ -1,5 +1,6 @@
 package sa.tamkeentech.tbs.service.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import org.checkerframework.checker.units.qual.C;
 
@@ -15,6 +16,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = {"id"})
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ItemDTO implements Serializable {
 
     private Long id;
