@@ -28,7 +28,8 @@ import java.util.*;
  * REST controller for managing {@link sa.tamkeentech.tbs.domain.Item}.
  */
 @RestController
-@RequestMapping("/api")
+//@RequestMapping("/api")
+@RequestMapping("/billing")
 public class ItemResource {
 
     private final Logger log = LoggerFactory.getLogger(ItemResource.class);
@@ -91,6 +92,17 @@ public class ItemResource {
         log.debug("REST request to update Item : {}", itemDTO);
         if (itemDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
+        }
+        Set<TaxDTO> taxes = new HashSet<>();
+        for(TaxDTO taxDTO : itemDTO.getTaxes()){
+            if(taxRepository.findByName(taxDTO.getName()) != null){
+                Optional<Tax> tax =taxRepository.findByName(taxDTO.getName());
+                //if(taxMapper.toDto(tax.get()) != taxDTO){
+                    taxes.add(taxMapper.toDto(tax.get()));
+              //  }
+            }else{
+                throw new TbsRunTimeException("Tax doesn't exist");
+            }
         }
         ItemDTO result = itemService.save(itemDTO);
         return ResponseEntity.ok()

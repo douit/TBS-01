@@ -462,7 +462,7 @@ public class InvoiceService {
             .build();
 
 
-        BigDecimal totalPrice = null;
+        BigDecimal totalPrice = BigDecimal.ZERO;
 
         //Add Discount if price <> item
         if (oneItemInvoiceDTO.getPrice() != null) {
@@ -471,6 +471,9 @@ public class InvoiceService {
                 Discount discount = Discount.builder().isPercentage(false).type(DiscountType.ITEM).value(discountAmount).build();
                 invoiceItem.setDiscount(discount);
                 totalPrice = oneItemInvoiceDTO.getPrice();
+            }else{
+                totalPrice = item.get().getPrice();
+                invoiceItem.setQuantity(1);
             }
         } else {
             totalPrice = item.get().getPrice();
@@ -482,7 +485,7 @@ public class InvoiceService {
         if (CollectionUtils.isNotEmpty(item.get().getTaxes())) {
             for (Tax tax: item.get().getTaxes()) {
                 if (tax.getRate() != null) {
-                    totalPrice = totalPrice.add(item.get().getPrice().multiply(tax.getRate().divide(new BigDecimal("100"))));
+                    totalPrice = totalPrice.add(totalPrice.multiply(tax.getRate().divide(new BigDecimal("100"))));
                     totalTaxes = totalTaxes.add(tax.getRate());
                 }
             }

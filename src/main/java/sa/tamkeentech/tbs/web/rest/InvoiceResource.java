@@ -96,7 +96,7 @@ public class InvoiceResource {
 
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of invoices in body.
      */
-    @GetMapping("/api/invoices")
+    @GetMapping("/billing/invoices")
     public ResponseEntity<List<InvoiceDTO>> getAllInvoices(Pageable pageable) {
         log.debug("REST request to get a page of Invoices");
         Page<InvoiceDTO> page = invoiceService.findAll(pageable);
