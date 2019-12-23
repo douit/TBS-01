@@ -96,9 +96,11 @@ public class ItemService {
                 throw new TbsRunTimeException("Item already created");
             }
         }else{
-            Optional<Item> oldItem = itemRepository.findByCodeAndId(itemDTO.getCode(),itemDTO.getId());
-            if( oldItem!=null && itemRepository.findByCodeAndClientId(itemDTO.getCode(),itemDTO.getClient().getId()).isPresent() && itemDTO.getCode() != oldItem.get().getCode()){
-                throw new TbsRunTimeException("Item code exists");
+            Optional<Item> oldItem = itemRepository.findById(itemDTO.getId());
+            if(oldItem.isPresent() && !oldItem.get().getCode().equalsIgnoreCase(itemDTO.getCode())){
+                if (itemRepository.findByCodeAndClientId(itemDTO.getCode(), client.get().getId()).isPresent()) {
+                    throw new TbsRunTimeException("Item code exists");
+                }
             }
         }
 
