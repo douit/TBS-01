@@ -39,4 +39,6 @@ public class ClientDTO implements Serializable {
 
     private ZonedDateTime tokenModifiedDate;
 
+    private String notificationUrl;
+
 }

@@ -9,9 +9,11 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
+import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
 import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
 import org.springframework.http.HttpHeaders;
@@ -86,6 +88,8 @@ public class PaymentService {
     @Value("${tbs.payment.credit-card-biller-code}")
     private String billerCode;
 
+    @Autowired
+    private Environment environment;
 
     public PaymentService(PaymentRepository paymentRepository, PaymentMapper paymentMapper, InvoiceRepository invoiceRepository, PaymentMethodService paymentMethodService, ObjectMapper objectMapper, EventPublisherService eventPublisherService, ClientService clientService, ClientMapper clientMapper, PersistenceAuditEventRepository persistenceAuditEventRepository, PaymentMethodMapper paymentMethodMapper) {
         this.paymentRepository = paymentRepository;
@@ -411,16 +415,23 @@ public class PaymentService {
         String pattern = " dd/MM/yyyy hh:mm:ss a";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
         String paymentDate = simpleDateFormat.format(Date.from(payment.getCreatedDate().toInstant()));
-        String ResourceUrl = "http://10.60.71.16:8880/dvs/?billnumber=";
-        ResponseEntity<NotifiRespDTO> response2= restTemplate.getForEntity(ResourceUrl + accountId.toString() + "&paymentdate="
-           +  paymentDate + "&token=" + token , NotifiRespDTO.class);
-        log.info("Succuss DVS update" + response2.getBody().getStatusId());
-        // NotifiResp resp = (NotifiResp)response2.getBody(); // only for testing
-                    if(response2.getBody().getStatusId() == 200){
-                        Optional<Invoice> invoice = invoiceRepository.findByAccountId(accountId);
-                        invoice.get().setStatus(InvoiceStatus.CLIENT_NOTIFIED);
-                        invoiceRepository.save(invoice.get());
-                    }
+        String resourceUrl = "";
+        if(Arrays.stream(environment.getActiveProfiles()).anyMatch(
+            env -> (env.equalsIgnoreCase("prod")) )) {
+            resourceUrl += client.getNotificationUrl();
+        }
+        resourceUrl += ("?billnumber=" + accountId.toString() + "&paymentdate=" +  paymentDate + "&token=" + token);
+        log.info("----calling Client update"+ resourceUrl);
+        ResponseEntity<NotifiRespDTO> response2= restTemplate.getForEntity(resourceUrl, NotifiRespDTO.class);
+
+        if(response2.getBody().getStatusId() == 200){
+            log.info("----Successful Client update" + response2.getBody().getStatusId());
+            Optional<Invoice> invoice = invoiceRepository.findByAccountId(accountId);
+            invoice.get().setStatus(InvoiceStatus.CLIENT_NOTIFIED);
+            invoiceRepository.save(invoice.get());
+        } else {
+            log.info("----Issue Client update" + response2.getBody().getStatusId());
+        }
 
 
 

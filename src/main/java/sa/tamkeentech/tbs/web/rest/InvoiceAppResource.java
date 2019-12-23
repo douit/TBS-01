@@ -82,7 +82,7 @@ public class InvoiceAppResource {
     }
 
     @PostMapping(value="/sadad/paymentnotification")
-    ResponseEntity<NotifiRespDTO>  getPaymentNotification(@RequestBody NotifiReqDTO req, @RequestHeader(value="TBS-ApiKey")  String apiKey , @RequestHeader(value="TBS-ApiSecret")  String apiSecret)  throws Exception {
+    ResponseEntity<NotifiRespDTO>  getPaymentNotification(@RequestBody NotifiReqDTO req, /*@RequestHeader(value="TBS-ApiKey")*/  String apiKey , /*@RequestHeader(value="TBS-ApiSecret")*/  String apiSecret)  throws Exception {
         return paymentService.sendEventAndPaymentNotification(req, apiKey, apiSecret);
     }
 
