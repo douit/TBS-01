@@ -1,12 +1,10 @@
 package sa.tamkeentech.tbs.service.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 
 import java.io.Serializable;
-
+import java.time.ZonedDateTime;
 
 
 /**
@@ -15,6 +13,8 @@ import java.io.Serializable;
 
 @Data
 @AllArgsConstructor
+@Builder
+@NoArgsConstructor
 @EqualsAndHashCode(of = {"id"})
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ClientDTO implements Serializable {
@@ -35,8 +35,8 @@ public class ClientDTO implements Serializable {
 
     private String vatNumber;
 
-    // private String clientToken;
+    private String clientToken;
 
-    // private ZonedDateTime tokenModifiedDate;
+    private ZonedDateTime tokenModifiedDate;
 
 }

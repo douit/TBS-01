@@ -86,6 +86,12 @@ public class ItemService {
         if (!client.isPresent()) {
             throw new TbsRunTimeException("Client not Authorized");
         }
+        if (itemDTO.getId() == null) {
+            // check if code is unique per client
+            if (itemRepository.findByCodeAndClientId(itemDTO.getCode(), client.get().getId()).isPresent()) {
+                throw new TbsRunTimeException("Item already created");
+            }
+        }
         item.setClient(client.get());
 
         item = itemRepository.save(item);

@@ -346,6 +346,7 @@ public class PaymentService {
         log.info("Successful TBS update bill: {}", reqNotification.getBillAccount());
 
         invoice.setPaymentStatus(PaymentStatus.PAID);
+        invoice.setStatus(InvoiceStatus.WAITING);
         invoiceRepository.save(invoice);
         sendPaymentNotificationToClint(clientMapper.toDto(invoice.getClient()) ,invoice.getAccountId(),payment);
         return resp;
@@ -356,7 +357,7 @@ public class PaymentService {
 
         List<ClientDTO> clients =  clientService.findAll();
         for(ClientDTO clientDTO : clients){
-            List<Optional<Invoice>> invoices = invoiceRepository.findByStatusAndClient(InvoiceStatus.WITTING,clientMapper.toEntity(clientDTO));
+            List<Optional<Invoice>> invoices = invoiceRepository.findByStatusAndClient(InvoiceStatus.WAITING,clientMapper.toEntity(clientDTO));
             for (Optional<Invoice> invoice : invoices) {
                 for (Payment payment : invoice.get().getPayments()) {
                     if (payment.getStatus() == PaymentStatus.PAID) {
