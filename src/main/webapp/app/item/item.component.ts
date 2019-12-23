@@ -68,13 +68,13 @@ export class ItemComponent implements OnInit {
       }),
       new DatatableColumn({
         name: this.translateService.instant('global.datatable.name'),
-        prop: 'description',
+        prop: 'name',
         headerTemplate: this.headerTemplate,
         cellTemplate: this.rowTemplate
       }),
       new DatatableColumn({
         name: this.translateService.instant('global.datatable.code'),
-        prop: 'name',
+        prop: 'code',
         headerTemplate: this.headerTemplate,
         cellTemplate: this.rowTemplate
       }),

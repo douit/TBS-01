@@ -50,10 +50,12 @@ public class StatisticsResource {
         StatisticsDTO statisticsDTO = new StatisticsDTO();
         Pageable pageable =Pageable.unpaged();
         long totalInvoice = invoiceService.findAll(pageable).getTotalElements();
+        BigDecimal amountRefund= refundRepository.amountRefund();
+        BigDecimal income= invoiceRepository.sumIncome();
         statisticsDTO.setTotalInvoice(totalInvoice);
         statisticsDTO.setTotalPaid( invoiceRepository.sumPaidInvoice());
-        statisticsDTO.setAmountRefund(refundRepository.amountRefund());
-        statisticsDTO.setIncome(invoiceRepository.sumIncome());
+        statisticsDTO.setAmountRefund(amountRefund != null? amountRefund: BigDecimal.ZERO);
+        statisticsDTO.setIncome(income != null?income: BigDecimal.ZERO);
         return statisticsDTO;
     }
 

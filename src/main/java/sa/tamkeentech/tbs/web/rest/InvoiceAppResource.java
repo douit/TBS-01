@@ -81,6 +81,15 @@ public class InvoiceAppResource {
             .body(result);
     }
 
+    @GetMapping("/billing/getBillbyBillNumber")
+    public ResponseEntity<InvoiceStatusDTO> getInvoice(@RequestParam Long billNumber) throws URISyntaxException {
+        InvoiceStatusDTO result = invoiceService.getOneItemInvoice(billNumber);
+        return ResponseEntity.created(new URI("/billing/getBillbyBillNumber" + result.getBillNumber()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, billNumber.toString()))
+            .body(result);
+    }
+
+
     @PostMapping(value="/sadad/paymentnotification")
     ResponseEntity<NotifiRespDTO>  getPaymentNotification(@RequestBody NotifiReqDTO req, /*@RequestHeader(value="TBS-ApiKey")*/  String apiKey , /*@RequestHeader(value="TBS-ApiSecret")*/  String apiSecret)  throws Exception {
         return paymentService.sendEventAndPaymentNotification(req, apiKey, apiSecret);

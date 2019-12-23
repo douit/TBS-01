@@ -98,7 +98,7 @@ public class RefundService {
         if (refundDTO.getAccountId() == null) {
             throw new TbsRunTimeException("Invoice Id is mandatory to process the refund");
         }
-        Optional<Payment> payment = paymentRepository.findFirstByInvoiceIdAndStatus(refundDTO.getAccountId(), PaymentStatus.PAID);
+        Optional<Payment> payment = paymentRepository.findFirstByInvoiceAccountIdAndStatus(refundDTO.getAccountId(), PaymentStatus.PAID);
         Invoice invoice = payment.get().getInvoice();
 
 
