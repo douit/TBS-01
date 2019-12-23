@@ -9,11 +9,14 @@ import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
 import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sa.tamkeentech.tbs.domain.Item;
+import sa.tamkeentech.tbs.repository.ItemRepository;
 import sa.tamkeentech.tbs.repository.TaxRepository;
 import sa.tamkeentech.tbs.service.ItemService;
 import sa.tamkeentech.tbs.service.dto.ItemDTO;
 import sa.tamkeentech.tbs.service.mapper.TaxMapper;
 import sa.tamkeentech.tbs.web.rest.errors.BadRequestAlertException;
+import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -36,8 +39,10 @@ public class ItemResource {
     private String applicationName;
 
     private final ItemService itemService;
-    public ItemResource(ItemService itemService, TaxRepository taxRepository,  TaxMapper taxMapper) {
+    private final ItemRepository itemRepository;
+    public ItemResource(ItemService itemService, TaxRepository taxRepository, TaxMapper taxMapper, ItemRepository itemRepository) {
         this.itemService = itemService;
+        this.itemRepository = itemRepository;
     }
 
     /**
@@ -75,7 +80,12 @@ public class ItemResource {
         if (itemDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
+//        Optional<Item> item = itemRepository.findById(itemDTO.getId());
         ItemDTO result = itemService.save(itemDTO);
+//        if(item != null){
+//            throw new TbsRunTimeException("Item code Type is mandatory");
+//        }
+
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, itemDTO.getId().toString()))
             .body(result);
