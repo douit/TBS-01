@@ -14,8 +14,9 @@ import java.util.Optional;
 @SuppressWarnings("unused")
 @Repository
 public interface ItemRepository extends JpaRepository<Item, Long>, DataTablesRepository<Item, Long> {
-
+    Optional<Item> findById( Long id);
     Optional<Item> findByCodeAndClientId(String itemName, Long id);
+    Optional<Item> findByCodeAndId(String itemName, Long id);
 
 
 }

@@ -1,5 +1,6 @@
 package sa.tamkeentech.tbs.service;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
@@ -86,12 +87,21 @@ public class ItemService {
         if (!client.isPresent()) {
             throw new TbsRunTimeException("Client not Authorized");
         }
+        if(StringUtils.isEmpty(itemDTO.getCode())){
+            throw new TbsRunTimeException("Item code Type is mandatory");
+        }
         if (itemDTO.getId() == null) {
             // check if code is unique per client
             if (itemRepository.findByCodeAndClientId(itemDTO.getCode(), client.get().getId()).isPresent()) {
                 throw new TbsRunTimeException("Item already created");
             }
+        }else{
+            Optional<Item> oldItem = itemRepository.findByCodeAndId(itemDTO.getCode(),itemDTO.getId());
+            if( oldItem!=null && itemRepository.findByCodeAndClientId(itemDTO.getCode(),itemDTO.getClient().getId()).isPresent() && itemDTO.getCode() != oldItem.get().getCode()){
+                throw new TbsRunTimeException("Item code exists");
+            }
         }
+
         item.setClient(client.get());
 
         item = itemRepository.save(item);
