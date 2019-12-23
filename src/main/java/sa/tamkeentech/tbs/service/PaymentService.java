@@ -411,14 +411,16 @@ public class PaymentService {
         String pattern = " dd/MM/yyyy hh:mm:ss a";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
         String paymentDate = simpleDateFormat.format(Date.from(payment.getCreatedDate().toInstant()));
-        // String ResourceUrl = "http://10.60.71.16:8880/dvs/?billnumber=";
-        // ResponseEntity<NotifiRespDTO> response2= restTemplate.getForEntity(ResourceUrl + accountId.toString() + "&paymentdate="
-        //   +  paymentDate + "&token=" + token , NotifiRespDTO.class);
-        //log.info("Succuss DVS update" + response2.getBody().getStatusId());
+        String ResourceUrl = "http://10.60.71.16:8880/dvs/?billnumber=";
+        ResponseEntity<NotifiRespDTO> response2= restTemplate.getForEntity(ResourceUrl + accountId.toString() + "&paymentdate="
+           +  paymentDate + "&token=" + token , NotifiRespDTO.class);
+        log.info("Succuss DVS update" + response2.getBody().getStatusId());
         // NotifiResp resp = (NotifiResp)response2.getBody(); // only for testing
-//                    if(response2.getBody().getStatusId() == 200){
-//                        invoice.setStatus(InvoiceStatus.CLIENT_NOTIFIED);
-//                    }
+                    if(response2.getBody().getStatusId() == 200){
+                        Optional<Invoice> invoice = invoiceRepository.findByAccountId(accountId);
+                        invoice.get().setStatus(InvoiceStatus.CLIENT_NOTIFIED);
+                        invoiceRepository.save(invoice.get());
+                    }
 
 
 
