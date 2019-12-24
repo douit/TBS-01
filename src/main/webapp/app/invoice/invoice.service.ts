@@ -25,6 +25,10 @@ export class InvoiceService {
     return this.http.get<Pageable<IInvoice>>(`${this.resourceUrl}/datatable?${_tbs.serializeDataTableRequest(datatableInput)}`);
   }
 
+  getTripAudit(id: number) {
+    return this.http.get<any>(`${this.resourceUrl}/audit/${id}`);
+  }
+
   create(invoice: IInvoice): Observable<EntityResponseType> {
     const copy = this.convertDateFromClient(invoice);
     return this.http

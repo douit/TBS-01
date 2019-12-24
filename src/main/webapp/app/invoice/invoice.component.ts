@@ -15,7 +15,8 @@ import {DatatableComponent} from '@swimlane/ngx-datatable';
 import {IItem} from 'app/shared/model/item.model';
 import {Datatable} from 'app/shared/model/datatable/datatable';
 import {TranslateService} from '@ngx-translate/core';
-import {InvoiceStatus} from "app/shared/constants";
+import {_tbs} from 'app/shared/util/tbs-utility';
+import {InvoiceStatus} from 'app/shared/constants';
 
 @Component({
   selector: 'app-invoice',
@@ -28,8 +29,8 @@ export class InvoiceComponent implements OnInit {
   success: any;
   page: any;
   reverse: any;
-
   InvoiceStatus = InvoiceStatus;
+  auditInvoice: any[];
 
   @ViewChild('nameRowTemplate', {static: false}) nameRowTemplate;
   @ViewChild('statusRowTemplate', {static: true}) statusRowTemplate;
@@ -78,6 +79,12 @@ export class InvoiceComponent implements OnInit {
         cellTemplate: this.rowTemplate,
       }),
       new DatatableColumn({
+        name: this.translateService.instant('tbsApp.invoice.accountId'),
+        prop: 'accountId',
+        headerTemplate: this.headerTemplate,
+        cellTemplate: this.rowTemplate,
+      }),
+      new DatatableColumn({
         name: this.translateService.instant('tbsApp.invoice.status'),
         prop: 'status',
         headerTemplate: this.headerTemplate,
@@ -106,14 +113,14 @@ export class InvoiceComponent implements OnInit {
         prop: 'client.name',
         headerTemplate: this.headerTemplate,
         cellTemplate: this.rowTemplate
-      })/*,
+      }),
       new DatatableColumn({
         name: this.translateService.instant('global.datatable.actions'),
         sortable: false,
         searchable: false,
         headerTemplate: this.headerTemplate,
         cellTemplate: this.actionsRowTemplate
-      })*/
+      })
     ]);
   }
 
@@ -179,6 +186,72 @@ export class InvoiceComponent implements OnInit {
 
   view(row: any) {
     this.router.navigate(['/invoice/' + row.id + '/view']);
+  }
+
+  auditInvoiceview(row: any) {
+    console.log('Audit invoice: ' + row.accountId);
+    this.busy = true;
+    const that = this;
+    this.invoiceService.getTripAudit(row.accountId).subscribe(
+      data => {
+        that.busy = false
+        data.forEach(log => {
+          this.auditInvoice = data;
+          const rowData = [];
+          switch (log.auditEventType) {
+            case '':
+              rowData.push(`<button class="btn btn-secondary btn-sm btn-success" type="button" style="width: 100%; cursor: default;">`
+                + _tbs.humanizeEnumString(log.status) + `</button>`);
+              break;
+            case '':
+              rowData.push(`<button class="btn btn-secondary btn-sm" type="button" style="width: 100%; cursor: default;">`
+                + _tbs.humanizeEnumString(log.status) + `</button>`);
+              break;
+            case '':
+              rowData.push(`<button class="btn btn-secondary btn-sm" type="button" style="width: 100%; cursor: default;">`
+                + _tbs.humanizeEnumString(log.status) + `</button>`);
+              break;
+            case '':
+              rowData.push(`<button class="btn btn-secondary btn-sm" type="button" style="width: 100%; cursor: default;">`
+                + _tbs.humanizeEnumString(log.status) + `</button>`);
+              break;
+            case '':
+              rowData.push(`<button class="btn btn-secondary btn-sm" type="button" style="width: 100%; cursor: default;">`
+                + _tbs.humanizeEnumString(log.status) + `</button>`);
+              break;
+            case '':
+              rowData.push(`<button class="btn btn-secondary btn-sm" type="button" style="width: 100%; cursor: default;">`
+                + _tbs.humanizeEnumString(log.status) + `</button>`);
+              break;
+            case '':
+              rowData.push(`<button class="btn btn-secondary btn-sm" type="button" style="width: 100%; cursor: default;">`
+                + _tbs.humanizeEnumString(log.status) + `</button>`);
+              break;
+            case '':
+              rowData.push(`<button class="btn btn-secondary btn-sm btn-danger" type="button" style="width: 100%; cursor: default";">`
+                + _tbs.humanizeEnumString(log.status) + `</button>`);
+              break;
+
+            default:
+
+          }
+          rowData.push(log.driver.name);
+          rowData.push(log.lastModifiedBy);
+          rowData.push(_tbs.formatDate(log.modifiedDate));
+        });
+      },
+      err => {
+        // that.notification.showNotification('danger', 'Trip audit could not be retrieved')
+      }
+    );
+  }
+
+  formatDate(date: any) {
+    return _tbs.formatDate(date);
+  }
+
+  humanizeEnumString(data: any) {
+    return _tbs.humanizeEnumString(data);
   }
 
 }

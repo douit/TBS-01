@@ -177,3 +177,16 @@
         margin-top: 20px;
     }
 }
+
+.modal-medium{
+  width: 900px;
+  max-width: 900px !important;
+  margin: 0 auto;
+
+  .modal-body{
+    margin-top: 5px;
+    h3{
+      padding-bottom: 16px;
+    }
+  }
+}

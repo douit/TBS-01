@@ -460,7 +460,7 @@ public class PaymentService {
         invoiceResponseDTO.setBillNumber(invoice.get().getAccountId().toString());
         if (paymentMethodCode.equals(Constants.SADAD)) {
             // check if Sadad already called in event
-            Optional<PersistentAuditEvent> event = persistenceAuditEventRepository.findFirstByRefIdOrderByIdDesc(Long.parseLong(referenceId));
+            Optional<PersistentAuditEvent> event = persistenceAuditEventRepository.findFirstByRefIdAndSuccessfulOrderByIdDesc(Long.parseLong(referenceId), true);
             if (!event.isPresent()) {
                 int sadadResult;
 

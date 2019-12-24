@@ -29,6 +29,7 @@
       "client": "Client",
       "customer": "Customer",
       "issueDate": "Issue date",
+      "accountId": "Account Id",
       "invoiceStatus": {
         "null": "",
         "NEW": "NEW",

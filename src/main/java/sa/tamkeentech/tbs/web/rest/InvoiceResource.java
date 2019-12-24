@@ -3,10 +3,10 @@ package sa.tamkeentech.tbs.web.rest;
 import org.springframework.boot.actuate.audit.AuditEvent;
 import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
 import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
+import sa.tamkeentech.tbs.domain.PersistentAuditEvent;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
-import sa.tamkeentech.tbs.security.SecurityUtils;
+import sa.tamkeentech.tbs.service.AuditEventService;
 import sa.tamkeentech.tbs.service.InvoiceService;
-import sa.tamkeentech.tbs.web.rest.errors.BadRequestAlertException;
 import sa.tamkeentech.tbs.service.dto.InvoiceDTO;
 
 import io.github.jhipster.web.util.HeaderUtil;
@@ -18,13 +18,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.net.URI;
-import java.net.URISyntaxException;
 
 import java.util.List;
 import java.util.Optional;
@@ -45,8 +41,11 @@ public class InvoiceResource {
 
     private final InvoiceService invoiceService;
 
-    public InvoiceResource(InvoiceService invoiceService) {
+    private final AuditEventService auditEventService;
+
+    public InvoiceResource(InvoiceService invoiceService, AuditEventService auditEventService) {
         this.invoiceService = invoiceService;
+        this.auditEventService = auditEventService;
     }
 
     @GetMapping("/invoices")
@@ -106,7 +105,7 @@ public class InvoiceResource {
     }
 
     @GetMapping("/invoices/audit/{accountId}")
-    public ResponseEntity<AuditEvent> getAudit(@PathVariable Long accountId) {
-        return ResponseUtil.wrapOrNotFound(auditEventService.findInvoiceAudit(accountId));
+    public List<PersistentAuditEvent> getAudit(@PathVariable Long accountId) {
+        return auditEventService.findInvoiceAudit(accountId);
     }
 }

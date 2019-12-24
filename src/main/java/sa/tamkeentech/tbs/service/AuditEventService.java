@@ -2,6 +2,7 @@ package sa.tamkeentech.tbs.service;
 
 import io.github.jhipster.config.JHipsterProperties;
 import sa.tamkeentech.tbs.config.audit.AuditEventConverter;
+import sa.tamkeentech.tbs.domain.PersistentAuditEvent;
 import sa.tamkeentech.tbs.repository.PersistenceAuditEventRepository;
 import org.springframework.boot.actuate.audit.AuditEvent;
 import org.springframework.data.domain.Page;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -74,5 +76,9 @@ public class AuditEventService {
             .filter(Optional::isPresent)
             .map(Optional::get)
             .map(auditEventConverter::convertToAuditEvent);
+    }
+
+    public List<PersistentAuditEvent> findInvoiceAudit(Long accountId) {
+        return persistenceAuditEventRepository.findByRefId(accountId);
     }
 }
