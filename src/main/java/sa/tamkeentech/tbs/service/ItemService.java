@@ -123,6 +123,11 @@ public class ItemService {
         log.debug("Request to get all Items");
         return itemRepository.findAll().stream()
             .map(itemMapper::toDto)
+            .map(itemDTO -> {
+                itemDTO.getClient().setClientToken(null);
+                itemDTO.getClient().setTokenModifiedDate(null);
+                return itemDTO;
+            })
             .collect(Collectors.toCollection(LinkedList::new));
     }
 
@@ -137,7 +142,12 @@ public class ItemService {
     public Optional<ItemDTO> findOne(Long id) {
         log.debug("Request to get Item : {}", id);
         return itemRepository.findById(id)
-            .map(itemMapper::toDto);
+            .map(itemMapper::toDto)
+            .map(itemDTO -> {
+                itemDTO.getClient().setClientToken(null);
+                itemDTO.getClient().setTokenModifiedDate(null);
+                return itemDTO;
+            });
     }
 
     /**
