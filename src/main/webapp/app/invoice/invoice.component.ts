@@ -188,7 +188,7 @@ export class InvoiceComponent implements OnInit {
     this.router.navigate(['/invoice/' + row.id + '/view']);
   }
 
-  auditInvoiceview(row: any) {
+  auditInvoiceView(row: any) {
     console.log('Audit invoice: ' + row.accountId);
     this.busy = true;
     const that = this;
@@ -197,47 +197,6 @@ export class InvoiceComponent implements OnInit {
         that.busy = false
         data.forEach(log => {
           this.auditInvoice = data;
-          const rowData = [];
-          switch (log.auditEventType) {
-            case '':
-              rowData.push(`<button class="btn btn-secondary btn-sm btn-success" type="button" style="width: 100%; cursor: default;">`
-                + _tbs.humanizeEnumString(log.status) + `</button>`);
-              break;
-            case '':
-              rowData.push(`<button class="btn btn-secondary btn-sm" type="button" style="width: 100%; cursor: default;">`
-                + _tbs.humanizeEnumString(log.status) + `</button>`);
-              break;
-            case '':
-              rowData.push(`<button class="btn btn-secondary btn-sm" type="button" style="width: 100%; cursor: default;">`
-                + _tbs.humanizeEnumString(log.status) + `</button>`);
-              break;
-            case '':
-              rowData.push(`<button class="btn btn-secondary btn-sm" type="button" style="width: 100%; cursor: default;">`
-                + _tbs.humanizeEnumString(log.status) + `</button>`);
-              break;
-            case '':
-              rowData.push(`<button class="btn btn-secondary btn-sm" type="button" style="width: 100%; cursor: default;">`
-                + _tbs.humanizeEnumString(log.status) + `</button>`);
-              break;
-            case '':
-              rowData.push(`<button class="btn btn-secondary btn-sm" type="button" style="width: 100%; cursor: default;">`
-                + _tbs.humanizeEnumString(log.status) + `</button>`);
-              break;
-            case '':
-              rowData.push(`<button class="btn btn-secondary btn-sm" type="button" style="width: 100%; cursor: default;">`
-                + _tbs.humanizeEnumString(log.status) + `</button>`);
-              break;
-            case '':
-              rowData.push(`<button class="btn btn-secondary btn-sm btn-danger" type="button" style="width: 100%; cursor: default";">`
-                + _tbs.humanizeEnumString(log.status) + `</button>`);
-              break;
-
-            default:
-
-          }
-          rowData.push(log.driver.name);
-          rowData.push(log.lastModifiedBy);
-          rowData.push(_tbs.formatDate(log.modifiedDate));
         });
       },
       err => {
