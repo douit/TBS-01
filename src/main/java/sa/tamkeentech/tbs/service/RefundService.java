@@ -140,6 +140,10 @@ public class RefundService {
                 throw new TbsRunTimeException("Sadad refund creation error");
             } else {
                 refund.setStatus(RequestStatus.PENDING);
+                payment.get().setStatus(PaymentStatus.REFUNDED);
+                invoice.setPaymentStatus(PaymentStatus.REFUNDED);
+                paymentRepository.save(payment.get());
+                invoiceResitory.save(invoice);
             }
         } else {
             // RefundStatusCCResponseDTO refundResponseDTO = callRefundByCreditCard(refundDTO, refund.getId(), invoice.getId(), invoice.getClient().getPaymentKeyApp());

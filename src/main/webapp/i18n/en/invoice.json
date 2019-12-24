@@ -34,7 +34,8 @@
         "NEW": "NEW",
         "FAILED": "FAILED",
         "CREATED": "CREATED",
-        "EXPIRED": "EXPIRED"
+        "EXPIRED": "EXPIRED",
+        "WAITING": "WAITING"
       }
     }
   }

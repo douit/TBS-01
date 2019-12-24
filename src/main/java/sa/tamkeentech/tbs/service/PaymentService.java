@@ -27,12 +27,10 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import sa.tamkeentech.tbs.config.Constants;
-import sa.tamkeentech.tbs.domain.Invoice;
-import sa.tamkeentech.tbs.domain.Payment;
-import sa.tamkeentech.tbs.domain.PaymentMethod;
-import sa.tamkeentech.tbs.domain.PersistentAuditEvent;
+import sa.tamkeentech.tbs.domain.*;
 import sa.tamkeentech.tbs.domain.enumeration.InvoiceStatus;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
+import sa.tamkeentech.tbs.repository.ClientRepository;
 import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.repository.PaymentRepository;
 import sa.tamkeentech.tbs.repository.PersistenceAuditEventRepository;
@@ -75,6 +73,7 @@ public class PaymentService {
     private final EventPublisherService eventPublisherService;
     private final PersistenceAuditEventRepository persistenceAuditEventRepository;
     private final PaymentMethodMapper paymentMethodMapper;
+    private final ClientRepository clientRepository;
 
     @Value("${tbs.payment.sadad-url}")
     private String sadadUrl;
@@ -91,7 +90,7 @@ public class PaymentService {
     @Autowired
     private Environment environment;
 
-    public PaymentService(PaymentRepository paymentRepository, PaymentMapper paymentMapper, InvoiceRepository invoiceRepository, PaymentMethodService paymentMethodService, ObjectMapper objectMapper, EventPublisherService eventPublisherService, ClientService clientService, ClientMapper clientMapper, PersistenceAuditEventRepository persistenceAuditEventRepository, PaymentMethodMapper paymentMethodMapper) {
+    public PaymentService(PaymentRepository paymentRepository, PaymentMapper paymentMapper, InvoiceRepository invoiceRepository, PaymentMethodService paymentMethodService, ObjectMapper objectMapper, EventPublisherService eventPublisherService, ClientService clientService, ClientMapper clientMapper, PersistenceAuditEventRepository persistenceAuditEventRepository, PaymentMethodMapper paymentMethodMapper, ClientRepository clientRepository) {
         this.paymentRepository = paymentRepository;
         this.paymentMapper = paymentMapper;
         this.invoiceRepository = invoiceRepository;
@@ -102,6 +101,7 @@ public class PaymentService {
         this.clientMapper = clientMapper;
         this.persistenceAuditEventRepository = persistenceAuditEventRepository;
         this.paymentMethodMapper = paymentMethodMapper;
+        this.clientRepository = clientRepository;
     }
 
     /**
@@ -177,6 +177,7 @@ public class PaymentService {
         if (Constants.CC_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode().toString())) {
             payment.setStatus(PaymentStatus.PAID);
             invoice.setPaymentStatus(PaymentStatus.PAID);
+            // ToDo sendPaymentNotificationToClint
         } else {
             payment.setStatus(PaymentStatus.UNPAID);
             invoice.setPaymentStatus(PaymentStatus.UNPAID);
@@ -401,9 +402,11 @@ public class PaymentService {
             String uri = "https://accounts.wahid.sa/auth/realms/wahid/protocol/openid-connect/token"; // production
             ResponseEntity<TokenResponseDTO> response1 = rt1.postForEntity(uri, request1, TokenResponseDTO.class);
             token = response1.getBody().getAccess_token();
-            client.setClientToken(token);
-            client.setTokenModifiedDate(currentDate.toInstant().atZone(ZoneId.systemDefault()));
-            clientService.save(client);
+
+            Optional<Client> clientEntity = clientRepository.findById(client.getId());
+            clientEntity.get().setClientToken(token);
+            clientEntity.get().setTokenModifiedDate(currentDate.toInstant().atZone(ZoneId.systemDefault()));
+            clientRepository.save(clientEntity.get());
 
             // log.info("DVS Token" + token);
         } else {
@@ -448,7 +451,10 @@ public class PaymentService {
         }
         Optional<Invoice> invoice = invoiceRepository.findByAccountId(Long.parseLong(referenceId));
         if (!invoice.isPresent()) {
-            throw new TbsRunTimeException("Bill does not exist");
+            throw new TbsRunTimeException("Invoice does not exist");
+        }
+        if (invoice.get().getPaymentStatus() == PaymentStatus.PAID) {
+            throw new TbsRunTimeException("Invoice already paid");
         }
         InvoiceResponseDTO invoiceResponseDTO = InvoiceResponseDTO.builder().statusId(1).shortDesc("success").description("").build();
         invoiceResponseDTO.setBillNumber(invoice.get().getAccountId().toString());

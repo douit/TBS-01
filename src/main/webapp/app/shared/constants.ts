@@ -40,5 +40,6 @@ export enum InvoiceStatus {
   NEW = 'NEW',
   FAILED = 'FAILED',
   CREATED = 'CREATED',
+  WAITING = 'WAITING',
   EXPIRED = 'EXPIRED',
 }

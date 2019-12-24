@@ -107,7 +107,10 @@ public class ItemService {
         item.setClient(client.get());
 
         item = itemRepository.save(item);
-        return itemMapper.toDto(item);
+        ItemDTO itemResultDTO = itemMapper.toDto(item);
+        itemResultDTO.getClient().setClientToken(null);
+        itemResultDTO.getClient().setTokenModifiedDate(null);
+        return itemResultDTO;
     }
 
     /**
