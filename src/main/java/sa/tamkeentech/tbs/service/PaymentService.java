@@ -427,13 +427,13 @@ public class PaymentService {
         log.info("----calling Client update"+ resourceUrl);
         ResponseEntity<NotifiRespDTO> response2= restTemplate.getForEntity(resourceUrl, NotifiRespDTO.class);
 
-        if(response2.getBody().getStatusId() == 200){
-            log.info("----Successful Client update" + response2.getBody().getStatusId());
+        if(response2.getBody()!= null && response2.getBody().getStatusId() == 1){
+            log.info("----Successful Client update: " + response2.getBody().getStatusId());
             Optional<Invoice> invoice = invoiceRepository.findByAccountId(accountId);
             invoice.get().setStatus(InvoiceStatus.CLIENT_NOTIFIED);
             invoiceRepository.save(invoice.get());
         } else {
-            log.info("----Issue Client update" + response2.getBody().getStatusId());
+            log.info("----Issue Client update: " + ((response2.getBody()!= null)? response2.getBody().getStatusId(): "Empty body"));
         }
 
 
