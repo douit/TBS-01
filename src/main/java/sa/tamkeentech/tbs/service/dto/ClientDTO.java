@@ -1,5 +1,6 @@
 package sa.tamkeentech.tbs.service.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
@@ -35,8 +36,10 @@ public class ClientDTO implements Serializable {
 
     private String vatNumber;
 
+    @JsonIgnore
     private String clientToken;
 
+    @JsonIgnore
     private ZonedDateTime tokenModifiedDate;
 
     private String notificationUrl;
