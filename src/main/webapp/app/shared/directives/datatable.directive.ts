@@ -2,7 +2,7 @@ import { AfterViewInit, Directive, ElementRef } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 
 @Directive({
-    selector: '[walem-ngx-datatable]',
+    selector: '[appNgxDatatable]',
 })
 export class DatatableDirective implements AfterViewInit {
 

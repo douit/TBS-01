@@ -56,10 +56,10 @@ $row-light-orange: #ffd699;
     }
 
     /* Main Datatable */
-    .walem-ngx-datatable-wrapper {
+    .app-ngx-datatable-wrapper {
         overflow-x: auto;
 
-        .walem-ngx-datatable {
+        .app-ngx-datatable {
             min-width: 1000px;
 
             // Added to fix `row-detail` responsive issue on page resize

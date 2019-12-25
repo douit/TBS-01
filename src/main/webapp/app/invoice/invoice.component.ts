@@ -31,6 +31,7 @@ export class InvoiceComponent implements OnInit {
   reverse: any;
   InvoiceStatus = InvoiceStatus;
   auditInvoice: any[];
+  selectedInvoice: IInvoice;
 
   @ViewChild('nameRowTemplate', {static: false}) nameRowTemplate;
   @ViewChild('statusRowTemplate', {static: true}) statusRowTemplate;
@@ -190,6 +191,7 @@ export class InvoiceComponent implements OnInit {
 
   auditInvoiceView(row: any) {
     console.log('Audit invoice: ' + row.accountId);
+    this.selectedInvoice = row;
     this.busy = true;
     const that = this;
     this.invoiceService.getTripAudit(row.accountId).subscribe(
