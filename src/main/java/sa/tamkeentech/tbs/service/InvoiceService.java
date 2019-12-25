@@ -170,10 +170,15 @@ public class InvoiceService {
                     }
                     break;
                 case Constants.VISA:
-                    PaymentMethodDTO paymentMethodDTO = paymentMethodMapper.toDto(paymentMethod.get());
-                    PaymentDTO paymentDTO = PaymentDTO.builder().invoiceId(invoice.getAccountId()).paymentMethod(paymentMethodDTO).build();
-                    paymentDTO = paymentService.prepareCreditCardPayment(paymentDTO);
-                    invoiceItemsResponseDTO.setLink(paymentDTO.getRedirectUrl());
+                    BigDecimal roundedAmount = invoice.getAmount().setScale(2, RoundingMode.HALF_UP);
+                    String appCode = invoice.getClient().getPaymentKeyApp();
+                    PaymentResponseDTO paymentResponseDTO = null;
+                    try {
+                        paymentResponseDTO = paymentService.sendEventAndCreditCardCall(Optional.of(invoice), appCode, roundedAmount.multiply(new BigDecimal("100")));
+                    } catch (JSONException | IOException e) {
+                        throw new TbsRunTimeException("Payment gateway issue: "+ e.getCause());
+                    }
+                    invoiceItemsResponseDTO.setLink(paymentResponseDTO.getUrl());
                     log.info("CC payment method");
 
                     break;
@@ -385,10 +390,15 @@ public class InvoiceService {
                     break;
                 case Constants.VISA:
                     log.info("CC payment method");
-                    PaymentMethodDTO paymentMethodDTO = paymentMethodMapper.toDto(paymentMethod.get());
-                    PaymentDTO paymentDTO = PaymentDTO.builder().invoiceId(invoice.getAccountId()).paymentMethod(paymentMethodDTO).build();
-                    paymentDTO = paymentService.prepareCreditCardPayment(paymentDTO);
-                    oneItemInvoiceRespDTO.setLink(paymentDTO.getRedirectUrl());
+                    BigDecimal roundedAmount = invoice.getAmount().setScale(2, RoundingMode.HALF_UP);
+                    String appCode = invoice.getClient().getPaymentKeyApp();
+                    PaymentResponseDTO paymentResponseDTO = null;
+                    try {
+                        paymentResponseDTO = paymentService.sendEventAndCreditCardCall(Optional.of(invoice), appCode, roundedAmount.multiply(new BigDecimal("100")));
+                    } catch (JSONException | IOException e) {
+                        throw new TbsRunTimeException("Payment gateway issue: "+ e.getCause());
+                    }
+                    oneItemInvoiceRespDTO.setLink(paymentResponseDTO.getUrl());
                 break;
                 default:
                     log.info("Cash payment method");
