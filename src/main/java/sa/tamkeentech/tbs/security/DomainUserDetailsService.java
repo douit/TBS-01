@@ -1,5 +1,8 @@
 package sa.tamkeentech.tbs.security;
 
+import com.google.common.collect.Lists;
+import org.apache.commons.collections4.CollectionUtils;
+import sa.tamkeentech.tbs.domain.Authority;
 import sa.tamkeentech.tbs.domain.User;
 import sa.tamkeentech.tbs.repository.UserRepository;
 import org.hibernate.validator.internal.constraintvalidators.hv.EmailValidator;
@@ -52,9 +55,16 @@ public class DomainUserDetailsService implements UserDetailsService {
         if (!user.isActivated()) {
             throw new UserNotActivatedException("User " + lowercaseLogin + " was not activated");
         }
-        List<GrantedAuthority> grantedAuthorities = user.getAuthorities().stream()
+        List<GrantedAuthority> grantedAuthorities = Lists.newArrayList() /*= user.getAuthorities().stream()
             .map(authority -> new SimpleGrantedAuthority(authority.getName()))
-            .collect(Collectors.toList());
+            .collect(Collectors.toList())*/;
+        if (CollectionUtils.isNotEmpty(user.getUserRoles())) {
+            user.getUserRoles().forEach(userRole -> {
+                grantedAuthorities.addAll(userRole.getRole().getAuthorities().stream()
+                    .map(authority -> new SimpleGrantedAuthority(authority.getName()))
+                    .collect(Collectors.toSet()));
+            });
+        }
         return new org.springframework.security.core.userdetails.User(user.getLogin(),
             user.getPassword(),
             grantedAuthorities);

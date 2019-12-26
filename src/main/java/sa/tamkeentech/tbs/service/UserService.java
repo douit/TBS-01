@@ -1,14 +1,12 @@
 package sa.tamkeentech.tbs.service;
 
+import com.google.common.collect.Lists;
 import sa.tamkeentech.tbs.config.Constants;
-import sa.tamkeentech.tbs.domain.Authority;
-import sa.tamkeentech.tbs.domain.User;
-import sa.tamkeentech.tbs.repository.AuthorityRepository;
-import sa.tamkeentech.tbs.repository.PersistentTokenRepository;
-import sa.tamkeentech.tbs.repository.UserRepository;
-import sa.tamkeentech.tbs.security.AuthoritiesConstants;
+import sa.tamkeentech.tbs.domain.*;
+import sa.tamkeentech.tbs.repository.*;
 import sa.tamkeentech.tbs.security.SecurityUtils;
 import sa.tamkeentech.tbs.service.dto.UserDTO;
+import sa.tamkeentech.tbs.service.mapper.UserMapper;
 import sa.tamkeentech.tbs.service.util.RandomUtil;
 
 import org.slf4j.Logger;
@@ -46,12 +44,21 @@ public class UserService {
 
     private final CacheManager cacheManager;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, PersistentTokenRepository persistentTokenRepository, AuthorityRepository authorityRepository, CacheManager cacheManager) {
+/*    private final RoleRepository roleRepository;
+
+    private final ClientRepository clientRepository;*/
+
+    private final UserMapper userMapper;
+
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, PersistentTokenRepository persistentTokenRepository, AuthorityRepository authorityRepository, CacheManager cacheManager, RoleRepository roleRepository, ClientRepository clientRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.persistentTokenRepository = persistentTokenRepository;
         this.authorityRepository = authorityRepository;
         this.cacheManager = cacheManager;
+        /*this.roleRepository = roleRepository;
+        this.clientRepository = clientRepository;*/
+        this.userMapper = userMapper;
     }
 
     public Optional<User> activateRegistration(String key) {
@@ -154,7 +161,6 @@ public class UserService {
         user.setResetKey(RandomUtil.generateResetKey());
         user.setResetDate(Instant.now());
         user.setActivated(true);
-        // ToDO userDTO : userRole instead of authorities
         /*if (userDTO.getAuthorities() != null) {
             Set<Authority> authorities = userDTO.getAuthorities().stream()
                 .map(authorityRepository::findById)
@@ -163,6 +169,7 @@ public class UserService {
                 .collect(Collectors.toSet());
             user.setAuthorities(authorities);
         }*/
+        user.setUserRoles(userMapper.userRoleFromDTO(userDTO.getClientRoles(), user));
         userRepository.save(user);
         this.clearUserCaches(user);
         log.debug("Created Information for User: {}", user);
@@ -212,14 +219,21 @@ public class UserService {
                 user.setImageUrl(userDTO.getImageUrl());
                 user.setActivated(userDTO.isActivated());
                 user.setLangKey(userDTO.getLangKey());
-                // ToDO userDTO : userRole instead of authorities
-                /*Set<Authority> managedAuthorities = user.getAuthorities();
-                managedAuthorities.clear();
-                userDTO.getAuthorities().stream()
+                Set<UserRole> managedRoles = user.getUserRoles();
+                managedRoles.clear();
+                /*userDTO.getClientRoles().stream()
                     .map(authorityRepository::findById)
                     .filter(Optional::isPresent)
                     .map(Optional::get)
-                    .forEach(managedAuthorities::add);*/
+                    .forEach(managedRoles::add);*/
+                    /*.forEach(clientRole -> {
+                        Optional<Role> role = roleRepository.findById(clientRole.getRole().getId());
+                        Optional<Client> client = clientRepository.findById(clientRole.getClient().getId());
+                        if (role.isPresent() && client.isPresent()) {
+                            managedRoles.add(UserRole.builder().Role(role.get()).client(client.get()).user(user).activated(true).build());
+                        }
+                    });*/
+                    managedRoles = userMapper.userRoleFromDTO(userDTO.getClientRoles(), user);
                 this.clearUserCaches(user);
                 log.debug("Changed Information for User: {}", user);
                 return user;

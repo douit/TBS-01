@@ -1,7 +1,11 @@
 package sa.tamkeentech.tbs.service.mapper;
 
-import sa.tamkeentech.tbs.domain.Authority;
-import sa.tamkeentech.tbs.domain.User;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import sa.tamkeentech.tbs.domain.*;
+import sa.tamkeentech.tbs.repository.ClientRepository;
+import sa.tamkeentech.tbs.repository.RoleRepository;
+import sa.tamkeentech.tbs.service.dto.ClientRoleDTO;
 import sa.tamkeentech.tbs.service.dto.UserDTO;
 
 import org.springframework.stereotype.Service;
@@ -17,6 +21,12 @@ import java.util.stream.Collectors;
  */
 @Service
 public class UserMapper {
+
+    @Autowired
+    private RoleRepository roleRepository;
+
+    @Autowired
+    private ClientRepository clientRepository;
 
     public List<UserDTO> usersToUserDTOs(List<User> users) {
         return users.stream()
@@ -50,7 +60,11 @@ public class UserMapper {
             user.setActivated(userDTO.isActivated());
             user.setLangKey(userDTO.getLangKey());
             Set<Authority> authorities = this.authoritiesFromStrings(userDTO.getAuthorities());
-            user.setAuthorities(authorities);
+            // user.setAuthorities(authorities);
+            Set<UserRole> managedRoles = user.getUserRoles();
+            managedRoles.clear();
+            managedRoles = userRoleFromDTO(userDTO.getClientRoles(), user);
+            user.setUserRoles(managedRoles);
             return user;
         }
     }
@@ -77,5 +91,19 @@ public class UserMapper {
         User user = new User();
         user.setId(id);
         return user;
+    }
+
+    public Set<UserRole> userRoleFromDTO(Set<ClientRoleDTO> clientRoleDTOS, User user) {
+        Set<UserRole> managedRoles = null;
+        if (CollectionUtils.isNotEmpty(clientRoleDTOS)) {
+            clientRoleDTOS.forEach(clientRole -> {
+                    Optional<Role> role = roleRepository.findById(clientRole.getRole().getId());
+                    Optional<Client> client = clientRepository.findById(clientRole.getClient().getId());
+                    if (role.isPresent() && client.isPresent()) {
+                        managedRoles.add(UserRole.builder().Role(role.get()).client(client.get()).user(user).activated(true).build());
+                    }
+                });
+        }
+        return managedRoles;
     }
 }

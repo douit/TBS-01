@@ -4,16 +4,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.apache.commons.collections4.CollectionUtils;
 import sa.tamkeentech.tbs.config.Constants;
-
 import sa.tamkeentech.tbs.domain.Authority;
 import sa.tamkeentech.tbs.domain.User;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
-
-import javax.validation.constraints.*;
-import java.time.Instant;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 import java.time.ZonedDateTime;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -62,6 +61,8 @@ public class UserDTO {
 
     private Set<String> authorities;
 
+    private Set<ClientRoleDTO> clientRoles;
+
     public UserDTO(User user) {
         this.id = user.getId();
         this.login = user.getLogin();
@@ -75,8 +76,12 @@ public class UserDTO {
         this.createdDate = user.getCreatedDate();
         this.lastModifiedBy = user.getLastModifiedBy();
         this.lastModifiedDate = user.getLastModifiedDate();
-        this.authorities = user.getAuthorities().stream()
-            .map(Authority::getName)
-            .collect(Collectors.toSet());
+        if (CollectionUtils.isNotEmpty(user.getUserRoles())) {
+            user.getUserRoles().forEach(userRole -> {
+                this.authorities.addAll(userRole.getRole().getAuthorities().stream()
+                    .map(Authority::getName)
+                    .collect(Collectors.toSet()));
+            });
+        }
     }
 }

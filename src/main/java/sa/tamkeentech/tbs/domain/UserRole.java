@@ -1,5 +1,7 @@
 package sa.tamkeentech.tbs.domain;
 
+import lombok.*;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Objects;
@@ -9,6 +11,11 @@ import java.util.Objects;
  */
 @Entity
 @Table(name = "user_role")
+@EqualsAndHashCode(of = {"id"})
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 //@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 public class UserRole extends AbstractAuditingEntity implements Serializable {
 
