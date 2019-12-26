@@ -94,7 +94,8 @@
     "web-animations-js": "2.3.1",
     "zone.js": "0.9.1",
     "ng-multiselect-dropdown": "0.2.10",
-    "ng-validation-errors": "0.0.11"
+    "ng-validation-errors": "0.0.11",
+    "ng2-daterangepicker": "2.0.12"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "0.800.1",

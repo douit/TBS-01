@@ -58,6 +58,8 @@ import { TbsCoreModule } from './core/core.module';
 import { AppRoutes } from './app.routing';
 import {TbsLandingModule} from './tbs-landing/tbs-landing.module';
 import {NgMultiSelectDropDownModule} from "ng-multiselect-dropdown";
+import {Daterangepicker} from "ng2-daterangepicker";
+
 
 @NgModule({
   exports: [
@@ -101,6 +103,7 @@ export class MaterialModule {}
         CommonModule,
         BrowserAnimationsModule,
         FormsModule,
+        Daterangepicker,
         RouterModule.forRoot(AppRoutes, {
           useHash: true
         }),
