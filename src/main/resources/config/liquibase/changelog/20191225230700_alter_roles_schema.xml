@@ -37,7 +37,7 @@
             <column name="activated" type="boolean"/>
         </createTable>
 
-        <addPrimaryKey columnNames="user_id, role_id" tableName="user_role"/>
+        <addPrimaryKey columnNames="user_id, role_id, client_id" tableName="user_role"/>
 
 
         <addForeignKeyConstraint baseColumnNames="role_id"
@@ -78,7 +78,7 @@
                                  referencedTableName="authority"/>
 
         <addForeignKeyConstraint baseColumnNames="role_id"
-                                 baseTableName="user_role"
+                                 baseTableName="role_authority"
                                  constraintName="fk_role_id"
                                  referencedColumnNames="id"
                                  referencedTableName="role"/>

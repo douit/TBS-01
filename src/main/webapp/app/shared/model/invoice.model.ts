@@ -16,6 +16,7 @@ export interface IInvoice {
   invoiceItems?: IInvoiceItem[];
   payments?: IPayment[];
   clientId?: number;
+  accountId?: number;
 }
 
 export class Invoice implements IInvoice {
@@ -31,6 +32,7 @@ export class Invoice implements IInvoice {
     public customerId?: string,
     public invoiceItems?: IInvoiceItem[],
     public payments?: IPayment[],
-    public clientId?: number
+    public clientId?: number,
+    public accountId?: number
   ) {}
 }
