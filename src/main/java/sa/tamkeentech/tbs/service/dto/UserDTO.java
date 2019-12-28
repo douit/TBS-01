@@ -78,9 +78,9 @@ public class UserDTO {
         this.lastModifiedDate = user.getLastModifiedDate();
         if (CollectionUtils.isNotEmpty(user.getUserRoles())) {
             user.getUserRoles().forEach(userRole -> {
-                this.authorities.addAll(userRole.getRole().getAuthorities().stream()
+                this.authorities = userRole.getRole().getAuthorities().stream()
                     .map(Authority::getName)
-                    .collect(Collectors.toSet()));
+                    .collect(Collectors.toSet());
             });
         }
     }

@@ -106,4 +106,68 @@
     </changeSet>
 
 
+    <changeSet id="20191225230700-3" author="Ahmed B">
+        <dropTable cascadeConstraints="true"
+                   schemaName="public"
+                   tableName="user_role"/>
+
+        <createTable tableName="user_role">
+            <column name="id" type="bigint" autoIncrement="${autoIncrement}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="client_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="activated" type="boolean"/>
+            <column name="created_by" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="timestamp"/>
+            <column name="last_modified_by" type="varchar(50)"/>
+            <column name="last_modified_date" type="timestamp"/>
+        </createTable>
+
+        <addUniqueConstraint
+            columnNames="user_id, role_id, client_id"
+            constraintName="unique_rule_per_client"
+            tableName="user_role"
+        />
+
+        <addForeignKeyConstraint baseColumnNames="role_id"
+                                 baseTableName="user_role"
+                                 constraintName="fk_role_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="role"/>
+
+        <addForeignKeyConstraint baseColumnNames="user_id"
+                                 baseTableName="user_role"
+                                 constraintName="fk_user_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="users"/>
+
+        <addForeignKeyConstraint baseColumnNames="client_id"
+                                 baseTableName="user_role"
+                                 constraintName="fk_client_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="client"/>
+
+        <sql dbms="postgresql"
+             endDelimiter="\nGO"
+             splitStatements="true"
+             stripComments="true">
+            INSERT INTO user_role (user_id, role_id, client_id, activated, created_by) VALUES
+            (1, 1, 3, true, 'system'), (1, 4, 3, true, 'system'),
+            (3, 1, 3, true, 'system'), (3, 4, 3, true, 'system'),
+            (4, 4, 3, true, 'system') ;
+        </sql>
+
+    </changeSet>
+
+
 </databaseChangeLog>

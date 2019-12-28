@@ -34,7 +34,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findOneByLogin(String login);
 
-    @EntityGraph(attributePaths = "authorities")
+    /*@EntityGraph(attributePaths = "authorities")
     Optional<User> findOneWithAuthoritiesById(Long id);
 
     @EntityGraph(attributePaths = "authorities")
@@ -43,7 +43,18 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @EntityGraph(attributePaths = "authorities")
     @Cacheable(cacheNames = USERS_BY_EMAIL_CACHE)
-    Optional<User> findOneWithAuthoritiesByEmailIgnoreCase(String email);
+    Optional<User> findOneWithAuthoritiesByEmailIgnoreCase(String email);*/
+
+    @EntityGraph(attributePaths = "userRoles")
+    Optional<User> findOneWithUserRolesById(Long id);
+
+    @EntityGraph(attributePaths = "userRoles")
+    @Cacheable(cacheNames = USERS_BY_LOGIN_CACHE)
+    Optional<User> findOneWithUserRolesByLogin(String login);
+
+    @EntityGraph(attributePaths = "userRoles")
+    @Cacheable(cacheNames = USERS_BY_EMAIL_CACHE)
+    Optional<User> findOneWithUserRolesByEmailIgnoreCase(String email);
 
     Page<User> findAllByLoginNot(Pageable pageable, String login);
 }

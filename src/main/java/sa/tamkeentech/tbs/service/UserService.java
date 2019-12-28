@@ -233,7 +233,7 @@ public class UserService {
                             managedRoles.add(UserRole.builder().Role(role.get()).client(client.get()).user(user).activated(true).build());
                         }
                     });*/
-                    managedRoles = userMapper.userRoleFromDTO(userDTO.getClientRoles(), user);
+                managedRoles = userMapper.userRoleFromDTO(userDTO.getClientRoles(), user);
                 this.clearUserCaches(user);
                 log.debug("Changed Information for User: {}", user);
                 return user;
@@ -271,17 +271,17 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public Optional<User> getUserWithAuthoritiesByLogin(String login) {
-        return userRepository.findOneWithAuthoritiesByLogin(login);
+        return userRepository.findOneWithUserRolesByLogin(login);
     }
 
     @Transactional(readOnly = true)
     public Optional<User> getUserWithAuthorities(Long id) {
-        return userRepository.findOneWithAuthoritiesById(id);
+        return userRepository.findOneWithUserRolesById(id);
     }
 
     @Transactional(readOnly = true)
     public Optional<User> getUserWithAuthorities() {
-        return SecurityUtils.getCurrentUserLogin().flatMap(userRepository::findOneWithAuthoritiesByLogin);
+        return SecurityUtils.getCurrentUserLogin().flatMap(userRepository::findOneWithUserRolesByLogin);
     }
 
     /**

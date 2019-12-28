@@ -12,7 +12,7 @@ import java.util.Set;
 @Entity
 @Table(name = "role",
         uniqueConstraints=
-        @UniqueConstraint(columnNames={"name", "owner"}))
+        @UniqueConstraint(columnNames={"id"}))
 //@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @Data
 @AllArgsConstructor
