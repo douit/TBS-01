@@ -98,6 +98,7 @@ export const AppRoutes: Routes = [
     },
     {
       path: 'admin',
+      component: AdminLayoutComponent,
       // loadChildren: () => import('./admin/admin.module').then(m => m.TbsAdminModule),
       loadChildren: () => import('./admin/admin.module').then(m => m.TbsAdminModule),
       canActivate: [UserRouteAccessService]
