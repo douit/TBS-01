@@ -1,5 +1,7 @@
 package sa.tamkeentech.tbs.web.rest;
 
+import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
+import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
 import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.User;
 import sa.tamkeentech.tbs.repository.UserRepository;
@@ -186,5 +188,10 @@ public class UserResource {
         log.debug("REST request to delete User: {}", login);
         userService.deleteUser(login);
         return ResponseEntity.noContent().headers(HeaderUtil.createAlert(applicationName,  "userManagement.deleted", login)).build();
+    }
+
+    @GetMapping("/users/datatable")
+    public DataTablesOutput<UserDTO> getAllUsers(DataTablesInput input) {
+        return userService.get(input);
     }
 }

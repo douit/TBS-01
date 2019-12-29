@@ -18,18 +18,7 @@ export class UserResolve implements CanActivate {
   }
 }
 
-@Injectable({ providedIn: 'root' })
-export class UserMgmtResolve implements Resolve<any> {
-  constructor(private service: UserService) {}
 
-  resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
-    const id = route.params['login'] ? route.params['login'] : null;
-    if (id) {
-      return this.service.find(id);
-    }
-    return new User();
-  }
-}
 
 export const userMgmtRoute: Routes = [
   {
@@ -42,7 +31,7 @@ export const userMgmtRoute: Routes = [
       pageTitle: 'userManagement.home.title',
       defaultSort: 'id,asc'
     }
-  },
+  }/*,
   {
     path: 'user-management/:login/view',
     component: UserMgmtDetailComponent,
@@ -66,5 +55,5 @@ export const userMgmtRoute: Routes = [
     resolve: {
       user: UserMgmtResolve
     }
-  }
+  }*/
 ];

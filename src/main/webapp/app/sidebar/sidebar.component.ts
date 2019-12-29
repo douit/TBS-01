@@ -47,18 +47,18 @@ export const ROUTES: RouteInfo[] = [{
         title: 'Test Credit Card Payment',
         type: 'link',
         icontype: 'widgets'
-}, {
-  path: '/admin',
-  title: 'Configuration',
-  type: 'sub',
-  icontype: 'apps',
-  collapse: 'admin',
-  children: [
-    {path: 'user-management', title: 'Buttons', ab: ''}
-    ]
+    }, {
+        path: '/admin',
+        title: 'Administrative',
+        type: 'sub',
+        icontype: 'settings',
+        collapse: 'admin',
+        children: [
+           {path: 'user-management', title: 'Users', ab: ''}
+        ]
 }
-
-  /*, {
+/*
+  , {
         path: '/components',
         title: 'Components',
         type: 'sub',
@@ -85,7 +85,7 @@ export const ROUTES: RouteInfo[] = [{
             {path: 'validation', title: 'Validation Forms', ab:''},
             {path: 'wizard', title: 'Wizard', ab:''}
         ]
-    },{
+    }, {
         path: '/tables',
         title: 'Tables',
         type: 'sub',

@@ -57,7 +57,9 @@ import { TbsCoreModule } from './core/core.module';
 
 import { AppRoutes } from './app.routing';
 import {TbsLandingModule} from './tbs-landing/tbs-landing.module';
-import {NgMultiSelectDropDownModule} from "ng-multiselect-dropdown";
+import {NgMultiSelectDropDownModule} from 'ng-multiselect-dropdown';
+import {NotificationModule} from './shared/notification/notification.module';
+import {NotificationComponent} from 'app/shared/notification/notification.component';
 
 @NgModule({
   exports: [
@@ -114,7 +116,7 @@ export class MaterialModule {}
         FooterModule,
         FixedpluginModule,
         NgMultiSelectDropDownModule.forRoot(),
-
+        NotificationModule
       // TbsLandingModule
     ],
     declarations: [
@@ -138,7 +140,8 @@ export class MaterialModule {}
       provide: HTTP_INTERCEPTORS,
       useClass: NotificationInterceptor,
       multi: true
-    }
+    },
+      NotificationComponent
   ],
     bootstrap:    [ AppComponent ]
 })

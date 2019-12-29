@@ -1,6 +1,8 @@
 package sa.tamkeentech.tbs.service;
 
 import com.google.common.collect.Lists;
+import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
+import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
 import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.*;
 import sa.tamkeentech.tbs.repository.*;
@@ -329,5 +331,9 @@ public class UserService {
     private void clearUserCaches(User user) {
         Objects.requireNonNull(cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE)).evict(user.getLogin());
         Objects.requireNonNull(cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE)).evict(user.getEmail());
+    }
+
+    public DataTablesOutput<UserDTO> get(DataTablesInput input) {
+        return userMapper.toDto(userRepository.findAll(input));
     }
 }

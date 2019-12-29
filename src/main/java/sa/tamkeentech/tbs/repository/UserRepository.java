@@ -1,5 +1,6 @@
 package sa.tamkeentech.tbs.repository;
 
+import org.springframework.data.jpa.datatables.repository.DataTablesRepository;
 import sa.tamkeentech.tbs.domain.User;
 
 import org.springframework.cache.annotation.Cacheable;
@@ -18,7 +19,7 @@ import java.time.Instant;
  * Spring Data JPA repository for the {@link User} entity.
  */
 @Repository
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, Long>, DataTablesRepository<User, Long> {
 
     String USERS_BY_LOGIN_CACHE = "usersByLogin";
 

@@ -1,7 +1,8 @@
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { TbsSharedModule } from 'app/shared/shared.module';
-/* jhipster-needle-add-admin-module-import - JHipster will add admin modules imports here */
+import {MaterialModule} from 'app/app.module';
+import {NgMultiSelectDropDownModule} from 'ng-multiselect-dropdown';
 
 import { adminState } from './admin.route';
 import { AuditsComponent } from './audits/audits.component';
@@ -19,8 +20,9 @@ import { JhiDocsComponent } from './docs/docs.component';
 @NgModule({
   imports: [
     TbsSharedModule,
-    /* jhipster-needle-add-admin-module - JHipster will add admin modules here */
-    RouterModule.forChild(adminState)
+    RouterModule.forChild(adminState),
+    MaterialModule,
+    NgMultiSelectDropDownModule
   ],
   declarations: [
     AuditsComponent,

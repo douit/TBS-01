@@ -2,13 +2,13 @@ package sa.tamkeentech.tbs.service.mapper;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
+import org.springframework.stereotype.Service;
 import sa.tamkeentech.tbs.domain.*;
 import sa.tamkeentech.tbs.repository.ClientRepository;
 import sa.tamkeentech.tbs.repository.RoleRepository;
 import sa.tamkeentech.tbs.service.dto.ClientRoleDTO;
 import sa.tamkeentech.tbs.service.dto.UserDTO;
-
-import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -106,4 +106,20 @@ public class UserMapper {
         }
         return managedRoles;
     }
+
+    public DataTablesOutput<UserDTO> toDto(DataTablesOutput<User> all){
+        if ( all == null ) {
+            return null;
+        }
+
+        DataTablesOutput<UserDTO> dataTablesOutput = new DataTablesOutput<UserDTO>();
+        dataTablesOutput.setDraw( all.getDraw() );
+        dataTablesOutput.setRecordsTotal( all.getRecordsTotal() );
+        dataTablesOutput.setRecordsFiltered( all.getRecordsFiltered() );
+        dataTablesOutput.setData( usersToUserDTOs( all.getData() ) );
+        dataTablesOutput.setError( all.getError() );
+
+        return dataTablesOutput;
+    }
+
 }
