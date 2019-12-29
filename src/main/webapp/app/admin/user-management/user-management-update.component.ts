@@ -15,6 +15,7 @@ export class UserMgmtUpdateComponent implements OnInit {
   languages: any[];
   authorities: any[];
   isSaving: boolean;
+  isCreate: boolean;
 
   editForm = this.fb.group({
     id: [null],
@@ -39,6 +40,13 @@ export class UserMgmtUpdateComponent implements OnInit {
     this.isSaving = false;
     this.route.data.subscribe(({ user }) => {
       this.user = user.body ? user.body : user;
+      if (user.body) {
+        this.user = user.body;
+        this.isCreate = false;
+      } else {
+        this.user = user;
+        this.isCreate = true;
+      }
       this.updateForm(this.user);
     });
     this.authorities = [];

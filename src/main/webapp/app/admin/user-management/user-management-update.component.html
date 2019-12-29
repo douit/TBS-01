@@ -1,3 +1,4 @@
+<!--
 <div class="row justify-content-center">
     <div class="col-8">
         <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
@@ -120,3 +121,170 @@
         </form>
     </div>
 </div>
+-->
+
+<div class="main-content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <!--<div class="row">-->
+
+                    <div class="card-header card-header-text card-header-primary" data-background-color="primary-one">
+                        <div class="card-text">
+                            <h4 id="page-heading">
+                                <span *ngIf="isCreate" jhiTranslate="userManagement.home.createLabel"> </span>
+                                <span *ngIf="!isCreate" jhiTranslate="userManagement.home.editLabel"> </span>
+                            </h4>
+                        </div>
+                    </div>
+
+                    <form name="editForm"  (ngSubmit)="save()" [formGroup]="editForm">
+
+                        <div class="card-body">
+                            <div class="row">
+                                <label class="col-sm-2 col-form-label">Code </label>
+                                <div class="col-sm-7">
+                                    <mat-form-field class="example-full-width has-label"
+                                                    [ngClass]="{'has-success':validTextType===true}"
+                                                    [ngClass]="displayFieldCss(type, 'text')">
+                                        <input type="text"
+                                               matInput
+                                               id="name"
+                                               (ngModelChange)="textValidationType($event)"
+                                               formControlName="name">
+                                        <!-- <app-field-error-display [displayError]="isFieldValid(type, 'text')" errorMsg="Required text">
+                                         </app-field-error-display>-->
+                                    </mat-form-field>
+                                </div>
+
+                            </div>
+
+                            <div class="row">
+                                <label class="col-sm-2 col-form-label">Name</label>
+                                <div class="col-sm-7">
+                                    <mat-form-field class="example-full-width has-label"
+                                                    [ngClass]="{'has-success':validNumberType===true}"
+                                                    [ngClass]="displayFieldCss(type, 'number')">
+                                        <input type="text" name="description" class="input-lg"
+                                               matInput
+                                               (ngModelChange)="numberValidationType($event)"
+                                               formControlName="description">
+                                        <!--<app-field-error-display [displayError]="isFieldValid(type, 'number')" errorMsg="Add a number!">
+                                        </app-field-error-display>-->
+                                    </mat-form-field>
+                                </div>
+
+                            </div>
+
+                            <div class="row">
+
+                                <label class="col-sm-2 col-form-label">Price</label>
+                                <div class="col-sm-2">
+                                    <mat-form-field class="example-full-width"
+                                                    [ngClass]="{'has-success':validSourceType===true}"
+                                                    [ngClass]="displayFieldCss(type, 'password')">
+                                        <input type="text"
+                                               matInput
+                                               name="price"
+                                               (ngModelChange)="sourceValidationType($event)"
+                                               formControlName="price">
+                                        <!-- <app-field-error-display [displayError]="isFieldValid(type, 'password')" errorMsg="IdSource is required">
+                                         </app-field-error-display>-->
+                                    </mat-form-field>
+                                </div>
+                                <label class="col-sm-2 col-form-label">DefaultQuantity</label>
+                                <div class="col-sm-2">
+                                    <mat-form-field class="example-full-width"
+                                                    [ngClass]="{'has-success':validDestinationType===true}"
+                                                    [ngClass]="displayFieldCss(type, 'confirmPassword')">
+                                        <input type="text"
+                                               matInput
+                                               name="defaultQuantity"
+                                               (ngModelChange)="confirmDestinationValidationType($event)"
+                                               formControlName="defaultQuantity">
+                                        <!--<app-field-error-display [displayError]="isFieldValid(type, 'confirmPassword')" errorMsg=" IdSource mismatch!">
+                                        </app-field-error-display>-->
+                                    </mat-form-field>
+                                </div>
+
+                            </div>
+
+                            <div class="row">
+                                <label class="col-sm-2 col-form-label">Category</label>
+                                <div class="col-sm-7">
+                                    <mat-form-field>
+                                        <mat-label *ngIf="selectedCategory == null">Select an option</mat-label>
+                                        <mat-label *ngIf="selectedCategory != null">{{selectedCategory.name}}</mat-label>
+                                        <mat-select class="form-control" id="field_category" name="category"
+                                                    formControlName="category" selected="category">
+                                            <mat-option [value]="null">None</mat-option>
+                                            <mat-option [value]="categoryOption"
+                                                        *ngFor="let categoryOption of categories; trackBy: trackCategoryById">{{categoryOption.name}}</mat-option>
+
+                                        </mat-select>
+                                    </mat-form-field>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <label class="col-sm-2 col-form-label">Clint</label>
+                                <div class="col-sm-7">
+                                    <mat-form-field>
+                                        <mat-label *ngIf="selectedClient == null">Select an option</mat-label>
+                                        <mat-label *ngIf="selectedClient != null">{{selectedClient.name}}</mat-label>
+                                        <mat-select class="form-control" id="field_client" name="clint"
+                                                    formControlName="client" [(value)]="selectedClient">
+
+                                            <mat-option [value]="null">None</mat-option>
+                                            <mat-option [value]="clientOption"
+                                                        *ngFor="let clientOption of clients; trackBy: trackClientById" >{{clientOption.name}}</mat-option>
+                                        </mat-select>
+                                    </mat-form-field>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <label class="col-sm-2 col-form-label">Tax</label>
+                                <div class="col-sm-7">
+                                    <ng-multiselect-dropdown
+                                        [placeholder]="'Chose Tax'"
+                                        [data]="dropdownList"
+                                        [(ngModel)]="selectedItems"
+                                        [settings]="dropdownSettings"
+                                        (onSelect)="onItemSelect($event)"
+                                        (onSelectAll)="onSelectAll($event)"
+                                    >
+                                    </ng-multiselect-dropdown>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="row">
+                            <div class="col-sm-4" >
+                            </div>
+                            <div class="col-sm-4" align="center">
+                                <button type="button" id="cancel-save" class="btn btn-dark"   (click)="previousState()">
+                                    <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span
+                                    jhiTranslate="entity.action.cancel">Cancel</span>
+                                </button>
+
+
+                                <button type="submit" id="save-entity" [disabled]="editForm.invalid || isSaving"
+                                        class="btn btn-primary">
+                                    <fa-icon [icon]="'save'"></fa-icon>&nbsp;<span
+                                    jhiTranslate="entity.action.save">Save</span>
+                                </button>
+                            </div>
+                        </div>
+
+                    </form>
+
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+

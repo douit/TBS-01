@@ -14,6 +14,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.time.ZonedDateTime;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -76,11 +77,12 @@ public class UserDTO {
         this.createdDate = user.getCreatedDate();
         this.lastModifiedBy = user.getLastModifiedBy();
         this.lastModifiedDate = user.getLastModifiedDate();
+        this.authorities = new HashSet<>();
         if (CollectionUtils.isNotEmpty(user.getUserRoles())) {
             user.getUserRoles().forEach(userRole -> {
-                this.authorities = userRole.getRole().getAuthorities().stream()
+                this.authorities.addAll(userRole.getRole().getAuthorities().stream()
                     .map(Authority::getName)
-                    .collect(Collectors.toSet());
+                    .collect(Collectors.toSet()));
             });
         }
     }
