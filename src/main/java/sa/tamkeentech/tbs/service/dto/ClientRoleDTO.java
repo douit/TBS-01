@@ -13,8 +13,8 @@ import java.io.Serializable;
 @Builder
 public class ClientRoleDTO implements Serializable{
 
-    private RoleDTO role;
+    private String roleName;
 
-    private ClientDTO client;
+    private Long clientId;
 
 }

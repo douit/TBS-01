@@ -11,7 +11,7 @@ import java.util.Objects;
  */
 @Entity
 @Table(name = "user_role")
-@EqualsAndHashCode(of = {"id"})
+@EqualsAndHashCode(of = {"Role", "Client"})
 @Data
 @Builder
 @AllArgsConstructor
@@ -25,6 +25,7 @@ public class UserRole extends AbstractAuditingEntity implements Serializable {
 
     @ManyToOne
     @JoinColumn(name="user_id")
+    @ToString.Exclude
     private User user;
 
     @Column(name = "activated")

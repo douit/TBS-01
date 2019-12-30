@@ -85,5 +85,11 @@ public class UserDTO {
                     .collect(Collectors.toSet()));
             });
         }
+        this.clientRoles = new HashSet<>();
+        if (CollectionUtils.isNotEmpty(user.getUserRoles())) {
+            user.getUserRoles().forEach(userRole -> {
+                this.clientRoles.add(ClientRoleDTO.builder().clientId(userRole.getClient().getId()).roleName(userRole.getRole().getName()).build());
+            });
+        }
     }
 }

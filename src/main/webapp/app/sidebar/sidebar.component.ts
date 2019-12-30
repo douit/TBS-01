@@ -57,7 +57,7 @@ export const ROUTES: RouteInfo[] = [{
            {path: 'user-management', title: 'Users', ab: ''}
         ]
 }
-/*
+
   , {
         path: '/components',
         title: 'Components',
@@ -138,7 +138,7 @@ export const ROUTES: RouteInfo[] = [{
             {path: 'lock', title: 'Lock Screen Page', ab:''},
             {path: 'user', title: 'User Page', ab:''}
         ]
-    }*/
+    }
 ];
 @Component({
     selector: 'app-sidebar-cmp',

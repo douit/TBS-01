@@ -94,11 +94,11 @@ public class UserMapper {
     }
 
     public Set<UserRole> userRoleFromDTO(Set<ClientRoleDTO> clientRoleDTOS, User user) {
-        Set<UserRole> managedRoles = null;
+        Set<UserRole> managedRoles = new HashSet<>();
         if (CollectionUtils.isNotEmpty(clientRoleDTOS)) {
             clientRoleDTOS.forEach(clientRole -> {
-                    Optional<Role> role = roleRepository.findById(clientRole.getRole().getId());
-                    Optional<Client> client = clientRepository.findById(clientRole.getClient().getId());
+                    Optional<Role> role = roleRepository.findByName(clientRole.getRoleName());
+                    Optional<Client> client = clientRepository.findById(clientRole.getClientId());
                     if (role.isPresent() && client.isPresent()) {
                         managedRoles.add(UserRole.builder().Role(role.get()).client(client.get()).user(user).activated(true).build());
                     }

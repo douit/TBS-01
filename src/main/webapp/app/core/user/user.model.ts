@@ -7,6 +7,7 @@ export interface IUser {
   activated?: boolean;
   langKey?: string;
   authorities?: any[];
+  clientRoles?: any[];
   createdBy?: string;
   createdDate?: Date;
   lastModifiedBy?: string;
@@ -24,6 +25,7 @@ export class User implements IUser {
     public activated?: boolean,
     public langKey?: string,
     public authorities?: any[],
+    public clientRoles?: any[],
     public createdBy?: string,
     public createdDate?: Date,
     public lastModifiedBy?: string,
@@ -38,6 +40,7 @@ export class User implements IUser {
     this.activated = activated ? activated : false;
     this.langKey = langKey ? langKey : null;
     this.authorities = authorities ? authorities : null;
+    this.clientRoles = clientRoles ? clientRoles : null;
     this.createdBy = createdBy ? createdBy : null;
     this.createdDate = createdDate ? createdDate : null;
     this.lastModifiedBy = lastModifiedBy ? lastModifiedBy : null;

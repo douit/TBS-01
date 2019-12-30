@@ -26,6 +26,9 @@
     "createdBy": "Created by",
     "createdDate": "Created date",
     "lastModifiedBy": "Modified by",
-    "lastModifiedDate": "Modified date"
+    "lastModifiedDate": "Modified date",
+    "error": {
+      "selectClientAndRole": "Please select client and role"
+    }
   }
 }

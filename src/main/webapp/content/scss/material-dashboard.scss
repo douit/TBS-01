@@ -88,3 +88,13 @@
 
 
 @import "dashboard/responsive";
+
+.mat-select {
+  background: none !important;
+}
+
+.mat-form-field-type-mat-select {
+  .mat-form-field-underline {
+    bottom: 2em !important;
+  }
+}

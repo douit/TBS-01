@@ -1,6 +1,5 @@
 package sa.tamkeentech.tbs.service;
 
-import com.google.common.collect.Lists;
 import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
 import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
 import sa.tamkeentech.tbs.config.Constants;
@@ -44,6 +43,8 @@ public class UserService {
 
     private final AuthorityRepository authorityRepository;
 
+    private final RoleRepository roleRepository;
+
     private final CacheManager cacheManager;
 
 /*    private final RoleRepository roleRepository;
@@ -52,11 +53,12 @@ public class UserService {
 
     private final UserMapper userMapper;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, PersistentTokenRepository persistentTokenRepository, AuthorityRepository authorityRepository, CacheManager cacheManager, RoleRepository roleRepository, ClientRepository clientRepository, UserMapper userMapper) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, PersistentTokenRepository persistentTokenRepository, AuthorityRepository authorityRepository, RoleRepository roleRepository1, CacheManager cacheManager, RoleRepository roleRepository, ClientRepository clientRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.persistentTokenRepository = persistentTokenRepository;
         this.authorityRepository = authorityRepository;
+        this.roleRepository = roleRepository1;
         this.cacheManager = cacheManager;
         /*this.roleRepository = roleRepository;
         this.clientRepository = clientRepository;*/
@@ -158,7 +160,10 @@ public class UserService {
         } else {
             user.setLangKey(userDTO.getLangKey());
         }
-        String encryptedPassword = passwordEncoder.encode(RandomUtil.generatePassword());
+        // ToDo remove this log for security reason
+        String randomPassword = RandomUtil.generatePassword();
+        log.info("------Creating user: {} password: {}", user.getLogin(), randomPassword);
+        String encryptedPassword = passwordEncoder.encode(/*RandomUtil.generatePassword()*/randomPassword);
         user.setPassword(encryptedPassword);
         user.setResetKey(RandomUtil.generateResetKey());
         user.setResetDate(Instant.now());
@@ -324,7 +329,7 @@ public class UserService {
      * @return a list of all the authorities.
      */
     public List<String> getAuthorities() {
-        return authorityRepository.findAll().stream().map(Authority::getName).collect(Collectors.toList());
+        return roleRepository.findAll().stream().map(Role::getName).collect(Collectors.toList());
     }
 
 
