@@ -100,7 +100,7 @@ export class UserMgmtUpdateComponent implements OnInit {
       this.user.clientRoles.forEach(clientRole => {
         this.role.roleClient = this.clients.filter(client => client.id === clientRole.clientId)[0].name;
         this.role.clientId = clientRole.clientId;
-        this.role.roleName = clientRole.clientRole;
+        this.role.roleName = clientRole.roleName;
 
         this.roles.splice(this.roles.length, 0, this.role);
         this.role = {};
