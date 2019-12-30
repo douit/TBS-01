@@ -54,5 +54,6 @@
     <include file="config/liquibase/changelog/20191222225213_alter_entity_Tax_Item.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20191223105213_alter_client_add_notif_url.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20191225230700_alter_roles_schema.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20191231030700_alter_roles.xml" relativeToChangelogFile="false"/>
 
 </databaseChangeLog>

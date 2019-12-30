@@ -53,7 +53,9 @@ public class UserService {
 
     private final UserMapper userMapper;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, PersistentTokenRepository persistentTokenRepository, AuthorityRepository authorityRepository, RoleRepository roleRepository1, CacheManager cacheManager, RoleRepository roleRepository, ClientRepository clientRepository, UserMapper userMapper) {
+    private final UserRoleRepository userRoleRepository;
+
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, PersistentTokenRepository persistentTokenRepository, AuthorityRepository authorityRepository, RoleRepository roleRepository1, CacheManager cacheManager, RoleRepository roleRepository, ClientRepository clientRepository, UserMapper userMapper, UserRoleRepository userRoleRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.persistentTokenRepository = persistentTokenRepository;
@@ -63,6 +65,7 @@ public class UserService {
         /*this.roleRepository = roleRepository;
         this.clientRepository = clientRepository;*/
         this.userMapper = userMapper;
+        this.userRoleRepository = userRoleRepository;
     }
 
     public Optional<User> activateRegistration(String key) {
@@ -227,6 +230,9 @@ public class UserService {
                 user.setActivated(userDTO.isActivated());
                 user.setLangKey(userDTO.getLangKey());
                 Set<UserRole> managedRoles = user.getUserRoles();
+               for (UserRole usrRole : managedRoles) {
+                   userRoleRepository.deleteById(usrRole.getId());
+               }
                 managedRoles.clear();
                 /*userDTO.getClientRoles().stream()
                     .map(authorityRepository::findById)
@@ -240,7 +246,9 @@ public class UserService {
                             managedRoles.add(UserRole.builder().Role(role.get()).client(client.get()).user(user).activated(true).build());
                         }
                     });*/
-                managedRoles = userMapper.userRoleFromDTO(userDTO.getClientRoles(), user);
+                managedRoles.addAll(userMapper.userRoleFromDTO(userDTO.getClientRoles(), user));
+                user.setUserRoles(managedRoles);
+                userRepository.save(user);
                 this.clearUserCaches(user);
                 log.debug("Changed Information for User: {}", user);
                 return user;

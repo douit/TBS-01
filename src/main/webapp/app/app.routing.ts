@@ -105,6 +105,7 @@ export const AppRoutes: Routes = [
     },
     {
       path: 'account',
+      component: AuthLayoutComponent,
       // loadChildren: () => import('./account/account.module').then(m => m.TbsAccountModule)
       loadChildren: () => import('./account/account.module').then(m => m.TbsAccountModule)
     }

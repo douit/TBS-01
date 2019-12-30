@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+
+    <changeSet id="20191231030700-1" author="Ahmed B">
+
+        <sql dbms="postgresql"
+             endDelimiter="\nGO"
+             splitStatements="true"
+             stripComments="true">
+
+            ALTER TABLE user_role DROP constraint if exists unique_rule_per_client;
+
+            UPDATE role set name='ADMIN' where id =1;
+            UPDATE role set name='ACCOUNTANT' where id =2;
+            UPDATE role set name='OPERATOR' where id =3;
+            UPDATE role set name='USER' where id =4;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
