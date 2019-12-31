@@ -1,20 +1,24 @@
-import { Component, OnInit, AfterViewInit, Renderer, ElementRef } from '@angular/core';
+import {Component, OnInit, AfterViewInit, Renderer, ElementRef, OnDestroy} from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
 import { NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { PasswordResetFinishService } from './password-reset-finish.service';
+declare var $: any;
 
 @Component({
-  selector: 'jhi-password-reset-finish',
+  selector: 'app-password-reset-finish',
   templateUrl: './password-reset-finish.component.html'
 })
-export class PasswordResetFinishComponent implements OnInit, AfterViewInit {
+export class PasswordResetFinishComponent implements OnInit, OnDestroy, AfterViewInit {
   doNotMatch: string;
   error: string;
   keyMissing: boolean;
   success: string;
   modalRef: NgbModalRef;
   key: string;
+
+  // UI
+  private toggleButton: any;
 
   passwordForm = this.fb.group({
     newPassword: ['', [Validators.required, Validators.minLength(4), Validators.maxLength(50)]],
@@ -27,7 +31,8 @@ export class PasswordResetFinishComponent implements OnInit, AfterViewInit {
     private elementRef: ElementRef,
     private renderer: Renderer,
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private element: ElementRef,
   ) {}
 
   ngOnInit() {
@@ -35,6 +40,20 @@ export class PasswordResetFinishComponent implements OnInit, AfterViewInit {
       this.key = params['key'];
     });
     this.keyMissing = !this.key;
+
+
+    // UI
+    const navbar: HTMLElement = this.element.nativeElement;
+    this.toggleButton = navbar.getElementsByClassName('navbar-toggle')[0];
+    const body = document.getElementsByTagName('body')[0];
+    body.classList.add('login-page');
+    body.classList.add('off-canvas-sidebar');
+    const card = document.getElementsByClassName('card')[0];
+    //setTimeout(function() {
+      // after 1000 ms we add the class animated to the login/register card
+      //that.card.classList.remove('card-hidden');
+    //}, 700);
+
   }
 
   ngAfterViewInit() {
@@ -61,6 +80,12 @@ export class PasswordResetFinishComponent implements OnInit, AfterViewInit {
         }
       );
     }
+  }
+
+  ngOnDestroy() {
+    const body = document.getElementsByTagName('body')[0];
+    body.classList.remove('login-page');
+    body.classList.remove('off-canvas-sidebar');
   }
 
   login() {
