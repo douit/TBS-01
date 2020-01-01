@@ -23,4 +23,36 @@
         </sql>
     </changeSet>
 
+    <changeSet id="20191231030700-2" author="Ahmed B">
+
+    <sql dbms="postgresql"
+         endDelimiter="\nGO"
+         splitStatements="true"
+         stripComments="true">
+        DELETE FROM user_role WHERE role_id=4;
+        DELETE FROM role_authority WHERE role_id=4;
+        DELETE FROM role WHERE id=4;
+    </sql>
+    </changeSet>
+
+    <changeSet id="20191231030700-3" author="Ahmed B">
+
+    <sql dbms="postgresql"
+         endDelimiter="\nGO"
+         splitStatements="true"
+         stripComments="true">
+        INSERT INTO authority (name) VALUES ('VIEW_ITEM'), ('ADD_ITEM'), ('EDIT_ITEM'), ('VIEW_INVOICE'), ('ADD_INVOICE'), ('VIEW_PAYMENT'),
+        ('VIEW_USER'), ('ADD_USER'),('EDIT_USER'), ('CREATE_REPORT'),('VIEW_REPORT'), ('SCHEDULED_REPORT');
+
+        INSERT INTO role_authority (role_id, authority_name) VALUES
+        -- Admin
+        (1, 'VIEW_ITEM'), (1, 'ADD_ITEM'),(1, 'EDIT_ITEM'), (1, 'VIEW_INVOICE'),(1, 'ADD_INVOICE'), (1, 'VIEW_PAYMENT'),
+        (1, 'VIEW_USER'), (1, 'ADD_USER'),(1, 'EDIT_USER'), (1, 'CREATE_REPORT'),(1, 'VIEW_REPORT'), (1, 'SCHEDULED_REPORT'),
+        -- ACCOUNTANT: no add/edit / no user mngmt
+        (2, 'VIEW_ITEM'), (2, 'VIEW_INVOICE'), (2, 'VIEW_PAYMENT'), (2, 'CREATE_REPORT'), (2, 'VIEW_REPORT'), (2, 'SCHEDULED_REPORT'),
+        -- OPERATOR: no add/edit / no user mngmt / no reporting
+        (3, 'VIEW_ITEM'), (3, 'VIEW_INVOICE'), (3, 'VIEW_PAYMENT');
+    </sql>
+    </changeSet>
+
 </databaseChangeLog>

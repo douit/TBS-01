@@ -3,6 +3,8 @@ import PerfectScrollbar from 'perfect-scrollbar';
 import { AccountService } from 'app/core/auth/account.service';
 // declare const $: any;
 import * as $ from 'jquery';
+import {AuthConsts} from 'app/shared/auth-consts';
+import {type} from 'os';
 
 // Metadata
 export interface RouteInfo {
@@ -11,6 +13,7 @@ export interface RouteInfo {
     type: string;
     icontype: string;
     collapse?: string;
+    authorities?: string[];
     children?: ChildrenItems[];
 }
 
@@ -19,46 +22,53 @@ export interface ChildrenItems {
     title: string;
     ab: string;
     type?: string;
+    authorities?: string[];
 }
 
 // Menu Items
 export const ROUTES: RouteInfo[] = [{
         path: '/dashboard',
         title: 'Dashboard',
+        authorities: [],
         type: 'link',
         icontype: 'dashboard'
     }, {
         path: '/item',
         title: 'Items',
+        authorities: [AuthConsts.VIEW_ITEM],
         type: 'link',
         icontype: 'grid_on'
     }, {
         path: '/invoice',
         title: 'Invoices',
+        authorities: [AuthConsts.VIEW_INVOICE],
         type: 'link',
         icontype: 'content_paste'
     }, {
         path: '/payment',
         title: 'Payments',
+        authorities: [AuthConsts.VIEW_PAYMENT],
         type: 'link',
         icontype: 'attach_money'
     }, {
         path: '/customer/test_cc',
         title: 'Test Credit Card Payment',
+        authorities: [],
         type: 'link',
         icontype: 'widgets'
     }, {
         path: '/admin',
         title: 'Administrative',
+        authorities: [AuthConsts.VIEW_USER],
         type: 'sub',
         icontype: 'settings',
         collapse: 'admin',
         children: [
-           {path: 'user-management', title: 'Users', ab: ''}
+           {path: 'user-management', title: 'Users', authorities: [AuthConsts.VIEW_USER], ab: ''}
         ]
 }
 
-  , {
+/*  , {
         path: '/components',
         title: 'Components',
         type: 'sub',
@@ -138,7 +148,7 @@ export const ROUTES: RouteInfo[] = [{
             {path: 'lock', title: 'Lock Screen Page', ab:''},
             {path: 'user', title: 'User Page', ab:''}
         ]
-    }
+    }*/
 ];
 @Component({
     selector: 'app-sidebar-cmp',
@@ -162,7 +172,8 @@ export class SidebarComponent implements OnInit {
     }
 
     ngOnInit() {
-      this.menuItems = ROUTES.filter(menuItem => menuItem);
+      // this.menuItems = ROUTES.filter(menuItem => menuItem);
+      this.menuItems = this.sanitizeMenuItems(ROUTES);
       if (window.matchMedia(`(min-width: 960px)`).matches && !this.isMac()) {
           const elemSidebar = <HTMLElement>document.querySelector('.sidebar .sidebar-wrapper');
           this.ps = new PerfectScrollbar(elemSidebar);
@@ -176,6 +187,33 @@ export class SidebarComponent implements OnInit {
         }
       });
 
+    }
+    sanitizeMenuItems(menuItems: RouteInfo[]): RouteInfo[] {
+      return menuItems.filter(menuItem => {
+        let childes = [];
+
+        if (menuItem.children !== undefined) {
+          childes = menuItem.children.filter(child => {
+            if (child.authorities === undefined || child.authorities.length === 0) {
+              return true;
+            }
+            return this.accountService.hasAnyAuthority(child.authorities);
+          });
+        }
+
+        menuItem.children = childes;
+        // if the user permit access to a child route
+        // then the parent route access should be granted
+        if (childes.length > 0) {
+          return true;
+        }
+
+        if (menuItem.authorities === undefined || menuItem.authorities.length === 0) {
+          return true;
+        }
+
+        return this.accountService.hasAnyAuthority(menuItem.authorities);
+      });
     }
     updatePS(): void  {
         if (window.matchMedia(`(min-width: 960px)`).matches && !this.isMac()) {

@@ -89,6 +89,6 @@ export class PasswordResetFinishComponent implements OnInit, OnDestroy, AfterVie
   }
 
   login() {
-    this.router.navigate(['home']);
+    this.router.navigate(['login']);
   }
 }

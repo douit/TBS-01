@@ -11,7 +11,7 @@ import java.util.Objects;
  */
 @Entity
 @Table(name = "user_role")
-@EqualsAndHashCode(of = {"Role", "Client"})
+@EqualsAndHashCode(of = {"role", "client"})
 @Data
 @Builder
 @AllArgsConstructor
@@ -33,7 +33,7 @@ public class UserRole extends AbstractAuditingEntity implements Serializable {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name="role_id")
-    private Role Role;
+    private Role role;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name="client_id")

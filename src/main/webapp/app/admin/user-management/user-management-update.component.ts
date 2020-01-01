@@ -20,6 +20,7 @@ export class UserMgmtUpdateComponent implements OnInit {
   languages: any[];
   authorities: any[];
   clients: IClient[];
+  filtredClients: IClient[];
   isSaving: boolean;
   isCreate: boolean;
 
@@ -96,6 +97,7 @@ export class UserMgmtUpdateComponent implements OnInit {
 
   private initClientsAndExistingRoles(res: IClient[]): void {
     this.clients = res;
+    this.filtredClients = res;
     if (!this.isCreate) {
       this.user.clientRoles.forEach(clientRole => {
         this.role.roleClient = this.clients.filter(client => client.id === clientRole.clientId)[0].name;
@@ -105,7 +107,22 @@ export class UserMgmtUpdateComponent implements OnInit {
         this.roles.splice(this.roles.length, 0, this.role);
         this.role = {};
       });
+      this.filterClients();
     }
+  }
+
+  private filterClients(): void {
+    this.filtredClients = this.clients.filter(client => {
+      let clientNotAdded = true;
+      this.roles.forEach(role => {
+        if (role.clientId === client.id) {
+          clientNotAdded = false;
+          return ;
+        }
+      });
+      return clientNotAdded;
+    });
+    // console.log('filtredClients: ' + JSON.stringify(this.filtredClients));
   }
 
   private updateForm(user: User): void {
@@ -176,6 +193,9 @@ export class UserMgmtUpdateComponent implements OnInit {
       roleClient : '',
       roleName : ''
     });
+    console.log('roles1: ' + JSON.stringify(this.roles));
+    this.filterClients();
+    console.log('roles2: ' + JSON.stringify(this.roles));
   }
 
   delete(id: number, index: number) {
@@ -186,7 +206,8 @@ export class UserMgmtUpdateComponent implements OnInit {
         }
       })[0].roleClient = -1; // -1 means the item has been deleted
     } else {*/
-      this.roles.splice(index, 1);
+    this.roles.splice(index, 1);
+    this.filterClients();
     // }
   }
 

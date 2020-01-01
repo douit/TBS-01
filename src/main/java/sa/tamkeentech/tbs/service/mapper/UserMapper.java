@@ -100,7 +100,7 @@ public class UserMapper {
                     Optional<Role> role = roleRepository.findByName(clientRole.getRoleName());
                     Optional<Client> client = clientRepository.findById(clientRole.getClientId());
                     if (role.isPresent() && client.isPresent()) {
-                        managedRoles.add(UserRole.builder().Role(role.get()).client(client.get()).user(user).activated(true).build());
+                        managedRoles.add(UserRole.builder().role(role.get()).client(client.get()).user(user).activated(true).build());
                     }
                 });
         }
