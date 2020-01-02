@@ -1,5 +1,5 @@
 import { Component, OnInit, Renderer, ViewChild, ElementRef, Directive } from '@angular/core';
-import { ROUTES } from '../.././sidebar/sidebar.component';
+// import { ROUTES } from '../.././sidebar/sidebar.component';
 import { Router, ActivatedRoute, NavigationEnd, NavigationStart } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
 import { Location, LocationStrategy, PathLocationStrategy } from '@angular/common';
@@ -112,7 +112,7 @@ export class NavbarComponent implements OnInit {
     }
 
     ngOnInit() {
-        this.listTitles = ROUTES.filter(listTitle => listTitle);
+        // this.listTitles = ROUTES.filter(listTitle => listTitle);
 
         const navbar: HTMLElement = this.element.nativeElement;
         const body = document.getElementsByTagName('body')[0];
@@ -214,7 +214,7 @@ export class NavbarComponent implements OnInit {
       if (titlee.charAt(0) === '#') {
           titlee = titlee.slice( 1 );
       }
-        for (let i = 0; i < this.listTitles.length; i++) {
+        /*for (let i = 0; i < this.listTitles.length; i++) {
             if (this.listTitles[i].type === 'link' && this.listTitles[i].path === titlee) {
                 return this.listTitles[i].title;
             } else if (this.listTitles[i].type === 'sub') {
@@ -227,7 +227,7 @@ export class NavbarComponent implements OnInit {
                     }
                 }
             }
-        }
+        }*/
         return 'Dashboard';
     }
     getPath() {

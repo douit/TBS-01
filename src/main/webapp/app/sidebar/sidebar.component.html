@@ -41,7 +41,7 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="javascript:void(0)" class="nav-link">
+                                <a (click)="logout()" class="nav-link" style="cursor: pointer;">
                                     <!--<span class="sidebar-mini">S</span>-->
                                     <span class="sidebar-normal">Logout</span>
                                 </a>
@@ -113,7 +113,7 @@
                         <ul class="nav">
                             <li routerLinkActive="active" *ngFor="let childitem of menuitem.children" class="nav-item">
                                 <a [routerLink]="[menuitem.path, childitem.path]" class="nav-link">
-                                    <span class="sidebar-mini">{{childitem.ab}}</span>
+                                    <span class="sidebar-mini"><i class="material-icons">{{childitem.icontype}}</i></span>
                                     <span class="sidebar-normal">{{childitem.title}}</span>
                                 </a>
                             </li>
