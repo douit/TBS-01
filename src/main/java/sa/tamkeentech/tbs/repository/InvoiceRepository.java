@@ -6,6 +6,7 @@ import org.springframework.data.jpa.datatables.repository.DataTablesRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import sa.tamkeentech.tbs.domain.Client;
@@ -25,7 +26,8 @@ import java.util.Optional;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface InvoiceRepository extends JpaRepository<Invoice, Long>, DataTablesRepository<Invoice, Long> {
+public interface InvoiceRepository extends JpaRepository<Invoice, Long>, DataTablesRepository<Invoice, Long>
+{
     Optional<Invoice> findByNumber(Long id);
     Optional<Invoice> findById(Long id);
     Optional<Invoice> findByAccountId(Long accountId);
@@ -35,8 +37,9 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long>, DataTab
         "        sum(case when payment_status = 'PAID' then 1 else 0 end ) As PaidInvoice"+
         " FROM invoice WHERE invoice.created_date >=?1" +
         "        AND invoice.created_date <=?2" +
+        "        AND invoice.client_id = ?3 "+
         "        group by Day ORDER BY Day;", nativeQuery = true)
-    List<Object[]> getStatisticsByMonth(ZonedDateTime from, ZonedDateTime to);
+    List<Object[]> getStatisticsByMonth(ZonedDateTime from, ZonedDateTime to , long clientId);
 
     @Query(value = "SELECT count(*) " +
         "FROM invoice WHERE payment_status = 'PAID' ", nativeQuery = true)
@@ -49,8 +52,9 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long>, DataTab
         "sum(case when payment_status = 'PAID' then 1 else 0 end) As totalPaid" +
         " FROM invoice WHERE invoice.created_date >= ?1 " +
         "    AND invoice.created_date <= ?2 " +
+        "        AND invoice.client_id = ?3 "+
         "group by Month ORDER BY Month;", nativeQuery = true)
-    List<Object[]> getStatisticsByYear(ZonedDateTime from, ZonedDateTime to);
+    List<Object[]> getStatisticsByYear(ZonedDateTime from, ZonedDateTime to, long clientId);
 
     Page<Invoice> findByPaymentStatusOrderByIdDesc(PaymentStatus status, Pageable pageable);
 

@@ -15,10 +15,13 @@ import java.time.ZonedDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChartStatisticsRequestDTO  implements Serializable {
+public class StatisticsRequestDTO  implements Serializable {
 
-    private ZonedDateTime date;
+    private ZonedDateTime fromDate;
+    private ZonedDateTime toDate;
+
     private TypeStatistics type;
+    private String clientId;
 
 
 

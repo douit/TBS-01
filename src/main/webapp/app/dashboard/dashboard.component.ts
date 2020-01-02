@@ -2,16 +2,21 @@ import {AfterViewInit, Component, OnInit} from '@angular/core';
 import {TableData} from '../md/md-table/md-table.component';
 import * as Chartist from 'chartist';
 import * as $ from 'jquery';
-import {HttpClient} from '@angular/common/http';
+import {HttpClient, HttpErrorResponse, HttpResponse} from '@angular/common/http';
 import {IStatistics} from 'app/shared/model/statistics.model';
 import {DashboardService} from 'app/dashboard/dashboard.service';
 import {IChartStatistics} from 'app/shared/model/chart-statistics.model';
 import * as moment from 'moment';
-import {IChartStatisticsRequest} from 'app/shared/model/chart-statistics-request.model';
+import {IStatisticsRequest} from 'app/shared/model/chart-statistics-request.model';
 import {TypeStatistics} from 'app/shared/model/enumerations/type-statistics.model';
 import {NgbCalendar, NgbDate, NgbDateParserFormatter, NgbDatepickerConfig} from "@ng-bootstrap/ng-bootstrap";
 
 import {parseZone} from "moment";
+import {IClient} from "app/shared/model/client.model";
+import {filter, map} from "rxjs/operators";
+import {ClientService} from "app/client/client.service";
+import {JhiAlertService} from "ng-jhipster";
+import {MOMENT} from "angular-calendar";
 
 // declare const $: any;
 
@@ -64,7 +69,8 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     series: []
   };
 
-  constructor(private http: HttpClient, dashboardService: DashboardService,private calendar: NgbCalendar, public formatter: NgbDateParserFormatter,private config: NgbDatepickerConfig ) {
+
+  constructor(private http: HttpClient, dashboardService: DashboardService,private calendar: NgbCalendar, public formatter: NgbDateParserFormatter,private config: NgbDatepickerConfig,protected clientService: ClientService,  protected jhiAlertService: JhiAlertService ) {
     this.dashboardService = dashboardService;
     const current = new Date();
     this.minDate = {
@@ -79,7 +85,8 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   public tableData: TableData;
   public daterange: any = {};
   filterRangeDate: any = {};
-
+  selectedClient: IClient;
+  clients: IClient[];
   public options: any = {
     locale: {format: 'YYYY-MM-DD'},
     alwaysShowCalendars: false,
@@ -91,20 +98,17 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     startDate: new Date(),
     endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
   };
+  myDate: any;
 
 
   formatDate(date: NgbDate) {
     // NgbDates use 1 for Jan, Moement uses 0, must substract 1 month for proper date conversion
     var ngbObj =  JSON.parse(JSON.stringify(date));
-    var newMoment = moment();
-
+    // const jsDate = new Date(date.year, date.month - 1, date.day);
     if (ngbObj) {
-      ngbObj.month--;
-      newMoment.month(ngbObj.month);
-      newMoment.day(ngbObj.day);
-      newMoment.year(ngbObj.year);
+      // ngbObj.month--;
+      return moment(ngbObj.year + '-' + ngbObj.month  + '-' +   ngbObj.day, 'YYYY-MM-DD');
     }
-    return newMoment;
   }
 
   public selectedDate(value: any) {
@@ -115,32 +119,70 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       end: new Date(this.daterange.end)
     };
   }
+  protected onError(errorMessage: string) {
+    this.jhiAlertService.error(errorMessage, null, null);
+  }
   onDateSelection(date: NgbDate) {
     if (!this.fromDate && !this.toDate) {
       this.fromDate = date;
     } else if (this.fromDate && !this.toDate && date.after(this.fromDate)) {
       this.toDate = date;
-      const chartMonthlyStatisticsRequest: IChartStatisticsRequest = {
-        date: this.formatDate(this.toDate),
-        type: TypeStatistics.MONTHLY
-      };
 
-      const chartAnnualStatisticsRequest: IChartStatisticsRequest = {
-        date: this.formatDate(this.toDate),
-        type: TypeStatistics.ANNUAL
-      };
-
-      this.dataAnnualChart.series.pop();
-      this.dataAnnualChart.series.pop();
-      this.dataMonthlyChart.series.pop();
-      this.dataMonthlyChart.series.pop();
-      this.getMonthlyChartStatistics(chartMonthlyStatisticsRequest);
-      this.getAnnualChartStatistics(chartAnnualStatisticsRequest);
-      this.getStatistics();
     } else {
       this.toDate = null;
       this.fromDate = date;
     }
+  }
+
+  onClickFilter(){
+    let toDate = null;
+    let fromDate =  null;
+    let fromMonthlyDate =  null;
+
+    let clientId = null;
+    if(this.fromDate != null ){
+      fromDate =this.formatDate(this.fromDate);
+      fromMonthlyDate = fromDate;
+      if(this.toDate != null ){
+        toDate =this.formatDate(this.toDate);
+        fromMonthlyDate =toDate;
+      }
+    }
+    if(this.selectedClient != null){
+      clientId = this.selectedClient.clientId;
+    }
+
+    const chartMonthlyStatisticsRequest: IStatisticsRequest = {
+      fromDate:fromMonthlyDate,
+      toDate: toDate,
+      type: TypeStatistics.MONTHLY,
+      clientId:clientId
+
+    };
+    const chartAnnualStatisticsRequest: IStatisticsRequest = {
+      fromDate : fromDate,
+      toDate: toDate,
+      type: TypeStatistics.ANNUAL,
+      clientId: clientId
+
+    };
+    const generalStatisticsRequest: IStatisticsRequest = {
+      fromDate : fromDate,
+      toDate: toDate,
+      type: TypeStatistics.GENERAL,
+      clientId: clientId
+
+    };
+
+     this.dataAnnualChart.series.pop();
+     this.dataAnnualChart.series.pop();
+    this.dataMonthlyChart.series.pop();
+    this.dataMonthlyChart.series.pop();
+    this.getMonthlyChartStatistics(chartMonthlyStatisticsRequest);
+    this.getAnnualChartStatistics(chartAnnualStatisticsRequest);
+    this.getStatistics(generalStatisticsRequest);
+
+
   }
 
   isHovered(date: NgbDate) {
@@ -217,8 +259,8 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   }
 
 
-   getStatistics()  {
-    this.dashboardService.getStatistics().subscribe(
+   getStatistics(StatisticsRequest :IStatisticsRequest)  {
+    this.dashboardService.getStatistics(StatisticsRequest).subscribe(
       res => {
         this.statistics = res;
 
@@ -229,7 +271,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     );
 
   }
-   getMonthlyChartStatistics(chartStatisticsRequest: IChartStatisticsRequest )  {
+   getMonthlyChartStatistics(chartStatisticsRequest: IStatisticsRequest )  {
     this.dashboardService.getChartStatistics(chartStatisticsRequest).subscribe(
       res => {
         const totalInvoiceList = [];
@@ -278,7 +320,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     );
 
   }
-   getAnnualChartStatistics(chartStatisticsRequest: IChartStatisticsRequest) {
+   getAnnualChartStatistics(chartStatisticsRequest: IStatisticsRequest) {
      this.dashboardService.getChartStatistics(chartStatisticsRequest).subscribe(
        res => {
          const totalInvoiceList = [];
@@ -332,20 +374,44 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
 
    }
-
+  trackClientById(index: number, item: IClient) {
+    return item.id;
+  }
   public ngOnInit() {
-   const chartMonthlyStatisticsRequest: IChartStatisticsRequest = {
-     date: moment(),
-     type: TypeStatistics.MONTHLY
+    this.clientService
+      .query()
+      .pipe(
+        filter((mayBeOk: HttpResponse<IClient[]>) => mayBeOk.ok),
+        map((response: HttpResponse<IClient[]>) => response.body)
+      )
+      .subscribe((res: IClient[]) => (this.clients = res), (res: HttpErrorResponse) => this.onError(res.message));
+
+    var client :IClient={
+     clientId:'TAHAQAQ'
+   };
+   const chartMonthlyStatisticsRequest: IStatisticsRequest = {
+     fromDate: moment(),
+     type: TypeStatistics.MONTHLY,
+     clientId:''
+
+
     };
 
-    const chartAnnualStatisticsRequest: IChartStatisticsRequest = {
-      date: moment(),
-      type: TypeStatistics.ANNUAL
+    const chartAnnualStatisticsRequest: IStatisticsRequest = {
+      fromDate: moment(),
+      type: TypeStatistics.ANNUAL,
+      clientId:''
+
     };
+    const generalStatisticsRequest: IStatisticsRequest = {
+      type: TypeStatistics.GENERAL,
+      clientId: ''
+
+    };
+    this.getStatistics(generalStatisticsRequest);
     this.getMonthlyChartStatistics(chartMonthlyStatisticsRequest);
     this.getAnnualChartStatistics(chartAnnualStatisticsRequest);
-    this.getStatistics();
+
    }
 
    ngAfterViewInit() {

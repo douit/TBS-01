@@ -17,7 +17,7 @@ import {Daterangepicker} from "ng2-daterangepicker";
         FormsModule,
         MdModule,
         MaterialModule,
-        // NgbDatepickerModule,
+        NgbDatepickerModule,
         Daterangepicker
     ],
     declarations: [DashboardComponent]

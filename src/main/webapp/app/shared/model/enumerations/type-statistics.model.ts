@@ -1,6 +1,7 @@
 export const enum TypeStatistics {
   MONTHLY,
-  ANNUAL
+  ANNUAL,
+  GENERAL
 
 
 

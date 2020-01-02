@@ -547,19 +547,19 @@ public class InvoiceService {
         return invoiceMapper.toDto(invoiceRepository.findAll(input));
     }
 
-    public List<Object[]> getMonthlyStat( ZonedDateTime lastDate) {
+    public List<Object[]> getMonthlyStat( ZonedDateTime lastDate , long clientId ) {
         ZonedDateTime first = lastDate.withDayOfMonth(1);
         YearMonth yearMonthObject = YearMonth.of(lastDate.getYear(), lastDate.getMonth());
         ZonedDateTime last = lastDate.withDayOfMonth( yearMonthObject.lengthOfMonth());
-        List<Object[]> stats = invoiceRepository.getStatisticsByMonth(first, last);
+        List<Object[]> stats = invoiceRepository.getStatisticsByMonth(first, last,clientId);
         return stats;
     }
 
-    public List<Object[]> getAnnualyStat( ZonedDateTime lastDate) {
+    public List<Object[]> getAnnualyStat( ZonedDateTime lastDate, long clientId ) {
         ZonedDateTime first = lastDate.withMonth(1).withDayOfMonth(1);
         YearMonth yearMonthObject = YearMonth.of(lastDate.getYear(), lastDate.getMonth());
         ZonedDateTime last = lastDate.withMonth(12).withDayOfMonth(31);
-        List<Object[]> stats = invoiceRepository.getStatisticsByYear(first, last);
+        List<Object[]> stats = invoiceRepository.getStatisticsByYear(first, last,clientId);
         return stats;
     }
 

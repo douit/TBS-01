@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 
 @Data
@@ -13,8 +14,8 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 public class StatisticsDTO {
-    private long totalInvoice;
-    private long totalPaid;
+    private BigInteger totalInvoice;
+    private BigInteger totalPaid;
     private BigDecimal amountRefund;
     private BigDecimal income;
 
