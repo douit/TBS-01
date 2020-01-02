@@ -2,27 +2,21 @@ package sa.tamkeentech.tbs.web.rest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import sa.tamkeentech.tbs.domain.enumeration.Month;
-import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
+import sa.tamkeentech.tbs.domain.Client;
 import sa.tamkeentech.tbs.domain.enumeration.TypeStatistics;
+import sa.tamkeentech.tbs.repository.ClientRepository;
 import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.repository.RefundRepository;
 import sa.tamkeentech.tbs.service.InvoiceService;
-import sa.tamkeentech.tbs.service.PaymentService;
-import sa.tamkeentech.tbs.service.RefundService;
+import sa.tamkeentech.tbs.service.StatisticsService;
 import sa.tamkeentech.tbs.service.dto.*;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.time.YearMonth;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
 
@@ -32,28 +26,40 @@ import java.util.*;
 public class StatisticsResource {
     private final Logger log = LoggerFactory.getLogger(StatisticsResource.class);
 
-    private final RefundService refundService;
     private final InvoiceService invoiceService;
-    private final PaymentService paymentService;
     private final InvoiceRepository invoiceRepository;
      private final RefundRepository refundRepository;
-    public StatisticsResource(RefundService refundService, InvoiceService invoiceService, PaymentService paymentService , InvoiceRepository invoiceRepository, RefundRepository refundRepository) {
-         this.refundService=refundService;
+    private final ClientRepository clientRepository;
+    private final StatisticsService statisticsService;
+
+    public StatisticsResource(InvoiceService invoiceService, InvoiceRepository invoiceRepository, RefundRepository refundRepository, ClientRepository clientRepository, StatisticsService statisticsService) {
          this.invoiceService=invoiceService;
-         this.paymentService=paymentService;
         this.invoiceRepository=invoiceRepository;
         this.refundRepository =refundRepository;
+        this.clientRepository = clientRepository;
+        this.statisticsService = statisticsService;
     }
-    @GetMapping("/statistics")
-    public StatisticsDTO getStatistics(){
+    @PostMapping("/statistics")
+    @ResponseBody
+
+    public StatisticsDTO getStatistics(@RequestBody StatisticsRequestDTO chartStatisticsRequest ){
         log.debug("Request to get Statistics");
+
+        long clientId =0;
+        Optional<Client> client = clientRepository.findByClientId(chartStatisticsRequest.getClientId());
+        if(client.isPresent()){
+            clientId = client.get().getId();
+        }
+        List<Object[]> stats = statisticsService.prepareQuery( chartStatisticsRequest.getFromDate(),chartStatisticsRequest.getToDate(),clientId,chartStatisticsRequest.getType());
+        BigDecimal income =  statisticsService.prepareIncomeQuery(chartStatisticsRequest.getFromDate(),chartStatisticsRequest.getToDate(),clientId);
+
         StatisticsDTO statisticsDTO = new StatisticsDTO();
         Pageable pageable =Pageable.unpaged();
-        long totalInvoice = invoiceService.findAll(pageable).getTotalElements();
-        BigDecimal amountRefund= refundRepository.amountRefund();
-        BigDecimal income= invoiceRepository.sumIncome();
+        BigInteger totalInvoice = (BigInteger) stats.get(0)[0];
+        BigInteger setTotalPaid = (BigInteger) stats.get(0)[1];
+        BigDecimal amountRefund= statisticsService.prepareRefundQuery(chartStatisticsRequest.getFromDate(),chartStatisticsRequest.getToDate(),clientId);
         statisticsDTO.setTotalInvoice(totalInvoice);
-        statisticsDTO.setTotalPaid( invoiceRepository.sumPaidInvoice());
+        statisticsDTO.setTotalPaid(setTotalPaid);
         statisticsDTO.setAmountRefund(amountRefund != null? amountRefund: BigDecimal.ZERO);
         statisticsDTO.setIncome(income != null?income: BigDecimal.ZERO);
         return statisticsDTO;
@@ -61,19 +67,33 @@ public class StatisticsResource {
 
     @PostMapping("/chartStatistics")
     @ResponseBody
-    public List<ChartStatisticsDTO> getChartStatistics(@RequestBody ChartStatisticsRequestDTO chartStatisticsRequest ){
+    public List<ChartStatisticsDTO> getChartStatistics(@RequestBody StatisticsRequestDTO chartStatisticsRequest ){
         log.debug("Request to get Chart Statistics");
-        if(chartStatisticsRequest.getDate() == null){
-            chartStatisticsRequest.setDate(ZonedDateTime.now());
+        long clientId =0;
+        if( chartStatisticsRequest.getFromDate()==null ){
+            chartStatisticsRequest.setFromDate(ZonedDateTime.now());
         }
-        int currentDay = ZonedDateTime.now().getDayOfMonth();
+        Optional<Client> client = clientRepository.findByClientId(chartStatisticsRequest.getClientId());
+        if(client.isPresent()){
+            clientId = client.get().getId();
+        }
+        ZonedDateTime currentDate = ZonedDateTime.now();
+        int currentDay ;
         List<ChartStatisticsDTO> chartStatisticsDTOList = new ArrayList<>();
+
         if(chartStatisticsRequest.getType() == TypeStatistics.MONTHLY){
-            List<Object[]> stats= invoiceService.getMonthlyStat(chartStatisticsRequest.getDate());
-            YearMonth yearMonthObject = YearMonth.of(chartStatisticsRequest.getDate().getYear(), chartStatisticsRequest.getDate().getMonth());
+            List<Object[]> stats = statisticsService.prepareQuery( chartStatisticsRequest.getFromDate(),chartStatisticsRequest.getToDate(),clientId,chartStatisticsRequest.getType());
+            YearMonth yearMonthObject = YearMonth.of( chartStatisticsRequest.getFromDate().getYear(),  chartStatisticsRequest.getFromDate().getMonth());
+
+            if(chartStatisticsRequest.getToDate() == null && chartStatisticsRequest.getFromDate().getMonth() == currentDate.getMonth()){
+                currentDay = currentDate.getDayOfMonth();
+            }else{
+                currentDay = yearMonthObject.lengthOfMonth();
+            }
+
             for(int i =1 ;i<= yearMonthObject.lengthOfMonth() && i <= currentDay ; i++){
                 ChartStatisticsDTO chartStatisticsDTO = ChartStatisticsDTO.builder()
-                    .duration(chartStatisticsRequest.getDate().withDayOfMonth(i).withHour(00).withMinute(00).withSecond(00).withNano(00))
+                    .duration(chartStatisticsRequest.getFromDate().withDayOfMonth(i).withHour(00).withMinute(00).withSecond(00).withNano(00))
                     .type(TypeStatistics.MONTHLY)
                     .day(i)
                     .month(yearMonthObject.getMonth().getValue())
@@ -90,10 +110,10 @@ public class StatisticsResource {
             }
 
         }else{
-            List<Object[]> stats= invoiceService.getAnnualyStat(chartStatisticsRequest.getDate());
+            List<Object[]> stats = statisticsService.prepareQuery( chartStatisticsRequest.getFromDate(),chartStatisticsRequest.getToDate(),clientId,chartStatisticsRequest.getType());
             for(int i =1 ;i<= 12; i++){
                 ChartStatisticsDTO chartStatisticsDTO = ChartStatisticsDTO.builder()
-                    .duration(chartStatisticsRequest.getDate().withMonth(i))
+                    .duration(chartStatisticsRequest.getFromDate().withMonth(i))
                     .month(i)
                     .type(TypeStatistics.ANNUAL)
                     .totalInvoice(BigInteger.ZERO)

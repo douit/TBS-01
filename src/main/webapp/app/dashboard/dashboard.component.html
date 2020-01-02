@@ -1,6 +1,89 @@
 <div class="main-content">
     <div class="container-fluid">
-      <div class="row">
+        <div class="row">
+            <div class="col-md-6">
+                <form class="form-inline">
+                    <label> Filter statistics by date : &nbsp;</label>
+                    <div class="form-group hidden">
+                        <div class="input-group">
+                            <input name="datepicker"
+                                   class="form-control"
+                                   ngbDatepicker
+                                   #datepicker="ngbDatepicker"
+                                   [autoClose]="'outside'"
+                                   (dateSelect)="onDateSelection($event)"
+                                   [displayMonths]="2"
+                                   [dayTemplate]="t"
+                                   outsideDays="hidden"
+                                   [maxDate]="minDate"
+                                   [startDate]="fromDate">
+                            <ng-template #t let-date let-focused="focused">
+        <span class="custom-day"
+              [class.focused]="focused"
+              [class.range]="isRange(date)"
+              [class.faded]="isHovered(date) || isInside(date)"
+
+              (mouseenter)="hoveredDate = date"
+              (mouseleave)="hoveredDate = null">
+          {{ date.day }}
+        </span>
+                            </ng-template>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <input #dpFromDate
+                                   class="form-control" placeholder="yyyy-mm-dd"
+                                   name="dpFromDate"
+                                   [value]="formatter.format(fromDate)"
+                                   (input)="fromDate = validateInput(fromDate, dpFromDate.value)">
+                            <div class="input-group-append">
+                                <button class="btn btn-primary calendar fa fa-calendar " (click)="datepicker.toggle()"
+                                        type="button"></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group ml-3">
+                        <div class="input-group">
+                            <input #dpToDate
+                                   class="form-control" placeholder="yyyy-mm-dd"
+                                   name="dpToDate"
+                                   [value]="formatter.format(toDate)"
+                                   (input)="toDate = validateInput(toDate, dpToDate.value)">
+                            <div class="input-group-append">
+                                <button class="btn btn-primary calendar fa fa-calendar" (click)="datepicker.toggle()"
+                                        type="button"></button>
+                            </div>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+            <div class="col-md-pull-1">
+                <label> Filter statistics by client :</label>
+            </div>
+                <div class="col-md-2">
+                <mat-form-field>
+                    <mat-label *ngIf="selectedClient == null">Select an option</mat-label>
+                    <mat-label *ngIf="selectedClient != null">{{selectedClient.name}}</mat-label>
+                    <mat-select class="form-control" id="field_client" name="clint"
+                                 [(value)]="selectedClient"  >
+                        <mat-option [value]="null">None</mat-option>
+                        <mat-option [value]="clientOption"
+                                    *ngFor="let clientOption of clients; trackBy: trackClientById">{{clientOption.name}}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+                    <pre>From: {{ fromDate | json }} </pre>
+                    <pre>To: {{ toDate | json }} </pre>
+            </div>
+            <div class="col-md-push-1">
+                    <button type="button" class="btn btn-primary"  (click)="onClickFilter()">Filter</button>
+            </div>
+
+        </div>
+
+
+        <div class="row">
             <div class="col-lg-3 col-md-6 col-sm-6">
                 <div class="card card-stats">
                     <div class="card-header card-header-warning card-header-icon">
@@ -12,8 +95,8 @@
                     </div>
                     <div class="card-footer">
                         <div class="stats">
-                           <!-- <i class="material-icons text-danger">warning</i>-->
-                           <!-- <a href="#pablo">Get More Space...</a>-->
+                            <!-- <i class="material-icons text-danger">warning</i>-->
+                            <!-- <a href="#pablo">Get More Space...</a>-->
                             <i class="material-icons">update</i> Just Updated
                         </div>
                     </div>
@@ -70,21 +153,21 @@
                 </div>
             </div>
         </div>
-      <div class="row">
+        <div class="row">
 
-              <div class="card">
-                  <div class="card-header card-header-icon card-header-info">
-                      <div class="card-icon">
-                          <i class="material-icons">timeline</i>
-                      </div>
-                      <h4 class="card-title"> Daily statistics
-                          <small> - for the current month </small>
-                      </h4>
-                  </div>
-                  <div class="card-body">
-                      <div id="colouredBarsChart" class="ct-chart"></div>
-                  </div>
-              </div>
+            <div class="card">
+                <div class="card-header card-header-icon card-header-info">
+                    <div class="card-icon">
+                        <i class="material-icons">timeline</i>
+                    </div>
+                    <h4 class="card-title"> Daily statistics
+                        <small> - for the current month </small>
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div id="colouredBarsChart" class="ct-chart"></div>
+                </div>
+            </div>
 
 
         </div>

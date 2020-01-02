@@ -7,6 +7,8 @@ import { MaterialModule } from '../app.module';
 
 import { DashboardComponent } from './dashboard.component';
 import { DashboardRoutes } from './dashboard.routing';
+import {NgbDatepickerModule} from "@ng-bootstrap/ng-bootstrap";
+import {Daterangepicker} from "ng2-daterangepicker";
 
 @NgModule({
     imports: [
@@ -14,7 +16,9 @@ import { DashboardRoutes } from './dashboard.routing';
         RouterModule.forChild(DashboardRoutes),
         FormsModule,
         MdModule,
-        MaterialModule
+        MaterialModule,
+        NgbDatepickerModule,
+        Daterangepicker
     ],
     declarations: [DashboardComponent]
 })
