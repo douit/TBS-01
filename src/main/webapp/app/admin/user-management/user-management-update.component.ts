@@ -193,9 +193,7 @@ export class UserMgmtUpdateComponent implements OnInit {
       roleClient : '',
       roleName : ''
     });
-    console.log('roles1: ' + JSON.stringify(this.roles));
     this.filterClients();
-    console.log('roles2: ' + JSON.stringify(this.roles));
   }
 
   delete(id: number, index: number) {
