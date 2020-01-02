@@ -177,8 +177,9 @@ public class StatisticsService {
 
         query = em.createNativeQuery(
             "SELECT sum(grand_total) \n " +
-                "      FROM invoice " +
-                "      INNER JOIN refund ON bill_id = CAST(biller_id AS bigint ) " +
+                "      FROM invoice i " +
+                "      INNER JOIN payment p ON  p.invoice_id=i.id " +
+                "      INNER JOIN refund r ON r.payment_id = p.id " +
                 whereClause);
 
         return (BigDecimal) query.getSingleResult();
