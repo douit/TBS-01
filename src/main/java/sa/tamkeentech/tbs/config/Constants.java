@@ -1,5 +1,7 @@
 package sa.tamkeentech.tbs.config;
 
+import java.time.ZoneId;
+
 /**
  * Application constants.
  */
@@ -76,6 +78,10 @@ public final class Constants {
 
 
     }
+
+    // ZoneDateTime
+    public static ZoneId RIYADH_ZONE_ID = ZoneId.of("Asia/Riyadh");
+    public static ZoneId UTC_ZONE_ID = ZoneId.of("UTC");
 
     private Constants() {
     }

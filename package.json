@@ -95,7 +95,8 @@
     "zone.js": "0.9.1",
     "ng-multiselect-dropdown": "0.2.10",
     "ng-validation-errors": "0.0.11",
-    "ng2-daterangepicker": "2.0.12"
+    "ng2-daterangepicker": "2.0.12",
+    "js-joda": "1.6.2"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "0.800.1",

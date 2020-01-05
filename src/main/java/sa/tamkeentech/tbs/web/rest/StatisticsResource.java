@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
+import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.Client;
 import sa.tamkeentech.tbs.domain.enumeration.TypeStatistics;
 import sa.tamkeentech.tbs.repository.ClientRepository;
@@ -17,6 +18,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.time.YearMonth;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.*;
 
@@ -57,7 +60,7 @@ public class StatisticsResource {
         Pageable pageable =Pageable.unpaged();
         BigInteger totalInvoice = (BigInteger) stats.get(0)[0];
         BigInteger setTotalPaid = (BigInteger) stats.get(0)[1];
-        BigDecimal amountRefund= statisticsService.prepareRefundQuery(chartStatisticsRequest.getFromDate(),chartStatisticsRequest.getToDate(),clientId);
+        BigDecimal amountRefund= statisticsService.prepareRefundQuery(chartStatisticsRequest, clientId);
         statisticsDTO.setTotalInvoice(totalInvoice);
         statisticsDTO.setTotalPaid(setTotalPaid);
         statisticsDTO.setAmountRefund(amountRefund != null? amountRefund: BigDecimal.ZERO);
@@ -73,6 +76,10 @@ public class StatisticsResource {
         if( chartStatisticsRequest.getFromDate()==null ){
             chartStatisticsRequest.setFromDate(ZonedDateTime.now());
         }
+
+        // Get User timeZone day and month
+        ZonedDateTime localFromDate = chartStatisticsRequest.getFromDate().withZoneSameLocal(Constants.UTC_ZONE_ID).withZoneSameInstant(ZoneId.ofOffset("UTC", ZoneOffset.of(chartStatisticsRequest.getOffset())));
+
         Optional<Client> client = clientRepository.findByClientId(chartStatisticsRequest.getClientId());
         if(client.isPresent()){
             clientId = client.get().getId();
@@ -83,17 +90,17 @@ public class StatisticsResource {
 
         if(chartStatisticsRequest.getType() == TypeStatistics.MONTHLY){
             List<Object[]> stats = statisticsService.prepareQuery( chartStatisticsRequest.getFromDate(),chartStatisticsRequest.getToDate(),clientId,chartStatisticsRequest.getType());
-            YearMonth yearMonthObject = YearMonth.of( chartStatisticsRequest.getFromDate().getYear(),  chartStatisticsRequest.getFromDate().getMonth());
+            YearMonth yearMonthObject = YearMonth.of(localFromDate.getYear(),  localFromDate.getMonth());
 
-            if(chartStatisticsRequest.getToDate() == null && chartStatisticsRequest.getFromDate().getMonth() == currentDate.getMonth()){
+            if (chartStatisticsRequest.getToDate() == null && localFromDate.getMonth() == currentDate.getMonth()){
                 currentDay = currentDate.getDayOfMonth();
-            }else{
+            } else {
                 currentDay = yearMonthObject.lengthOfMonth();
             }
 
             for(int i =1 ;i<= yearMonthObject.lengthOfMonth() && i <= currentDay ; i++){
                 ChartStatisticsDTO chartStatisticsDTO = ChartStatisticsDTO.builder()
-                    .duration(chartStatisticsRequest.getFromDate().withDayOfMonth(i).withHour(00).withMinute(00).withSecond(00).withNano(00))
+                    .duration(localFromDate.withDayOfMonth(i).withHour(00).withMinute(00).withSecond(00).withNano(00))
                     .type(TypeStatistics.MONTHLY)
                     .day(i)
                     .month(yearMonthObject.getMonth().getValue())
@@ -113,7 +120,7 @@ public class StatisticsResource {
             List<Object[]> stats = statisticsService.prepareQuery( chartStatisticsRequest.getFromDate(),chartStatisticsRequest.getToDate(),clientId,chartStatisticsRequest.getType());
             for(int i =1 ;i<= 12; i++){
                 ChartStatisticsDTO chartStatisticsDTO = ChartStatisticsDTO.builder()
-                    .duration(chartStatisticsRequest.getFromDate().withMonth(i))
+                    .duration(localFromDate.withMonth(i))
                     .month(i)
                     .type(TypeStatistics.ANNUAL)
                     .totalInvoice(BigInteger.ZERO)

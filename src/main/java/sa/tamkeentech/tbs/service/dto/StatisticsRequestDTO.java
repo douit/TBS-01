@@ -23,6 +23,6 @@ public class StatisticsRequestDTO  implements Serializable {
     private TypeStatistics type;
     private String clientId;
 
-
+    private String offset;
 
 }

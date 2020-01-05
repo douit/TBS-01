@@ -1,18 +1,23 @@
 package sa.tamkeentech.tbs.service;
 
 import liquibase.database.core.FirebirdDatabase;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.PaymentMethod;
 import sa.tamkeentech.tbs.domain.enumeration.TypeStatistics;
+import sa.tamkeentech.tbs.service.dto.StatisticsRequestDTO;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.math.BigDecimal;
 import java.time.YearMonth;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -87,21 +92,23 @@ public class StatisticsService {
         String whereClause = null;
         switch (type) {
             case GENERAL:
+                continue testing other types and do same toLocalDateTime
                 if (firstDate == null && lastDate == null) {
                     whereClause = "";
                 } else if (firstDate != null && lastDate == null) {
-                    whereClause = "created_date >= '" + firstDate.toLocalDate() + "' AND created_date < '" + firstDate.toLocalDate().plusDays(1) + "'";
+                    whereClause = "created_date >= '" + firstDate.toLocalDateTime() + "' AND created_date < '" + firstDate.toLocalDateTime().plusDays(1) + "'";
                 } else if (firstDate != null && lastDate != null) {
-                    whereClause = "created_date >= '" + firstDate.toLocalDate() + "' AND created_date <= '" + lastDate.toLocalDate() + "'";
+                    whereClause = "created_date >= '" + firstDate.toLocalDateTime() + "' AND created_date <= '" + lastDate.toLocalDateTime() + "'";
 
-                } else if (!lastDate.toLocalDate().equals(ZonedDateTime.now().toLocalDate())) {
-                    whereClause = "created_date >= '" + firstDate.toLocalDate() + "' AND created_date <= '" + lastDate.toLocalDate() + "'";
+                } else if (!lastDate.toLocalDateTime().equals(ZonedDateTime.now().toLocalDateTime())) {
+                    whereClause = "created_date >= '" + firstDate.toLocalDateTime() + "' AND created_date <= '" + lastDate.toLocalDateTime() + "'";
                 }
                 if (clientId != 0) {
-                    if (whereClause == "") {
+                    if (StringUtils.isEmpty(whereClause)) {
                         whereClause = " client_id = '" + clientId + "'";
+                    } else {
+                        whereClause = whereClause + " AND client_id = '" + clientId + "'";
                     }
-                    whereClause = whereClause + " AND client_id = '" + clientId + "'";
                 }
                 break;
             case ANNUAL:
@@ -156,17 +163,11 @@ public class StatisticsService {
             whereClause = whereClause + " And created_date >= '" + firstDate.toLocalDate() + "' AND created_date < '" + firstDate.toLocalDate().plusDays(1) + "'";
         } else if (firstDate != null && lastDate != null) {
             whereClause = whereClause + " And created_date >= '" + firstDate.toLocalDate() + "' AND created_date < '" + lastDate.toLocalDate() + "'";
-
         } else if (!lastDate.toLocalDate().equals(ZonedDateTime.now().toLocalDate())) {
             whereClause = whereClause + "created_date >= '" + firstDate.toLocalDate() + "' AND created_date <= '" + lastDate.toLocalDate() + "'";
         }
         if (clientId != 0) {
-            if (whereClause == null) {
-                whereClause = whereClause + "  client_id = '" + clientId + "'";
-            } else {
-                whereClause = whereClause + " AND client_id = '" + clientId + "'";
-
-            }
+            whereClause = whereClause + " AND client_id = '" + clientId + "'";
         }
 
         return getIncomeUsingWhereClause(entityManager, whereClause);
@@ -176,33 +177,34 @@ public class StatisticsService {
         Query query = null;
 
         query = em.createNativeQuery(
-            "SELECT sum(grand_total) \n " +
-                "      FROM invoice i " +
-                "      INNER JOIN payment p ON  p.invoice_id=i.id " +
-                "      INNER JOIN refund r ON r.payment_id = p.id " +
-                whereClause);
+            "SELECT sum(grand_total) " +
+                " FROM invoice i " +
+                " INNER JOIN payment p ON  p.invoice_id=i.id " +
+                " INNER JOIN refund r ON r.payment_id = p.id " +
+                ((StringUtils.isNotEmpty(whereClause))? " WHERE " + whereClause: ""));
 
         return (BigDecimal) query.getSingleResult();
 
     }
 
-    public BigDecimal prepareRefundQuery(ZonedDateTime firstDate, ZonedDateTime lastDate, long clientId) {
+    public BigDecimal prepareRefundQuery(StatisticsRequestDTO statisticsRequestDTO, long clientId) {
 
         String whereClause = "";
 
-        if (firstDate == null && lastDate == null) {
-            whereClause = "";
-        } else if (firstDate != null && lastDate == null) {
-            whereClause = " And invoice.created_date >= '" + firstDate.toLocalDate() + "' AND invoice.created_date < '" + firstDate.toLocalDate().plusDays(1) + "'";
-        } else if (firstDate != null && lastDate != null) {
-            whereClause = " And invoice.created_date >= '" + firstDate.toLocalDate() + "' AND invoice.created_date <= '" + lastDate.toLocalDate() + "'";
-
+        if (statisticsRequestDTO.getFromDate() != null && statisticsRequestDTO.getToDate() == null) {
+            ZonedDateTime localFistDate = statisticsRequestDTO.getFromDate().withZoneSameLocal(Constants.UTC_ZONE_ID).withZoneSameInstant(ZoneId.ofOffset("UTC", ZoneOffset.of(statisticsRequestDTO.getOffset())));
+            whereClause = "i.created_date >= '" + localFistDate.toLocalDate();
+        } else if (statisticsRequestDTO.getFromDate() != null && statisticsRequestDTO.getToDate() != null) {
+            ZonedDateTime localFistDate = statisticsRequestDTO.getFromDate().withZoneSameLocal(Constants.UTC_ZONE_ID).withZoneSameInstant(ZoneId.ofOffset("UTC", ZoneOffset.of(statisticsRequestDTO.getOffset())));
+            ZonedDateTime localLastDate = statisticsRequestDTO.getToDate().withZoneSameLocal(Constants.UTC_ZONE_ID).withZoneSameInstant(ZoneId.ofOffset("UTC", ZoneOffset.of(statisticsRequestDTO.getOffset())));
+            whereClause = "i.created_date >= '" + localFistDate.toLocalDate() + "' AND i.created_date <= '" + localLastDate.toLocalDate() + "'";
         }
 
         if (clientId != 0) {
-            whereClause = whereClause + " AND client_id = '" + clientId + "'";
-
-
+            if (StringUtils.isNotEmpty(whereClause)) {
+                whereClause = whereClause + " AND";
+            }
+            whereClause = whereClause + " client_id = '" + clientId + "'";
         }
 
         return getRefundUsingWhereClause(entityManager, whereClause);

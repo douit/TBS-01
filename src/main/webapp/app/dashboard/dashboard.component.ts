@@ -9,14 +9,15 @@ import {IChartStatistics} from 'app/shared/model/chart-statistics.model';
 import * as moment from 'moment';
 import {IStatisticsRequest} from 'app/shared/model/chart-statistics-request.model';
 import {TypeStatistics} from 'app/shared/model/enumerations/type-statistics.model';
-import {NgbCalendar, NgbDate, NgbDateParserFormatter, NgbDatepickerConfig} from "@ng-bootstrap/ng-bootstrap";
+import {NgbCalendar, NgbDate, NgbDateParserFormatter, NgbDatepickerConfig} from '@ng-bootstrap/ng-bootstrap';
 
-import {parseZone} from "moment";
-import {IClient} from "app/shared/model/client.model";
-import {filter, map} from "rxjs/operators";
-import {ClientService} from "app/client/client.service";
-import {JhiAlertService} from "ng-jhipster";
-import {MOMENT} from "angular-calendar";
+import {parseZone} from 'moment';
+import {IClient} from 'app/shared/model/client.model';
+import {filter, map} from 'rxjs/operators';
+import {ClientService} from 'app/client/client.service';
+import {JhiAlertService} from 'ng-jhipster';
+import {MOMENT} from 'angular-calendar';
+import {ZonedDateTime} from 'js-joda';
 
 // declare const $: any;
 
@@ -70,7 +71,10 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   };
 
 
-  constructor(private http: HttpClient, dashboardService: DashboardService,private calendar: NgbCalendar, public formatter: NgbDateParserFormatter,private config: NgbDatepickerConfig,protected clientService: ClientService,  protected jhiAlertService: JhiAlertService ) {
+  constructor(private http: HttpClient, dashboardService: DashboardService,
+              private calendar: NgbCalendar, public formatter: NgbDateParserFormatter,
+              private config: NgbDatepickerConfig, protected clientService: ClientService,
+              protected jhiAlertService: JhiAlertService ) {
     this.dashboardService = dashboardService;
     const current = new Date();
     this.minDate = {
@@ -78,7 +82,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       month: current.getMonth() + 1,
       day: current.getDate()
     };
-    //this.fromDate = calendar.getToday();
+    // this.fromDate = calendar.getToday();
     // this.toDate = calendar.getNext(calendar.getToday(), 'd', 10);
   }
   minDate = undefined;
@@ -103,7 +107,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
   formatDate(date: NgbDate) {
     // NgbDates use 1 for Jan, Moement uses 0, must substract 1 month for proper date conversion
-    var ngbObj =  JSON.parse(JSON.stringify(date));
+    const ngbObj =  JSON.parse(JSON.stringify(date));
     // const jsDate = new Date(date.year, date.month - 1, date.day);
     if (ngbObj) {
       // ngbObj.month--;
@@ -134,48 +138,51 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     }
   }
 
-  onClickFilter(){
+  onClickFilter() {
     let toDate = null;
     let fromDate =  null;
     let fromMonthlyDate =  null;
 
     let clientId = null;
-    if(this.fromDate != null ){
-      fromDate =this.formatDate(this.fromDate);
+    if (this.fromDate != null ) {
+      fromDate = this.formatDate(this.fromDate);
       fromMonthlyDate = fromDate;
-      if(this.toDate != null ){
-        toDate =this.formatDate(this.toDate);
-        fromMonthlyDate =toDate;
+      if (this.toDate != null ) {
+        toDate = this.formatDate(this.toDate);
+        fromMonthlyDate = toDate;
       }
     }
-    if(this.selectedClient != null){
+    if (this.selectedClient != null) {
       clientId = this.selectedClient.clientId;
     }
 
     const chartMonthlyStatisticsRequest: IStatisticsRequest = {
-      fromDate:fromMonthlyDate,
+      fromDate: fromMonthlyDate,
       toDate: toDate,
       type: TypeStatistics.MONTHLY,
-      clientId:clientId
+      clientId: clientId,
+      offset: ZonedDateTime.now().offset()._id
 
     };
     const chartAnnualStatisticsRequest: IStatisticsRequest = {
       fromDate : fromDate,
       toDate: toDate,
       type: TypeStatistics.ANNUAL,
-      clientId: clientId
+      clientId: clientId,
+      offset: ZonedDateTime.now().offset()._id
 
     };
     const generalStatisticsRequest: IStatisticsRequest = {
       fromDate : fromDate,
       toDate: toDate,
       type: TypeStatistics.GENERAL,
-      clientId: clientId
+      clientId: clientId,
+      offset: ZonedDateTime.now().offset()._id
 
     };
 
-     this.dataAnnualChart.series.pop();
-     this.dataAnnualChart.series.pop();
+    this.dataAnnualChart.series.pop();
+    this.dataAnnualChart.series.pop();
     this.dataMonthlyChart.series.pop();
     this.dataMonthlyChart.series.pop();
     this.getMonthlyChartStatistics(chartMonthlyStatisticsRequest);
@@ -259,14 +266,14 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   }
 
 
-   getStatistics(StatisticsRequest :IStatisticsRequest)  {
+   getStatistics(StatisticsRequest: IStatisticsRequest)  {
     this.dashboardService.getStatistics(StatisticsRequest).subscribe(
       res => {
         this.statistics = res;
 
       },
       res => {
-        alert('An error has occurred when get statistics ');
+        console.log('An error has occurred when get statistics ');
       }
     );
 
@@ -280,7 +287,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         res.forEach(statMonth => {
             totalInvoiceList.push(statMonth.totalInvoice);
             paidInvoiceList.push(statMonth.totalPaid);
-            if( this.dataMonthlyChart.labels.indexOf(statMonth.day) == -1){
+            if (this.dataMonthlyChart.labels.indexOf(statMonth.day) == -1) {
               this.dataMonthlyChart.labels.push(statMonth.day);
             }
             if (max < statMonth.totalInvoice) {
@@ -315,7 +322,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         this.startAnimationForLineChart(colouredBarsChart);
       },
       res => {
-        alert('An error has occurred when get statistics');
+        console.log('An error has occurred when get statistics');
       }
     );
 
@@ -367,7 +374,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
        },
        res => {
-       alert('An error has occurred when get statistics');
+       console.log('An error has occurred when get statistics');
      }
    );
 
@@ -386,26 +393,27 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       )
       .subscribe((res: IClient[]) => (this.clients = res), (res: HttpErrorResponse) => this.onError(res.message));
 
-    var client :IClient={
-     clientId:'TAHAQAQ'
+    const client: IClient = {
+     clientId: 'TAHAQAQ'
    };
    const chartMonthlyStatisticsRequest: IStatisticsRequest = {
      fromDate: moment(),
      type: TypeStatistics.MONTHLY,
-     clientId:''
-
-
+     clientId: '',
+     offset: ZonedDateTime.now().offset()._id
     };
 
     const chartAnnualStatisticsRequest: IStatisticsRequest = {
       fromDate: moment(),
       type: TypeStatistics.ANNUAL,
-      clientId:''
+      clientId: '',
+      offset: ZonedDateTime.now().offset()._id
 
     };
     const generalStatisticsRequest: IStatisticsRequest = {
       type: TypeStatistics.GENERAL,
-      clientId: ''
+      clientId: '',
+      offset: ZonedDateTime.now().offset()._id
 
     };
     this.getStatistics(generalStatisticsRequest);

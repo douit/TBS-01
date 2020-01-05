@@ -25,4 +25,6 @@ public class ChartStatisticsDTO  implements Serializable {
     private int month;
     private int day;
     private BigInteger totalPaid;
+
+    private String offset;
 }
