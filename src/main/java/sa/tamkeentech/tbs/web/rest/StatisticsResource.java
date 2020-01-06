@@ -13,6 +13,7 @@ import sa.tamkeentech.tbs.repository.RefundRepository;
 import sa.tamkeentech.tbs.service.InvoiceService;
 import sa.tamkeentech.tbs.service.StatisticsService;
 import sa.tamkeentech.tbs.service.dto.*;
+import sa.tamkeentech.tbs.service.util.CommonUtils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -78,7 +79,8 @@ public class StatisticsResource {
         }
 
         // Get User timeZone day and month
-        ZonedDateTime localFromDate = chartStatisticsRequest.getFromDate().withZoneSameLocal(Constants.UTC_ZONE_ID).withZoneSameInstant(ZoneId.ofOffset("UTC", ZoneOffset.of(chartStatisticsRequest.getOffset())));
+        ZonedDateTime localFromDate = CommonUtils.getLocalDate(chartStatisticsRequest.getFromDate(), chartStatisticsRequest.getOffset());
+        ZonedDateTime localToDate = CommonUtils.getLocalDate(chartStatisticsRequest.getToDate(), chartStatisticsRequest.getOffset());
 
         Optional<Client> client = clientRepository.findByClientId(chartStatisticsRequest.getClientId());
         if(client.isPresent()){
@@ -89,10 +91,10 @@ public class StatisticsResource {
         List<ChartStatisticsDTO> chartStatisticsDTOList = new ArrayList<>();
 
         if(chartStatisticsRequest.getType() == TypeStatistics.MONTHLY){
-            List<Object[]> stats = statisticsService.prepareQuery( chartStatisticsRequest.getFromDate(),chartStatisticsRequest.getToDate(),clientId,chartStatisticsRequest.getType());
+            List<Object[]> stats = statisticsService.prepareQuery( localFromDate, localToDate,clientId,chartStatisticsRequest.getType());
             YearMonth yearMonthObject = YearMonth.of(localFromDate.getYear(),  localFromDate.getMonth());
 
-            if (chartStatisticsRequest.getToDate() == null && localFromDate.getMonth() == currentDate.getMonth()){
+            if (localToDate == null && localFromDate.getMonth() == currentDate.getMonth()){
                 currentDay = currentDate.getDayOfMonth();
             } else {
                 currentDay = yearMonthObject.lengthOfMonth();
@@ -117,7 +119,7 @@ public class StatisticsResource {
             }
 
         }else{
-            List<Object[]> stats = statisticsService.prepareQuery( chartStatisticsRequest.getFromDate(),chartStatisticsRequest.getToDate(),clientId,chartStatisticsRequest.getType());
+            List<Object[]> stats = statisticsService.prepareQuery( localFromDate, localToDate, clientId, chartStatisticsRequest.getType());
             for(int i =1 ;i<= 12; i++){
                 ChartStatisticsDTO chartStatisticsDTO = ChartStatisticsDTO.builder()
                     .duration(localFromDate.withMonth(i))

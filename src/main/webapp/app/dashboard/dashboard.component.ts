@@ -59,6 +59,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   hoveredDate: NgbDate;
   fromDate: NgbDate;
   toDate: NgbDate;
+  dateRange = '';
 
   dataMonthlyChart = {
     labels: []
@@ -141,23 +142,24 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   onClickFilter() {
     let toDate = null;
     let fromDate =  null;
-    let fromMonthlyDate =  null;
-
     let clientId = null;
     if (this.fromDate != null ) {
       fromDate = this.formatDate(this.fromDate);
-      fromMonthlyDate = fromDate;
-      if (this.toDate != null ) {
-        toDate = this.formatDate(this.toDate);
-        fromMonthlyDate = toDate;
+      this.dateRange += this.formatter.format(fromDate);
+    }
+    if (this.toDate != null ) {
+      toDate = this.formatDate(this.toDate).add(1, 'days');
+      if (this.dateRange !== '') {
+        this.dateRange += ' - ';
       }
+      this.dateRange += this.formatter.format(toDate);
     }
     if (this.selectedClient != null) {
       clientId = this.selectedClient.clientId;
     }
 
     const chartMonthlyStatisticsRequest: IStatisticsRequest = {
-      fromDate: fromMonthlyDate,
+      fromDate: fromDate,
       toDate: toDate,
       type: TypeStatistics.MONTHLY,
       clientId: clientId,

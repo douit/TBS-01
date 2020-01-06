@@ -1,9 +1,10 @@
 <div class="main-content">
     <div class="container-fluid">
-        <div class="row">
+        <div class="row justify-content-center">
             <div class="col-md-6">
                 <form class="form-inline">
                     <label> Filter statistics by date : &nbsp;</label>
+
                     <div class="form-group hidden">
                         <div class="input-group">
                             <input name="datepicker"
@@ -18,18 +19,18 @@
                                    [maxDate]="minDate"
                                    [startDate]="fromDate">
                             <ng-template #t let-date let-focused="focused">
-        <span class="custom-day"
-              [class.focused]="focused"
-              [class.range]="isRange(date)"
-              [class.faded]="isHovered(date) || isInside(date)"
-
-              (mouseenter)="hoveredDate = date"
-              (mouseleave)="hoveredDate = null">
-          {{ date.day }}
-        </span>
+                                        <span class="custom-day"
+                                              [class.focused]="focused"
+                                              [class.range]="isRange(date)"
+                                              [class.faded]="isHovered(date) || isInside(date)"
+                                              (mouseenter)="hoveredDate = date"
+                                              (mouseleave)="hoveredDate = null">
+                                            {{ date.day }}
+                                        </span>
                             </ng-template>
                         </div>
                     </div>
+
                     <div class="form-group">
                         <div class="input-group">
                             <input #dpFromDate
@@ -43,6 +44,7 @@
                             </div>
                         </div>
                     </div>
+
                     <div class="form-group ml-3">
                         <div class="input-group">
                             <input #dpToDate
@@ -59,10 +61,12 @@
 
                 </form>
             </div>
+
             <div class="col-md-pull-1">
                 <label> Filter statistics by client :</label>
             </div>
-                <div class="col-md-2">
+
+            <div class="col-md-2">
                 <mat-form-field>
                     <mat-label *ngIf="selectedClient == null">Select an option</mat-label>
                     <mat-label *ngIf="selectedClient != null">{{selectedClient.name}}</mat-label>
@@ -73,8 +77,8 @@
                                     *ngFor="let clientOption of clients; trackBy: trackClientById">{{clientOption.name}}</mat-option>
                     </mat-select>
                 </mat-form-field>
-                    <pre>From: {{ fromDate | json }} </pre>
-                    <pre>To: {{ toDate | json }} </pre>
+                   <!-- <pre>From: {{ fromDate | json }} </pre>
+                    <pre>To: {{ toDate | json }} </pre>-->
             </div>
             <div class="col-md-push-1">
                     <button type="button" class="btn btn-primary"  (click)="onClickFilter()">Filter</button>

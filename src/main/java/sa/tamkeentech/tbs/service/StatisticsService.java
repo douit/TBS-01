@@ -10,6 +10,7 @@ import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.PaymentMethod;
 import sa.tamkeentech.tbs.domain.enumeration.TypeStatistics;
 import sa.tamkeentech.tbs.service.dto.StatisticsRequestDTO;
+import sa.tamkeentech.tbs.service.util.CommonUtils;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -46,36 +47,27 @@ public class StatisticsService {
 
         switch (type) {
             case GENERAL:
-                if (whereClause == "") {
-                    query = em.createNativeQuery(
-                        "SELECT count(*) As totalInvoice , \n " +
-                            "      sum(case when payment_status = 'PAID' then 1 else 0 end ) As PaidInvoice" +
-                            "      FROM invoice ");
-                } else {
-                    query = em.createNativeQuery(
-                        "SELECT count(*) As totalInvoice , \n " +
-                            "      sum(case when payment_status = 'PAID' then 1 else 0 end ) As PaidInvoice" +
-                            "      FROM invoice WHERE " +
-                            whereClause);
-                }
-
+                query = em.createNativeQuery(
+                    "SELECT count(*) As totalInvoice , \n " +
+                        "      sum(case when payment_status = 'PAID' then 1 else 0 end ) As PaidInvoice" +
+                        "      FROM invoice " +
+                        ((StringUtils.isNotEmpty(whereClause))? " WHERE " + whereClause: ""));
                 break;
             case ANNUAL:
                 query = em.createNativeQuery(
                     "SELECT date_trunc('month', created_date) As Month , count(*) As totalInvoice , \n " +
                         "      sum(case when payment_status = 'PAID' then 1 else 0 end ) As PaidInvoice" +
-                        "      FROM invoice WHERE " +
-                        whereClause +
+                        "      FROM invoice " +
+                        ((StringUtils.isNotEmpty(whereClause))? " WHERE " + whereClause: "") +
                         "      group by Month ORDER BY Month");
                 break;
             case MONTHLY:
                 query = em.createNativeQuery(
                     "SELECT date_trunc('day', created_date) As Day , count(*) As totalInvoice , \n " +
                         "      sum(case when payment_status = 'PAID' then 1 else 0 end ) As PaidInvoice" +
-                        "      FROM invoice WHERE " +
-                        whereClause +
-                        "      group by Day ORDER BY Day"
-                );
+                        "      FROM invoice " +
+                        ((StringUtils.isNotEmpty(whereClause))? " WHERE " + whereClause: "") +
+                        "      group by Day ORDER BY Day");
                 break;
             default:
                 break;
@@ -92,30 +84,28 @@ public class StatisticsService {
         String whereClause = null;
         switch (type) {
             case GENERAL:
-                continue testing other types and do same toLocalDateTime
                 if (firstDate == null && lastDate == null) {
                     whereClause = "";
                 } else if (firstDate != null && lastDate == null) {
-                    whereClause = "created_date >= '" + firstDate.toLocalDateTime() + "' AND created_date < '" + firstDate.toLocalDateTime().plusDays(1) + "'";
+                    whereClause = "created_date >= '" + firstDate.toLocalDateTime() + "'";
                 } else if (firstDate != null && lastDate != null) {
                     whereClause = "created_date >= '" + firstDate.toLocalDateTime() + "' AND created_date <= '" + lastDate.toLocalDateTime() + "'";
-
-                } else if (!lastDate.toLocalDateTime().equals(ZonedDateTime.now().toLocalDateTime())) {
-                    whereClause = "created_date >= '" + firstDate.toLocalDateTime() + "' AND created_date <= '" + lastDate.toLocalDateTime() + "'";
+                } else if (firstDate == null && lastDate != null) {
+                    whereClause = "created_date <= '" + lastDate.toLocalDateTime() + "'";
                 }
                 if (clientId != 0) {
-                    if (StringUtils.isEmpty(whereClause)) {
-                        whereClause = " client_id = '" + clientId + "'";
-                    } else {
-                        whereClause = whereClause + " AND client_id = '" + clientId + "'";
-                    }
+                    whereClause = (StringUtils.isEmpty(whereClause))? " client_id = '" + clientId + "'":
+                        whereClause + " AND client_id = '" + clientId + "'";
                 }
                 break;
             case ANNUAL:
-                first = firstDate.withMonth(1);
-                last = firstDate.withMonth(12);
+                first = CommonUtils.addSecondsToDate(-firstDate.getOffset().getTotalSeconds(),
+                    firstDate.withMonth(1).withDayOfMonth(1).withHour(00).withMinute(00).withSecond(00).withNano(00));
+                yearMonthObject = YearMonth.of(firstDate.getYear(), firstDate.getMonth());
+                last = CommonUtils.addSecondsToDate(-firstDate.getOffset().getTotalSeconds(),
+                    firstDate.withMonth(12).withDayOfMonth(yearMonthObject.lengthOfMonth()).withHour(23).withMinute(59).withSecond(59).withNano(999999999));
                 if (first != null && last != null) {
-                    whereClause = "created_date >= '" + first.toLocalDate() + "' AND created_date <= '" + last.toLocalDate() + "'";
+                    whereClause = "created_date >= '" + first.toLocalDateTime() + "' AND created_date <= '" + last.toLocalDateTime() + "'";
 
                 }
                 if (clientId != 0) {
@@ -123,12 +113,15 @@ public class StatisticsService {
                 }
                 break;
             case MONTHLY:
-                first = firstDate.withDayOfMonth(1);
-                 yearMonthObject = YearMonth.of(firstDate.getYear(), firstDate.getMonth());
-                last = firstDate.withDayOfMonth(yearMonthObject.lengthOfMonth());
+                first = CommonUtils.addSecondsToDate(-firstDate.getOffset().getTotalSeconds(),
+                    firstDate.withDayOfMonth(1).withHour(00).withMinute(00).withSecond(00).withNano(00));
+                yearMonthObject = YearMonth.of(firstDate.getYear(), firstDate.getMonth());
+                last = CommonUtils.addSecondsToDate(-firstDate.getOffset().getTotalSeconds(),
+                    firstDate.withDayOfMonth(yearMonthObject.lengthOfMonth()).withHour(23).withMinute(59).withSecond(59).withNano(999999999));
+
 
                 if (first != null && last != null) {
-                    whereClause = "created_date >= '" + first.toLocalDate() + "' AND created_date <= '" + last.toLocalDate() + "'";
+                    whereClause = "created_date >= '" + first.toLocalDateTime() + "' AND created_date <= '" + last.toLocalDateTime() + "'";
 
                 }
                 if (clientId != 0) {
@@ -144,10 +137,7 @@ public class StatisticsService {
     public BigDecimal getIncomeUsingWhereClause(EntityManager em, String whereClause) {
         Query query = null;
 
-        query = em.createNativeQuery(
-            "SELECT sum(grand_total)   \n " +
-                "      FROM invoice  WHERE " +
-                whereClause);
+        query = em.createNativeQuery("SELECT sum(grand_total) FROM invoice WHERE " + whereClause);
 
         return (BigDecimal) query.getSingleResult();
 
@@ -160,11 +150,11 @@ public class StatisticsService {
         if (firstDate == null && lastDate == null) {
             whereClause = "payment_status = 'PAID' ";
         } else if (firstDate != null && lastDate == null) {
-            whereClause = whereClause + " And created_date >= '" + firstDate.toLocalDate() + "' AND created_date < '" + firstDate.toLocalDate().plusDays(1) + "'";
+            whereClause = whereClause + " And created_date >= '" + firstDate.toLocalDateTime() + "' AND created_date < '" + firstDate.toLocalDateTime().plusDays(1) + "'";
         } else if (firstDate != null && lastDate != null) {
-            whereClause = whereClause + " And created_date >= '" + firstDate.toLocalDate() + "' AND created_date < '" + lastDate.toLocalDate() + "'";
-        } else if (!lastDate.toLocalDate().equals(ZonedDateTime.now().toLocalDate())) {
-            whereClause = whereClause + "created_date >= '" + firstDate.toLocalDate() + "' AND created_date <= '" + lastDate.toLocalDate() + "'";
+            whereClause = whereClause + " And created_date >= '" + firstDate.toLocalDateTime() + "' AND created_date < '" + lastDate.toLocalDateTime() + "'";
+        } else if (!lastDate.toLocalDateTime().equals(ZonedDateTime.now().toLocalDateTime())) {
+            whereClause = whereClause + "created_date >= '" + firstDate.toLocalDateTime() + "' AND created_date <= '" + lastDate.toLocalDateTime() + "'";
         }
         if (clientId != 0) {
             whereClause = whereClause + " AND client_id = '" + clientId + "'";
@@ -193,11 +183,11 @@ public class StatisticsService {
 
         if (statisticsRequestDTO.getFromDate() != null && statisticsRequestDTO.getToDate() == null) {
             ZonedDateTime localFistDate = statisticsRequestDTO.getFromDate().withZoneSameLocal(Constants.UTC_ZONE_ID).withZoneSameInstant(ZoneId.ofOffset("UTC", ZoneOffset.of(statisticsRequestDTO.getOffset())));
-            whereClause = "i.created_date >= '" + localFistDate.toLocalDate();
+            whereClause = "i.created_date >= '" + localFistDate.toLocalDateTime();
         } else if (statisticsRequestDTO.getFromDate() != null && statisticsRequestDTO.getToDate() != null) {
             ZonedDateTime localFistDate = statisticsRequestDTO.getFromDate().withZoneSameLocal(Constants.UTC_ZONE_ID).withZoneSameInstant(ZoneId.ofOffset("UTC", ZoneOffset.of(statisticsRequestDTO.getOffset())));
             ZonedDateTime localLastDate = statisticsRequestDTO.getToDate().withZoneSameLocal(Constants.UTC_ZONE_ID).withZoneSameInstant(ZoneId.ofOffset("UTC", ZoneOffset.of(statisticsRequestDTO.getOffset())));
-            whereClause = "i.created_date >= '" + localFistDate.toLocalDate() + "' AND i.created_date <= '" + localLastDate.toLocalDate() + "'";
+            whereClause = "i.created_date >= '" + localFistDate.toLocalDateTime() + "' AND i.created_date <= '" + localLastDate.toLocalDateTime() + "'";
         }
 
         if (clientId != 0) {
