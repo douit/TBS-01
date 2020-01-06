@@ -86,9 +86,9 @@
                                                     [ngClass]="displayFieldCss(type, 'text')">
                                         <input type="text"
                                                matInput
-                                               id="name"
+                                               id="code"
                                                (ngModelChange)="textValidationType($event)"
-                                               formControlName="name">
+                                               formControlName="code">
                                         <!-- <app-field-error-display [displayError]="isFieldValid(type, 'text')" errorMsg="Required text">
                                          </app-field-error-display>-->
                                     </mat-form-field>
@@ -102,10 +102,10 @@
                                     <mat-form-field class="example-full-width has-label"
                                                     [ngClass]="{'has-success':validNumberType===true}"
                                                     [ngClass]="displayFieldCss(type, 'number')">
-                                        <input type="text" name="description" class="input-lg"
+                                        <input type="text" name="name" class="input-lg"
                                                matInput
                                                (ngModelChange)="numberValidationType($event)"
-                                               formControlName="description">
+                                               formControlName="name">
                                         <!--<app-field-error-display [displayError]="isFieldValid(type, 'number')" errorMsg="Add a number!">
                                         </app-field-error-display>-->
                                     </mat-form-field>
@@ -188,6 +188,8 @@
                                         [settings]="dropdownSettings"
                                         (onSelect)="onItemSelect($event)"
                                         (onSelectAll)="onSelectAll($event)"
+                                        (onDeSelect)="onItemDeSelect($event)"
+
                                     >
                                     </ng-multiselect-dropdown>
                                 </div>

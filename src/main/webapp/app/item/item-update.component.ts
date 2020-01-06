@@ -15,6 +15,8 @@ import {IClient} from 'app/shared/model/client.model';
 import {ClientService} from 'app/client/client.service';
 import {ErrorStateMatcher} from "@angular/material/core";
 import { IDropdownSettings } from 'ng-multiselect-dropdown';
+import {ITax} from "app/shared/model/tax.model";
+import {TaxService} from "app/item/tax.service";
 
 export class MyErrorStateMatcher implements ErrorStateMatcher {
   isErrorState(control: FormControl | null, form: FormGroupDirective | NgForm | null): boolean {
@@ -30,6 +32,10 @@ export class ItemUpdateComponent implements OnInit {
   isSaving: boolean;
   selectedCategory: ICategory;
   selectedClient: IClient;
+  allTaxes: ITax[];
+  selectedTaxes: ITax[] = [];
+
+  selectedTax: ITax;
   validSourceType: boolean = false;
   categories: ICategory[];
   type : FormGroup;
@@ -47,7 +53,7 @@ export class ItemUpdateComponent implements OnInit {
   validPasswordLogin: boolean = false;
   validNumberType: boolean = false;
   register : FormGroup;
-
+  taxesList = [];
   dropdownList = [];
   selectedItems = [];
   dropdownSettings : IDropdownSettings= {};
@@ -59,12 +65,15 @@ export class ItemUpdateComponent implements OnInit {
     price: [],
     defaultQuantity: [],
     category: [],
-    client: []
+    client: [],
+    taxes:[],
+    code:[]
   });
 
   constructor(
     protected jhiAlertService: JhiAlertService,
     protected itemService: ItemService,
+    protected taxService: TaxService,
     protected categoryService: CategoryService,
     protected clientService: ClientService,
     protected activatedRoute: ActivatedRoute,
@@ -75,16 +84,21 @@ export class ItemUpdateComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.dropdownList = [
-      { item_id: 1, item_text: 'KSA Tax' },
-      { item_id: 2, item_text: 'KSA Tax' },
+    // let taxss = {item_id: 1, item_text: 'KSA Tax' }
+    // this.dropdownList.push(taxss)
 
-    ];
-    this.selectedItems = [
-      { item_id: 1, item_text: 'KSA Tax' },
-      { item_id: 2, item_text: 'KSA Tax' }
+this.taxService.getTaxes().subscribe(res => {
 
-    ];
+  this.allTaxes = res.body;
+  res.body.forEach(tax => {
+    this.taxesList.push(
+      {item_id: tax.id, item_text: tax.code }
+    )
+  });
+  this.dropdownList= this.taxesList;
+
+  });
+
     this.dropdownSettings = {
       singleSelection: false,
       idField: 'item_id',
@@ -115,22 +129,58 @@ export class ItemUpdateComponent implements OnInit {
       .subscribe((res: IClient[]) => (this.clients = res), (res: HttpErrorResponse) => this.onError(res.message));
   }
   onItemSelect(item: any) {
+    alert(item.valueOf().item_id)
     console.log(item);
+    let that = this;
+    this.taxService.getTax(item.valueOf().item_id).subscribe(res => {
+      that.selectedTax = res.body;
+      // this.selectedTax = {
+      //   code:res.body.code,
+      //   name :res.body.name,
+      //   id:res.body.id
+      // };
+
+      this.selectedTaxes.push(this.selectedTax);
+      this.selectedItems.push(item);
+      alert(this.selectedTaxes.length)
+
+    });
+
+
   }
   onSelectAll(items: any) {
     console.log(items);
+  }
+  onItemDeSelect(item: any){
+
+    for(let i = 1; i <= this.selectedItems.length; i++){
+      let tax = this.selectedItems.pop();
+      this.selectedTaxes.pop();
+      if(tax.valueOf().item_id != item.valueOf().item_id){
+        this.selectedItems.push(tax);
+        this.taxService.getTax(item.valueOf().item_id).subscribe(res => {
+          this.selectedTaxes.push(res.body)
+        });
+      }else{
+
+        alert(this.selectedTaxes.length)
+      }
+    }
+
+
   }
   updateForm(item: IItem) {
     this.selectedCategory= item.category;
     this.selectedClient = item.client;
     this.editForm.patchValue({
       id: item.id,
+      code: item.code,
       name: item.name,
       description: item.description,
       price: item.price,
       defaultQuantity: item.defaultQuantity,
       category: item.category,
-      client: item.client,
+      client: item.client
 
     });
 
@@ -150,16 +200,20 @@ export class ItemUpdateComponent implements OnInit {
     }
   }
 
+
+
   private createFromForm(): IItem {
     return {
       ...new Item(),
       id: this.editForm.get(['id']).value,
+      code : this.editForm.get(['code']).value,
       name: this.editForm.get(['name']).value,
       description: this.editForm.get(['description']).value,
       price: this.editForm.get(['price']).value,
       defaultQuantity: this.editForm.get(['defaultQuantity']).value,
       category: this.editForm.get(['category']).value,
-      client: this.editForm.get(['client']).value
+      client: this.editForm.get(['client']).value,
+      taxes :this.selectedTaxes
 
     };
   }
