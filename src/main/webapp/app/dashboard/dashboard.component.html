@@ -69,7 +69,7 @@
             <div class="col-md-2">
                 <mat-form-field>
                     <mat-label *ngIf="selectedClient == null">Select an option</mat-label>
-                    <mat-label *ngIf="selectedClient != null">{{selectedClient.name}}</mat-label>
+                    <!--<mat-label *ngIf="selectedClient != null">{{selectedClient.name}}</mat-label>-->
                     <mat-select class="form-control" id="field_client" name="clint"
                                  [(value)]="selectedClient"  >
                         <mat-option [value]="null">None</mat-option>
