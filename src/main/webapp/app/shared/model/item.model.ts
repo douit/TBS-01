@@ -6,6 +6,7 @@ import {IClient} from "app/shared/model/client.model";
 
 export interface IItem {
   id?: number;
+  code?:number;
   name?: string;
   description?: string;
   price?: number;
@@ -29,7 +30,8 @@ export class Item implements IItem {
     public categoryId?: number,
     public clientId?: number,
     category?:ICategory,
-    client?:IClient
+    client?:IClient,
+    code?:number
 
   ) {}
 }
