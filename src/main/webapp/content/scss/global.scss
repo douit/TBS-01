@@ -115,3 +115,37 @@ $fa-font-path: "~font-awesome/fonts";
 .odd_row{
   background:#f9f9f9;
 }
+
+/**************** UI team CR ************/
+/*.main-panel {
+  .main-content {
+    margin-top: 0px;
+    padding-top: 0px;
+  }
+}*/
+
+body {
+  background-color: #fafafa;
+}
+
+.dashboard-filter {
+  margin-right: 20px;
+  margin-bottom: 10px;
+
+  // replace main-panel which impact other pages
+  margin-top: -90px;
+}
+
+.dashboard-filter-element {
+  z-index: 1030;
+}
+
+.calendar-icon {
+  border: none;
+  background-color: transparent;
+}
+
+// Calendar pickup
+.ng-star-inserted {
+  z-index: 1040;
+}
