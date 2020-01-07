@@ -4,6 +4,7 @@ import sa.tamkeentech.tbs.domain.Payment;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
+import sa.tamkeentech.tbs.service.dto.PaymentDTO;
 
 import java.util.Optional;
 

@@ -40,7 +40,7 @@ public class PaymentDTO implements Serializable {
 
     private String transactionId;
 
-    private PaymentMethodDTO paymentMethod;
+        private PaymentMethodDTO paymentMethod;
 
     private BigDecimal amount;
 

@@ -177,7 +177,7 @@ public class PaymentService {
         if (Constants.CC_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode().toString())) {
             payment.setStatus(PaymentStatus.PAID);
             invoice.setPaymentStatus(PaymentStatus.PAID);
-            sendPaymentNotificationToClint(clientMapper.toDto(invoice.getClient()) ,invoice.getAccountId(),payment);
+        //    sendPaymentNotificationToClint(clientMapper.toDto(invoice.getClient()) ,invoice.getAccountId(),payment);
         } else {
             payment.setStatus(PaymentStatus.UNPAID);
             invoice.setPaymentStatus(PaymentStatus.UNPAID);

@@ -1,12 +1,24 @@
 package sa.tamkeentech.tbs.web.rest;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.springframework.boot.configurationprocessor.json.JSONException;
+import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
 import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
 import sa.tamkeentech.tbs.config.Constants;
-import sa.tamkeentech.tbs.domain.PaymentMethod;
+import sa.tamkeentech.tbs.domain.Payment;
+import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
+import sa.tamkeentech.tbs.repository.PaymentRepository;
 import sa.tamkeentech.tbs.service.PaymentService;
 import sa.tamkeentech.tbs.service.dto.PaymentMethodDTO;
+import sa.tamkeentech.tbs.service.dto.PaymentResponseDTO;
 import sa.tamkeentech.tbs.service.dto.PaymentStatusResponseDTO;
+import sa.tamkeentech.tbs.service.mapper.PaymentMapper;
 import sa.tamkeentech.tbs.web.rest.errors.BadRequestAlertException;
 import sa.tamkeentech.tbs.service.dto.PaymentDTO;
 
@@ -18,6 +30,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -37,10 +50,18 @@ public class PaymentResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
+    @Value("${tbs.payment.check-payment-url}")
+    private String checkPaymentUrl;
+    private final ObjectMapper objectMapper;
     private final PaymentService paymentService;
+    private final PaymentRepository paymentRepository;
+    private final PaymentMapper paymentMapper;
 
-    public PaymentResource(PaymentService paymentService) {
+    public PaymentResource(ObjectMapper objectMapper, PaymentService paymentService, PaymentRepository paymentRepository, PaymentMapper paymentMapper) {
+        this.objectMapper = objectMapper;
         this.paymentService = paymentService;
+        this.paymentRepository = paymentRepository;
+        this.paymentMapper = paymentMapper;
     }
 
     /**
@@ -74,6 +95,40 @@ public class PaymentResource {
     }
 
 
+    @GetMapping("/billing/payments/checkStatus/{transactionId}")
+    public PaymentDTO checkPaymentStatus(@PathVariable  String transactionId) throws URISyntaxException, JSONException, IOException {
+        Payment payment = paymentRepository.findByTransactionId(transactionId);
+        PaymentDTO result =paymentMapper.toDto(payment);
+
+        if(result.getStatus() != PaymentStatus.PAID){
+            JSONObject req = new JSONObject();
+            req.put("transactionId",result.getTransactionId());
+            HttpClient client = HttpClientBuilder.create().build();
+            HttpPost post = new HttpPost(checkPaymentUrl);
+            post.setHeader("Content-Type", "application/json");
+            post.setEntity(new StringEntity(req.toString()));
+            HttpResponse response = client.execute(post);
+            log.debug("----check payment request : {}", req);
+            PaymentStatusResponseDTO paymentStatusResponseDTO = objectMapper.readValue(response.getEntity().getContent(), PaymentStatusResponseDTO.class);
+
+            result = paymentService.updateCreditCardPayment(paymentStatusResponseDTO,payment,payment.getInvoice());
+
+            return PaymentDTO.builder()
+                .transactionId(result.getTransactionId())
+                .status(result.getStatus())
+                .paymentMethod(result.getPaymentMethod())
+                .amount(result.getAmount())
+                .build();
+        }
+        else{
+            return PaymentDTO.builder()
+                .transactionId(result.getTransactionId())
+                .status(result.getStatus())
+                .paymentMethod(result.getPaymentMethod())
+                .amount(result.getAmount())
+                .build();
+        }
+    }
     /**
      * {@code PUT  /payments} : Updates an existing payment.
      *
