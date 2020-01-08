@@ -1,6 +1,7 @@
 package sa.tamkeentech.tbs.service;
 
 import liquibase.database.core.FirebirdDatabase;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,7 @@ import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.List;
 
 
@@ -42,7 +44,7 @@ public class StatisticsService {
 
     }
 
-    public List<Object[]> getInvoicesUsingWhereClause(EntityManager em, String whereClause, TypeStatistics type) {
+    public List<Object[]> getInvoicesUsingWhereClause(EntityManager em, String whereClause, TypeStatistics type, List<Long> clientIds) {
         Query query = null;
 
         switch (type) {
@@ -51,14 +53,14 @@ public class StatisticsService {
                     "SELECT count(*) As totalInvoice , \n " +
                         "      sum(case when payment_status = 'PAID' then 1 else 0 end ) As PaidInvoice" +
                         "      FROM invoice " +
-                        ((StringUtils.isNotEmpty(whereClause))? " WHERE " + whereClause: ""));
+                        ((StringUtils.isNotEmpty(whereClause)) ? " WHERE " + whereClause : ""));
                 break;
             case ANNUAL:
                 query = em.createNativeQuery(
                     "SELECT date_trunc('month', created_date) As Month , count(*) As totalInvoice , \n " +
                         "      sum(case when payment_status = 'PAID' then 1 else 0 end ) As PaidInvoice" +
                         "      FROM invoice " +
-                        ((StringUtils.isNotEmpty(whereClause))? " WHERE " + whereClause: "") +
+                        ((StringUtils.isNotEmpty(whereClause)) ? " WHERE " + whereClause : "") +
                         "      group by Month ORDER BY Month");
                 break;
             case MONTHLY:
@@ -66,17 +68,20 @@ public class StatisticsService {
                     "SELECT date_trunc('day', created_date) As Day , count(*) As totalInvoice , \n " +
                         "      sum(case when payment_status = 'PAID' then 1 else 0 end ) As PaidInvoice" +
                         "      FROM invoice " +
-                        ((StringUtils.isNotEmpty(whereClause))? " WHERE " + whereClause: "") +
+                        ((StringUtils.isNotEmpty(whereClause)) ? " WHERE " + whereClause : "") +
                         "      group by Day ORDER BY Day");
                 break;
             default:
                 break;
         }
+        if (CollectionUtils.isNotEmpty(clientIds)) {
+            query.setParameter("clientIds", clientIds);
+        }
         return query.getResultList();
 
     }
 
-    public List<Object[]> prepareQuery(ZonedDateTime firstDate, ZonedDateTime lastDate, long clientId, TypeStatistics type) {
+    public List<Object[]> prepareQuery(ZonedDateTime firstDate, ZonedDateTime lastDate, List<Long> clientIds, TypeStatistics type) {
         ZonedDateTime first = null;
         ZonedDateTime last = null;
         YearMonth yearMonthObject = null;
@@ -84,20 +89,20 @@ public class StatisticsService {
         String whereClause = null;
         switch (type) {
             case GENERAL:
-                if (firstDate == null && lastDate == null) {
-                    whereClause = "";
-                } else if (firstDate != null && lastDate == null) {
-                    whereClause = "created_date >= '" + firstDate.toLocalDateTime() + "'";
-                } else if (firstDate != null && lastDate != null) {
-                    whereClause = "created_date >= '" + firstDate.toLocalDateTime() + "' AND created_date <= '" + lastDate.toLocalDateTime() + "'";
-                } else if (firstDate == null && lastDate != null) {
-                    whereClause = "created_date <= '" + lastDate.toLocalDateTime() + "'";
+                    if (firstDate == null && lastDate == null) {
+                        whereClause = "";
+                    } else if (firstDate != null && lastDate == null) {
+                        whereClause = "created_date >= '" + firstDate.toLocalDateTime() + "'";
+                    } else if (firstDate != null && lastDate != null) {
+                        whereClause = "created_date >= '" + firstDate.toLocalDateTime() + "' AND created_date <= '" + lastDate.toLocalDateTime() + "'";
+                    } else if (firstDate == null && lastDate != null) {
+                        whereClause = "created_date <= '" + lastDate.toLocalDateTime() + "'";
+                    }
+                if (CollectionUtils.isNotEmpty(clientIds)) {
+                    whereClause = (StringUtils.isEmpty(whereClause)) ? " client_id IN :clientIds " :
+                        whereClause + " client_id IN :clientIds ";
                 }
-                if (clientId != 0) {
-                    whereClause = (StringUtils.isEmpty(whereClause))? " client_id = '" + clientId + "'":
-                        whereClause + " AND client_id = '" + clientId + "'";
-                }
-                break;
+                    break;
             case ANNUAL:
                 first = CommonUtils.addSecondsToDate(-firstDate.getOffset().getTotalSeconds(),
                     firstDate.withMonth(1).withDayOfMonth(1).withHour(00).withMinute(00).withSecond(00).withNano(00));
@@ -108,8 +113,8 @@ public class StatisticsService {
                     whereClause = "created_date >= '" + first.toLocalDateTime() + "' AND created_date <= '" + last.toLocalDateTime() + "'";
 
                 }
-                if (clientId != 0) {
-                    whereClause = whereClause + " AND client_id = '" + clientId + "'";
+                if (CollectionUtils.isNotEmpty(clientIds)) {
+                    whereClause = whereClause + " AND client_id IN :clientIds ";
                 }
                 break;
             case MONTHLY:
@@ -124,26 +129,29 @@ public class StatisticsService {
                     whereClause = "created_date >= '" + first.toLocalDateTime() + "' AND created_date <= '" + last.toLocalDateTime() + "'";
 
                 }
-                if (clientId != 0) {
-                    whereClause = whereClause + " AND client_id = '" + clientId + "'";
+                if (CollectionUtils.isNotEmpty(clientIds)) {
+                    whereClause = whereClause + " AND client_id IN :clientIds ";
                 }
             default:
                 break;
 
         }
-        return getInvoicesUsingWhereClause(entityManager, whereClause, type);
+        return getInvoicesUsingWhereClause(entityManager, whereClause, type, clientIds);
     }
 
-    public BigDecimal getIncomeUsingWhereClause(EntityManager em, String whereClause) {
+    public BigDecimal getIncomeUsingWhereClause(EntityManager em, String whereClause, List<Long> clientIds) {
         Query query = null;
 
         query = em.createNativeQuery("SELECT sum(grand_total) FROM invoice WHERE " + whereClause);
 
+        if (CollectionUtils.isNotEmpty(clientIds)) {
+            query.setParameter("clientIds", clientIds);
+        }
         return (BigDecimal) query.getSingleResult();
 
     }
 
-    public BigDecimal prepareIncomeQuery(ZonedDateTime firstDate, ZonedDateTime lastDate, long clientId) {
+    public BigDecimal prepareIncomeQuery(ZonedDateTime firstDate, ZonedDateTime lastDate, List<Long> clientIds) {
 
         String whereClause = "payment_status = 'PAID' ";
 
@@ -156,14 +164,14 @@ public class StatisticsService {
         } else if (!lastDate.toLocalDateTime().equals(ZonedDateTime.now().toLocalDateTime())) {
             whereClause = whereClause + "created_date >= '" + firstDate.toLocalDateTime() + "' AND created_date <= '" + lastDate.toLocalDateTime() + "'";
         }
-        if (clientId != 0) {
-            whereClause = whereClause + " AND client_id = '" + clientId + "'";
+        if (CollectionUtils.isNotEmpty(clientIds)) {
+            whereClause = whereClause + " AND client_id IN :clientIds ";
         }
 
-        return getIncomeUsingWhereClause(entityManager, whereClause);
+        return getIncomeUsingWhereClause(entityManager, whereClause, clientIds);
     }
 
-    public BigDecimal getRefundUsingWhereClause(EntityManager em, String whereClause) {
+    public BigDecimal getRefundUsingWhereClause(EntityManager em, String whereClause, List<Long> clientIds) {
         Query query = null;
 
         query = em.createNativeQuery(
@@ -171,13 +179,16 @@ public class StatisticsService {
                 " FROM invoice i " +
                 " INNER JOIN payment p ON  p.invoice_id=i.id " +
                 " INNER JOIN refund r ON r.payment_id = p.id " +
-                ((StringUtils.isNotEmpty(whereClause))? " WHERE " + whereClause: ""));
+                ((StringUtils.isNotEmpty(whereClause)) ? " WHERE " + whereClause : ""));
 
+        if (CollectionUtils.isNotEmpty(clientIds)) {
+            query.setParameter("clientIds", clientIds);
+        }
         return (BigDecimal) query.getSingleResult();
 
     }
 
-    public BigDecimal prepareRefundQuery(StatisticsRequestDTO statisticsRequestDTO, long clientId) {
+    public BigDecimal prepareRefundQuery(StatisticsRequestDTO statisticsRequestDTO, List<Long> clientIds) {
 
         String whereClause = "";
 
@@ -190,14 +201,14 @@ public class StatisticsService {
             whereClause = "i.created_date >= '" + localFistDate.toLocalDateTime() + "' AND i.created_date <= '" + localLastDate.toLocalDateTime() + "'";
         }
 
-        if (clientId != 0) {
+        if (CollectionUtils.isNotEmpty(clientIds)) {
             if (StringUtils.isNotEmpty(whereClause)) {
                 whereClause = whereClause + " AND";
             }
-            whereClause = whereClause + " client_id = '" + clientId + "'";
+            whereClause = whereClause + " client_id IN :clientIds ";
         }
 
-        return getRefundUsingWhereClause(entityManager, whereClause);
+        return getRefundUsingWhereClause(entityManager, whereClause, clientIds);
     }
 
 }

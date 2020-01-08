@@ -155,7 +155,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       this.dateRange += this.formatter.format(toDate);
     }
     if (this.selectedClient != null) {
-      clientId = this.selectedClient.clientId;
+      clientId = this.selectedClient.id;
     }
 
     const chartMonthlyStatisticsRequest: IStatisticsRequest = {
@@ -401,20 +401,20 @@ export class DashboardComponent implements OnInit, AfterViewInit {
    const chartMonthlyStatisticsRequest: IStatisticsRequest = {
      fromDate: moment(),
      type: TypeStatistics.MONTHLY,
-     clientId: '',
+     clientId: 0,
      offset: ZonedDateTime.now().offset()._id
     };
 
     const chartAnnualStatisticsRequest: IStatisticsRequest = {
       fromDate: moment(),
       type: TypeStatistics.ANNUAL,
-      clientId: '',
+      clientId: 0,
       offset: ZonedDateTime.now().offset()._id
 
     };
     const generalStatisticsRequest: IStatisticsRequest = {
       type: TypeStatistics.GENERAL,
-      clientId: '',
+      clientId: 0,
       offset: ZonedDateTime.now().offset()._id
 
     };

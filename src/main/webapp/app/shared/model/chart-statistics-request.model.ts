@@ -7,7 +7,7 @@ export interface IStatisticsRequest {
   fromDate?:Moment ;
   toDate?:Moment ;
   type?: TypeStatistics;
-  clientId?:string;
+  clientId?:number;
   offset?:string;
 }
 
@@ -16,7 +16,7 @@ export class StatisticsRequest implements IStatisticsRequest {
     fromDate?:Moment ,
   type?: TypeStatistics,
     toDate?:Moment ,
-    clientId?:string,
+    clientId?:number,
     offset?:string
   ) {}
 }
