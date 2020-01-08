@@ -26,8 +26,6 @@ import {MOMENT} from 'angular-calendar';
 import {ZonedDateTime} from 'js-joda';
 import {NgbDateStruct} from '@ng-bootstrap/ng-bootstrap/datepicker/ngb-date-struct';
 
-// declare const $: any;
-
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
@@ -68,9 +66,6 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   toDate: NgbDate;
   maxDate: NgbDateStruct;
   startDate: NgbDateStruct;
-
-
-  @ViewChild('datepicker', {static: true}) datepicker: NgbDatepicker;
 
   dataMonthlyChart = {
     labels: []
@@ -142,12 +137,12 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   protected onError(errorMessage: string) {
     this.jhiAlertService.error(errorMessage, null, null);
   }
-  onDateSelection(date: NgbDate) {
+  onDateSelection(date: NgbDate, datepicker) {
     if (!this.fromDate && !this.toDate) {
       this.fromDate = date;
     } else if (this.fromDate && !this.toDate && date.after(this.fromDate)) {
       this.toDate = date;
-      this.datepicker.close();
+      datepicker.close();
     } else {
       this.toDate = null;
       this.fromDate = date;
