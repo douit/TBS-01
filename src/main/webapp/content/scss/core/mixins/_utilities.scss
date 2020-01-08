@@ -79,8 +79,8 @@
     &.danger-badge{
         @include badges-color($brand-danger);
     }
-    &.rose-badge{
-      @include badges-color($brand-rose);
+    &.purple-badge{
+      @include badges-color($brand-purple);
     }
 }
 
@@ -100,8 +100,8 @@
     &.badge-danger{
         background-color: $brand-danger;
     }
-    &.badge-rose{
-      background-color: $brand-rose;
+    &.badge-purple{
+      background-color: $brand-purple;
     }
     &.badge-default{
         background-color: $gray-light;

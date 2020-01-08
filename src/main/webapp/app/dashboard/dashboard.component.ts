@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, OnInit} from '@angular/core';
+import {AfterViewInit, Component, OnInit, ViewChild} from '@angular/core';
 import {TableData} from '../md/md-table/md-table.component';
 import * as Chartist from 'chartist';
 import * as $ from 'jquery';
@@ -9,7 +9,13 @@ import {IChartStatistics} from 'app/shared/model/chart-statistics.model';
 import * as moment from 'moment';
 import {IStatisticsRequest} from 'app/shared/model/chart-statistics-request.model';
 import {TypeStatistics} from 'app/shared/model/enumerations/type-statistics.model';
-import {NgbCalendar, NgbDate, NgbDateParserFormatter, NgbDatepickerConfig} from '@ng-bootstrap/ng-bootstrap';
+import {
+  NgbCalendar,
+  NgbDate,
+  NgbDateParserFormatter,
+  NgbDatepicker,
+  NgbDatepickerConfig
+} from '@ng-bootstrap/ng-bootstrap';
 
 import {parseZone} from 'moment';
 import {IClient} from 'app/shared/model/client.model';
@@ -18,6 +24,7 @@ import {ClientService} from 'app/client/client.service';
 import {JhiAlertService} from 'ng-jhipster';
 import {MOMENT} from 'angular-calendar';
 import {ZonedDateTime} from 'js-joda';
+import {NgbDateStruct} from '@ng-bootstrap/ng-bootstrap/datepicker/ngb-date-struct';
 
 // declare const $: any;
 
@@ -59,7 +66,11 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   hoveredDate: NgbDate;
   fromDate: NgbDate;
   toDate: NgbDate;
-  dateRange = '';
+  maxDate: NgbDateStruct;
+  startDate: NgbDateStruct;
+
+
+  @ViewChild('datepicker', {static: true}) datepicker: NgbDatepicker;
 
   dataMonthlyChart = {
     labels: []
@@ -78,17 +89,23 @@ export class DashboardComponent implements OnInit, AfterViewInit {
               protected jhiAlertService: JhiAlertService ) {
     this.dashboardService = dashboardService;
     const current = new Date();
-    this.minDate = {
+    this.maxDate = {
       year: current.getFullYear(),
       month: current.getMonth() + 1,
       day: current.getDate()
     };
+    const previous = new Date();
+    previous.setMonth(previous.getMonth() - 1);
+    this.startDate = {
+      year: previous.getFullYear(),
+      month: previous.getMonth() + 1,
+      day: previous.getDate()
+    };
     // this.fromDate = calendar.getToday();
     // this.toDate = calendar.getNext(calendar.getToday(), 'd', 10);
   }
-  minDate = undefined;
+  // minDate = undefined;
   public tableData: TableData;
-  public daterange: any = {};
   filterRangeDate: any = {};
   selectedClient: IClient;
   clients: IClient[];
@@ -105,6 +122,12 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   };
   myDate: any;
 
+/*  markDisabled(date: NgbDateStruct) {
+    const d = new Date(date.year, date.month - 1, date.day);
+    const current = new Date();
+    const comp = d > current;
+    return comp;
+  }*/
 
   formatDate(date: NgbDate) {
     // NgbDates use 1 for Jan, Moement uses 0, must substract 1 month for proper date conversion
@@ -116,14 +139,6 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     }
   }
 
-  public selectedDate(value: any) {
-    this.daterange.start = value.start._d;
-    this.daterange.end = value.end._d;
-    this.filterRangeDate = {
-      start: new Date(this.daterange.start),
-      end: new Date(this.daterange.end)
-    };
-  }
   protected onError(errorMessage: string) {
     this.jhiAlertService.error(errorMessage, null, null);
   }
@@ -132,7 +147,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       this.fromDate = date;
     } else if (this.fromDate && !this.toDate && date.after(this.fromDate)) {
       this.toDate = date;
-
+      this.datepicker.close();
     } else {
       this.toDate = null;
       this.fromDate = date;
@@ -145,14 +160,9 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     let clientId = null;
     if (this.fromDate != null ) {
       fromDate = this.formatDate(this.fromDate);
-      this.dateRange += this.formatter.format(fromDate);
     }
     if (this.toDate != null ) {
       toDate = this.formatDate(this.toDate).add(1, 'days');
-      if (this.dateRange !== '') {
-        this.dateRange += ' - ';
-      }
-      this.dateRange += this.formatter.format(toDate);
     }
     if (this.selectedClient != null) {
       clientId = this.selectedClient.clientId;
@@ -395,14 +405,11 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       )
       .subscribe((res: IClient[]) => (this.clients = res), (res: HttpErrorResponse) => this.onError(res.message));
 
-    const client: IClient = {
-     clientId: 'TAHAQAQ'
-   };
-   const chartMonthlyStatisticsRequest: IStatisticsRequest = {
-     fromDate: moment(),
-     type: TypeStatistics.MONTHLY,
-     clientId: '',
-     offset: ZonedDateTime.now().offset()._id
+    const chartMonthlyStatisticsRequest: IStatisticsRequest = {
+      fromDate: moment(),
+      type: TypeStatistics.MONTHLY,
+      clientId: '',
+      offset: ZonedDateTime.now().offset()._id
     };
 
     const chartAnnualStatisticsRequest: IStatisticsRequest = {

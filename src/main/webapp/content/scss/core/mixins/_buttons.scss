@@ -209,6 +209,12 @@
 
 }
 
+
+$btn-purple-color:              #fff !default;
+$btn-purple-bg:                 theme-color($purple) !default;
+$btn-purple-border-color:             $btn-purple-bg !default;
+
+
 @mixin bmd-raised-button-color() {
   &.btn-primary {
     @include bmd-raised-button-variant($btn-primary-color, $btn-primary-bg, $btn-primary-border-color);
@@ -228,8 +234,8 @@
   &.btn-danger {
     @include bmd-raised-button-variant($btn-danger-color, $btn-danger-bg, $btn-danger-border-color);
   }
-  &.btn-rose {
-    @include bmd-raised-button-variant($btn-rose-color, $btn-rose-bg, $btn-rose-border-color);
+  &.btn-purple {
+    @include bmd-raised-button-variant($btn-purple-color, $btn-purple-bg, $btn-purple-border-color);
   }
   &,
   &.btn-default{

@@ -168,7 +168,7 @@
     &.bg-primary,
     &.card-rotate.bg-primary .front,
     &.card-rotate.bg-primary .back{
-      background: linear-gradient(60deg, $purple-400, $purple-600);
+      background: linear-gradient(60deg, $blue-600, $blue-800);
     }
     .card-header-info .card-icon,
     .card-header-info .card-text,
@@ -184,7 +184,8 @@
     &.bg-success,
     &.card-rotate.bg-success .front,
     &.card-rotate.bg-success .back{
-      background: linear-gradient(60deg, $green-400, $green-600);
+      // background: linear-gradient(60deg, $green-400, $green-600);
+      background: linear-gradient(60deg, $teal-400, $teal-600);
     }
     .card-header-warning .card-icon,
     .card-header-warning .card-text,
@@ -200,16 +201,16 @@
     &.bg-danger,
     &.card-rotate.bg-danger .front,
     &.card-rotate.bg-danger .back{
-      background: linear-gradient(60deg, $red-400, $red-600);
+      background: linear-gradient(60deg, $red-a200, $red-a200);
     }
 
-    .card-header-rose .card-icon,
-    .card-header-rose .card-text,
-    .card-header-rose:not(.card-header-icon):not(.card-header-text),
-    &.bg-rose,
-    &.card-rotate.bg-rose .front,
-    &.card-rotate.bg-rose .back{
-      background: linear-gradient(60deg, $pink-400, $pink-600);
+    .card-header-purple .card-icon,
+    .card-header-purple .card-text,
+    .card-header-purple:not(.card-header-icon):not(.card-header-text),
+    &.bg-purple,
+    &.card-rotate.bg-purple .front,
+    &.card-rotate.bg-purple .back{
+      background: linear-gradient(60deg, $purple-400, $purple-600);
     }
 
     .card-header-primary .card-icon,
@@ -226,10 +227,10 @@
         @include shadow-big-color($brand-danger);
     }
 
-    .card-header-rose .card-icon,
-    .card-header-rose:not(.card-header-icon):not(.card-header-text),
-    .card-header-rose .card-text{
-        @include shadow-big-color($brand-rose);
+    .card-header-purple .card-icon,
+    .card-header-purple:not(.card-header-icon):not(.card-header-text),
+    .card-header-purple .card-text{
+        @include shadow-big-color($brand-purple);
     }
 
     .card-header-warning .card-icon,

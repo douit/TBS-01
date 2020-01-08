@@ -114,11 +114,11 @@
   }
 
   &#{$component}-rose#{$selector-suffix} {
-    $args-rose: map-merge($args, (
-            variation-color: $brand-rose,
+    $args-purple: map-merge($args, (
+            variation-color: $brand-purple,
             variation-color-text: $mdb-text-color-light
     ));
-    @include call-variations-content-mixin($args-rose);
+    @include call-variations-content-mixin($args-purple);
   }
 
 }

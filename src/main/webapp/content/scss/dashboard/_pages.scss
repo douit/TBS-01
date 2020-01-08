@@ -68,11 +68,11 @@
         }
         @include lock-page-input-color($brand-danger);
     }
-    &[filter-color="rose"]{
+    &[filter-color="purple"]{
         &:after{
             @include linear-gradient(rgba($pink-100,.56), rgba($pink-300,.95));
         }
-        @include lock-page-input-color($brand-rose);
+        @include lock-page-input-color($brand-purple);
     }
 
     &[data-image]:after{
@@ -299,8 +299,8 @@
                 &.icon-danger{
                     color: $brand-danger;
                 }
-                &.icon-rose{
-                    color: $brand-rose;
+                &.icon-purple{
+                    color: $brand-purple;
                 }
             }
 
@@ -484,7 +484,7 @@
             @include linear-gradient(rgba($red-200,.56), rgba($red-400,.95));
         }
     }
-    &[filter-color="rose"]{
+    &[filter-color="purple"]{
         &:after{
             @include linear-gradient(rgba($pink-100,.56), rgba($pink-300,.95));
         }

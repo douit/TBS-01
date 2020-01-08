@@ -4,7 +4,7 @@
 
             <div class="form-group hidden">
                 <div class="input-group">
-                    <input name="datepicker"
+                    <input name="datepicker" id="datepicker1"
                            class="form-control"
                            ngbDatepicker
                            #datepicker="ngbDatepicker"
@@ -13,15 +13,16 @@
                            [displayMonths]="2"
                            [dayTemplate]="t"
                            outsideDays="hidden"
-                           [maxDate]="minDate"
-                           [startDate]="fromDate">
-                    <ng-template #t let-date let-focused="focused">
+                           [maxDate]="maxDate"
+                           [startDate]="startDate">
+                    <ng-template #t let-date let-focused="focused" let-disabled="disabled">
                                         <span class="custom-day"
                                               [class.focused]="focused"
                                               [class.range]="isRange(date)"
                                               [class.faded]="isHovered(date) || isInside(date)"
                                               (mouseenter)="hoveredDate = date"
-                                              (mouseleave)="hoveredDate = null">
+                                              (mouseleave)="hoveredDate = null"
+                                              [class.text-muted]="disabled">
                                             {{ date.day }}
                                         </span>
                     </ng-template>
@@ -90,7 +91,8 @@
         <div class="row">
             <div class="col-lg-3 col-md-6 col-sm-6">
                 <div class="card card-stats">
-                    <div class="card-header card-header-warning card-header-icon">
+                    <!--<div class="card-header card-header-warning card-header-icon">-->
+                    <div class="card-header card-header-success card-header-icon">
                         <div class="card-icon">
                             <i class="material-icons">equalizer</i>
                         </div>
@@ -108,7 +110,8 @@
             </div>
             <div class="col-lg-3 col-md-6 col-sm-6">
                 <div class="card card-stats">
-                    <div class="card-header card-header-success card-header-icon">
+                    <!--<div class="card-header card-header-success card-header-icon">-->
+                    <div class="card-header card-header-primary card-header-icon">
                         <div class="card-icon">
                             <i class="material-icons">trending_up</i>
                         </div>
@@ -125,7 +128,8 @@
             </div>
             <div class="col-lg-3 col-md-6 col-sm-6">
                 <div class="card card-stats">
-                    <div class="card-header card-header card-header-icon">
+                    <!--<div class="card-header card-header card-header-icon">-->
+                    <div class="card-header card-header-danger card-header-icon">
                         <div class="card-icon">
                             <i class="material-icons">cached</i>
                         </div>
@@ -142,7 +146,8 @@
             </div>
             <div class="col-lg-3 col-md-6 col-sm-6">
                 <div class="card card-stats">
-                    <div class="card-header card-header-info card-header-icon">
+                   <!-- <div class="card-header card-header-info card-header-icon">-->
+                    <div class="card-header card-header-purple card-header-icon">
                         <div class="card-icon">
                             <i class="material-icons">attach_money</i>
                         </div>
@@ -160,7 +165,7 @@
         <div class="row">
 
             <div class="card">
-                <div class="card-header card-header-icon card-header-info">
+                <div class="card-header card-header-icon card-header-purple">
                     <div class="card-icon">
                         <i class="material-icons">timeline</i>
                     </div>
@@ -178,7 +183,7 @@
         <div class="row">
 
             <div class="card">
-                <div class="card-header card-header-icon card-header-success">
+                <div class="card-header card-header-icon card-header-primary">
                     <div class="card-icon">
                         <i class="material-icons">insert_chart</i>
                     </div>

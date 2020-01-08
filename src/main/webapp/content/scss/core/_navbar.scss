@@ -132,8 +132,8 @@
         @include navbar-colors($bg-warning, $white-color);
     }
 
-    &.bg-rose{
-        @include navbar-colors($bg-rose, $white-color);
+    &.bg-purple{
+        @include navbar-colors($bg-purple, $white-color);
     }
 
     &.bg-danger{

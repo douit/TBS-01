@@ -371,7 +371,7 @@
         @include tag-color($brand-danger);
     }
     &.tag-rose{
-      @include tag-color($brand-rose);
+      @include tag-color($brand-purple);
     }
 }
 @mixin tag-color ($color){

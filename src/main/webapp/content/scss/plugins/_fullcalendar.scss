@@ -550,9 +550,9 @@ temporary rendered events).
         background-color: $brand-danger;
 		@include shadow-big-color($brand-danger);
     }
-	&.event-rose{
-		background-color: $brand-rose;
-		@include shadow-big-color($brand-rose);
+	&.event-purple{
+		background-color: $brand-purple;
+		@include shadow-big-color($brand-purple);
 	}
 	&.event-default{
 		background-color: $gray-light;

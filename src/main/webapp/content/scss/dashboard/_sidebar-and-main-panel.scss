@@ -19,8 +19,8 @@
         max-height: 42px;
 
         img{
-            width: 42px;
-            top: 13px;
+            // width: 42px;
+            top: 20px;
             left: 18px;
             position: absolute;
         }
@@ -403,8 +403,8 @@
     &[data-color="danger"]{
         @include set-background-color-button($brand-danger);
     }
-    &[data-color="rose"]{
-        @include set-background-color-button($brand-rose);
+    &[data-color="purple"]{
+        @include set-background-color-button($brand-purple);
     }
 
     &[data-color="white"]{

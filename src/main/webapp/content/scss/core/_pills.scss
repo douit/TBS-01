@@ -56,14 +56,14 @@
         }
     }
 
-    &.nav-pills-rose{
+    &.nav-pills-purple{
         .nav-item {
             .nav-link.active{
                 &,
                 &:focus,
                 &:hover{
-                    background-color: $brand-rose;
-                    @include shadow-big-color($brand-rose);
+                    background-color: $brand-purple;
+                    @include shadow-big-color($brand-purple);
                     color: $white-color;
                 }
             }

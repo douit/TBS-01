@@ -90,11 +90,6 @@ $fa-font-path: "~font-awesome/fonts";
   display: inline-block;
 }
 
-.card-header-primary .card-text{
-  background: $brand-primary !important;
-}
-
-
 /***** Datatable *******/
 .form-group.label-floating:not(.is-empty) label.control-label {
   top: -28px;
@@ -125,19 +120,34 @@ $fa-font-path: "~font-awesome/fonts";
 }*/
 
 body {
-  background-color: #fafafa;
+  background-color: #fff;
 }
 
-.dashboard-filter {
-  margin-right: 20px;
-  margin-bottom: 10px;
+@media (min-width: 992px){
+  .dashboard-filter {
+    margin-right: 20px;
+    margin-bottom: 10px;
+    // replace main-panel which impact other pages
+    margin-top: -90px;
 
-  // replace main-panel which impact other pages
-  margin-top: -90px;
-}
+    .mat-form-field-infix {
+      padding-top: 0;
+    }
 
-.dashboard-filter-element {
-  z-index: 1030;
+    .mat-form-field-wrapper {
+      margin-top: -5px;
+    }
+  }
+
+  .dashboard-filter-element {
+    z-index: 1030;
+  }
+
+  // Calendar pickup
+  .ng-star-inserted {
+    z-index: 1040;
+  }
+
 }
 
 .calendar-icon {
@@ -145,7 +155,23 @@ body {
   background-color: transparent;
 }
 
-// Calendar pickup
-.ng-star-inserted {
-  z-index: 1040;
+.mat-form-field-underline {
+  background-color: #d2d2d2 !important;
 }
+
+.card-header-primary .card-text {
+  background: $brand-warning !important;
+  box-shadow: none !important;
+  padding-top: 10px !important;
+  padding-bottom: 0px !important;
+}
+
+.card-header .card-icon {
+  padding: 10px !important;
+}
+
+.mat-form-field-label-wrapper {
+  font-size: 14px;
+}
+
+

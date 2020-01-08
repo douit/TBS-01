@@ -120,8 +120,8 @@ form {
   @include bmd-form-color($brand-danger, $brand-danger, $brand-danger, $input-border-color);
 }
 
-.has-rose {
-  @include bmd-form-color($brand-rose, $brand-rose, $brand-rose, $input-border-color);
+.has-purple {
+  @include bmd-form-color($brand-purple, $brand-purple, $brand-purple, $input-border-color);
 }
 
 // Reference http://www.google.com/design/spec/components/text-fields.html
