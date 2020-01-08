@@ -1,6 +1,8 @@
 package sa.tamkeentech.tbs.web.rest;
 
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import sa.tamkeentech.tbs.domain.PersistentToken;
 import sa.tamkeentech.tbs.repository.PersistentTokenRepository;
 import sa.tamkeentech.tbs.domain.User;
@@ -43,16 +45,18 @@ public class AccountResource {
 
     private final UserRepository userRepository;
 
-    private final UserService userService;
 
     private final MailService mailService;
 
     private final PersistentTokenRepository persistentTokenRepository;
 
-    public AccountResource(UserRepository userRepository, UserService userService, MailService mailService, PersistentTokenRepository persistentTokenRepository) {
+    @Autowired
+    @Lazy
+    UserService userService;
+
+    public AccountResource(UserRepository userRepository,  MailService mailService, PersistentTokenRepository persistentTokenRepository) {
 
         this.userRepository = userRepository;
-        this.userService = userService;
         this.mailService = mailService;
         this.persistentTokenRepository = persistentTokenRepository;
     }

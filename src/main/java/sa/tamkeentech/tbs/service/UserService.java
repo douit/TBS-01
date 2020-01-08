@@ -1,11 +1,15 @@
 package sa.tamkeentech.tbs.service;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
 import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
 import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.*;
 import sa.tamkeentech.tbs.repository.*;
 import sa.tamkeentech.tbs.security.SecurityUtils;
+import sa.tamkeentech.tbs.service.dto.ClientRoleDTO;
 import sa.tamkeentech.tbs.service.dto.UserDTO;
 import sa.tamkeentech.tbs.service.mapper.UserMapper;
 import sa.tamkeentech.tbs.service.util.RandomUtil;
@@ -19,6 +23,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sa.tamkeentech.tbs.web.rest.AccountResource;
 
 import java.time.LocalDate;
 import java.time.Instant;
@@ -55,19 +60,40 @@ public class UserService {
 
     private final UserRoleRepository userRoleRepository;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, PersistentTokenRepository persistentTokenRepository, AuthorityRepository authorityRepository, RoleRepository roleRepository1, CacheManager cacheManager, RoleRepository roleRepository, ClientRepository clientRepository, UserMapper userMapper, UserRoleRepository userRoleRepository) {
+    @Autowired
+    @Lazy
+    AccountResource accountResource;
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, PersistentTokenRepository persistentTokenRepository, AuthorityRepository authorityRepository, RoleRepository roleRepository1, CacheManager cacheManager,  UserMapper userMapper, UserRoleRepository userRoleRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.persistentTokenRepository = persistentTokenRepository;
         this.authorityRepository = authorityRepository;
         this.roleRepository = roleRepository1;
         this.cacheManager = cacheManager;
-        /*this.roleRepository = roleRepository;
-        this.clientRepository = clientRepository;*/
         this.userMapper = userMapper;
         this.userRoleRepository = userRoleRepository;
+
     }
 
+    public List<Long> listClientIds(long clientId) {
+        List<Long> clientIds = new ArrayList();
+        Set<ClientRoleDTO> clientRoleDTO = accountResource.getAccount().getClientRoles();
+
+        if(CollectionUtils.isNotEmpty(clientRoleDTO)) {
+            for (ClientRoleDTO clientRole : clientRoleDTO) {
+                clientIds.add(clientRole.getClientId());
+            }
+            if(clientId == 0){
+                return clientIds;
+            }else if(clientIds.contains(clientId)){
+                clientIds.clear();
+                clientIds.add(clientId);
+            }else{
+                clientIds.clear();
+            }
+        }
+        return clientIds;
+    }
     public Optional<User> activateRegistration(String key) {
         log.debug("Activating user for activation key {}", key);
         return userRepository.findOneByActivationKey(key)
@@ -141,9 +167,9 @@ public class UserService {
         return newUser;
     }
 
-    private boolean removeNonActivatedUser(User existingUser){
+    private boolean removeNonActivatedUser(User existingUser) {
         if (existingUser.isActivated()) {
-             return false;
+            return false;
         }
         userRepository.delete(existingUser);
         userRepository.flush();
@@ -230,9 +256,9 @@ public class UserService {
                 user.setActivated(userDTO.isActivated());
                 user.setLangKey(userDTO.getLangKey());
                 Set<UserRole> managedRoles = user.getUserRoles();
-               for (UserRole usrRole : managedRoles) {
-                   userRoleRepository.deleteById(usrRole.getId());
-               }
+                for (UserRole usrRole : managedRoles) {
+                    userRoleRepository.deleteById(usrRole.getId());
+                }
                 managedRoles.clear();
                 /*userDTO.getClientRoles().stream()
                     .map(authorityRepository::findById)
@@ -334,6 +360,7 @@ public class UserService {
 
     /**
      * Gets a list of all the authorities.
+     *
      * @return a list of all the authorities.
      */
     public List<String> getAuthorities() {

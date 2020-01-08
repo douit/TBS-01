@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, OnInit, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, OnInit} from '@angular/core';
 import {TableData} from '../md/md-table/md-table.component';
 import * as Chartist from 'chartist';
 import * as $ from 'jquery';
@@ -99,7 +99,6 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     // this.fromDate = calendar.getToday();
     // this.toDate = calendar.getNext(calendar.getToday(), 'd', 10);
   }
-  // minDate = undefined;
   public tableData: TableData;
   filterRangeDate: any = {};
   selectedClient: IClient;
@@ -117,12 +116,6 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   };
   myDate: any;
 
-/*  markDisabled(date: NgbDateStruct) {
-    const d = new Date(date.year, date.month - 1, date.day);
-    const current = new Date();
-    const comp = d > current;
-    return comp;
-  }*/
 
   formatDate(date: NgbDate) {
     // NgbDates use 1 for Jan, Moement uses 0, must substract 1 month for proper date conversion
@@ -160,7 +153,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       toDate = this.formatDate(this.toDate).add(1, 'days');
     }
     if (this.selectedClient != null) {
-      clientId = this.selectedClient.clientId;
+      clientId = this.selectedClient.id;
     }
 
     const chartMonthlyStatisticsRequest: IStatisticsRequest = {
@@ -400,23 +393,23 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       )
       .subscribe((res: IClient[]) => (this.clients = res), (res: HttpErrorResponse) => this.onError(res.message));
 
-    const chartMonthlyStatisticsRequest: IStatisticsRequest = {
-      fromDate: moment(),
-      type: TypeStatistics.MONTHLY,
-      clientId: '',
-      offset: ZonedDateTime.now().offset()._id
+   const chartMonthlyStatisticsRequest: IStatisticsRequest = {
+     fromDate: moment(),
+     type: TypeStatistics.MONTHLY,
+     clientId: 0,
+     offset: ZonedDateTime.now().offset()._id
     };
 
     const chartAnnualStatisticsRequest: IStatisticsRequest = {
       fromDate: moment(),
       type: TypeStatistics.ANNUAL,
-      clientId: '',
+      clientId: 0,
       offset: ZonedDateTime.now().offset()._id
 
     };
     const generalStatisticsRequest: IStatisticsRequest = {
       type: TypeStatistics.GENERAL,
-      clientId: '',
+      clientId: 0,
       offset: ZonedDateTime.now().offset()._id
 
     };

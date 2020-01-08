@@ -21,7 +21,7 @@ public class StatisticsRequestDTO  implements Serializable {
     private ZonedDateTime toDate;
 
     private TypeStatistics type;
-    private String clientId;
+    private long clientId;
 
     private String offset;
 
