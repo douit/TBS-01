@@ -258,10 +258,14 @@ public class UserService {
                 user.setActivated(userDTO.isActivated());
                 user.setLangKey(userDTO.getLangKey());
                 Set<UserRole> managedRoles = user.getUserRoles();
-                for (UserRole usrRole : managedRoles) {
-                    userRoleRepository.deleteById(usrRole.getId());
+                List<Long> clientIdsForAdmin = listClientIds(0);
+                for (Iterator<UserRole> i =  managedRoles.iterator();i.hasNext();) {
+                    UserRole userRole = i.next();
+                    if(clientIdsForAdmin.contains(userRole.getClient().getId())){
+                        userRoleRepository.deleteById(userRole.getId());
+                        i.remove();
+                    }
                 }
-                managedRoles.clear();
                 /*userDTO.getClientRoles().stream()
                     .map(authorityRepository::findById)
                     .filter(Optional::isPresent)
