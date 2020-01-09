@@ -100,7 +100,7 @@ public class StatisticsService {
                     }
                 if (CollectionUtils.isNotEmpty(clientIds)) {
                     whereClause = (StringUtils.isEmpty(whereClause)) ? " client_id IN :clientIds " :
-                        whereClause + " client_id IN :clientIds ";
+                        whereClause + " And client_id IN :clientIds ";
                 }
                     break;
             case ANNUAL:

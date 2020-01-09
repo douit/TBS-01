@@ -6,10 +6,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sa.tamkeentech.tbs.domain.Client;
 import sa.tamkeentech.tbs.repository.ClientRepository;
-import sa.tamkeentech.tbs.service.ClientService;
 import sa.tamkeentech.tbs.service.dto.ClientDTO;
 import sa.tamkeentech.tbs.service.mapper.ClientMapper;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -27,10 +27,12 @@ public class ClientService {
     private final ClientRepository clientRepository;
 
     private final ClientMapper clientMapper;
+    private final UserService userService;
 
-    public ClientService(ClientRepository clientRepository, ClientMapper clientMapper) {
+    public ClientService(ClientRepository clientRepository, ClientMapper clientMapper, UserService userService) {
         this.clientRepository = clientRepository;
         this.clientMapper = clientMapper;
+        this.userService = userService;
     }
 
     /**
@@ -57,6 +59,22 @@ public class ClientService {
         return clientRepository.findAll().stream()
             .map(clientMapper::toDto)
             .collect(Collectors.toCollection(LinkedList::new));
+    }
+    /**
+     * Get client based on role.
+     *
+     * @return the list of entities.
+     */
+    @Transactional(readOnly = true)
+    public List<ClientDTO> findByRole() {
+        log.debug("Request to get  Clients based on role");
+        List<Long> clientIds = userService.listClientIds(0);
+        List<ClientDTO> clients = new ArrayList();
+
+        for(Long clientId : clientIds){
+            clients.add(findOne(clientId).get());
+        }
+        return clients;
     }
 
 
