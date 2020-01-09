@@ -71,8 +71,6 @@ public class StatisticsResource {
                 .totalPaid(BigInteger.ZERO)
                 .income(BigDecimal.ZERO).build();
         }
-
-
     }
 
     @PostMapping("/chartStatistics")

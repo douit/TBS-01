@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
 import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import sa.tamkeentech.tbs.domain.Category;
 import sa.tamkeentech.tbs.domain.Client;
@@ -21,6 +22,7 @@ import sa.tamkeentech.tbs.service.mapper.ItemMapper;
 import sa.tamkeentech.tbs.service.mapper.TaxMapper;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
+import javax.persistence.criteria.Predicate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -45,13 +47,16 @@ public class ItemService {
 
     private final ClientService clientService;
 
-    public ItemService(ItemRepository itemRepository, ItemMapper itemMapper, TaxRepository taxRepository, TaxMapper taxMapper, CategoryRepository categoryRepository, ClientService clientService) {
+    private final UserService userService;
+
+    public ItemService(ItemRepository itemRepository, ItemMapper itemMapper, TaxRepository taxRepository, TaxMapper taxMapper, CategoryRepository categoryRepository, ClientService clientService, UserService userService) {
         this.itemRepository = itemRepository;
         this.itemMapper = itemMapper;
         this.taxRepository = taxRepository;
         this.taxMapper = taxMapper;
         this.categoryRepository = categoryRepository;
         this.clientService = clientService;
+        this.userService = userService;
     }
 
     /**
@@ -152,7 +157,19 @@ public class ItemService {
         return itemRepository.findByCodeAndClientId(code, id);
     }
 
+    @Transactional(readOnly = true)
     public DataTablesOutput<ItemDTO> get(DataTablesInput input) {
-        return itemMapper.toDto(itemRepository.findAll(input));
+        return itemMapper.toDto(itemRepository.findAll(input, (root, query, criteriaBuilder) -> {
+                List<Predicate> predicates = new ArrayList<>();
+            List<Long> clientIds = userService.listClientIds(0);
+            predicates.add(criteriaBuilder.and(root.get("client").get("id").in(clientIds)));
+           /* if (start != null) {
+                predicates.add(criteriaBuilder.and(criteriaBuilder.greaterThanOrEqualTo(root.get("createdDate"), start)));
+            }
+            if (end != null) {
+                predicates.add(criteriaBuilder.and(criteriaBuilder.lessThanOrEqualTo(root.get("createdDate"), end)));
+            }*/
+            return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
+        }));
     }
 }

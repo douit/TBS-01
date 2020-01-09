@@ -75,25 +75,27 @@ public class UserService {
 
     }
 
+
     public List<Long> listClientIds(long clientId) {
         List<Long> clientIds = new ArrayList();
         Set<ClientRoleDTO> clientRoleDTO = accountResource.getAccount().getClientRoles();
 
-        if(CollectionUtils.isNotEmpty(clientRoleDTO)) {
+        if (CollectionUtils.isNotEmpty(clientRoleDTO)) {
             for (ClientRoleDTO clientRole : clientRoleDTO) {
                 clientIds.add(clientRole.getClientId());
             }
-            if(clientId == 0){
+            if (clientId == 0) {
                 return clientIds;
-            }else if(clientIds.contains(clientId)){
+            } else if (clientIds.contains(clientId)) {
                 clientIds.clear();
                 clientIds.add(clientId);
-            }else{
+            } else {
                 clientIds.clear();
             }
         }
         return clientIds;
     }
+
     public Optional<User> activateRegistration(String key) {
         log.debug("Activating user for activation key {}", key);
         return userRepository.findOneByActivationKey(key)
