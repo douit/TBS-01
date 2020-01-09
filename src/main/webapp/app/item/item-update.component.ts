@@ -13,10 +13,10 @@ import {ICategory} from 'app/shared/model/category.model';
 import {CategoryService} from 'app/category/category.service';
 import {IClient} from 'app/shared/model/client.model';
 import {ClientService} from 'app/client/client.service';
-import {ErrorStateMatcher} from "@angular/material/core";
+import {ErrorStateMatcher} from '@angular/material/core';
 import { IDropdownSettings } from 'ng-multiselect-dropdown';
-import {ITax} from "app/shared/model/tax.model";
-import {TaxService} from "app/item/tax.service";
+import {ITax} from 'app/shared/model/tax.model';
+import {TaxService} from 'app/item/tax.service';
 
 export class MyErrorStateMatcher implements ErrorStateMatcher {
   isErrorState(control: FormControl | null, form: FormGroupDirective | NgForm | null): boolean {
@@ -120,18 +120,26 @@ this.taxService.getTaxes().subscribe(res => {
         map((response: HttpResponse<ICategory[]>) => response.body)
       )
       .subscribe((res: ICategory[]) => (this.categories = res), (res: HttpErrorResponse) => this.onError(res.message));
-    this.clientService
+    /*this.clientService
       .query()
       .pipe(
         filter((mayBeOk: HttpResponse<IClient[]>) => mayBeOk.ok),
         map((response: HttpResponse<IClient[]>) => response.body)
       )
-      .subscribe((res: IClient[]) => (this.clients = res), (res: HttpErrorResponse) => this.onError(res.message));
+      .subscribe((res: IClient[]) => (this.clients = res), (res: HttpErrorResponse) => this.onError(res.message));*/
+    this.clientService.getClientByRole()
+      .subscribe(
+        res => {
+          this.clients = res.body ;
+        }, res => {
+          console.log('An error has occurred when get clientByRole');
+        }
+      );
   }
   onItemSelect(item: any) {
-    alert(item.valueOf().item_id)
+    // alert(item.valueOf().item_id)
     console.log(item);
-    let that = this;
+    const that = this;
     this.taxService.getTax(item.valueOf().item_id).subscribe(res => {
       that.selectedTax = res.body;
       // this.selectedTax = {
@@ -142,7 +150,7 @@ this.taxService.getTaxes().subscribe(res => {
 
       this.selectedTaxes.push(this.selectedTax);
       this.selectedItems.push(item);
-      alert(this.selectedTaxes.length)
+      // alert(this.selectedTaxes.length);
 
     });
 
@@ -151,19 +159,18 @@ this.taxService.getTaxes().subscribe(res => {
   onSelectAll(items: any) {
     console.log(items);
   }
-  onItemDeSelect(item: any){
+  onItemDeSelect(item: any) {
 
-    for(let i = 1; i <= this.selectedItems.length; i++){
-      let tax = this.selectedItems.pop();
+    for (let i = 1; i <= this.selectedItems.length; i++) {
+      const tax = this.selectedItems.pop();
       this.selectedTaxes.pop();
-      if(tax.valueOf().item_id != item.valueOf().item_id){
+      if (tax.valueOf().item_id != item.valueOf().item_id) {
         this.selectedItems.push(tax);
         this.taxService.getTax(item.valueOf().item_id).subscribe(res => {
-          this.selectedTaxes.push(res.body)
+          this.selectedTaxes.push(res.body);
         });
-      }else{
-
-        alert(this.selectedTaxes.length)
+      } else {
+        // alert(this.selectedTaxes.length)
       }
     }
 

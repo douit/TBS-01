@@ -396,8 +396,8 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     this.clientService.getClientByRole()
       .subscribe(
         res => {
-          this.clients=res.body ;
-        },res => {
+          this.clients = res.body ;
+        }, res => {
           console.log('An error has occurred when get clientByRole');
         }
       );

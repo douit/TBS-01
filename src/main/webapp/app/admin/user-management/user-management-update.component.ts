@@ -108,11 +108,14 @@ export class UserMgmtUpdateComponent implements OnInit {
     this.filtredClients = res;
     if (!this.isCreate) {
       this.user.clientRoles.forEach(clientRole => {
-        this.role.roleClient = this.clients.filter(client => client.id === clientRole.clientId)[0].name;
-        this.role.clientId = clientRole.clientId;
-        this.role.roleName = clientRole.roleName;
+        const filteredClientRole = this.role.roleClient = this.clients.filter(client => client.id === clientRole.clientId)[0];
+        if (filteredClientRole) {
+          this.role.roleClient = this.clients.filter(client => client.id === clientRole.clientId)[0].name;
+          this.role.clientId = clientRole.clientId;
+          this.role.roleName = clientRole.roleName;
 
-        this.roles.splice(this.roles.length, 0, this.role);
+          this.roles.splice(this.roles.length, 0, this.role);
+        }
         this.role = {};
       });
       this.filterClients();

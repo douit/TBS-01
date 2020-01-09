@@ -102,4 +102,6 @@ public class InvoiceAppResource {
         InvoiceResponseDTO resp = paymentService.changePaymentMethod(referenceId, paymentMethodCode);
         return new ResponseEntity<InvoiceResponseDTO>(resp,  HttpStatus.OK);
     }
+
+
 }

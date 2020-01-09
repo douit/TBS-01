@@ -2,6 +2,7 @@ package sa.tamkeentech.tbs.web.rest;
 
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,22 +17,22 @@ import sa.tamkeentech.tbs.service.ItemService;
 import sa.tamkeentech.tbs.service.dto.ItemDTO;
 import sa.tamkeentech.tbs.service.mapper.TaxMapper;
 import sa.tamkeentech.tbs.web.rest.errors.BadRequestAlertException;
-import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
- * REST controller for managing {@link sa.tamkeentech.tbs.domain.Item}.
+ * REST controller for managing {@link Item}.
  */
 @RestController
-@RequestMapping("/api")
-// @RequestMapping("/billing")
-public class ItemResource {
+// @RequestMapping("/api")
+@RequestMapping("/billing")
+public class ItemAppResource {
 
-    private final Logger log = LoggerFactory.getLogger(ItemResource.class);
+    private final Logger log = LoggerFactory.getLogger(ItemAppResource.class);
 
     private static final String ENTITY_NAME = "item";
 
@@ -40,7 +41,7 @@ public class ItemResource {
 
     private final ItemService itemService;
     private final ItemRepository itemRepository;
-    public ItemResource(ItemService itemService, TaxRepository taxRepository, TaxMapper taxMapper, ItemRepository itemRepository) {
+    public ItemAppResource(ItemService itemService, TaxRepository taxRepository, TaxMapper taxMapper, ItemRepository itemRepository) {
         this.itemService = itemService;
         this.itemRepository = itemRepository;
     }
@@ -59,7 +60,7 @@ public class ItemResource {
             throw new BadRequestAlertException("A new item cannot already have an ID", ENTITY_NAME, "idexists");
         }
 
-        ItemDTO result = itemService.save(itemDTO, false);
+        ItemDTO result = itemService.save(itemDTO, true);
         return ResponseEntity.created(new URI("/api/items/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -81,7 +82,7 @@ public class ItemResource {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
 //        Optional<Item> item = itemRepository.findById(itemDTO.getId());
-        ItemDTO result = itemService.save(itemDTO, false);
+        ItemDTO result = itemService.save(itemDTO, true);
 //        if(item != null){
 //            throw new TbsRunTimeException("Item code Type is mandatory");
 //        }
@@ -100,7 +101,14 @@ public class ItemResource {
     @GetMapping("/items")
     public List<ItemDTO> getAllItems() {
         log.debug("REST request to get all Items");
-        return itemService.findAll();
+        List<ItemDTO> items = itemService.findAll();
+        if (CollectionUtils.isNotEmpty(items)) {
+            return items.stream().map(item -> {
+                item.setClient(null);
+                return item;
+            }).collect(Collectors.toList());
+        }
+        return items;
     }
 
     /**
@@ -113,25 +121,10 @@ public class ItemResource {
     public ResponseEntity<ItemDTO> getItem(@PathVariable Long id) {
         log.debug("REST request to get Item : {}", id);
         Optional<ItemDTO> itemDTO = itemService.findOne(id);
+        if (itemDTO.isPresent()) {
+            itemDTO.get().setClient(null);
+        }
         return ResponseUtil.wrapOrNotFound(itemDTO);
     }
 
-    /**
-     * {@code DELETE  /items/:id} : delete the "id" item.
-     *
-     * @param id the id of the itemDTO to delete.
-     * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
-     */
-    /*@DeleteMapping("/items/{id}")
-    public ResponseEntity<Void> deleteItem(@PathVariable Long id) {
-        log.debug("REST request to delete Item : {}", id);
-        itemService.delete(id);
-        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString())).build();
-    }*/
-
-    // @PreAuthorize("isAuthenticated()")
-    @GetMapping("/items/datatable")
-    public DataTablesOutput<ItemDTO> getAllItems(DataTablesInput input) {
-        return itemService.get(input);
-    }
 }

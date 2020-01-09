@@ -105,6 +105,10 @@ public class ClientService {
         return clientRepository.findByClientSecret(secret);
     }
 
+    public Optional<Client> getClientById(Long id) {
+        return clientRepository.findById(id);
+    }
+
     public Optional<Client> getClientByClientId(String appName) {
         return clientRepository.findByClientId(appName);
     }

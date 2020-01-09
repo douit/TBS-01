@@ -91,12 +91,12 @@ public class InvoiceResource {
      * @param id the id of the invoiceDTO to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
-    @DeleteMapping("/invoices/{id}")
+    /*@DeleteMapping("/invoices/{id}")
     public ResponseEntity<Void> deleteInvoice(@PathVariable Long id) {
         log.debug("REST request to delete Invoice : {}", id);
         invoiceService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString())).build();
-    }
+    }*/
 
     // @PreAuthorize("isAuthenticated()")
     @GetMapping("/invoices/datatable")

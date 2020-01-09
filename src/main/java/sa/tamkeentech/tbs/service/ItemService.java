@@ -65,7 +65,7 @@ public class ItemService {
      * @param itemDTO the entity to save.
      * @return the persisted entity.
      */
-    public ItemDTO save(ItemDTO itemDTO) {
+    public ItemDTO save(ItemDTO itemDTO, boolean isApp) {
         log.debug("Request to save Item : {}", itemDTO);
         Set<Tax> taxes = new HashSet<>();
         for(TaxDTO taxDTO : itemDTO.getTaxes()){
@@ -86,9 +86,16 @@ public class ItemService {
             throw new TbsRunTimeException("Category doesn't exist");
         }
         item.setCategory(category.get());
+
         // Client
-        String appName = SecurityUtils.getCurrentUserLogin().orElse("");
-        Optional<Client> client =  clientService.getClientByClientId(appName);
+        Optional<Client> client = Optional.empty();
+        if (isApp) {
+            String appName = SecurityUtils.getCurrentUserLogin().orElse("");
+            client =  clientService.getClientByClientId(appName);
+        } else {
+            client =  clientService.getClientById(itemDTO.getClient().getId());
+        }
+
         if (!client.isPresent()) {
             throw new TbsRunTimeException("Client not Authorized");
         }
@@ -159,9 +166,9 @@ public class ItemService {
 
     @Transactional(readOnly = true)
     public DataTablesOutput<ItemDTO> get(DataTablesInput input) {
-        return itemMapper.toDto(itemRepository.findAll(input));
+        // return itemMapper.toDto(itemRepository.findAll(input));
 
-        /*return itemMapper.toDto(itemRepository.findAll(input, (root, query, criteriaBuilder) -> {
+        return itemMapper.toDto(itemRepository.findAll(input, (root, query, criteriaBuilder) -> {
                 List<Predicate> predicates = new ArrayList<>();
             List<Long> clientIds = userService.listClientIds(0);
             predicates.add(criteriaBuilder.and(root.get("client").get("id").in(clientIds)));
@@ -172,6 +179,6 @@ public class ItemService {
             //     predicates.add(criteriaBuilder.and(criteriaBuilder.lessThanOrEqualTo(root.get("createdDate"), end)));
             // }
              return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
-        }));*/
+        }));
     }
 }
