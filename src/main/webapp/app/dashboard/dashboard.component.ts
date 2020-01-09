@@ -385,15 +385,24 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     return item.id;
   }
   public ngOnInit() {
-    this.clientService
-      .query()
-      .pipe(
-        filter((mayBeOk: HttpResponse<IClient[]>) => mayBeOk.ok),
-        map((response: HttpResponse<IClient[]>) => response.body)
-      )
-      .subscribe((res: IClient[]) => (this.clients = res), (res: HttpErrorResponse) => this.onError(res.message));
+    // this.clientService
+    //   .query()
+    //   .pipe(
+    //     filter((mayBeOk: HttpResponse<IClient[]>) => mayBeOk.ok),
+    //     map((response: HttpResponse<IClient[]>) => response.body)
+    //   )
+    //   .subscribe((res: IClient[]) => (this.clients = res), (res: HttpErrorResponse) => this.onError(res.message));
 
-   const chartMonthlyStatisticsRequest: IStatisticsRequest = {
+    this.clientService.getClientByRole()
+      .subscribe(
+        res => {
+          this.clients=res.body;
+        },res => {
+          console.log('An error has occurred when get clientByRole');
+        }
+      );
+
+    const chartMonthlyStatisticsRequest: IStatisticsRequest = {
      fromDate: moment(),
      type: TypeStatistics.MONTHLY,
      clientId: 0,

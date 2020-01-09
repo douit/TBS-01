@@ -31,6 +31,9 @@ export class ClientService {
     const options = createRequestOption(req);
     return this.http.get<IClient[]>(this.resourceUrl, { params: options, observe: 'response' });
   }
+  getClientByRole(): Observable<HttpResponse<IClient[]>> {
+    return this.http.get<IClient[]>(`${this.resourceUrl}/role`, {  observe: 'response' });
+  }
 
   delete(id: number): Observable<HttpResponse<any>> {
     return this.http.delete<any>(`${this.resourceUrl}/${id}`, { observe: 'response' });
