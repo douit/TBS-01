@@ -23,7 +23,6 @@ export class UserMgmtUpdateComponent implements OnInit {
   filtredClients: IClient[];
   isSaving: boolean;
   isCreate: boolean;
-
   validTextType = false;
   validEmailType = false;
 
@@ -86,13 +85,22 @@ export class UserMgmtUpdateComponent implements OnInit {
     this.languageHelper.getAll().then(languages => {
       this.languages = languages;
     });
-    this.clientService
-      .query()
-      .pipe(
-        filter((mayBeOk: HttpResponse<IClient[]>) => mayBeOk.ok),
-        map((response: HttpResponse<IClient[]>) => response.body)
-      )
-      .subscribe((res: IClient[]) => (this.initClientsAndExistingRoles(res)), (res: HttpErrorResponse) => this.onError(res.message));
+    this.clientService.getClientByRole()
+      .subscribe(
+        res => {
+          this.initClientsAndExistingRoles(res.body);
+        },
+    res => {
+          console.log('An error has occurred when get clientByRole');
+        }
+      );
+    // this.clientService
+    //   .query()
+    //   .pipe(
+    //     filter((mayBeOk: HttpResponse<IClient[]>) => mayBeOk.ok),
+    //     map((response: HttpResponse<IClient[]>) => response.body)
+    //   )
+    //   .subscribe((res: IClient[]) => (this.initClientsAndExistingRoles(res)), (res: HttpErrorResponse) => this.onError(res.message));
   }
 
   private initClientsAndExistingRoles(res: IClient[]): void {
