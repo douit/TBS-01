@@ -41,6 +41,7 @@ import sa.tamkeentech.tbs.service.mapper.PaymentMethodMapper;
 import sa.tamkeentech.tbs.service.util.EventPublisherService;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
+import javax.persistence.criteria.Predicate;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -97,7 +98,7 @@ public class PaymentService {
         this.paymentMethodService = paymentMethodService;
         this.objectMapper = objectMapper;
         this.eventPublisherService = eventPublisherService;
-        this.clientService = clientService;
+       this.clientService =clientService;
         this.clientMapper = clientMapper;
         this.persistenceAuditEventRepository = persistenceAuditEventRepository;
         this.paymentMethodMapper = paymentMethodMapper;
@@ -122,6 +123,31 @@ public class PaymentService {
             .referenceId(invoice.get().getAccountId().toString()).req(paymentDTO).build();
 
         return eventPublisherService.initiateCreditCardPaymentEvent(reqNotification, invoice).getResp();
+    }
+
+    @Transactional(readOnly = true)
+    public DataTablesOutput<PaymentDTO> getPaymentStatusByQuerySearch(PaymentSearchRequestDTO paymentSearchRequestDTO) {
+        // return itemMapper.toDto(itemRepository.findAll(input));
+        return paymentMapper.toDto(paymentRepository.findAll(paymentSearchRequestDTO.getInput(), (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (paymentSearchRequestDTO.getClientId() != 0) {
+                predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("invoice").get("client").get("id"), paymentSearchRequestDTO.getClientId())));
+            }
+            if (paymentSearchRequestDTO.getFromDate() != null) {
+                predicates.add(criteriaBuilder.and(criteriaBuilder.greaterThanOrEqualTo(root.get("createdDate"), paymentSearchRequestDTO.getFromDate())));
+            }
+            if (paymentSearchRequestDTO.getToDate() != null) {
+                predicates.add(criteriaBuilder.and(criteriaBuilder.lessThanOrEqualTo(root.get("createdDate"), paymentSearchRequestDTO.getToDate())));
+            }
+            if (paymentSearchRequestDTO.getCustomerId() != 0) {
+                predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("invoice").get("customer").get("id"), paymentSearchRequestDTO.getCustomerId())));
+            }
+            if (!paymentSearchRequestDTO.getPaymentStatus().equals(PaymentStatus.NONE)) {
+                predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("status"), paymentSearchRequestDTO.getPaymentStatus())));
+            }
+            return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
+        }));
     }
 
     public PaymentDTO initiateCreditCardPayment(PaymentDTO req, Optional<Invoice> invoice) {

@@ -17,6 +17,13 @@ import {TranslateService} from '@ngx-translate/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {PaymentStatus, PaymentMethod} from 'app/shared/constants';
 import {_tbs} from 'app/shared/util/tbs-utility';
+import {NgbCalendar, NgbDate, NgbDateParserFormatter} from "@ng-bootstrap/ng-bootstrap";
+import {IClient} from "app/shared/model/client.model";
+import {IInvoiceSearchRequest} from "app/shared/model/invoice-serach-request";
+import * as moment from "moment";
+import {NgbDateStruct} from "@ng-bootstrap/ng-bootstrap/datepicker/ngb-date-struct";
+import {IPaymentSearchRequest} from "app/shared/model/payment-serach-request";
+import {ClientService} from "app/client/client.service";
 
 @Component({
   selector: 'app-payment',
@@ -53,18 +60,133 @@ export class PaymentComponent implements OnInit {
     protected accountService: AccountService,
     protected activatedRoute: ActivatedRoute,
     private translateService: TranslateService,
-    private router: Router
+    private router: Router,
+    public formatter: NgbDateParserFormatter,
+    private calendar: NgbCalendar,
+    protected clientService: ClientService
   ) {}
+  hoveredDate: NgbDate;
+  fromDate: NgbDate;
+  toDate: NgbDate;
+  maxDate: NgbDateStruct;
+  startDate: NgbDateStruct;
+  selectedClient: IClient;
+  clients: IClient[];
+  paymentStatusSelected: any;
+  paymentStatus:any;
+  onDateSelection(date: NgbDate, datepicker) {
+    if (!this.fromDate && !this.toDate) {
+      this.fromDate = date;
+    } else if (this.fromDate && !this.toDate && date.after(this.fromDate)) {
+      this.toDate = date;
+      datepicker.close();
+    } else {
+      this.toDate = null;
+      this.fromDate = date;
+    }
+  }
 
-  ngOnInit() {
+  isHovered(date: NgbDate) {
+    return this.fromDate && !this.toDate && this.hoveredDate && date.after(this.fromDate) && date.before(this.hoveredDate);
+  }
+
+  isInside(date: NgbDate) {
+    return date.after(this.fromDate) && date.before(this.toDate);
+  }
+
+  isRange(date: NgbDate) {
+    return date.equals(this.fromDate) || date.equals(this.toDate) || this.isInside(date) || this.isHovered(date);
+  }
+
+  validateInput(currentValue: NgbDate, input: string): NgbDate {
+    const parsed = this.formatter.parse(input);
+    return parsed && this.calendar.isValid(NgbDate.from(parsed)) ? NgbDate.from(parsed) : currentValue;
+  }
+
+  trackClientById(index: number, item: IClient) {
+    return item.id;
+  }
+
+  onClickFilter() {
+    let toDate = null;
+    let fromDate = null;
+    let clientId = null;
+
+    if (this.fromDate != null) {
+      fromDate = this.formatDate(this.fromDate);
+    }
+    if (this.toDate != null) {
+      toDate = this.formatDate(this.toDate).add(1, 'days');
+    }
+    if (this.selectedClient != null) {
+      clientId = this.selectedClient.id;
+    }
+      const paymentSearch : IPaymentSearchRequest= {
+        fromDate : fromDate,
+        toDate : toDate,
+        clientId : clientId,
+        customerId :0,
+        input :this.datatable.getDataTableInput(),
+        paymentStatus:this.paymentStatusSelected.value
+      }
+
+
+
     this.initDatatable();
-
     this.activatedRoute.queryParams
       .subscribe((pageQueryParams: PageQueryParams) => {
         this.datatable.fillPageQueryParams(pageQueryParams);
+        this.paymentService.getPaymentBySearch(paymentSearch)
+          .subscribe(
+            (res) => {
+              this.datatable.update(res);
+            },
+            (res: HttpErrorResponse) => this.onError(res.message)
+          );
+      });
 
+
+
+
+
+  }
+  formatDate(date: NgbDate) {
+    // NgbDates use 1 for Jan, Moement uses 0, must substract 1 month for proper date conversion
+    const ngbObj = JSON.parse(JSON.stringify(date));
+    // const jsDate = new Date(date.year, date.month - 1, date.day);
+    if (ngbObj) {
+      // ngbObj.month--;
+      return moment(ngbObj.year + '-' + ngbObj.month + '-' + ngbObj.day, 'YYYY-MM-DD');
+    }
+  }
+
+  ngOnInit() {
+
+    this.clientService.getClientByRole()
+      .subscribe(
+        res => {
+          this.clients = res.body ;
+        }, res => {
+          console.log('An error has occurred when get clientByRole');
+        }
+      );
+
+    this.initDatatable();
+    this.activatedRoute.queryParams
+      .subscribe((pageQueryParams: PageQueryParams) => {
+        this.datatable.fillPageQueryParams(pageQueryParams);
         this.loadData();
       });
+
+    const paymentStatusMapping = [
+      { value: PaymentStatus.NONE, type: 'None' },
+      { value: PaymentStatus.PAID, type: 'PAID' },
+      { value: PaymentStatus.PENDING, type: 'PENDING' },
+      { value: PaymentStatus.REFUNDED, type: 'REFUNDED' },
+      { value: PaymentStatus.UNPAID, type: 'UNPAID' }
+    ];
+
+    this.paymentStatus = paymentStatusMapping;
   }
 
   initDatatable() {

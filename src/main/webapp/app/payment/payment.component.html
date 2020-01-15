@@ -12,8 +12,6 @@
                             </h4>
                         </div>
                     </div>
-
-
                    <!-- <div class="col-sm-12">
                         <div class="pull-right">
                             <button [routerLink]="['/payment/new']" id="jh-create-entity"
@@ -35,34 +33,108 @@
                         </div>-->
 
                         <div class="datatable-wrapper">
-                            <div class="row">
-                                <div class="col-sm-4">
-                                    <div class="datatable-length">
-                                        <div class="form-group label-floating">
-                                            <label class="control-label">{{ 'global.datatable.show_entries' | translate }}</label>
-                                            <mat-form-field>
-                                                <mat-select name="length" [(ngModel)]="datatable.length" (ngModelChange)="onPageSizeChanged()">
-                                                    <mat-option [value]=10>10</mat-option>
-                                                    <mat-option [value]=25>25</mat-option>
-                                                    <mat-option [value]=50>50</mat-option>
-                                                    <mat-option [value]=100>100</mat-option>
-                                                </mat-select>
-                                            </mat-form-field>
+                            <div class="row justify-content-end dashboard-filter">
+                                <div class="form-group hidden">
+                                    <div class="input-group">
+                                        <input name="datepicker" id="datepicker1"
+                                               class="form-control"
+                                               ngbDatepicker
+                                               #datepicker="ngbDatepicker"
+                                               [autoClose]="'outside'"
+                                               (dateSelect)="onDateSelection($event, datepicker)"
+                                               [displayMonths]="2"
+                                               [dayTemplate]="t"
+                                               outsideDays="hidden"
+                                               [maxDate]="maxDate"
+                                               [startDate]="startDate">
+                                        <ng-template #t let-date let-focused="focused" let-disabled="disabled">
+                                        <span class="custom-day"
+                                              [class.focused]="focused"
+                                              [class.range]="isRange(date)"
+                                              [class.faded]="isHovered(date) || isInside(date)"
+                                              (mouseenter)="hoveredDate = date"
+                                              (mouseleave)="hoveredDate = null"
+                                              [class.text-muted]="disabled">
+                                            {{ date.day }}
+                                        </span>
+                                        </ng-template>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-2 dashboard-filter-element">
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <input #dpFromDate
+                                                   class="form-control" placeholder="Start date"
+                                                   name="dpFromDate"
+                                                   [value]="formatter.format(fromDate)"
+                                                   (input)="fromDate = validateInput(fromDate, dpFromDate.value)">
+                                            <div class="input-group-append">
+                                                <button class="calendar-icon calendar fa fa-calendar "
+                                                        (click)="datepicker.toggle()"
+                                                        type="button"></button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-sm-4" align="center">
-                                    <form class="form-inline">
-                                        <div class="form-group label-floating">
-                                            <label class="control-label">{{ 'global.datatable.search' | translate }}</label>
-                                            <input name="search" [(ngModel)]="datatable.search" type="text" class="form-control" style="padding-left: 5px;">
+
+                                <div class="col-md-2 dashboard-filter-element">
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <input #dpToDate
+                                                   class="form-control" placeholder="End date"
+                                                   name="dpToDate"
+                                                   [value]="formatter.format(toDate)"
+                                                   (input)="toDate = validateInput(toDate, dpToDate.value)">
+                                            <div class="input-group-append">
+                                                <button class="calendar-icon calendar fa fa-calendar"
+                                                        (click)="datepicker.toggle()"
+                                                        type="button"></button>
+                                            </div>
                                         </div>
-                                        <button (click)="search()" class="btn btn-just-icon btn-info-second btn-round">
-                                            <i class="material-icons">search</i>
-                                        </button>
-                                        <button (click)="clearSearch()" class="btn btn-just-icon btn-round btn-info-second">
-                                            <i class="material-icons">clear</i>
-                                        </button>
+                                    </div>
+                                </div>
+
+
+                                <div class="col-md-2 dashboard-filter-element">
+                                    <mat-form-field>
+                                        <mat-label *ngIf="selectedClient == null">Select Client</mat-label>
+                                        <!--<mat-label *ngIf="selectedClient != null">{{selectedClient.name}}</mat-label>-->
+                                        <mat-select class="form-control" id="field_client" name="clint"
+                                                    [(value)]="selectedClient">
+                                            <mat-option [value]="null">None</mat-option>
+                                            <mat-option [value]="clientOption"
+                                                        *ngFor="let clientOption of clients; trackBy: trackClientById">{{clientOption.name}}</mat-option>
+                                        </mat-select>
+                                    </mat-form-field>
+                                </div>
+
+                                <div class="col-md-2 dashboard-filter-element">
+                                    <mat-form-field>
+                                        <mat-label *ngIf="paymentStatusSelected == null">Select Payment Status</mat-label>
+                                        <!--<mat-label *ngIf="selectedClient != null">{{selectedClient.name}}</mat-label>-->
+                                        <mat-select class="form-control" id="field_client1" name="clint"
+                                                    [(value)]="paymentStatusSelected">
+                                            
+                                            <mat-option [value]="status"
+                                                        *ngFor="let status of paymentStatus; trackBy: trackClientById">{{status.type}}</mat-option>
+                                        </mat-select>
+                                    </mat-form-field>
+                                </div>
+                                <!-- <pre>From: {{ fromDate | json }} </pre>
+                                 <pre>To: {{ toDate | json }} </pre>-->
+
+
+                                <div class="col-md-1 dashboard-filter-element">
+                                    <form class="navbar-form">
+                                        <div class="input-group no-border">
+                                            <!--<input type="text" value="" class="form-control" placeholder="Search...">-->
+                                            <button mat-raised-button type="submit" (click)="onClickFilter()"
+                                                    class="btn btn-white btn-round btn-just-icon">
+                                                <i class="material-icons">search</i>
+                                                <div class="ripple-container"></div>
+                                            </button>
+                                        </div>
                                     </form>
                                 </div>
                             </div>

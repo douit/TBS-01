@@ -16,7 +16,13 @@ import {IItem} from 'app/shared/model/item.model';
 import {Datatable} from 'app/shared/model/datatable/datatable';
 import {TranslateService} from '@ngx-translate/core';
 import {_tbs} from 'app/shared/util/tbs-utility';
-import {InvoiceStatus} from 'app/shared/constants';
+import {InvoiceStatus, PaymentStatus} from 'app/shared/constants';
+import {NgbCalendar, NgbDate, NgbDateParserFormatter} from "@ng-bootstrap/ng-bootstrap";
+import {NgbDateStruct} from "@ng-bootstrap/ng-bootstrap/datepicker/ngb-date-struct";
+import {IClient} from "app/shared/model/client.model";
+import * as moment from "moment";
+import {IInvoiceSearchRequest} from "app/shared/model/invoice-serach-request";
+import {ClientService} from "app/client/client.service";
 
 @Component({
   selector: 'app-invoice',
@@ -39,7 +45,9 @@ export class InvoiceComponent implements OnInit {
 
   // new datatable
   busy = false;
-  datatable = new Datatable<IItem>();
+  datatable = new Datatable<IInvoice>();
+
+
   // Datatable Reference
   @ViewChild('table', {static: true}) table: DatatableComponent;
 
@@ -56,16 +64,115 @@ export class InvoiceComponent implements OnInit {
     protected router: Router,
     protected eventManager: JhiEventManager,
     private translateService: TranslateService,
+    public formatter: NgbDateParserFormatter,
+    private calendar: NgbCalendar,
+    protected clientService: ClientService
   ) {
   }
 
-  ngOnInit() {
-    this.initDatatable();
+  hoveredDate: NgbDate;
+  fromDate: NgbDate;
+  toDate: NgbDate;
+  maxDate: NgbDateStruct;
+  startDate: NgbDateStruct;
+  selectedClient: IClient;
+  paymentStatusSelected: any;
+  clients: IClient[];
+  customerId:number;
+  paymentStatus:any;
 
+  onDateSelection(date: NgbDate, datepicker) {
+    if (!this.fromDate && !this.toDate) {
+      this.fromDate = date;
+    } else if (this.fromDate && !this.toDate && date.after(this.fromDate)) {
+      this.toDate = date;
+      datepicker.close();
+    } else {
+      this.toDate = null;
+      this.fromDate = date;
+    }
+  }
+
+
+  isHovered(date: NgbDate) {
+    return this.fromDate && !this.toDate && this.hoveredDate && date.after(this.fromDate) && date.before(this.hoveredDate);
+  }
+
+  isInside(date: NgbDate) {
+    return date.after(this.fromDate) && date.before(this.toDate);
+  }
+
+  isRange(date: NgbDate) {
+    return date.equals(this.fromDate) || date.equals(this.toDate) || this.isInside(date) || this.isHovered(date);
+  }
+
+  validateInput(currentValue: NgbDate, input: string): NgbDate {
+    const parsed = this.formatter.parse(input);
+    return parsed && this.calendar.isValid(NgbDate.from(parsed)) ? NgbDate.from(parsed) : currentValue;
+  }
+
+  trackClientById(index: number, item: IClient) {
+    return item.id;
+  }
+
+  onClickFilter() {
+    let toDate = null;
+    let fromDate = null;
+    let clientId = null;
+    if (this.fromDate != null) {
+      fromDate = this.formatDate(this.fromDate);
+    }
+    if (this.toDate != null) {
+      toDate = this.formatDate(this.toDate).add(1, 'days');
+    }
+    if (this.selectedClient != null) {
+      clientId = this.selectedClient.id;
+    }
+    const invoiceSearch: IInvoiceSearchRequest = {
+      fromDate : fromDate,
+      toDate : toDate,
+      clientId : clientId,
+      customerId :this.customerId,
+      // paymentStatus:this.paymentStatusSelected.value,
+      input :this.datatable.getDataTableInput()
+    }
+    this.initDatatable();
     this.activatedRoute.queryParams
       .subscribe((pageQueryParams: PageQueryParams) => {
         this.datatable.fillPageQueryParams(pageQueryParams);
+        this.invoiceService.getInvoiceBySearch(invoiceSearch)
+          .subscribe(
+            (res) => {
+              this.datatable.update(res);
+            },
+            (res: HttpErrorResponse) => this.onError(res.message)
+          );
+      });
 
+  }
+
+  ngOnInit() {
+    const paymentStatusMapping = [
+      { value: PaymentStatus.PAID, type: 'PAID' },
+      { value: PaymentStatus.PENDING, type: 'PENDING' },
+      { value: PaymentStatus.REFUNDED, type: 'REFUNDED' },
+      { value: PaymentStatus.UNPAID, type: 'UNPAID' }
+    ];
+
+    this.paymentStatus = paymentStatusMapping;
+    this.clientService.getClientByRole()
+      .subscribe(
+        res => {
+          this.clients = res.body ;
+        }, res => {
+          console.log('An error has occurred when get clientByRole');
+        }
+      );
+
+    this.initDatatable();
+    this.activatedRoute.queryParams
+      .subscribe((pageQueryParams: PageQueryParams) => {
+        this.datatable.fillPageQueryParams(pageQueryParams);
         this.loadData();
       });
   }
@@ -87,7 +194,7 @@ export class InvoiceComponent implements OnInit {
       }),
       new DatatableColumn({
         name: this.translateService.instant('tbsApp.invoice.status'),
-        prop: 'status',
+        prop: 'paymentStatus',
         headerTemplate: this.headerTemplate,
         cellTemplate: this.statusRowTemplate
       }),
@@ -124,7 +231,15 @@ export class InvoiceComponent implements OnInit {
       })
     ]);
   }
-
+  // loadData(invoiceSearch: IInvoiceSearchRequest) {
+  //   this.invoiceService.getInvoiceBySearch(invoiceSearch)
+  //     .subscribe(
+  //       (res) => {
+  //         this.datatable.update(res);
+  //       },
+  //       (res: HttpErrorResponse) => this.onError(res.message)
+  //     );
+  // }
   loadData() {
     this.busy = true;
     this.invoiceService.getList(this.datatable.getDataTableInput())
@@ -148,7 +263,7 @@ export class InvoiceComponent implements OnInit {
 
     pageQueryParams.fillDatatable(this.datatable);
 
-    this.router.navigate(['/invoice'], { queryParams: pageQueryParams });
+    this.router.navigate(['/invoice'], {queryParams: pageQueryParams});
   }
 
   search() {
@@ -207,8 +322,14 @@ export class InvoiceComponent implements OnInit {
     );
   }
 
-  formatDate(date: any) {
-    return _tbs.formatDate(date);
+  formatDate(date: NgbDate) {
+    // NgbDates use 1 for Jan, Moement uses 0, must substract 1 month for proper date conversion
+    const ngbObj = JSON.parse(JSON.stringify(date));
+    // const jsDate = new Date(date.year, date.month - 1, date.day);
+    if (ngbObj) {
+      // ngbObj.month--;
+      return moment(ngbObj.year + '-' + ngbObj.month + '-' + ngbObj.day, 'YYYY-MM-DD');
+    }
   }
 
   humanizeEnumString(data: any) {

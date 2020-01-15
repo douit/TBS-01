@@ -21,6 +21,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sa.tamkeentech.tbs.service.dto.InvoiceSearchRequestDTO;
+import sa.tamkeentech.tbs.service.dto.ItemDTO;
 
 import java.util.List;
 import java.util.Optional;
@@ -54,6 +56,15 @@ public class InvoiceResource {
         Page<InvoiceDTO> page = invoiceService.findAll(pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    @PostMapping("/invoices/search")
+    @ResponseBody
+    public DataTablesOutput<InvoiceDTO> getInvoiceBySearching( @RequestBody InvoiceSearchRequestDTO invoiceSearchRequestDTO) {
+        log.debug("REST request to get a page of Invoices");
+//        Page<InvoiceDTO> page = invoiceService.findAll(pageable);
+//        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return invoiceService.getInvoiceByQuerySearch(invoiceSearchRequestDTO);
     }
 
     /**
@@ -100,7 +111,8 @@ public class InvoiceResource {
 
     // @PreAuthorize("isAuthenticated()")
     @GetMapping("/invoices/datatable")
-    public DataTablesOutput<InvoiceDTO> getAllItems(DataTablesInput input) {
+    public DataTablesOutput<InvoiceDTO> getAllItems(DataTablesInput input)
+    {
         return invoiceService.get(input);
     }
 

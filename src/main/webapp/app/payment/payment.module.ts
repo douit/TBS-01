@@ -8,11 +8,22 @@ import { PaymentUpdateComponent } from './payment-update.component';
 import { PaymentDeletePopupComponent, PaymentDeleteDialogComponent } from './payment-delete-dialog.component';
 import { paymentRoute, paymentPopupRoute } from './payment.route';
 import {MaterialModule} from 'app/app.module';
+import {NgbDatepickerModule} from "@ng-bootstrap/ng-bootstrap";
+import {Daterangepicker} from "ng2-daterangepicker";
+import {FormsModule} from "@angular/forms";
+import {MdModule} from "app/md/md.module";
 
 const ENTITY_STATES = [...paymentRoute, ...paymentPopupRoute];
 
 @NgModule({
-  imports: [TbsSharedModule, RouterModule.forChild(ENTITY_STATES), MaterialModule],
+  imports: [TbsSharedModule,
+    RouterModule.forChild(ENTITY_STATES),
+    MaterialModule,
+    MaterialModule,
+    NgbDatepickerModule,
+    Daterangepicker,
+    FormsModule,
+    MdModule],
   declarations: [
     PaymentComponent,
     PaymentDetailComponent,

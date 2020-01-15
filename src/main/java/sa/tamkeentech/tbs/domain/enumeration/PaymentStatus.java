@@ -8,7 +8,8 @@ public enum PaymentStatus {
     PENDING("Payment in progress"),
     PAID("Bill was paid"),
     UNPAID("Bill has not been paid"),
-    REFUNDED("Refund Accepted");
+    REFUNDED("Refund Accepted"),
+    NONE("None Options search");
 
     PaymentStatus (String description) {
         this.description = description;

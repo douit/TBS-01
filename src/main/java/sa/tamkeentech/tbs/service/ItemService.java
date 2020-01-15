@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
 import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import sa.tamkeentech.tbs.domain.Category;
 import sa.tamkeentech.tbs.domain.Client;
@@ -22,7 +21,11 @@ import sa.tamkeentech.tbs.service.mapper.ItemMapper;
 import sa.tamkeentech.tbs.service.mapper.TaxMapper;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
+import javax.persistence.EntityManager;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -44,12 +47,11 @@ public class ItemService {
     private final TaxMapper taxMapper;
 
     private final CategoryRepository categoryRepository;
-
     private final ClientService clientService;
 
     private final UserService userService;
 
-    public ItemService(ItemRepository itemRepository, ItemMapper itemMapper, TaxRepository taxRepository, TaxMapper taxMapper, CategoryRepository categoryRepository, ClientService clientService, UserService userService) {
+    public ItemService(ItemRepository itemRepository, ItemMapper itemMapper, TaxRepository taxRepository, TaxMapper taxMapper, CategoryRepository categoryRepository,  ClientService clientService, UserService userService) {
         this.itemRepository = itemRepository;
         this.itemMapper = itemMapper;
         this.taxRepository = taxRepository;

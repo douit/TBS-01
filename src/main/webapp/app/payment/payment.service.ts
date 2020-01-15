@@ -12,6 +12,9 @@ import {DataTableInput} from 'app/shared/model/datatable/datatable-input';
 import {_tbs} from 'app/shared/util/tbs-utility';
 import {Pageable} from 'app/shared/model/pageable';
 import {IRefund} from "app/shared/model/refund.model";
+import {IInvoiceSearchRequest} from "app/shared/model/invoice-serach-request";
+import {IInvoice} from "app/shared/model/invoice.model";
+import {PaymentSearchRequest} from "app/shared/model/payment-serach-request";
 
 type EntityResponseType = HttpResponse<IPayment>;
 type EntityArrayResponseType = HttpResponse<IPayment[]>;
@@ -27,7 +30,9 @@ export class PaymentService {
   getList(datatableInput: DataTableInput): Observable<Pageable<IPayment>> {
     return this.http.get<Pageable<IPayment>>(`${this.resourceUrl}/datatable?${_tbs.serializeDataTableRequest(datatableInput)}`);
   }
-
+  getPaymentBySearch(paymentSearchRequest : PaymentSearchRequest): Observable<Pageable<IPayment>> {
+    return this.http.post<Pageable<IPayment>>(`${this.resourceUrl}/search`,paymentSearchRequest);
+  }
   create(payment: IPayment): Observable<EntityResponseType> {
     const copy = this.convertDateFromClient(payment);
     return this.http
