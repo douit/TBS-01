@@ -23,7 +23,7 @@ const ENTITY_STATES = [...invoiceRoute, ...invoicePopupRoute];
     NgbDatepickerModule,
     Daterangepicker,
     FormsModule,
-    MdModule,],
+    MdModule],
   declarations: [
     InvoiceComponent,
     InvoiceDetailComponent,
