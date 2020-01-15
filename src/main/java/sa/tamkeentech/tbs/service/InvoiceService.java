@@ -164,8 +164,8 @@ public class InvoiceService {
              if (invoiceSearchRequestDTO.getToDate() != null) {
                  predicates.add(criteriaBuilder.and(criteriaBuilder.lessThanOrEqualTo(root.get("createdDate"), invoiceSearchRequestDTO.getToDate())));
              }
-            if (invoiceSearchRequestDTO.getCustomerId() != 0) {
-                predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("customer").get("id"), invoiceSearchRequestDTO.getCustomerId())));
+            if (!invoiceSearchRequestDTO.getCustomerId().isEmpty()) {
+                predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("customer").get("identity"), invoiceSearchRequestDTO.getCustomerId())));
             }
 //            if (!invoiceSearchRequestDTO.getPaymentStatus().equals(null)) {
 //                predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("paymentStatus"), invoiceSearchRequestDTO.getPaymentStatus())));

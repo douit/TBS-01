@@ -9,9 +9,8 @@ import {DataTableInput} from "app/shared/model/datatable/datatable-input";
 export interface IInvoiceSearchRequest {
   fromDate?:Moment ;
   toDate?:Moment ;
-  // paymentStatus?: PaymentStatus;
   clientId?:number;
-  customerId?:number;
+  customerId?:string;
   input?: DataTableInput;
 }
 
@@ -19,9 +18,8 @@ export class InvoiceSearchRequest implements IInvoiceSearchRequest {
   constructor(
     fromDate?:Moment ,
   toDate?:Moment ,
-  // paymentStatus?: PaymentStatus,
   clientId?:number,
-  customerId?:number,
+  customerId?:string,
     input?:DataTableInput
 ) {}
 }

@@ -30,6 +30,7 @@
       "customer": "Customer",
       "issueDate": "Issue date",
       "accountId": "Account Id",
+      "paymentStatus": "Payment Status",
       "invoiceStatus": {
         "null": "",
         "NEW": "NEW",

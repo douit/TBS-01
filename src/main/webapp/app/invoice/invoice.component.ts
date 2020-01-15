@@ -78,7 +78,7 @@ export class InvoiceComponent implements OnInit {
   selectedClient: IClient;
   paymentStatusSelected: any;
   clients: IClient[];
-  customerId:number;
+  customerId:string;
   paymentStatus:any;
 
   onDateSelection(date: NgbDate, datepicker) {
@@ -175,6 +175,7 @@ export class InvoiceComponent implements OnInit {
         this.datatable.fillPageQueryParams(pageQueryParams);
         this.loadData();
       });
+
   }
 
   initDatatable() {
@@ -193,7 +194,7 @@ export class InvoiceComponent implements OnInit {
         cellTemplate: this.rowTemplate,
       }),
       new DatatableColumn({
-        name: this.translateService.instant('tbsApp.invoice.status'),
+        name: this.translateService.instant('tbsApp.invoice.paymentStatus'),
         prop: 'paymentStatus',
         headerTemplate: this.headerTemplate,
         cellTemplate: this.statusRowTemplate

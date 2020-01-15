@@ -28,7 +28,7 @@ export class LoadingOptions {
   PAID = 'PAID',
   UNPAID = 'UNPAID',
   REFUNDED = 'REFUNDED',
-NONE = 'NONE'
+  NONE = 'NONE'
 }
 
 export enum PaymentMethod {
