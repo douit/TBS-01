@@ -257,14 +257,14 @@
                                         <div class="payment-name">{{ row.name }}</div>
                                     </ng-template>
 
-                                    <ng-template #statusRowTemplate let-row="row">
+                                    <ng-template #paymentStatusRowTemplate let-row="row">
                                         <div class="badge" [ngClass]="{
-                                                    'badge-warning': row.status === InvoiceStatus.EXPIRED || row.status === InvoiceStatus.WAITING,
-                                                    'badge-success': row.status === InvoiceStatus.CREATED,
-                                                    'badge-info': row.status === InvoiceStatus.NEW,
-                                                    'badge-danger': row.status === InvoiceStatus.FAILED
+                                                    'badge-warning': row.paymentStatus === PaymentStatus.REFUNDED,
+                                                    'badge-success': row.paymentStatus === PaymentStatus.PAID,
+                                                    'badge-info': row.paymentStatus === PaymentStatus.PENDING,
+                                                    'badge-danger': row.paymentStatus === PaymentStatus.UNPAID
                                                 }">
-                                            {{ 'tbsApp.invoice.invoiceStatus.' + row.status |
+                                            {{ 'tbsApp.payment.paymentStatus.' + row.paymentStatus |
                                             translate }}
                                         </div>
                                     </ng-template>

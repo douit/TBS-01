@@ -23,6 +23,7 @@
                     </div>-->
 
                     <!-- </div>-->
+                    <br/>
 
                     <div class="card-content">
 
@@ -115,7 +116,7 @@
                                         <!--<mat-label *ngIf="selectedClient != null">{{selectedClient.name}}</mat-label>-->
                                         <mat-select class="form-control" id="field_client1" name="clint"
                                                     [(value)]="paymentStatusSelected">
-                                            
+
                                             <mat-option [value]="status"
                                                         *ngFor="let status of paymentStatus; trackBy: trackClientById">{{status.type}}</mat-option>
                                         </mat-select>

@@ -38,9 +38,10 @@ export class InvoiceComponent implements OnInit {
   InvoiceStatus = InvoiceStatus;
   auditInvoice: any[];
   selectedInvoice: IInvoice;
+  PaymentStatus = PaymentStatus;
 
   @ViewChild('nameRowTemplate', {static: false}) nameRowTemplate;
-  @ViewChild('statusRowTemplate', {static: true}) statusRowTemplate;
+  @ViewChild('paymentStatusRowTemplate', {static: true}) paymentStatusRowTemplate;
   @ViewChild('issueDateTemplate', {static: true}) issueDateTemplate;
 
   // new datatable
@@ -197,7 +198,7 @@ export class InvoiceComponent implements OnInit {
         name: this.translateService.instant('tbsApp.invoice.paymentStatus'),
         prop: 'paymentStatus',
         headerTemplate: this.headerTemplate,
-        cellTemplate: this.statusRowTemplate
+        cellTemplate: this.paymentStatusRowTemplate
       }),
       new DatatableColumn({
         name: this.translateService.instant('tbsApp.invoice.issueDate'),
