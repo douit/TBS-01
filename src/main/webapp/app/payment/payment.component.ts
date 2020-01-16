@@ -73,6 +73,7 @@ export class PaymentComponent implements OnInit {
   selectedClient: IClient;
   clients: IClient[];
   paymentStatusSelected: any;
+  paymentStatusSelectedLable: any;
   paymentStatus:any;
   onDateSelection(date: NgbDate, datepicker) {
     if (!this.fromDate && !this.toDate) {
@@ -108,6 +109,15 @@ export class PaymentComponent implements OnInit {
   }
 
   onClickFilter() {
+
+    if(this.paymentStatusSelectedLable == null){
+
+      this.paymentStatusSelected =PaymentStatus.NONE;
+    }
+    else{
+      this.paymentStatusSelected =this.paymentStatusSelectedLable.value;
+
+    }
     let toDate = null;
     let fromDate = null;
     let clientId = null;
@@ -127,7 +137,7 @@ export class PaymentComponent implements OnInit {
         clientId : clientId,
         customerId :0,
         input :this.datatable.getDataTableInput(),
-        paymentStatus:this.paymentStatusSelected.value
+        paymentStatus: this.paymentStatusSelected
       }
 
 
@@ -277,7 +287,12 @@ export class PaymentComponent implements OnInit {
 
   clearSearch() {
     this.datatable.search = '';
-
+    this.selectedClient=null;
+    this.selectedClient = null;
+    this.fromDate =null;
+    this.toDate =null;
+    this.paymentStatusSelected =null;
+    this.paymentStatusSelectedLable = null;
     this.search();
   }
 

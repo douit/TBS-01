@@ -112,10 +112,10 @@
 
                                 <div class="col-md-2 dashboard-filter-element">
                                     <mat-form-field>
-                                        <mat-label *ngIf="paymentStatusSelected == null">Select Payment Status</mat-label>
+                                        <mat-label *ngIf="paymentStatusSelectedLable == null" >Select Payment Status</mat-label>
                                         <!--<mat-label *ngIf="selectedClient != null">{{selectedClient.name}}</mat-label>-->
                                         <mat-select class="form-control" id="field_client1" name="clint"
-                                                    [(value)]="paymentStatusSelected">
+                                                    [(value)]="paymentStatusSelectedLable">
 
                                             <mat-option [value]="status"
                                                         *ngFor="let status of paymentStatus; trackBy: trackClientById">{{status.type}}</mat-option>
@@ -134,6 +134,9 @@
                                                     class="btn btn-white btn-round btn-just-icon">
                                                 <i class="material-icons">search</i>
                                                 <div class="ripple-container"></div>
+                                            </button>
+                                            <button (click)="clearSearch()" class="btn btn-white btn-round btn-just-icon">
+                                                <i class="material-icons">clear</i>
                                             </button>
                                         </div>
                                     </form>

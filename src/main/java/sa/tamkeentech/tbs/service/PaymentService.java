@@ -140,9 +140,9 @@ public class PaymentService {
             if (paymentSearchRequestDTO.getToDate() != null) {
                 predicates.add(criteriaBuilder.and(criteriaBuilder.lessThanOrEqualTo(root.get("createdDate"), paymentSearchRequestDTO.getToDate())));
             }
-            if (!paymentSearchRequestDTO.getCustomerId().isEmpty() ) {
-                    predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("invoice").get("customer").get("identity"), paymentSearchRequestDTO.getCustomerId())));
-            }
+//            if (!paymentSearchRequestDTO.getCustomerId().isEmpty() ) {
+//                    predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("invoice").get("customer").get("identity"), paymentSearchRequestDTO.getCustomerId())));
+//            }
             if (!paymentSearchRequestDTO.getPaymentStatus().equals(PaymentStatus.NONE)) {
                 predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("status"), paymentSearchRequestDTO.getPaymentStatus())));
             }

@@ -274,7 +274,11 @@ export class InvoiceComponent implements OnInit {
 
   clearSearch() {
     this.datatable.search = '';
-
+    this.customerId = "";
+    this.selectedClient=null;
+    this.selectedClient = null;
+    this.fromDate =null;
+    this.toDate =null;
     this.search();
   }
 
