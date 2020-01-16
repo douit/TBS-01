@@ -1,5 +1,6 @@
 package sa.tamkeentech.tbs.service;
 
+import com.google.common.base.Preconditions;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -317,6 +318,17 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
+    public Optional<User> getUser(final Long id){
+        Preconditions.checkNotNull(id,"ID must not be null");
+        return userRepository.findById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<User> getUser() {
+        return SecurityUtils.getCurrentUserLogin().flatMap(userRepository::findOneByLogin);
+    }
+
+    @Transactional(readOnly = true)
     public Optional<User> getUserWithAuthoritiesByLogin(String login) {
         return userRepository.findOneWithUserRolesByLogin(login);
     }
@@ -382,4 +394,5 @@ public class UserService {
     public DataTablesOutput<UserDTO> get(DataTablesInput input) {
         return userMapper.toDto(userRepository.findAll(input));
     }
+
 }

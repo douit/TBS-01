@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd">
+
+
+    <changeSet id="20200115030700-1" author="Ahmed B">
+
+        <sql dbms="postgresql"
+             endDelimiter="\nGO"
+             splitStatements="true"
+             stripComments="true">
+
+            create table if not exists report (
+                id int8 not null,
+                user_id int8 not null,
+                start_date timestamp,
+                end_date timestamp,
+                client_id int8,
+                report_type int4,
+                request_date timestamp,
+                generated_date timestamp,
+                expire_date timestamp,
+                report_status int4,
+                off_set varchar(255),
+                is_deleted boolean default false not null,
+                createdBy varchar(255),
+                createdDate timestamp,
+                lastModifiedBy varchar(255),
+                modifiedDate timestamp,
+                primary key (id)
+            );
+
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

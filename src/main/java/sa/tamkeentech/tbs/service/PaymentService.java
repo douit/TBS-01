@@ -41,11 +41,13 @@ import sa.tamkeentech.tbs.service.mapper.PaymentMethodMapper;
 import sa.tamkeentech.tbs.service.util.EventPublisherService;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
+import javax.persistence.criteria.Predicate;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -89,6 +91,9 @@ public class PaymentService {
 
     @Autowired
     private Environment environment;
+
+    @Autowired
+    private UserService userService;
 
     public PaymentService(PaymentRepository paymentRepository, PaymentMapper paymentMapper, InvoiceRepository invoiceRepository, PaymentMethodService paymentMethodService, ObjectMapper objectMapper, EventPublisherService eventPublisherService, ClientService clientService, ClientMapper clientMapper, PersistenceAuditEventRepository persistenceAuditEventRepository, PaymentMethodMapper paymentMethodMapper, ClientRepository clientRepository) {
         this.paymentRepository = paymentRepository;
@@ -482,5 +487,25 @@ public class PaymentService {
             invoiceResponseDTO.setLink(paymentDTO.getRedirectUrl());
         }
         return invoiceResponseDTO;
+    }
+
+    // payment report data
+    List<PaymentDTO> getPaymentsBetween(ZonedDateTime start, ZonedDateTime end, Long clientId) {
+        List<Long> clientIds = userService.listClientIds(0);
+        if (clientId != null) {
+            clientIds.removeIf(id -> clientId != id);
+        }
+        return paymentMapper.toDto(paymentRepository.findAll((root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(criteriaBuilder.and(root.get("client").get("id").in(clientIds)));
+
+            if (start != null) {
+                predicates.add(criteriaBuilder.and(criteriaBuilder.greaterThanOrEqualTo(root.get("createdDate"), start)));
+            }
+            if (end != null) {
+                predicates.add(criteriaBuilder.and(criteriaBuilder.lessThanOrEqualTo(root.get("createdDate"), end)));
+            }
+            return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
+        }));
     }
 }

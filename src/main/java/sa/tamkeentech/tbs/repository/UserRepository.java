@@ -58,4 +58,5 @@ public interface UserRepository extends JpaRepository<User, Long>, DataTablesRep
     Optional<User> findOneWithUserRolesByEmailIgnoreCase(String email);
 
     Page<User> findAllByLoginNot(Pageable pageable, String login);
+
 }

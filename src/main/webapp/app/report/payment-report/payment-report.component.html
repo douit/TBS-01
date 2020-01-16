@@ -1,0 +1,101 @@
+<div class="main-content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header card-header-text" data-background-color="primary-one">
+                        <h4 class="card-title">Trip Reports</h4>
+                    </div>
+                    <br/>
+                    <div class="card-content">
+                    <div class="card">
+                        <div class="card-content">
+                            <div class="row">
+                                <div class="col-sm-12" align="center">
+                                    <form [formGroup]="reportForm" (submit)="generateReport()" class="form-horizontal">
+                                        <div class="row">
+                                            <div class="col-lg-4">
+                                                <div class="form-group is-empty">
+                                                    <label class="control-label pull-left">Driver Id</label>
+                                                    <input type="number" min="0" step ="1" class="form-control" formControlName="driverId">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-4">
+                                                <div class="form-group is-empty">
+                                                    <label class="control-label pull-left">Date Range</label>
+                                                    <input type="text" class="form-control" name="dateRangeInput" daterangepicker [options]="options" (selected)="selectedDate($event)">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-4" style="margin-top: 20px">
+                                                <div class="form-group">
+                                                    <label class="control-label pull-left"></label>
+                                                    <ng-multiselect-dropdown
+                                                            id="city"
+                                                            type="name"
+                                                            formControlName="city"
+                                                            [placeholder]="'Select City:'"
+                                                            [data]="cities"
+                                                            [(ngModel)]="selectedCity"
+                                                            [settings]="dropdownSettings"
+                                                    >
+                                                    </ng-multiselect-dropdown>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                        </div>
+                                        <div *ngIf="processing">
+                                            <div class="loader" *ngIf="processing">
+                                                <svg class="circular" viewBox="25 25 50 50">
+                                                    <circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="2"
+                                                            stroke-miterlimit="10"/>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <div class="row text-center" style="margin-top: 20px">
+                                            <button type="button" class="btn btn-info btn-xs" (click)="generateReport()">Generate Report</button>
+                                            <button type="button" class="btn btn-danger btn-xs" (click)="reset()">Reset</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <br/>
+                    <hr>
+                        <div class="row">
+                            <div class="col-sm-12" align="center">
+                                <form class="form-inline">
+                                    <div class="form-group label-floating">
+                                        <label class="control-label">search</label>
+                                        <input [(ngModel)]="searchInput" [ngModelOptions]="{standalone: true}"
+                                               type="text" class="form-control">
+                                    </div>
+                                    <button (click)="globalFilter()"
+                                            class="btn btn-just-icon btn-round btn-info-second">
+                                        <i class="material-icons">search</i>
+                                    </button>
+                                    <button (click)="clearFilter()" class="btn btn-just-icon btn-round btn-info-second">
+                                        <i class="material-icons">clear</i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div class="loader" *ngIf="processing">
+                                    <svg class="circular" viewBox="25 25 50 50">
+                                        <circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="2"
+                                                stroke-miterlimit="10"/>
+                                    </svg>
+                                </div>
+                                <table id="trip_reports_datatables" cellspacing="0" style="width:100%">
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
