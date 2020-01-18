@@ -127,3 +127,5 @@ tbs:
   refund:
     sadad-url-refund: 'http://10.4.7.61:2020/Sender/api/Sadad/RefundLoadRq/test'
     sadad-shared-folder: 'C:\\sadad_share\\'
+  report:
+    reports-folder: 'C:\\reports_share\\'

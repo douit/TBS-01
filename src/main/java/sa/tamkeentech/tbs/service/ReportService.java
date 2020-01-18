@@ -26,7 +26,6 @@ import sa.tamkeentech.tbs.service.util.JasperReportExporter;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
 import javax.persistence.criteria.Predicate;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -117,7 +116,7 @@ public class ReportService {
             // reportEntity.setDownloadUrl(reportUrl);
             reportEntity.setExpireDate(getExpireDate(reportEntity.getType()));
             reportRepository.save(reportEntity);
-        } catch (JRException | IOException e) {
+        } catch (IOException| JRException e) {
             log.warn("Unable to generate report {}", reportId, e);
             reportEntity.setStatus(ReportStatus.FAILED);
             reportRepository.save(reportEntity);
@@ -141,7 +140,7 @@ public class ReportService {
         return extraParams;
     }
 
-    private String generateReport(String templateFile, String reportFileName, List<?> dataList, Map<String, Object> extraParams) throws JRException, IOException {
+    private String generateReport(String templateFile, String reportFileName, List<?> dataList, Map<String, Object> extraParams) throws IOException, JRException {
 
         Map<String, Object> parameterMap = new HashMap<>();
         if (extraParams != null) {
@@ -151,7 +150,7 @@ public class ReportService {
         parameterMap.put(PARAM_GENERATED_DATE, new Date());
 
         byte[] report = JasperReportExporter.getInstance().generateXlsReport(dataList, parameterMap, templateFile);
-        return fileWrapper.upload(new ByteArrayInputStream(report), reportFileName);
+        return fileWrapper.saveBytesToFile("REPOORT", reportFileName, report);
     }
 
     public DataTablesOutput<ReportDTO> getPaymentReports(DataTablesInput input) {
