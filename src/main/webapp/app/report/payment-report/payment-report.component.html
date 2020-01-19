@@ -3,96 +3,137 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
-                    <div class="card-header card-header-text" data-background-color="primary-one">
-                        <h4 class="card-title">Trip Reports</h4>
+                    <!--<div class="row">-->
+
+                    <div class="card-header card-header-text card-header-primary" data-background-color="primary-one">
+                        <div class="card-text">
+                            <h4 id="page-heading">
+                                <span jhiTranslate="report.paymentReport">Payment Reports</span>
+                            </h4>
+                        </div>
                     </div>
-                    <br/>
+
+
+                    <!--<div class="col-sm-12">
+                        <div class="pull-right ">
+                            <button [routerLink]="['/item/new']" id="jh-create-entity"
+                                    class="btn btn-success btn-round btn-fab btn-fab-mini"
+                                    title="Add Item">
+                                <i class="material-icons">add</i>
+                            </button>
+                        </div>
+                    </div>-->
+
+                    <!-- </div>-->
+
                     <div class="card-content">
-                    <div class="card">
-                        <div class="card-content">
+
+                        <jhi-alert></jhi-alert>
+                        <br/>
+                        <!--<div class="alert alert-warning" *ngIf="items?.length === 0">
+                            <span jhiTranslate="tbsApp.item.home.notFound">No items found</span>
+                        </div>-->
+
+                        <div class="datatable-wrapper">
                             <div class="row">
-                                <div class="col-sm-12" align="center">
-                                    <form [formGroup]="reportForm" (submit)="generateReport()" class="form-horizontal">
-                                        <div class="row">
-                                            <div class="col-lg-4">
-                                                <div class="form-group is-empty">
-                                                    <label class="control-label pull-left">Driver Id</label>
-                                                    <input type="number" min="0" step ="1" class="form-control" formControlName="driverId">
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-4">
-                                                <div class="form-group is-empty">
-                                                    <label class="control-label pull-left">Date Range</label>
-                                                    <input type="text" class="form-control" name="dateRangeInput" daterangepicker [options]="options" (selected)="selectedDate($event)">
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-4" style="margin-top: 20px">
-                                                <div class="form-group">
-                                                    <label class="control-label pull-left"></label>
-                                                    <ng-multiselect-dropdown
-                                                            id="city"
-                                                            type="name"
-                                                            formControlName="city"
-                                                            [placeholder]="'Select City:'"
-                                                            [data]="cities"
-                                                            [(ngModel)]="selectedCity"
-                                                            [settings]="dropdownSettings"
-                                                    >
-                                                    </ng-multiselect-dropdown>
-                                                </div>
-                                            </div>
+                                <div class="col-sm-4">
+                                    <div class="datatable-length">
+                                        <div class="form-group label-floating">
+                                            <label class="control-label">{{ 'global.datatable.show_entries' | translate }}</label>
+                                            <mat-form-field>
+                                                <mat-select name="length" [(ngModel)]="datatable.length" (ngModelChange)="onPageSizeChanged()">
+                                                    <mat-option [value]=10>10</mat-option>
+                                                    <mat-option [value]=25>25</mat-option>
+                                                    <mat-option [value]=50>50</mat-option>
+                                                    <mat-option [value]=100>100</mat-option>
+                                                </mat-select>
+                                            </mat-form-field>
                                         </div>
-                                        <div class="row">
+                                    </div>
+                                </div>
+                                <div class="col-sm-4" align="center">
+                                    <form class="form-inline">
+                                        <div class="form-group label-floating">
+                                            <label class="control-label">{{ 'global.datatable.search' | translate }}</label>
+                                            <input name="search" [(ngModel)]="datatable.search" type="text" class="form-control" style="padding-left: 5px;">
                                         </div>
-                                        <div *ngIf="processing">
-                                            <div class="loader" *ngIf="processing">
-                                                <svg class="circular" viewBox="25 25 50 50">
-                                                    <circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="2"
-                                                            stroke-miterlimit="10"/>
-                                                </svg>
-                                            </div>
-                                        </div>
-                                        <div class="row text-center" style="margin-top: 20px">
-                                            <button type="button" class="btn btn-info btn-xs" (click)="generateReport()">Generate Report</button>
-                                            <button type="button" class="btn btn-danger btn-xs" (click)="reset()">Reset</button>
-                                        </div>
+                                        <button (click)="search()" class="btn btn-just-icon btn-info-second btn-round">
+                                            <i class="material-icons">search</i>
+                                        </button>
+                                        <button (click)="clearSearch()" class="btn btn-just-icon btn-round btn-info-second">
+                                            <i class="material-icons">clear</i>
+                                        </button>
                                     </form>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                    <br/>
-                    <hr>
-                        <div class="row">
-                            <div class="col-sm-12" align="center">
-                                <form class="form-inline">
-                                    <div class="form-group label-floating">
-                                        <label class="control-label">search</label>
-                                        <input [(ngModel)]="searchInput" [ngModelOptions]="{standalone: true}"
-                                               type="text" class="form-control">
+
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <div class="loader" *ngIf="busy">
+                                        <svg class="circular" viewBox="25 25 50 50">
+                                            <circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="2" stroke-miterlimit="10" />
+                                        </svg>
                                     </div>
-                                    <button (click)="globalFilter()"
-                                            class="btn btn-just-icon btn-round btn-info-second">
-                                        <i class="material-icons">search</i>
-                                    </button>
-                                    <button (click)="clearFilter()" class="btn btn-just-icon btn-round btn-info-second">
-                                        <i class="material-icons">clear</i>
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-12">
-                                <div class="loader" *ngIf="processing">
-                                    <svg class="circular" viewBox="25 25 50 50">
-                                        <circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="2"
-                                                stroke-miterlimit="10"/>
-                                    </svg>
+
+                                    <div class="app-ngx-datatable-wrapper">
+                                        <ngx-datatable #table class="app-ngx-datatable" [columns]="datatable.visibleColumns" [headerHeight]="'auto'" [rowHeight]="'auto'" [summaryHeight]="'auto'" [summaryRow]="false" [summaryPosition]="'bottom'" [columnMode]="'flex'" [rows]="datatable.data" [footerHeight]="65" [externalPaging]="true" [externalSorting]="true" [count]="datatable.recordsFiltered" [limit]="datatable.length" (page)="onPageChanged($event)" (sort)="onSortChanged($event)">
+
+                                            <ngx-datatable-footer #footerRef>
+                                                <ng-template #pagerTempRef ngx-datatable-footer-template let-rowCount="rowCount" let-selectedCount="selectedCount" let-offset="offset" let-pageSize="pageSize" let-curPage="curPage">
+                                                    <div class="total-entries">
+                                                        <app-datatable-total-entries [rowCount]="rowCount" [offset]="offset" [pageSize]="pageSize" [curPage]="curPage">
+                                                        </app-datatable-total-entries>
+                                                    </div>
+                                                    <div class="datatable-pagination">
+                                                        <datatable-pager #pagerRef [pagerLeftArrowIcon]="'fa fa-angle-left'" [pagerRightArrowIcon]="'fa fa-angle-right'" [pagerPreviousIcon]="'fa fa-angle-double-left'" [pagerNextIcon]="'fa fa-angle-double-right'" [page]="curPage" [size]="pageSize" [count]="rowCount" (change)="table.onFooterPage($event)">
+                                                        </datatable-pager>
+                                                    </div>
+                                                </ng-template>
+                                            </ngx-datatable-footer>
+
+                                        </ngx-datatable>
+
+                                        <ng-template #headerTemplate let-column="column">
+                                            <span>{{ column.name }}</span>
+                                        </ng-template>
+
+                                        <ng-template #rowTemplate let-value="value">
+                                            <span>{{ value }}</span>
+                                        </ng-template>
+
+                                        <ng-template #reportStatusRowTemplate let-row="row">
+                                            <div class="badge" [ngClass]="{
+                                                    'badge-warning': row.status === ReportStatus.WAITING,
+                                                    'badge-success': row.status === ReportStatus.READY
+                                                }">
+                                                {{ 'tbsApp.payment.paymentStatus.' + row.paymentStatus |
+                                                translate }}
+                                            </div>
+                                        </ng-template>
+
+                                        <ng-template #dateTemplate let-value="value">
+                                            <span>{{ value | tbsDateTime }}</span>
+                                        </ng-template>
+
+                                        <ng-template #actionsRowTemplate let-row="row">
+                                            <div class="btn-group">
+                                                <!--                                                <button class="btn btn-info  btn-link" matTooltip="{{ 'global.datatable.view' | translate }}" [matTooltipPosition]="'above'" (click)="view(row)">-->
+                                                <!--                                                    <i class="material-icons">visibility</i>-->
+                                                <!--                                                </button>-->
+                                                <button class="btn btn-primary  btn-link" matTooltip="{{ 'global.datatable.edit' | translate }}" [matTooltipPosition]="'above'" (click)="edit(row)">
+                                                    <i class="material-icons">edit</i>
+                                                </button>
+                                                <!--<button class="btn btn-danger  btn-link" matTooltip="{{ 'global.datatable.delete' | translate }}" [matTooltipPosition]="'above'" (click)="delete(row)">
+                                                    <i class="material-icons">close</i>
+                                                </button>-->
+                                            </div>
+                                        </ng-template>
+
+                                    </div>
                                 </div>
-                                <table id="trip_reports_datatables" cellspacing="0" style="width:100%">
-                                </table>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>

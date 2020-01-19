@@ -149,156 +149,158 @@
                                 </div>
                             </div>
 
-                        </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <div class="loader" *ngIf="busy">
+                                        <svg class="circular" viewBox="25 25 50 50">
+                                            <circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="2"
+                                                    stroke-miterlimit="10"/>
+                                        </svg>
+                                    </div>
 
-                        <div class="row">
-                            <div class="col-sm-12">
-                                <div class="loader" *ngIf="busy">
-                                    <svg class="circular" viewBox="25 25 50 50">
-                                        <circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="2"
-                                                stroke-miterlimit="10"/>
-                                    </svg>
-                                </div>
+                                    <div class="modal fade" id="auditModal" tabindex="-1" role="dialog"
+                                         aria-labelledby="myModalLabel"
+                                         aria-hidden="true">
+                                        <div class="modal-dialog modal-medium" style="width: 900px">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <button type="button" class="close" data-dismiss="modal"
+                                                            aria-hidden="true"><i class="material-icons">clear</i>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body text-center">
+                                                    <h3>Invoice
+                                                        Logs: {{selectedInvoice ? selectedInvoice.accountId : ''}}</h3>
+                                                    <table id="invoice_audit_datatables" class="display"
+                                                           style="width:100%">
+                                                        <thead>
+                                                        <tr>
+                                                            <th>#</th>
+                                                            <th>Type</th>
+                                                            <th>Status</th>
+                                                            <th>Modified Date</th>
+                                                        </tr>
 
-                                <div class="modal fade" id="auditModal" tabindex="-1" role="dialog"
-                                     aria-labelledby="myModalLabel"
-                                     aria-hidden="true">
-                                    <div class="modal-dialog modal-medium" style="width: 900px">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <button type="button" class="close" data-dismiss="modal"
-                                                        aria-hidden="true"><i class="material-icons">clear</i>
-                                                </button>
-                                            </div>
-                                            <div class="modal-body text-center">
-                                                <h3>Invoice
-                                                    Logs: {{selectedInvoice ? selectedInvoice.accountId : ''}}</h3>
-                                                <table id="invoice_audit_datatables" class="display"
-                                                       style="width:100%">
-                                                    <thead>
-                                                    <tr>
-                                                        <th>#</th>
-                                                        <th>Type</th>
-                                                        <th>Status</th>
-                                                        <th>Modified Date</th>
-                                                    </tr>
-
-                                                    <tr *ngFor="let audit of auditInvoice; let odd=odd;"
-                                                        [ngClass]="{odd_row: odd}">
-                                                        <td>{{audit.id}}</td>
-                                                        <!--<td>{{humanizeEnumString(audit.auditEventType)}}</td>-->
-                                                        <td>{{ 'tbsApp.invoice.auditEvent.' + audit.auditEventType |
-                                                            translate }}</td>
-                                                        <td>
+                                                        <tr *ngFor="let audit of auditInvoice; let odd=odd;"
+                                                            [ngClass]="{odd_row: odd}">
+                                                            <td>{{audit.id}}</td>
+                                                            <!--<td>{{humanizeEnumString(audit.auditEventType)}}</td>-->
+                                                            <td>{{ 'tbsApp.invoice.auditEvent.' + audit.auditEventType |
+                                                                translate }}</td>
+                                                            <td>
                                                                 <span *ngIf="audit.successful"><i class="fa fa-check"
                                                                                                   style="color: green"
                                                                                                   aria-hidden="true"></i></span>
-                                                            <span *ngIf="!audit.successful"><i class="fa fa-times"
-                                                                                               style="color: red"
-                                                                                               aria-hidden="true"></i></span>
-                                                            {{audit.successful ? 'Ok' : 'Not Ok'}}
-                                                        </td>
-                                                        <td>{{formatDate(audit.auditEventDate)}}</td>
-                                                    </tr>
+                                                                <span *ngIf="!audit.successful"><i class="fa fa-times"
+                                                                                                   style="color: red"
+                                                                                                   aria-hidden="true"></i></span>
+                                                                {{audit.successful ? 'Ok' : 'Not Ok'}}
+                                                            </td>
+                                                            <td>{{formatDate(audit.auditEventDate)}}</td>
+                                                        </tr>
 
-                                                    </thead>
-                                                </table>
-                                            </div>
-                                            <div class="modal-footer text-center">
+                                                        </thead>
+                                                    </table>
+                                                </div>
+                                                <div class="modal-footer text-center">
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <div class="app-ngx-datatable-wrapper">
-                                    <ngx-datatable #table class="app-ngx-datatable"
-                                                   [columns]="datatable.visibleColumns" [headerHeight]="'auto'"
-                                                   [rowHeight]="'auto'" [summaryHeight]="'auto'"
-                                                   [summaryRow]="false" [summaryPosition]="'bottom'"
-                                                   [columnMode]="'flex'" [rows]="datatable.data" [footerHeight]="65"
-                                                   [externalPaging]="true" [externalSorting]="true"
-                                                   [count]="datatable.recordsFiltered" [limit]="datatable.length"
-                                                   (page)="onPageChanged($event)" (sort)="onSortChanged($event)">
+                                    <div class="app-ngx-datatable-wrapper">
+                                        <ngx-datatable #table class="app-ngx-datatable"
+                                                       [columns]="datatable.visibleColumns" [headerHeight]="'auto'"
+                                                       [rowHeight]="'auto'" [summaryHeight]="'auto'"
+                                                       [summaryRow]="false" [summaryPosition]="'bottom'"
+                                                       [columnMode]="'flex'" [rows]="datatable.data" [footerHeight]="65"
+                                                       [externalPaging]="true" [externalSorting]="true"
+                                                       [count]="datatable.recordsFiltered" [limit]="datatable.length"
+                                                       (page)="onPageChanged($event)" (sort)="onSortChanged($event)">
 
-                                        <ngx-datatable-footer #footerRef>
-                                            <ng-template #pagerTempRef ngx-datatable-footer-template
-                                                         let-rowCount="rowCount" let-selectedCount="selectedCount"
-                                                         let-offset="offset" let-pageSize="pageSize"
-                                                         let-curPage="curPage">
-                                                <div class="total-entries">
-                                                    <app-datatable-total-entries [rowCount]="rowCount"
-                                                                                 [offset]="offset"
-                                                                                 [pageSize]="pageSize"
-                                                                                 [curPage]="curPage">
-                                                    </app-datatable-total-entries>
-                                                </div>
-                                                <div class="datatable-pagination">
-                                                    <datatable-pager #pagerRef
-                                                                     [pagerLeftArrowIcon]="'fa fa-angle-left'"
-                                                                     [pagerRightArrowIcon]="'fa fa-angle-right'"
-                                                                     [pagerPreviousIcon]="'fa fa-angle-double-left'"
-                                                                     [pagerNextIcon]="'fa fa-angle-double-right'"
-                                                                     [page]="curPage" [size]="pageSize"
-                                                                     [count]="rowCount"
-                                                                     (change)="table.onFooterPage($event)">
-                                                    </datatable-pager>
-                                                </div>
-                                            </ng-template>
-                                        </ngx-datatable-footer>
+                                            <ngx-datatable-footer #footerRef>
+                                                <ng-template #pagerTempRef ngx-datatable-footer-template
+                                                             let-rowCount="rowCount" let-selectedCount="selectedCount"
+                                                             let-offset="offset" let-pageSize="pageSize"
+                                                             let-curPage="curPage">
+                                                    <div class="total-entries">
+                                                        <app-datatable-total-entries [rowCount]="rowCount"
+                                                                                     [offset]="offset"
+                                                                                     [pageSize]="pageSize"
+                                                                                     [curPage]="curPage">
+                                                        </app-datatable-total-entries>
+                                                    </div>
+                                                    <div class="datatable-pagination">
+                                                        <datatable-pager #pagerRef
+                                                                         [pagerLeftArrowIcon]="'fa fa-angle-left'"
+                                                                         [pagerRightArrowIcon]="'fa fa-angle-right'"
+                                                                         [pagerPreviousIcon]="'fa fa-angle-double-left'"
+                                                                         [pagerNextIcon]="'fa fa-angle-double-right'"
+                                                                         [page]="curPage" [size]="pageSize"
+                                                                         [count]="rowCount"
+                                                                         (change)="table.onFooterPage($event)">
+                                                        </datatable-pager>
+                                                    </div>
+                                                </ng-template>
+                                            </ngx-datatable-footer>
 
-                                    </ngx-datatable>
+                                        </ngx-datatable>
 
-                                    <ng-template #headerTemplate let-column="column">
-                                        <span>{{ column.name }}</span>
-                                    </ng-template>
+                                        <ng-template #headerTemplate let-column="column">
+                                            <span>{{ column.name }}</span>
+                                        </ng-template>
 
-                                    <ng-template #rowTemplate let-value="value">
-                                        <span>{{ value }}</span>
-                                    </ng-template>
+                                        <ng-template #rowTemplate let-value="value">
+                                            <span>{{ value }}</span>
+                                        </ng-template>
 
-                                    <ng-template #nameRowTemplate let-row="row">
-                                        <div class="payment-name">{{ row.name }}</div>
-                                    </ng-template>
+                                        <ng-template #nameRowTemplate let-row="row">
+                                            <div class="payment-name">{{ row.name }}</div>
+                                        </ng-template>
 
-                                    <ng-template #paymentStatusRowTemplate let-row="row">
-                                        <div class="badge" [ngClass]="{
+                                        <ng-template #paymentStatusRowTemplate let-row="row">
+                                            <div class="badge" [ngClass]="{
                                                     'badge-warning': row.paymentStatus === PaymentStatus.REFUNDED,
                                                     'badge-success': row.paymentStatus === PaymentStatus.PAID,
                                                     'badge-info': row.paymentStatus === PaymentStatus.PENDING,
                                                     'badge-danger': row.paymentStatus === PaymentStatus.UNPAID
                                                 }">
-                                            {{ 'tbsApp.payment.paymentStatus.' + row.paymentStatus |
-                                            translate }}
-                                        </div>
-                                    </ng-template>
+                                                {{ 'tbsApp.payment.paymentStatus.' + row.paymentStatus |
+                                                translate }}
+                                            </div>
+                                        </ng-template>
 
-                                    <ng-template #issueDateTemplate let-row="row">
-                                        <span>{{ row.createdDate | tbsDateTime }}</span>
-                                    </ng-template>
+                                        <ng-template #issueDateTemplate let-row="row">
+                                            <span>{{ row.createdDate | tbsDateTime }}</span>
+                                        </ng-template>
 
-                                    <ng-template #actionsRowTemplate let-row="row">
-                                        <div class="btn-group">
-                                            <!--<button class="btn btn-info  btn-link" matTooltip="{{ 'global.datatable.view' | translate }}" [matTooltipPosition]="'above'" (click)="view(row)">
-                                                <i class="material-icons">visibility</i>
-                                            </button>
-                                            <button class="btn btn-primary  btn-link" matTooltip="{{ 'global.datatable.edit' | translate }}" [matTooltipPosition]="'above'" (click)="edit(row)">
-                                                <i class="material-icons">edit</i>
-                                            </button>-->
-                                            <!--<button class="btn btn-danger  btn-link" matTooltip="{{ 'global.datatable.delete' | translate }}" [matTooltipPosition]="'above'" (click)="delete(row)">
-                                                <i class="material-icons">close</i>
-                                            </button>-->
+                                        <ng-template #actionsRowTemplate let-row="row">
+                                            <div class="btn-group">
+                                                <!--<button class="btn btn-info  btn-link" matTooltip="{{ 'global.datatable.view' | translate }}" [matTooltipPosition]="'above'" (click)="view(row)">
+                                                    <i class="material-icons">visibility</i>
+                                                </button>
+                                                <button class="btn btn-primary  btn-link" matTooltip="{{ 'global.datatable.edit' | translate }}" [matTooltipPosition]="'above'" (click)="edit(row)">
+                                                    <i class="material-icons">edit</i>
+                                                </button>-->
+                                                <!--<button class="btn btn-danger  btn-link" matTooltip="{{ 'global.datatable.delete' | translate }}" [matTooltipPosition]="'above'" (click)="delete(row)">
+                                                    <i class="material-icons">close</i>
+                                                </button>-->
 
-                                            <button class="btn btn-primary btn-link" matTooltip=""
-                                                    title="show audit" data-toggle="modal" data-target="#auditModal"
-                                                    (click)="auditInvoiceView(row)">
-                                                <i class="material-icons">info</i>
-                                            </button>
-                                        </div>
-                                    </ng-template>
+                                                <button class="btn btn-primary btn-link" matTooltip=""
+                                                        title="show audit" data-toggle="modal" data-target="#auditModal"
+                                                        (click)="auditInvoiceView(row)">
+                                                    <i class="material-icons">info</i>
+                                                </button>
+                                            </div>
+                                        </ng-template>
 
+                                    </div>
                                 </div>
                             </div>
+
                         </div>
+
+
                     </div>
 
                 </div>

@@ -1,298 +1,163 @@
-import {Component, OnInit} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {Router} from '@angular/router';
-import {NotificationComponent} from '../../shared/notification/notification.component';
-import {ReportService} from '../report.service';
-import {FormControl, FormGroup, Validators} from '@angular/forms';
-import {_tbs} from '../../shared/util/tbs-utility';
-import {ZonedDateTime} from 'js-joda';
+import {Component, OnInit, ViewChild} from '@angular/core';
+import {HttpErrorResponse} from '@angular/common/http';
+import {Subscription} from 'rxjs';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import {finalize} from 'rxjs/operators';
+import {JhiAlertService, JhiEventManager} from 'ng-jhipster';
 
-declare var $: any;
+import {IItem} from 'app/shared/model/item.model';
+import {AccountService} from 'app/core/auth/account.service';
+import {DatatableComponent} from '@swimlane/ngx-datatable';
+import {Datatable} from '../../shared/model/datatable/datatable';
+import {ActivatedRoute, Router} from '@angular/router';
+import {DatatableColumn} from 'app/shared/model/datatable/datatable-column';
+import {PageQueryParams} from 'app/shared/model/page-query-params';
+import {TranslateService} from '@ngx-translate/core';
+import {ReportService} from 'app/report/report.service';
+import {ReportStatus} from 'app/shared/constants';
 
 @Component({
-    selector: 'app-payment-reports',
-    templateUrl: './payment-report.component.html',
-    styleUrls: ['./payment-report.component.css']
+  selector: 'app-report',
+  templateUrl: './payment-report.component.html'
 })
-
 export class PaymentReportComponent implements OnInit {
 
-    table: any;
-    dtOptions = {};
-    public processing: boolean = true;
-    searchInput: string = '';
+  eventSubscriber: Subscription;
 
-    public daterange: any = {};
+  // new datatable
+  busy = false;
+  datatable = new Datatable<IItem>();
+  // Datatable Reference
+  @ViewChild('table', {static: true}) table: DatatableComponent;
 
-    public options: any = {
-        locale: {format: 'YYYY-MM-DD'},
-        alwaysShowCalendars: false,
-        autoApply: true,
-        opens: 'center',
-        timePicker: true,
-        timePicker24Hour: true,
-        autoUpdateInput: true,
-        startDate: new Date(new Date().setMonth(new Date().getMonth() - 1)),
-        endDate: new Date(),
-        maxDate: new Date()
-    };
+  ReportStatus: ReportStatus;
 
-    dropdownSettings = {};
+  // Datatable Templates Reference
+  @ViewChild('headerTemplate', {static: false}) headerTemplate;
+  @ViewChild('rowTemplate', {static: false}) rowTemplate;
+  @ViewChild('actionsRowTemplate', {static: true}) actionsRowTemplate;
+  @ViewChild('editRowTemplate', {static: true}) editRowTemplate;
+  @ViewChild('reportStatusRowTemplate', {static: true}) reportStatusRowTemplate;
+  @ViewChild('dateTemplate', {static: true}) dateTemplate;
+  constructor(
+    protected reportService: ReportService,
+    protected jhiAlertService: JhiAlertService,
+    protected eventManager: JhiEventManager,
+    protected accountService: AccountService,
+    private activatedRoute: ActivatedRoute,
+    private translateService: TranslateService,
+    private router: Router
+  ) {
+  }
 
-    reportForm: FormGroup;
 
-    constructor(private http: HttpClient,
-                private router: Router,
-                private notification: NotificationComponent,
-                private reportService: ReportService) {
+  ngOnInit() {
+    this.initDatatable();
+
+    this.activatedRoute.queryParams
+      .subscribe((pageQueryParams: PageQueryParams) => {
+        this.datatable.fillPageQueryParams(pageQueryParams);
+
+        this.loadData();
+      });
+  }
+
+  initDatatable() {
+    this.datatable.setTable(this.table);
+    this.datatable.setColumns([
+      new DatatableColumn({
+        name: this.translateService.instant('global.datatable.id'),
+        prop: 'id',
+        headerTemplate: this.headerTemplate,
+        cellTemplate: this.rowTemplate,
+      }),
+      new DatatableColumn({
+        name: this.translateService.instant('report.requestDate'),
+        prop: 'requestDate',
+        headerTemplate: this.headerTemplate,
+        cellTemplate: this.dateTemplate
+      }),
+      new DatatableColumn({
+        name: this.translateService.instant('report.generatedDate'),
+        prop: 'generatedDate',
+        headerTemplate: this.headerTemplate,
+        cellTemplate: this.dateTemplate
+      }),
+      new DatatableColumn({
+        name: this.translateService.instant('report.expireDate'),
+        prop: 'expireDate',
+        headerTemplate: this.headerTemplate,
+        cellTemplate: this.dateTemplate
+      }),
+      new DatatableColumn({
+        name: this.translateService.instant('report.status'),
+        prop: 'status',
+        headerTemplate: this.headerTemplate,
+        cellTemplate: this.reportStatusRowTemplate
+      }),
+      new DatatableColumn({
+        name: this.translateService.instant('report.download'),
+        sortable: false,
+        searchable: false,
+        headerTemplate: this.headerTemplate,
+        cellTemplate: this.actionsRowTemplate
+      })
+    ]);
+  }
+
+  loadData() {
+    this.busy = true;
+    this.reportService.getPaymentReportList(this.datatable.getDataTableInput())
+      .pipe(
+        finalize(() => this.busy = false)
+      )
+      .subscribe(
+        (res) => {
+          this.datatable.update(res);
+        },
+        (res: HttpErrorResponse) => this.onError(res.message)
+      );
+  }
+
+  filter(reset: boolean) {
+    if (reset) {
+      this.datatable.resetPageNumber();
     }
 
-    ngOnInit() {
+    const pageQueryParams = new PageQueryParams();
 
-        this.daterange = {
-            start: this.options.startDate,
-            end: this.options.endDate
-        };
+    pageQueryParams.fillDatatable(this.datatable);
 
-        this.reportForm = new FormGroup({
-            driverId: new FormControl('', [Validators.min(0)]),
-            city: new FormControl(''),
-            dateRangeInput: new FormControl('')
-        });
+    this.router.navigate(['/report'], {queryParams: pageQueryParams});
+  }
 
-        this.dropdownSettings = {
-            singleSelection: true,
-            idField: 'id',
-            textField: 'name',
-            itemsShowLimit: 3,
-            allowSearchFilter: true,
-            closeDropDownOnSelection: true
-        };
+  search() {
+    this.filter(true);
+  }
 
-        /*this.reportService.getCities().subscribe((res) => {
-            let arr = [];
-            arr = (<any>Object).values(res);
-            this.cities = arr.map(c => new City(c.name, c.id, c.code));
-        });*/
+  clearSearch() {
+    this.datatable.search = '';
 
+    this.search();
+  }
 
-        const that = this;
+  onPageChanged(data) {
+    this.datatable.changePageNumber(data.offset);
 
-        setInterval(
-            function () {
-                that.table.draw(false);
-            }, 30000);
+    this.filter(false);
+  }
 
-        this.dtOptions = {
-            ajax: {
-                url: '/api/v1/report/driver/datatable'
-            },
-            oSearch: {"sSearch": that.searchInput},
-            columns: [
-                {
-                    title: 'Report ID',
-                    data: 'id',
-                    visible: true,
-                    orderable: false,
-                    sortable: true,
-                    searchable: true
-                }, {
-                    title: 'Request User Id',
-                    data: 'requestUserId',
-                    visible: false,
-                    orderable: false,
-                    sortable: false,
-                    searchable: false
-                }, {
-                    title: 'Type',
-                    data: 'type',
-                    visible: false,
-                    orderable: false,
-                    sortable: false,
-                    searchable: false
-                }, {
-                    title: 'Request Date',
-                    orderable: true,
-                    sortable: true,
-                    searchable: false,
-                    data: 'requestDate',
-                    render: function (data) {
-                        if (data) {
-                            return '_tbs.formatDate(data)';
-                        } else {
-                            return 'Not Ready Yet';
-                        }
-                    },
-                    visible: true
-                }, {
-                    title: 'Generated Date',
-                    orderable: false,
-                    sortable: false,
-                    searchable: false,
-                    data: 'generatedDate',
-                    render: function (data) {
-                        if (data) {
-                            return '_tbs.formatDate(data)';
-                        } else {
-                            return 'Not Ready Yet';
-                        }
-                    },
-                    visible: true
-                }, {
-                    title: 'Expire Date',
-                    orderable: false,
-                    sortable: false,
-                    searchable: false,
-                    data: 'expireDate',
-                    render: function (data) {
-                        if (data) {
-                            return '_tbs.formatDate(data)';
-                        } else {
-                            return 'Not Ready Yet';
-                        }
-                    },
-                    visible: true
-                }, {
-                    title: 'Status',
-                    orderable: false,
-                    sortable: false,
-                    searchable: false,
-                    data: 'status',
-                    render: function (data) {
+  onPageSizeChanged() {
+    this.filter(true);
+  }
 
-                        let statusDiv: HTMLDivElement;
-                        statusDiv = document.createElement('div');
-                        let statusSpan: HTMLSpanElement;
-                        statusSpan = document.createElement('span');
-                        statusSpan.setAttribute('class', 'label');
-                        statusSpan.innerHTML = '_tbs.humanizeEnumString(data)';
-                        statusDiv.appendChild(statusSpan);
-                        switch (data) {
-                            case "WAITING":
-                                statusSpan.classList.add('label-warning');
-                                statusSpan.style.marginRight = "5px";
-                                let loading: HTMLElement;
-                                loading = document.createElement('i');
-                                loading.setAttribute('class', "fa fa-spinner fa-spin");
-                                loading.setAttribute('data-toggle', "tooltip");
-                                loading.setAttribute('data-placement', "top");
-                                loading.setAttribute('title', "Generating..!");
-                                loading.style.color = "#FCB220";
-                                statusDiv.appendChild(loading);
-                                break;
-                            case "READY":
-                                statusSpan.classList.add('label-success');
-                                break;
-                            default:
-                                statusSpan.classList.add('label-info');
-                        }
-                        statusSpan.style.width = '100%';
-                        return statusDiv.outerHTML;
-                    },
-                    visible: true
-                }, {
-                    title: 'Download',
-                    orderable: false,
-                    sortable: false,
-                    searchable: false,
-                    visible: true,
-                    data: function (data) {
-                        let downloadDiv: HTMLDivElement;
-                        downloadDiv = document.createElement('div');
+  onSortChanged(data) {
+    this.datatable.setSort(data.sorts[0]);
 
-                        let downloadAncher: HTMLElement;
-                        downloadAncher = document.createElement('a');
-                        if (data.status == "READY") {
-                            downloadAncher.setAttribute('href', data.downloadUrl);
-                        }
-                        let downloadSpan: HTMLElement;
-                        downloadSpan = document.createElement('i');
-                        downloadSpan.setAttribute('class', 'fa fa-download');
-                        downloadSpan.setAttribute('download', data.downloadUrl);
-                        downloadAncher.appendChild(downloadSpan);
-                        downloadDiv.appendChild(downloadAncher);
+    this.filter(true);
+  }
 
-                        return downloadDiv.outerHTML;
-
-                    }
-                }
-            ],
-            ordering: true,
-            order: [[3, "desc"]],
-            lengthChange: false,
-            pageLength: 10,
-            processing: false,
-            serverSide: true,
-            autoWidth: false,
-            dom: '<"top"i>rt<"bottom"p><"clear">'
-        };
-    }
-
-    public globalFilter() {
-        this.table.search(this.searchInput).draw();
-    }
-
-    public clearFilter() {
-        this.searchInput = '';
-        this.globalFilter();
-    }
-
-    generateReport() {
-        if (this.reportForm.valid) {
-            this.processing = true;
-            let cityId = null;
-           /* if (this.selectedCity && this.selectedCity.length > 0) {
-                cityId = this.selectedCity[0].id;
-            }*/
-
-            let newDaterange: any = {};
-            if (this.daterange) {
-                newDaterange = this.daterange;
-            }
-
-            const paymentReportRequest = {
-                driverId: this.reportForm.controls['driverId'].value,
-                cityId: cityId,
-                startDate: newDaterange.start,
-                endDate: newDaterange.end,
-                offset: ZonedDateTime.now().offset()._id
-            };
-
-
-            this.reportService.requestPaymentReport(paymentReportRequest).subscribe(
-                data => {
-                    this.processing = false;
-                    this.reset();
-                    this.notification.showNotification('success', 'Report Requested Successfully');
-                    this.table.draw(false);
-
-                },
-                err => {
-                    this.processing = false;
-                    this.table.draw(false);
-                    for (const field of err.error.errors) {
-                        this.notification.showNotification('danger', field.message);
-                    }
-                }
-            );
-        } else {
-            this.notification.showNotification('danger', "please fill all the required fields");
-        }
-
-    }
-
-    reset() {
-        // this.selectedCity = null;
-        this.reportForm.reset();
-    }
-
-    public selectedDate(value: any) {
-        this.daterange.start = value.start._d;
-        this.daterange.end = value.end._d;
-    }
-
-    isFieldValid(form: FormGroup, field: string) {
-        return !form.get(field).valid && form.get(field).touched;
-    }
-
+  protected onError(errorMessage: string) {
+    this.jhiAlertService.error(errorMessage, null, null);
+  }
 }

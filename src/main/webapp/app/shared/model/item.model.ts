@@ -1,12 +1,10 @@
-import { ITax } from 'app/shared/model/tax.model';
-import * as moment from "moment";
-import {Moment} from "moment";
-import {ICategory} from "app/shared/model/category.model";
-import {IClient} from "app/shared/model/client.model";
+import {ITax} from 'app/shared/model/tax.model';
+import {ICategory} from 'app/shared/model/category.model';
+import {IClient} from 'app/shared/model/client.model';
 
 export interface IItem {
   id?: number;
-  code?:number;
+  code?: number;
   name?: string;
   description?: string;
   price?: number;
@@ -14,8 +12,8 @@ export interface IItem {
   taxes?: ITax[];
   categoryId?: number;
   clientId?: number;
-  category?:ICategory;
-  client?:IClient;
+  category?: ICategory;
+  client?: IClient;
 
 }
 
@@ -29,9 +27,9 @@ export class Item implements IItem {
     public taxes?: ITax[],
     public categoryId?: number,
     public clientId?: number,
-    category?:ICategory,
-    client?:IClient,
-    code?:number
+    category?: ICategory,
+    client?: IClient,
+    code?: number
 
   ) {}
 }

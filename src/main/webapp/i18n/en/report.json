@@ -1,0 +1,16 @@
+{
+  "report": {
+    "paymentReport": "Payment Reports",
+    "requestDate": "Request date",
+    "generatedDate": "Generated date",
+    "expireDate": "Expire date",
+    "status": "Status",
+    "reportStatus": {
+      "waiting": "Waiting",
+      "ready": "Ready"
+    },
+    "download": "Download",
+    "error": {
+    }
+  }
+}

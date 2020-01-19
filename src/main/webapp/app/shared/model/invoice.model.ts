@@ -2,7 +2,7 @@ import { Moment } from 'moment';
 import { IInvoiceItem } from 'app/shared/model/invoice-item.model';
 import { IPayment } from 'app/shared/model/payment.model';
 import { InvoiceStatus } from 'app/shared/model/enumerations/invoice-status.model';
-import {PaymentStatus} from "app/shared/constants";
+import {PaymentStatus} from 'app/shared/constants';
 
 export interface IInvoice {
   id?: number;

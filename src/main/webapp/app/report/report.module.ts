@@ -10,9 +10,11 @@ import {NgMultiSelectDropDownModule} from 'ng-multiselect-dropdown';
 import {Daterangepicker} from 'ng2-daterangepicker';
 import {reportRoutes} from './report.route';
 import {PaymentReportComponent} from './payment-report/payment-report.component';
+import {TbsSharedModule} from 'app/shared/shared.module';
 
 @NgModule({
     imports: [
+        TbsSharedModule,
         CommonModule,
         RouterModule.forChild(reportRoutes),
         CommonModule,

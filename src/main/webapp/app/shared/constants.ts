@@ -44,3 +44,8 @@ export enum InvoiceStatus {
   WAITING = 'WAITING',
   EXPIRED = 'EXPIRED',
 }
+
+export enum ReportStatus {
+  WAITING = 'WAITING',
+  READY = 'READY'
+}
