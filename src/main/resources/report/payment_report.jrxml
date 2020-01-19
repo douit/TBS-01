@@ -13,7 +13,7 @@
 		<property name="customer" value=""/>
 		<property name="client" value=""/>
 	</field>
-	<field name="paymentMethod" class="sa.tamkeentech.tbs.service.dt.PaymentMethodDTO">
+	<field name="paymentMethod" class="sa.tamkeentech.tbs.service.dto.PaymentMethodDTO">
 		<property name="id" value=""/>
 		<property name="name" value=""/>
 	</field>
@@ -187,7 +187,7 @@
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{deliveryProviderName}  == null ? "" :  $P{deliveryProviderName}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{client}  == null ? "" :  $P{client}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement mode="Opaque" x="433" y="60" width="320" height="25" backcolor="#F0F0F0" uuid="5ff2515f-8e55-4535-b281-55f4faa6e571"/>
@@ -416,7 +416,7 @@
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$F{obligationAmountAfterPayment}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{invoice}.getTaxFees() != null)? $F{invoice}.getTaxFees(): "0"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="0" y="0" width="80" height="30" uuid="aecbdbf7-71be-47fc-8bfd-3b3e3316198b"/>
@@ -449,7 +449,7 @@
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[($F{banId} != null)? $F{banId}: ""]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{bankId} != null)? $F{bankId}: ""]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

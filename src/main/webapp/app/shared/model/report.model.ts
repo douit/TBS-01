@@ -10,6 +10,10 @@ export interface IReport {
   requestDate?: Moment;
   generatedDate?: Moment;
   expireDate?: Moment;
+  startDate?: Moment;
+  endDate?: Moment;
+  clientId?: number;
+  offset?: string;
 }
 
 export class Report implements IReport {
@@ -18,6 +22,10 @@ export class Report implements IReport {
     public status?: ReportStatus,
     public requestDate?: Moment,
     public generatedDate?: Moment,
-    public expireDate?: Moment
+    public expireDate?: Moment,
+    public startDate?: Moment,
+    public endDate?: Moment,
+    public clientId?: number,
+    public offset?: string
   ) {}
 }

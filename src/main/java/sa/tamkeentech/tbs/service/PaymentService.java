@@ -522,7 +522,7 @@ public class PaymentService {
         }
         return paymentMapper.toDto(paymentRepository.findAll((root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(criteriaBuilder.and(root.get("client").get("id").in(clientIds)));
+            predicates.add(criteriaBuilder.and(root.get("invoice").get("client").get("id").in(clientIds)));
 
             if (start != null) {
                 predicates.add(criteriaBuilder.and(criteriaBuilder.greaterThanOrEqualTo(root.get("createdDate"), start)));

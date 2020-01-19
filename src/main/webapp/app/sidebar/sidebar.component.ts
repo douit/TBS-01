@@ -74,7 +74,7 @@ export class SidebarComponent implements OnInit {
         title: 'Reports',
         authorities: [AuthConsts.VIEW_REPORT],
         type: 'sub',
-        icontype: 'settings',
+        icontype: 'timeline',
         collapse: 'report',
         children: [
           {path: 'payment-report',

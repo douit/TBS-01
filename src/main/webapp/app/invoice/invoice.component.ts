@@ -69,6 +69,19 @@ export class InvoiceComponent implements OnInit {
     private calendar: NgbCalendar,
     protected clientService: ClientService
   ) {
+    const current = new Date();
+    this.maxDate = {
+      year: current.getFullYear(),
+      month: current.getMonth() + 1,
+      day: current.getDate()
+    };
+    const previous = new Date();
+    previous.setMonth(previous.getMonth() - 1);
+    this.startDate = {
+      year: previous.getFullYear(),
+      month: previous.getMonth() + 1,
+      day: previous.getDate()
+    };
   }
 
   hoveredDate: NgbDate;

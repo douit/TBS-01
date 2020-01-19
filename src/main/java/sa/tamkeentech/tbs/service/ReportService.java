@@ -156,7 +156,7 @@ public class ReportService {
 
         byte[] report = JasperReportExporter.getInstance().generateXlsReport(dataList, parameterMap, templateFile);
         String dirPath = outputFolder + "/" + PAYMENT_FOLDER_NAME + "/";
-        return fileWrapper.saveBytesToFile("REPORT", reportFileName, report);
+        return fileWrapper.saveBytesToFile(dirPath, reportFileName, report);
     }
 
     public DataTablesOutput<ReportDTO> getPaymentReports(DataTablesInput input) {

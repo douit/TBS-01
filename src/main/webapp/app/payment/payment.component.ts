@@ -17,13 +17,13 @@ import {TranslateService} from '@ngx-translate/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {PaymentStatus, PaymentMethod} from 'app/shared/constants';
 import {_tbs} from 'app/shared/util/tbs-utility';
-import {NgbCalendar, NgbDate, NgbDateParserFormatter} from "@ng-bootstrap/ng-bootstrap";
-import {IClient} from "app/shared/model/client.model";
-import {IInvoiceSearchRequest} from "app/shared/model/invoice-serach-request";
-import * as moment from "moment";
-import {NgbDateStruct} from "@ng-bootstrap/ng-bootstrap/datepicker/ngb-date-struct";
-import {IPaymentSearchRequest} from "app/shared/model/payment-serach-request";
-import {ClientService} from "app/client/client.service";
+import {NgbCalendar, NgbDate, NgbDateParserFormatter} from '@ng-bootstrap/ng-bootstrap';
+import {IClient} from 'app/shared/model/client.model';
+import {IInvoiceSearchRequest} from 'app/shared/model/invoice-serach-request';
+import * as moment from 'moment';
+import {NgbDateStruct} from '@ng-bootstrap/ng-bootstrap/datepicker/ngb-date-struct';
+import {IPaymentSearchRequest} from 'app/shared/model/payment-serach-request';
+import {ClientService} from 'app/client/client.service';
 
 @Component({
   selector: 'app-payment',
@@ -64,7 +64,21 @@ export class PaymentComponent implements OnInit {
     public formatter: NgbDateParserFormatter,
     private calendar: NgbCalendar,
     protected clientService: ClientService
-  ) {}
+  ) {
+    const current = new Date();
+    this.maxDate = {
+      year: current.getFullYear(),
+      month: current.getMonth() + 1,
+      day: current.getDate()
+    };
+    const previous = new Date();
+    previous.setMonth(previous.getMonth() - 1);
+    this.startDate = {
+      year: previous.getFullYear(),
+      month: previous.getMonth() + 1,
+      day: previous.getDate()
+    };
+  }
   hoveredDate: NgbDate;
   fromDate: NgbDate;
   toDate: NgbDate;
