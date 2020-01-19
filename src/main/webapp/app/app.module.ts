@@ -9,6 +9,8 @@ import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AuthExpiredInterceptor } from './blocks/interceptor/auth-expired.interceptor';
 import { ErrorHandlerInterceptor } from './blocks/interceptor/errorhandler.interceptor';
 import { NotificationInterceptor } from './blocks/interceptor/notification.interceptor';
+import { TooltipModule } from 'ng2-tooltip-directive';
+
 import {
   MatAutocompleteModule,
   MatButtonModule,
@@ -119,6 +121,7 @@ export class MaterialModule {}
         FooterModule,
         FixedpluginModule,
         NgMultiSelectDropDownModule.forRoot(),
+        TooltipModule
 
       // TbsLandingModule
     ],

@@ -3,7 +3,10 @@ package sa.tamkeentech.tbs.web.rest;
 import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
 import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
 import sa.tamkeentech.tbs.config.Constants;
+import sa.tamkeentech.tbs.domain.Authority;
+import sa.tamkeentech.tbs.domain.Role;
 import sa.tamkeentech.tbs.domain.User;
+import sa.tamkeentech.tbs.repository.RoleRepository;
 import sa.tamkeentech.tbs.repository.UserRepository;
 import sa.tamkeentech.tbs.security.AuthoritiesConstants;
 import sa.tamkeentech.tbs.service.MailService;
@@ -70,13 +73,14 @@ public class UserResource {
     private final UserService userService;
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
 
     private final MailService mailService;
-
-    public UserResource(UserService userService, UserRepository userRepository, MailService mailService) {
+    public UserResource(UserService userService, UserRepository userRepository, RoleRepository roleRepository, MailService mailService) {
 
         this.userService = userService;
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
         this.mailService = mailService;
     }
 
@@ -193,5 +197,16 @@ public class UserResource {
     @GetMapping("/users/datatable")
     public DataTablesOutput<UserDTO> getAllUsers(DataTablesInput input) {
         return userService.get(input);
+    }
+
+    @GetMapping("/users/role/authorities/{name}")
+    public List<String> getAuthority(@PathVariable String name)
+    {
+        Optional<Role> role = roleRepository.findByName(name);
+        List<String> authorities = new ArrayList();
+        for(Authority authority: role.get().getAuthorities()){
+            authorities.add(authority.getName());
+        }
+        return authorities;
     }
 }

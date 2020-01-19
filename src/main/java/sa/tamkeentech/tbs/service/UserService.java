@@ -70,7 +70,7 @@ public class UserService {
         this.authorityRepository = authorityRepository;
         this.roleRepository = roleRepository1;
         this.cacheManager = cacheManager;
-        this.userMapper = userMapper;
+            this.userMapper = userMapper;
         this.userRoleRepository = userRoleRepository;
 
     }

@@ -16,14 +16,16 @@ import { JhiHealthModalComponent } from './health/health-modal.component';
 import { JhiHealthCheckComponent } from './health/health.component';
 import { JhiConfigurationComponent } from './configuration/configuration.component';
 import { JhiDocsComponent } from './docs/docs.component';
+import {TooltipModule} from "ng2-tooltip-directive";
 
 @NgModule({
-  imports: [
-    TbsSharedModule,
-    RouterModule.forChild(adminState),
-    MaterialModule,
-    NgMultiSelectDropDownModule
-  ],
+    imports: [
+        TbsSharedModule,
+        RouterModule.forChild(adminState),
+        MaterialModule,
+        NgMultiSelectDropDownModule,
+        TooltipModule
+    ],
   declarations: [
     AuditsComponent,
     UserMgmtComponent,

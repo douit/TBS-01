@@ -5,10 +5,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 import sa.tamkeentech.tbs.domain.Client;
+import sa.tamkeentech.tbs.domain.Role;
 import sa.tamkeentech.tbs.domain.enumeration.TypeStatistics;
 import sa.tamkeentech.tbs.repository.ClientRepository;
 import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.repository.RefundRepository;
+import sa.tamkeentech.tbs.repository.RoleRepository;
 import sa.tamkeentech.tbs.service.InvoiceService;
 import sa.tamkeentech.tbs.service.StatisticsService;
 import sa.tamkeentech.tbs.service.UserService;
@@ -42,6 +44,7 @@ public class StatisticsResource {
         this.clientRepository = clientRepository;
         this.statisticsService = statisticsService;
         this.userService = userService;
+
     }
 
     @PostMapping("/statistics")

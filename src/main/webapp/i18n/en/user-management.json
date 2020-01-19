@@ -27,6 +27,26 @@
     "createdDate": "Created date",
     "lastModifiedBy": "Modified by",
     "lastModifiedDate": "Modified date",
+    "authorities": {
+      "ROLE_ADMIN": "Role admin",
+      "ROLE_USER": "Role user",
+      "ROLE_ACCOUNTANT": "Role accountant",
+      "CREATE_REPORT": "Create report",
+      "ROLE_OPERATOR": "Role operator",
+      "VIEW_REPORT": "View report",
+      "VIEW_ITEM": "View item",
+      "ADD_ITEM": "Add item",
+      "EDIT_ITEM": "Edit item",
+      "VIEW_INVOICE": "View invoice",
+      "ADD_INVOICE": "Add invoice",
+      "VIEW_PAYMENT": "View payment",
+      "VIEW_USER": "View user",
+      "ADD_USER": "Add user",
+      "EDIT_USER": "Edit user",
+      "SCHEDULED_REPORT": "Scheduled report"
+    },
+
+
     "error": {
       "selectClientAndRole": "Please select client and role"
     }
