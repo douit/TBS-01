@@ -15,8 +15,6 @@ import java.util.UUID;
 public class FileWrapper {
 
     private final Logger log = LoggerFactory.getLogger(FileWrapper.class);
-    @Value("${tbs.report.reports-folder}")
-    private String outputFolder;
 
     /**
      * Save Attachment in path
@@ -30,10 +28,9 @@ public class FileWrapper {
         FileOutputStream fileOuputStream = null;
         UUID uuid = UUID.randomUUID();
         String filePath = null;
-        String dirPath = outputFolder + "/" + folder + "/";
 
         try {
-            File attachmentTypeDir = new File(dirPath);
+            File attachmentTypeDir = new File(folder);
 
             // if the directory does not exist, create it
             if (!attachmentTypeDir.exists()) {
@@ -43,7 +40,7 @@ public class FileWrapper {
                     log.error("Could not save create sub directory {} exception:{}", attachmentTypeDir, se.getMessage());
                 }
             }
-            filePath = dirPath + fileName;
+            filePath = folder + fileName;
             fileOuputStream = new FileOutputStream(filePath);
             fileOuputStream.write(bytes);
             return filePath;

@@ -55,6 +55,8 @@ public class InvoiceDTO implements Serializable {
 
     private String billNumber; //RESP
 
+    private BigDecimal taxFees;
+
     public InvoiceDTO() {
     }
 }

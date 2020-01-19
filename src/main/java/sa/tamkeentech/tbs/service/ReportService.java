@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.sf.jasperreports.engine.JRException;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
@@ -46,6 +47,7 @@ public class ReportService {
     private static final String ALL_FILTER = "All";
     private static final String PARAM_GENERATED_DATE = "generatedDate";
     private static final String FILE_SUFFIX = "payment_report_";
+    private static final String PAYMENT_FOLDER_NAME = "Payments";
 
     @Autowired
     private UserService userService;
@@ -59,6 +61,9 @@ public class ReportService {
     private FileWrapper fileWrapper;
     @Autowired
     private PaymentService paymentService;
+
+    @Value("${tbs.report.reports-folder}")
+    private String outputFolder;
 
     public ReportDTO requestPaymentReport(ReportRequestDTO reportRequest) {
         Report reportEntity = new Report();
@@ -150,7 +155,8 @@ public class ReportService {
         parameterMap.put(PARAM_GENERATED_DATE, new Date());
 
         byte[] report = JasperReportExporter.getInstance().generateXlsReport(dataList, parameterMap, templateFile);
-        return fileWrapper.saveBytesToFile("REPOORT", reportFileName, report);
+        String dirPath = outputFolder + "/" + PAYMENT_FOLDER_NAME + "/";
+        return fileWrapper.saveBytesToFile("REPORT", reportFileName, report);
     }
 
     public DataTablesOutput<ReportDTO> getPaymentReports(DataTablesInput input) {

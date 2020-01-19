@@ -46,4 +46,9 @@ public class PaymentDTO implements Serializable {
 
     private ZonedDateTime lastModifiedDate;
 
+    // reporting
+    private String formattedModifiedDate;
+
+    private String bankId;
+
 }

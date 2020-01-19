@@ -7,7 +7,6 @@ import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {_tbs} from '../../shared/util/tbs-utility';
 import {ZonedDateTime} from 'js-joda';
 
-declare const google: any;
 declare var $: any;
 
 @Component({

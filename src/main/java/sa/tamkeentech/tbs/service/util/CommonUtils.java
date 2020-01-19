@@ -79,6 +79,13 @@ public class CommonUtils {
         return dateTime.withZoneSameLocal(Constants.UTC_ZONE_ID).withZoneSameInstant(ZoneId.ofOffset("UTC", ZoneOffset.of(offset)));
     }
 
+    public static String getFormattedLocalDate(ZonedDateTime dateTime, String offset) {
+        ZonedDateTime date = getLocalDate(dateTime, offset);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy - HH:mm");
+        return date.format(formatter);
+    }
+
+
     public static ZonedDateTime addSecondsToDate(int seconds, ZonedDateTime beforeTime){
         return beforeTime.plusSeconds(seconds);
     }

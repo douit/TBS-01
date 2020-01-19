@@ -70,6 +70,21 @@ export class SidebarComponent implements OnInit {
         type: 'link',
         icontype: 'widgets'
     }, {
+        path: '/report',
+        title: 'Reports',
+        authorities: [AuthConsts.VIEW_REPORT],
+        type: 'sub',
+        icontype: 'settings',
+        collapse: 'report',
+        children: [
+          {path: 'payment-report',
+            title: 'Payments',
+            authorities: [AuthConsts.VIEW_REPORT],
+            icontype: 'list',
+            ab: ''}
+        ]
+    },
+    {
       path: '/admin',
         title: 'Administrative',
         authorities: [AuthConsts.VIEW_USER],

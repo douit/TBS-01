@@ -51,15 +51,6 @@ export const AppRoutes: Routes = [
         // loadChildren: './dashboard/dashboard.module#DashboardModule'
         loadChildren: () => import('./dashboard/dashboard.module').then(m => m.DashboardModule)
     }, {
-          path: '',
-          component: AdminLayoutComponent,
-          canActivate: [UserRouteAccessService],
-          children: [
-            {
-              path: '',
-              // loadChildren: './dashboard/dashboard.module#DashboardModule'
-              loadChildren: () => import('./report/report.module').then(m => m.ReportModule)
-            }, {
         path: 'components',
         // loadChildren: './components/components.module#ComponentsModule'
           loadChildren: () => import('./components/components.module').then(m => m.ComponentsModule)
@@ -111,6 +102,12 @@ export const AppRoutes: Routes = [
       // loadChildren: () => import('./admin/admin.module').then(m => m.TbsAdminModule),
       loadChildren: () => import('./admin/admin.module').then(m => m.TbsAdminModule),
       canActivate: [UserRouteAccessService]
+    },
+    {
+       path: 'report',
+       component: AdminLayoutComponent,
+       loadChildren: () => import('./report/report.module').then(m => m.ReportModule),
+       canActivate: [UserRouteAccessService]
     },
     {
       path: 'account',

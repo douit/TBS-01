@@ -81,6 +81,7 @@ public final class Constants {
 
     // ZoneDateTime
     public static ZoneId RIYADH_ZONE_ID = ZoneId.of("Asia/Riyadh");
+    public static String RIYADH_OFFSET = "+03:00";
     public static ZoneId UTC_ZONE_ID = ZoneId.of("UTC");
 
     private Constants() {
