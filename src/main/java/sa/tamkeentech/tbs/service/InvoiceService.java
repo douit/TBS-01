@@ -25,6 +25,11 @@ import sa.tamkeentech.tbs.service.util.EventPublisherService;
 import sa.tamkeentech.tbs.service.util.SequenceUtil;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
+import javax.persistence.EntityManager;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -63,13 +68,12 @@ public class InvoiceService {
     private final SequenceUtil sequenceUtil;
 
     private final EventPublisherService eventPublisherService;
-
+    private final EntityManager entityManager;
     private final PaymentMethodMapper paymentMethodMapper;
 
-    public InvoiceService(InvoiceRepository invoiceRepository, InvoiceMapper invoiceMapper, ClientService clientService, CustomerService customerService, PaymentMethodService paymentMethodService, ItemService itemService, PaymentService paymentService, SequenceUtil sequenceUtil, EventPublisherService eventPublisherService, CustomerRepository customerRepository, PaymentMethodMapper paymentMethodMapper) {
+    public InvoiceService(InvoiceRepository invoiceRepository, InvoiceMapper invoiceMapper, ClientService clientService, CustomerService customerService, PaymentMethodService paymentMethodService, ItemService itemService, PaymentService paymentService, SequenceUtil sequenceUtil, EventPublisherService eventPublisherService, CustomerRepository customerRepository, EntityManager entityManager, PaymentMethodMapper paymentMethodMapper) {
         this.invoiceRepository = invoiceRepository;
         this.invoiceMapper = invoiceMapper;
-        this.clientService = clientService;
         this.customerService = customerService;
         this.paymentMethodService = paymentMethodService;
         this.itemService = itemService;
@@ -77,7 +81,10 @@ public class InvoiceService {
         this.sequenceUtil = sequenceUtil;
         this.eventPublisherService = eventPublisherService;
         this.customerRepository = customerRepository;
+        this.entityManager = entityManager;
         this.paymentMethodMapper = paymentMethodMapper;
+        this.clientService = clientService;
+
     }
 
     /**
@@ -143,6 +150,29 @@ public class InvoiceService {
         return eventPublisherService.saveInvoiceEvent(reqNotification).getResp();
     }
 
+    @Transactional(readOnly = true)
+    public DataTablesOutput<InvoiceDTO> getInvoiceByQuerySearch(InvoiceSearchRequestDTO invoiceSearchRequestDTO) {
+        // return itemMapper.toDto(itemRepository.findAll(input));
+        return invoiceMapper.toDto(invoiceRepository.findAll(invoiceSearchRequestDTO.getInput(), (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+             if (invoiceSearchRequestDTO.getClientId() != 0) {
+                 predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("client").get("id"), invoiceSearchRequestDTO.getClientId())));
+             }
+            if (invoiceSearchRequestDTO.getFromDate() != null) {
+                predicates.add(criteriaBuilder.and(criteriaBuilder.greaterThanOrEqualTo(root.get("createdDate"), invoiceSearchRequestDTO.getFromDate())));
+            }
+             if (invoiceSearchRequestDTO.getToDate() != null) {
+                 predicates.add(criteriaBuilder.and(criteriaBuilder.lessThanOrEqualTo(root.get("createdDate"), invoiceSearchRequestDTO.getToDate())));
+             }
+            if (!invoiceSearchRequestDTO.getCustomerId().isEmpty()) {
+                predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("customer").get("identity"), invoiceSearchRequestDTO.getCustomerId())));
+            }
+//            if (!invoiceSearchRequestDTO.getPaymentStatus().equals(null)) {
+//                predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("paymentStatus"), invoiceSearchRequestDTO.getPaymentStatus())));
+//            }
+        return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
+        }));
+    }
     public InvoiceResponseDTO saveInvoice(InvoiceDTO invoiceDTO) {
 
         Invoice invoice = createNewInvoice(invoiceDTO);

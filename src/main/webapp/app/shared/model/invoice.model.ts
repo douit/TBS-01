@@ -2,6 +2,7 @@ import { Moment } from 'moment';
 import { IInvoiceItem } from 'app/shared/model/invoice-item.model';
 import { IPayment } from 'app/shared/model/payment.model';
 import { InvoiceStatus } from 'app/shared/model/enumerations/invoice-status.model';
+import {PaymentStatus} from "app/shared/constants";
 
 export interface IInvoice {
   id?: number;
@@ -15,8 +16,10 @@ export interface IInvoice {
   customerId?: string;
   invoiceItems?: IInvoiceItem[];
   payments?: IPayment[];
+  paymentStatus?: PaymentStatus;
   clientId?: number;
   accountId?: number;
+
 }
 
 export class Invoice implements IInvoice {
@@ -33,6 +36,7 @@ export class Invoice implements IInvoice {
     public invoiceItems?: IInvoiceItem[],
     public payments?: IPayment[],
     public clientId?: number,
-    public accountId?: number
+    public accountId?: number,
+    paymentStatus?: PaymentStatus
   ) {}
 }

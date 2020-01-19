@@ -15,12 +15,9 @@ import sa.tamkeentech.tbs.domain.Payment;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 import sa.tamkeentech.tbs.repository.PaymentRepository;
 import sa.tamkeentech.tbs.service.PaymentService;
-import sa.tamkeentech.tbs.service.dto.PaymentMethodDTO;
-import sa.tamkeentech.tbs.service.dto.PaymentResponseDTO;
-import sa.tamkeentech.tbs.service.dto.PaymentStatusResponseDTO;
+import sa.tamkeentech.tbs.service.dto.*;
 import sa.tamkeentech.tbs.service.mapper.PaymentMapper;
 import sa.tamkeentech.tbs.web.rest.errors.BadRequestAlertException;
-import sa.tamkeentech.tbs.service.dto.PaymentDTO;
 
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -86,6 +83,12 @@ public class PaymentResource {
             .body(result);
     }
 
+    @PostMapping("/api/payments/search")
+    @ResponseBody
+    public DataTablesOutput<PaymentDTO> getPaymentStatusBySearching(@RequestBody PaymentSearchRequestDTO paymentSearchRequestDTO) {
+        log.debug("REST request to get a page of Invoices");
+        return paymentService.getPaymentStatusByQuerySearch(paymentSearchRequestDTO);
+    }
     @PostMapping("/billing/payments/status")
     public ResponseEntity<PaymentDTO> updatePaymentStatus(@RequestBody PaymentStatusResponseDTO paymentStatusResponseDTO) throws URISyntaxException {
         PaymentDTO result = paymentService.updateCreditCardPaymentAndSendEvent(paymentStatusResponseDTO);

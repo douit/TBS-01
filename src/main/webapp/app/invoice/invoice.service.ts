@@ -11,6 +11,7 @@ import {IInvoice} from 'app/shared/model/invoice.model';
 import {DataTableInput} from 'app/shared/model/datatable/datatable-input';
 import {_tbs} from 'app/shared/util/tbs-utility';
 import {Pageable} from 'app/shared/model/pageable';
+import {IInvoiceSearchRequest} from "app/shared/model/invoice-serach-request";
 
 type EntityResponseType = HttpResponse<IInvoice>;
 type EntityArrayResponseType = HttpResponse<IInvoice[]>;
@@ -23,6 +24,10 @@ export class InvoiceService {
 
   getList(datatableInput: DataTableInput): Observable<Pageable<IInvoice>> {
     return this.http.get<Pageable<IInvoice>>(`${this.resourceUrl}/datatable?${_tbs.serializeDataTableRequest(datatableInput)}`);
+  }
+//datatable?${_tbs.serializeDataTableRequest(datatableInput)} || datatableInput: DataTableInput,
+  getInvoiceBySearch(invoiceSearchRequest : IInvoiceSearchRequest): Observable<Pageable<IInvoice>> {
+    return this.http.post<Pageable<IInvoice>>(`${this.resourceUrl}/search`,invoiceSearchRequest);
   }
 
   getTripAudit(id: number) {
