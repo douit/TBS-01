@@ -139,7 +139,7 @@
                         </div>
                     </div>
 
-                    <form name="editForm"  (ngSubmit)="save()" [formGroup]="editForm">
+                    <form name="editForm" (ngSubmit)="save()" [formGroup]="editForm">
 
                         <div class="card-body">
                             <!--<div class="row justify-content-center">-->
@@ -150,14 +150,16 @@
                             <div class="row" [hidden]="!user.id">
                                 <label class="col-sm-2 col-form-label" jhiTranslate="global.field.id">ID</label>
                                 <div class="col-sm-7">
-                                    <input type="text" matInput class="form-control" name="id" formControlName="id" readonly>
+                                    <input type="text" matInput class="form-control" name="id" formControlName="id"
+                                           readonly>
                                 </div>
                             </div>
 
                             <div class="row">
                                 <label class="col-sm-2 col-form-label" jhiTranslate="userManagement.login">Login</label>
                                 <div class="col-sm-7">
-                                    <mat-form-field class="example-full-width has-label" [ngClass]="{'has-success':validTextType===true}"
+                                    <mat-form-field class="example-full-width has-label"
+                                                    [ngClass]="{'has-success':validTextType===true}"
                                                     [ngClass]="displayFieldCss(type, 'text')">
                                         <input type="text" name="login" matInput formControlName="login">
                                         <!--<div *ngIf="editForm.get('login').invalid && (editForm.get('login').dirty || editForm.get('login').touched)">
@@ -182,9 +184,11 @@
                             </div>
 
                             <div class="row">
-                                <label class="col-sm-2 col-form-label" jhiTranslate="userManagement.firstName">First Name</label>
+                                <label class="col-sm-2 col-form-label" jhiTranslate="userManagement.firstName">First
+                                    Name</label>
                                 <div class="col-sm-7">
-                                    <mat-form-field class="example-full-width has-label" [ngClass]="{'has-success':validTextType===true}"
+                                    <mat-form-field class="example-full-width has-label"
+                                                    [ngClass]="{'has-success':validTextType===true}"
                                                     [ngClass]="displayFieldCss(type, 'text')">
                                         <input type="text" name="firstName" matInput formControlName="firstName">
                                     </mat-form-field>
@@ -200,11 +204,13 @@
                             </div>
 
                             <div class="row">
-                                <label class="col-sm-2 col-form-label" jhiTranslate="userManagement.lastName">Last Name</label>
+                                <label class="col-sm-2 col-form-label" jhiTranslate="userManagement.lastName">Last
+                                    Name</label>
                                 <div class="col-sm-7">
-                                    <mat-form-field class="example-full-width has-label" [ngClass]="{'has-success':validTextType===true}"
+                                    <mat-form-field class="example-full-width has-label"
+                                                    [ngClass]="{'has-success':validTextType===true}"
                                                     [ngClass]="displayFieldCss(type, 'text')">
-                                        <input type="text"  name="lastName" matInput formControlName="lastName">
+                                        <input type="text" name="lastName" matInput formControlName="lastName">
                                     </mat-form-field>
                                     <!--<div *ngIf="editForm.get('lastName').invalid && (editForm.get('lastName').dirty || editForm.get('lastName').touched)">
                                         <small class="form-text text-danger"
@@ -219,7 +225,8 @@
                             <div class="row">
                                 <label class="col-sm-2 col-form-label" jhiTranslate="userManagement.email">Email</label>
                                 <div class="col-sm-7">
-                                    <mat-form-field class="example-full-width has-label" [ngClass]="{'has-success':validTextType===true}"
+                                    <mat-form-field class="example-full-width has-label"
+                                                    [ngClass]="{'has-success':validTextType===true}"
                                                     [ngClass]="displayFieldCss(type, 'text')">
                                         <input type="email" name="email" matInput formControlName="email">
                                     </mat-form-field>
@@ -251,7 +258,8 @@
                             </div>
 
                             <div class="row">
-                                <label class="col-sm-2 col-form-label" jhiTranslate="userManagement.langKey">Lang Key</label>
+                                <label class="col-sm-2 col-form-label" jhiTranslate="userManagement.langKey">Lang
+                                    Key</label>
                                 <div class="col-sm-4">
                                     <!--<mat-form-field class="example-full-width has-label" [ngClass]="{'has-success':validTextType===true}"
                                                     [ngClass]="displayFieldCss(type, 'text')">
@@ -262,23 +270,28 @@
                                     <mat-form-field>
                                         <!-- <mat-label *ngIf="selectedCategory == null">Select an option</mat-label>-->
                                         <!--<mat-label *ngIf="selectedCategory != null">{{selectedCategory.name}}</mat-label>-->
-                                        <mat-select class="form-control" id="langKey" name="langKey" formControlName="langKey">
+                                        <mat-select class="form-control" id="langKey" name="langKey"
+                                                    formControlName="langKey">
                                             <!--<mat-option [value]="null">None</mat-option>-->
                                             <mat-option [value]="language"
-                                                        *ngFor="let language of languages" [value]="language">{{language | findLanguageFromKey}}</mat-option>
+                                                        *ngFor="let language of languages"
+                                                        [value]="language">{{language | findLanguageFromKey}}</mat-option>
 
                                         </mat-select>
                                     </mat-form-field>
                                 </div>
-                                <label class="col-sm-2 col-form-label" jhiTranslate="userManagement.activated">Activated</label>
+                                <label class="col-sm-2 col-form-label"
+                                       jhiTranslate="userManagement.activated">Activated</label>
                                 <div class="col-sm-4">
-                                        <!--<input [disabled]="user.id === null" matInput type="checkbox" id="activated" name="activated" formControlName="activated">-->
+                                    <!--<input [disabled]="user.id === null" matInput type="checkbox" id="activated" name="activated" formControlName="activated">-->
                                     <!--<input [disabled]="user.id === null" class="form-check-input" type="checkbox" id="activated" name="activated" formControlName="activated">-->
 
                                     <div class="form-check mr-auto">
                                         <label class="form-check-label">
                                             <!--<input class="form-check-input" type="checkbox" value="">Subscribe to newsletter-->
-                                            <input [disabled]="user.id === null" class="form-check-input" type="checkbox" id="activated" name="activated" formControlName="activated">
+                                            <input [disabled]="user.id === null" class="form-check-input"
+                                                   type="checkbox" id="activated" name="activated"
+                                                   formControlName="activated">
                                             <span class="form-check-sign">
                                             <span class="check"></span>
                                           </span>
@@ -289,39 +302,42 @@
                             </div>
 
                             <div class="row">
-                                <label class="col-sm-2 col-form-label" jhiTranslate="userManagement.profiles">Profiles </label>
+                                <label class="col-sm-2 col-form-label"
+                                       jhiTranslate="userManagement.profiles">Profiles </label>
                                 <div class="col-sm-7">
                                     <!--<select multiple name="authority" formControlName="authorities">
                                         <option *ngFor="let authority of authorities" [value]="authority">{{authority}}</option>
                                     </select>-->
                                     <div class="row">
-                                    <div class="col-sm-4">
-                                        <!--<input type="text" class="form-control" id="field_roleClient" name="roleClient"-->
-                                               <!--formControlName="roleClient" placeholder="Title" maxlength="255" [(ngModel)]="roleClient">-->
-                                        <mat-form-field>
-                                            <mat-select class="form-control" id="field_roleClient" name="roleClient"
-                                                        formControlName="roleClient" [(value)]="roleClient">
-                                                <mat-option [value]="clientOption"
-                                                            *ngFor="let clientOption of filtredClients; trackBy: trackClientById" >{{clientOption.name}}</mat-option>
-                                            </mat-select>
-                                        </mat-form-field>
-                                    </div>
+                                        <div class="col-sm-4">
+                                            <!--<input type="text" class="form-control" id="field_roleClient" name="roleClient"-->
+                                            <!--formControlName="roleClient" placeholder="Title" maxlength="255" [(ngModel)]="roleClient">-->
+                                            <mat-form-field>
+                                                <mat-select class="form-control" id="field_roleClient" name="roleClient"
+                                                            formControlName="roleClient" [(value)]="roleClient">
+                                                    <mat-option [value]="clientOption"
+                                                                *ngFor="let clientOption of filtredClients; trackBy: trackClientById">{{clientOption.name}}</mat-option>
+                                                </mat-select>
+                                            </mat-form-field>
+                                        </div>
 
 
-                                    <div class="col-sm-4">
-                                        <!--<input type="text" class="form-control" id="field_roleName" name="roleName"
-                                               formControlName="roleName" [(ngModel)]="roleName">-->
-                                        <mat-form-field>
-                                            <mat-select class="form-control" id="field_roleName" name="roleName"
-                                                        formControlName="roleName" [(value)]="roleName">
-                                                <mat-option [value]="authorityOption"
-                                                            *ngFor="let authorityOption of authorities" >{{authorityOption}}</mat-option>
-                                            </mat-select>
-                                        </mat-form-field>
-                                    </div>
-                                    <div class="col-sm-3 pull-right" [hidden]="roleClient=='' || roleClient==null || roleName==null || roleName==''">
-                                        <button type="button" class="btn btn-success mt-30" (click)="addNewRole()"><i class="fa fa-plus"></i></button>
-                                    </div>
+                                        <div class="col-sm-4">
+                                            <!--<input type="text" class="form-control" id="field_roleName" name="roleName"
+                                                   formControlName="roleName" [(ngModel)]="roleName">-->
+                                            <mat-form-field>
+                                                <mat-select class="form-control" id="field_roleName" name="roleName"
+                                                            formControlName="roleName" [(value)]="roleName">
+                                                    <mat-option [value]="authorityOption"
+                                                                *ngFor="let authorityOption of authorities">{{authorityOption}}</mat-option>
+                                                </mat-select>
+                                            </mat-form-field>
+                                        </div>
+                                        <div class="col-sm-3 pull-right"
+                                             [hidden]="roleClient=='' || roleClient==null || roleName==null || roleName==''">
+                                            <button type="button" class="btn btn-success mt-30" (click)="addNewRole()">
+                                                <i class="fa fa-plus"></i></button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -337,6 +353,7 @@
                                                 <th><span>Client</span></th>
                                                 <th><span>Role</span></th>
                                                 <th><span>Actions</span></th>
+                                                <th><span>Info.</span></th>
                                             </tr>
                                             </thead>
                                             <tbody>
@@ -345,11 +362,24 @@
                                                 <td>{{rol.roleName}}</td>
                                                 <td>
                                                     <div class="btn-group flex-btn-group-container">
-                                                        <button mat-raised-button type="button" class="btn btn-danger btn-link" (click)="delete(rol.id, i)">
+                                                        <button mat-raised-button type="button"
+                                                                class="btn btn-danger btn-link"
+                                                                (click)="delete(rol.id, i)">
                                                             <i class="material-icons">close</i>
                                                         </button>
                                                     </div>
                                                 </td>
+                                                <td>
+
+                                                    <div class="btn-group flex-btn-group-container">
+                                                          <span [tooltip]=translateAuthorities>
+                           <i class="material-icons">info</i>
+                </span>
+                                                    </div>
+
+
+                                                </td>
+
                                             </tr>
                                             </tbody>
                                         </table>
@@ -359,33 +389,32 @@
                         </div>
 
 
+                        <br>
 
-                            <br>
-
-                            <div class="row">
-                                <div class="col-sm-4" >
-                                </div>
-                                <div class="col-sm-4" align="center">
-                                    <button type="button" id="cancel-save" class="btn btn-dark"   (click)="previousState()">
-                                        <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span
-                                        jhiTranslate="entity.action.cancel">Cancel</span>
-                                    </button>
-
-
-                                    <button type="submit" id="save-entity" [disabled]="editForm.invalid || isSaving"
-                                            class="btn btn-primary">
-                                        <fa-icon [icon]="'save'"></fa-icon>&nbsp;<span
-                                        jhiTranslate="entity.action.save">Save</span>
-                                    </button>
-                                </div>
+                        <div class="row">
+                            <div class="col-sm-4">
                             </div>
+                            <div class="col-sm-4" align="center">
+                                <button type="button" id="cancel-save" class="btn btn-dark" (click)="previousState()">
+                                    <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span
+                                    jhiTranslate="entity.action.cancel">Cancel</span>
+                                </button>
 
+
+                                <button type="submit" id="save-entity" [disabled]="editForm.invalid || isSaving"
+                                        class="btn btn-primary">
+                                    <fa-icon [icon]="'save'"></fa-icon>&nbsp;<span
+                                    jhiTranslate="entity.action.save">Save</span>
+                                </button>
+                            </div>
                         </div>
-                    </form>
 
                 </div>
+                </form>
+
             </div>
         </div>
     </div>
+</div>
 </div>
 

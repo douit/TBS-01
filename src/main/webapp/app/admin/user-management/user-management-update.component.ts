@@ -1,15 +1,16 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 
-import { JhiLanguageHelper } from 'app/core/language/language.helper';
-import { User } from 'app/core/user/user.model';
-import { UserService } from 'app/core/user/user.service';
+import {JhiLanguageHelper} from 'app/core/language/language.helper';
+import {User} from 'app/core/user/user.model';
+import {UserService} from 'app/core/user/user.service';
 import {HttpErrorResponse, HttpResponse} from '@angular/common/http';
 import {IClient} from 'app/shared/model/client.model';
 import {filter, map} from 'rxjs/operators';
 import {ClientService} from 'app/client/client.service';
 import {JhiAlertService} from 'ng-jhipster';
+import {TranslateService} from "@ngx-translate/core";
 
 @Component({
   selector: 'app-user-mgmt-update',
@@ -25,7 +26,8 @@ export class UserMgmtUpdateComponent implements OnInit {
   isCreate: boolean;
   validTextType = false;
   validEmailType = false;
-
+  text: string[];
+  translateAuthorities: string []= [];
   role: any = {};
   roleClient: string;
   roleName: string;
@@ -51,8 +53,12 @@ export class UserMgmtUpdateComponent implements OnInit {
     private router: Router,
     private fb: FormBuilder,
     protected clientService: ClientService,
-    protected jhiAlertService: JhiAlertService
-  ) {}
+    protected jhiAlertService: JhiAlertService,
+    private translateService: TranslateService
+
+  ) {
+  }
+
 
   displayFieldCss(form: FormGroup, field: string) {
     return {
@@ -67,7 +73,7 @@ export class UserMgmtUpdateComponent implements OnInit {
 
   ngOnInit() {
     this.isSaving = false;
-    this.route.data.subscribe(({ user }) => {
+    this.route.data.subscribe(({user}) => {
       this.user = user.body ? user.body : user;
       if (user.body) {
         this.user = user.body;
@@ -90,7 +96,7 @@ export class UserMgmtUpdateComponent implements OnInit {
         res => {
           this.initClientsAndExistingRoles(res.body);
         },
-    res => {
+        res => {
           console.log('An error has occurred when get clientByRole');
         }
       );
@@ -128,7 +134,7 @@ export class UserMgmtUpdateComponent implements OnInit {
       this.roles.forEach(role => {
         if (role.clientId === client.id) {
           clientNotAdded = false;
-          return ;
+          return;
         }
       });
       return clientNotAdded;
@@ -188,6 +194,7 @@ export class UserMgmtUpdateComponent implements OnInit {
   }
 
   addNewRole() {
+
     if (!this.roleClient || !this.roleName) {
       this.jhiAlertService.error('userManagement.error.selectClientAndRole', null, null);
       return;
@@ -195,15 +202,35 @@ export class UserMgmtUpdateComponent implements OnInit {
     this.role.roleClient = this.editForm.controls['roleClient'].value.name;
     this.role.clientId = this.editForm.controls['roleClient'].value.id;
     this.role.roleName = this.editForm.controls['roleName'].value;
-
     this.roles.splice(this.roles.length, 0, this.role);
+
+    this.userService.getRoleAuthorities(this.role.roleName).subscribe(
+      res => {
+        this.text = res;
+
+        this.text.forEach(element=> {
+          this.translateAuthorities.push(this.translateService.instant('userManagement.authorities.'+element)+"<br>");
+        });
+
+
+      },
+      res => {
+        console.log('An error has occurred when get role authorities');
+      }
+    );
+
+
     this.role = {};
     this.roleClient = null;
     this.roleName = null;
     this.editForm.patchValue({
-      roleClient : '',
-      roleName : ''
+      roleClient: '',
+      roleName: ''
     });
+
+    // for(let authority of this.text){
+    //   this.translateAuthorities = this.translateAuthorities + this.translateService.instant('userManagement.authorities.'+authority)
+    // }
     this.filterClients();
   }
 

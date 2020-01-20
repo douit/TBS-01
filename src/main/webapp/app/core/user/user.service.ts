@@ -18,6 +18,9 @@ export class UserService {
   getList(datatableInput: DataTableInput): Observable<Pageable<IUser>> {
     return this.http.get<Pageable<IUser>>(`${this.resourceUrl}/datatable?${_tbs.serializeDataTableRequest(datatableInput)}`);
   }
+  getRoleAuthorities(name:string): Observable<string[]> {
+    return this.http.get<string[]>(`${this.resourceUrl}/role/authorities/${name}`);
+  }
 
   create(user: IUser): Observable<HttpResponse<IUser>> {
     return this.http.post<IUser>(this.resourceUrl, user, { observe: 'response' });
