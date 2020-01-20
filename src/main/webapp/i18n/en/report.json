@@ -16,7 +16,9 @@
       "reportGeneration": "Report Requested Successfully"
     },
     "error": {
-      "reportGeneration": "Report Request Failed"
+      "reportGeneration": "Report Request Failed",
+      "reportDownload": "Report Download Failed"
+
     }
   }
 }

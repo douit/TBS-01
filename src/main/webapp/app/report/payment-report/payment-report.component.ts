@@ -289,7 +289,62 @@ export class PaymentReportComponent implements OnInit {
   }
 
   downloadReport(id) {
+    this.busy = true;
+    this.reportService.download(id)
+      .pipe(
+        finalize(() => this.busy = false)
+      )
+      .subscribe(
+        (response) => {
+          this.busy = false;
+          if (response.body.bytes != null) {
+            const file = new Blob([ response.body.bytes ]);
+            const array = new Uint8Array(response.body.bytes.length);
+            for (let i = 0; i < response.body.bytes.length; i++) {
+              array[i] = response.body.bytes.charCodeAt(i);
+            }
+            const blob = this.b64toBlob(response.body.bytes, 'application/octet-stream', 512);
+            this.downloadAction(window.URL.createObjectURL(blob), response.body.name);
+          } else {
+            this.jhiAlertService.error('report.error.reportDownload', null, null);
+          }
+        },
+        (res: HttpErrorResponse) => {
+          this.busy = false;
+          this.jhiAlertService.error('report.error.reportDownload', null, null);
+        }
+      );
+  }
 
+  downloadAction(href, fileName) {
+    const a = document.createElement('a');
+    a.href = href;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+  }
+
+  b64toBlob(b64Data, contentType, sliceSize) {
+    contentType = contentType || '';
+    sliceSize = sliceSize || 512;
+
+    const byteCharacters = atob(b64Data);
+    const byteArrays = [];
+
+    for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+      const slice = byteCharacters.slice(offset, offset	+ sliceSize);
+      const byteNumbers = new Array(slice.length);
+      for (let i = 0; i < slice.length; i++) {
+        byteNumbers[i] = slice.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      byteArrays.push(byteArray);
+    }
+
+    const blob = new Blob(byteArrays, {
+      type : contentType
+    });
+    return blob;
   }
 
 }

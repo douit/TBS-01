@@ -35,7 +35,7 @@ public class Report extends AbstractAuditingEntity implements Serializable {
     private ZonedDateTime endDate;
 
     @ManyToOne
-    @JoinColumn(name = "client_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "client_id", referencedColumnName = "id")
     private Client client;
 
     @Column(name = "report_type")

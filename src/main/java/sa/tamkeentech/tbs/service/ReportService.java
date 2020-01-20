@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sa.tamkeentech.tbs.domain.Client;
 import sa.tamkeentech.tbs.domain.Report;
+import sa.tamkeentech.tbs.domain.User;
 import sa.tamkeentech.tbs.domain.enumeration.ReportStatus;
 import sa.tamkeentech.tbs.domain.enumeration.ReportType;
 import sa.tamkeentech.tbs.repository.ReportRepository;
@@ -182,7 +183,8 @@ public class ReportService {
 
     public Optional<FileDTO> getPaymentReport(Long reportId) {
         Report report = reportRepository.getOne(reportId);
-        if (report == null) {
+        User user = userService.getUser().get();
+        if (report == null || !user.getId().equals(report.getRequestUser().getId())) {
             return Optional.empty();
         }
         String fileName = FILE_SUFFIX + reportId /*+ "_" + System.currentTimeMillis()*/ + ".xlsx";

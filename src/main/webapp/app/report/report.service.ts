@@ -5,6 +5,7 @@ import {_tbs} from 'app/shared/util/tbs-utility';
 import {DataTableInput} from 'app/shared/model/datatable/datatable-input';
 import {Pageable} from 'app/shared/model/pageable';
 import {IReport} from 'app/shared/model/report.model';
+import {IClient} from "app/shared/model/client.model";
 
 
 @Injectable({ providedIn: 'root' })
@@ -20,6 +21,10 @@ export class ReportService {
 
     requestPaymentReport(report: any): Observable<any> {
         return this.http.post(this.apiUrl + '/payment', report);
+    }
+
+    download(id: number): Observable<any> {
+      return this.http.get<any>(`${this.apiUrl}/${id}`, { observe: 'response' });
     }
 
 }
