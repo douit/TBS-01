@@ -49,7 +49,7 @@ public class ReportService {
     private static final String ALL_FILTER = "All";
     private static final String PARAM_GENERATED_DATE = "generatedDate";
     private static final String FILE_SUFFIX = "payment_report_";
-    private static final String PAYMENT_FOLDER_NAME = "Payments";
+    private static final String PAYMENT_FOLDER_NAME = "payments";
 
     @Autowired
     private UserService userService;
