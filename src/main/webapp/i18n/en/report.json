@@ -6,11 +6,17 @@
     "expireDate": "Expire date",
     "status": "Status",
     "reportStatus": {
-      "waiting": "Waiting",
-      "ready": "Ready"
+      "WAITING": "Waiting",
+      "READY": "Ready",
+      "FAILED": "Failed"
     },
     "download": "Download",
+    "notReady": "Not Ready Yet",
+    "success": {
+      "reportGeneration": "Report Requested Successfully"
+    },
     "error": {
+      "reportGeneration": "Report Request Failed"
     }
   }
 }

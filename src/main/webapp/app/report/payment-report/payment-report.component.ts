@@ -14,15 +14,14 @@ import {DatatableColumn} from 'app/shared/model/datatable/datatable-column';
 import {PageQueryParams} from 'app/shared/model/page-query-params';
 import {TranslateService} from '@ngx-translate/core';
 import {ReportService} from 'app/report/report.service';
-import {PaymentStatus, ReportStatus} from 'app/shared/constants';
+import {ReportStatus} from 'app/shared/constants';
 import {NgbCalendar, NgbDate, NgbDateParserFormatter} from '@ng-bootstrap/ng-bootstrap';
 import {NgbDateStruct} from '@ng-bootstrap/ng-bootstrap/datepicker/ngb-date-struct';
 import {IClient} from 'app/shared/model/client.model';
 import {ClientService} from 'app/client/client.service';
-import {IPaymentSearchRequest} from 'app/shared/model/payment-serach-request';
 import * as moment from 'moment';
 import {IReport} from 'app/shared/model/report.model';
-import {ZonedDateTime} from "js-joda";
+import {ZonedDateTime} from 'js-joda';
 
 @Component({
   selector: 'app-report',
@@ -31,15 +30,12 @@ import {ZonedDateTime} from "js-joda";
 export class PaymentReportComponent implements OnInit {
 
   eventSubscriber: Subscription;
-
   // new datatable
   busy = false;
   datatable = new Datatable<IItem>();
+  ReportStatus: ReportStatus;
   // Datatable Reference
   @ViewChild('table', {static: true}) table: DatatableComponent;
-
-  ReportStatus: ReportStatus;
-
   // Datatable Templates Reference
   @ViewChild('headerTemplate', {static: false}) headerTemplate;
   @ViewChild('rowTemplate', {static: false}) rowTemplate;
@@ -244,6 +240,7 @@ export class PaymentReportComponent implements OnInit {
   }
 
   generateReport() {
+    this.busy = true;
     let toDate = null;
     let fromDate = null;
     let clientId = null;
@@ -271,9 +268,15 @@ export class PaymentReportComponent implements OnInit {
         this.reportService.requestPaymentReport(reportRequest)
           .subscribe(
             (res) => {
-              this.initDatatable();
+              this.loadData();
+              this.busy = false;
+              this.jhiAlertService.success('report.success.reportGeneration', null, null);
             },
-            (res: HttpErrorResponse) => this.onError(res.message)
+            (res: HttpErrorResponse) => {
+              this.onError(res.message);
+              this.busy = false;
+              this.jhiAlertService.error('report.error.reportGeneration', null, null);
+            }
           );
       });
   }
@@ -283,6 +286,10 @@ export class PaymentReportComponent implements OnInit {
     if (ngbObj) {
       return moment(ngbObj.year + '-' + ngbObj.month + '-' + ngbObj.day, 'YYYY-MM-DD');
     }
+  }
+
+  downloadReport(id) {
+
   }
 
 }

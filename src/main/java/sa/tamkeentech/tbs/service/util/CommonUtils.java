@@ -82,7 +82,7 @@ public class CommonUtils {
     public static String getFormattedLocalDate(ZonedDateTime dateTime, String offset) {
         ZonedDateTime date = getLocalDate(dateTime, offset);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy - HH:mm");
-        return date.format(formatter);
+        return (date != null)? date.format(formatter): null;
     }
 
 

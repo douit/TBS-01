@@ -23,7 +23,8 @@ export class LoadingOptions {
     STYLE: LoadingButtonStyles.ZOOM_IN
   };
 }
-  export enum PaymentStatus {
+
+export enum PaymentStatus {
   PENDING = 'PENDING',
   PAID = 'PAID',
   UNPAID = 'UNPAID',
@@ -47,5 +48,6 @@ export enum InvoiceStatus {
 
 export enum ReportStatus {
   WAITING = 'WAITING',
-  READY = 'READY'
+  READY = 'READY',
+  FAILED = 'FAILED'
 }

@@ -25,9 +25,9 @@
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="165" splitType="Stretch">
+		<band height="150" splitType="Stretch">
 			<staticText>
-				<reportElement mode="Opaque" x="0" y="11" width="840" height="30" backcolor="#F0F0F0" uuid="2fbfcd07-4ad3-454e-af72-bf22bc1b69b8"/>
+				<reportElement mode="Opaque" x="0" y="0" width="940" height="30" backcolor="#F0F0F0" uuid="2fbfcd07-4ad3-454e-af72-bf22bc1b69b8"/>
 				<box>
 					<topPen lineWidth="1.0"/>
 					<leftPen lineWidth="1.0"/>
@@ -37,10 +37,10 @@
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font fontName="SansSerif" size="20" isBold="true"/>
 				</textElement>
-				<text><![CDATA[PaymentReport]]></text>
+				<text><![CDATA[Payment Report]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="120" y="85" width="200" height="25" uuid="2088ce4e-a9e1-4ab4-9a1f-3aa1597c9dc7"/>
+				<reportElement x="150" y="74" width="200" height="25" uuid="2088ce4e-a9e1-4ab4-9a1f-3aa1597c9dc7"/>
 				<box>
 					<pen lineWidth="0.5"/>
 				</box>
@@ -48,10 +48,10 @@
 					<font size="10"/>
 					<paragraph lineSpacing="Proportional"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{startDate}  == null ? "" :  $P{startDate}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{startDate}  == null ? "---" :  $P{startDate}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="120" y="110" width="200" height="25" uuid="1ad38185-e230-4b21-9046-7e706684e124"/>
+				<reportElement x="150" y="99" width="200" height="25" uuid="1ad38185-e230-4b21-9046-7e706684e124"/>
 				<box>
 					<pen lineWidth="0.5"/>
 					<topPen lineWidth="0.5"/>
@@ -62,10 +62,10 @@
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{endDate}  == null ? "" :  $P{endDate}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{endDate}  == null ? "---" :  $P{endDate}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement mode="Opaque" x="0" y="60" width="320" height="25" backcolor="#F0F0F0" uuid="052d34a7-b233-4495-a351-327c5a6476e0"/>
+				<reportElement mode="Opaque" x="0" y="49" width="350" height="25" backcolor="#F0F0F0" uuid="052d34a7-b233-4495-a351-327c5a6476e0"/>
 				<box>
 					<pen lineWidth="0.0"/>
 					<topPen lineWidth="0.5"/>
@@ -79,7 +79,7 @@
 				<text><![CDATA[Filter criteria]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="0" y="85" width="120" height="25" backcolor="#F0F0F0" uuid="0ffc6d09-5f15-4b5b-b188-32f384c6bde9"/>
+				<reportElement mode="Opaque" x="0" y="74" width="150" height="25" backcolor="#F0F0F0" uuid="0ffc6d09-5f15-4b5b-b188-32f384c6bde9"/>
 				<box>
 					<topPen lineWidth="0.5"/>
 					<leftPen lineWidth="0.5"/>
@@ -92,7 +92,7 @@
 				<text><![CDATA[Start date]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="0" y="110" width="120" height="25" backcolor="#F0F0F0" uuid="bb0bb8da-c4f2-46fc-ac78-270e9f53e69c"/>
+				<reportElement mode="Opaque" x="0" y="99" width="150" height="25" backcolor="#F0F0F0" uuid="bb0bb8da-c4f2-46fc-ac78-270e9f53e69c"/>
 				<box>
 					<pen lineWidth="0.0"/>
 					<topPen lineWidth="0.5"/>
@@ -106,7 +106,7 @@
 				<text><![CDATA[End date]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="433" y="85" width="120" height="25" backcolor="#F0F0F0" uuid="7573fd28-dd71-4c33-b18e-c2984ad3e2af"/>
+				<reportElement mode="Opaque" x="433" y="74" width="150" height="25" backcolor="#F0F0F0" uuid="7573fd28-dd71-4c33-b18e-c2984ad3e2af"/>
 				<box>
 					<pen lineWidth="0.0"/>
 					<topPen lineWidth="0.5"/>
@@ -120,7 +120,7 @@
 				<text><![CDATA[Number of payments]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="433" y="110" width="120" height="25" backcolor="#F0F0F0" uuid="ae64620c-6233-4adb-b734-796e5e1c1bad"/>
+				<reportElement mode="Opaque" x="433" y="99" width="150" height="25" backcolor="#F0F0F0" uuid="ae64620c-6233-4adb-b734-796e5e1c1bad"/>
 				<box>
 					<pen lineWidth="0.0"/>
 					<topPen lineWidth="0.5"/>
@@ -134,7 +134,7 @@
 				<text><![CDATA[Total amount]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="553" y="85" width="200" height="25" uuid="93e50cd4-2b16-4bbd-a922-a6ecf0b1171d"/>
+				<reportElement x="583" y="74" width="200" height="25" uuid="93e50cd4-2b16-4bbd-a922-a6ecf0b1171d"/>
 				<box>
 					<pen lineWidth="0.5"/>
 					<topPen lineWidth="0.5"/>
@@ -148,7 +148,7 @@
 				<textFieldExpression><![CDATA[$P{numberOfPayments}  == null ? "" :  $P{numberOfPayments}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="553" y="110" width="200" height="25" uuid="b18bdebf-50e5-4883-9ebd-9d07c0ca19be"/>
+				<reportElement x="583" y="99" width="200" height="25" uuid="b18bdebf-50e5-4883-9ebd-9d07c0ca19be"/>
 				<box>
 					<pen lineWidth="0.5"/>
 					<topPen lineWidth="0.5"/>
@@ -162,7 +162,7 @@
 				<textFieldExpression><![CDATA[$P{totalPaymentsAmount}  == null ? "" :  $P{totalPaymentsAmount}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement mode="Opaque" x="0" y="135" width="120" height="25" backcolor="#F0F0F0" uuid="e18791b0-759e-4ad4-a245-18b17a4aa56b"/>
+				<reportElement mode="Opaque" x="0" y="124" width="150" height="25" backcolor="#F0F0F0" uuid="e18791b0-759e-4ad4-a245-18b17a4aa56b"/>
 				<box>
 					<pen lineWidth="0.0"/>
 					<topPen lineWidth="0.5"/>
@@ -176,7 +176,7 @@
 				<text><![CDATA[Client]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="120" y="135" width="200" height="25" uuid="eaca2d6d-6ce7-41d9-b98b-ae9e44aa7381"/>
+				<reportElement x="150" y="124" width="200" height="25" uuid="eaca2d6d-6ce7-41d9-b98b-ae9e44aa7381"/>
 				<box>
 					<pen lineWidth="0.5"/>
 					<topPen lineWidth="0.5"/>
@@ -190,7 +190,7 @@
 				<textFieldExpression><![CDATA[$P{client}  == null ? "" :  $P{client}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement mode="Opaque" x="433" y="60" width="320" height="25" backcolor="#F0F0F0" uuid="5ff2515f-8e55-4535-b281-55f4faa6e571"/>
+				<reportElement mode="Opaque" x="433" y="49" width="350" height="25" backcolor="#F0F0F0" uuid="5ff2515f-8e55-4535-b281-55f4faa6e571"/>
 				<box>
 					<pen lineWidth="0.0"/>
 					<topPen lineWidth="0.5"/>

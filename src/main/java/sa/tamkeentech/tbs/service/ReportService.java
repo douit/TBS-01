@@ -18,6 +18,7 @@ import sa.tamkeentech.tbs.domain.Report;
 import sa.tamkeentech.tbs.domain.enumeration.ReportStatus;
 import sa.tamkeentech.tbs.domain.enumeration.ReportType;
 import sa.tamkeentech.tbs.repository.ReportRepository;
+import sa.tamkeentech.tbs.service.dto.FileDTO;
 import sa.tamkeentech.tbs.service.dto.PaymentDTO;
 import sa.tamkeentech.tbs.service.dto.ReportDTO;
 import sa.tamkeentech.tbs.service.dto.ReportRequestDTO;
@@ -132,8 +133,8 @@ public class ReportService {
 
         Map<String, Object> extraParams = new HashMap<>();
         extraParams.put("client", clientName);
-        extraParams.put("startDate", CommonUtils.getLocalDate(report.getStartDate(), report.getOffset()));
-        extraParams.put("endDate", CommonUtils.getLocalDate(report.getEndDate(), report.getOffset()));
+        extraParams.put("startDate", CommonUtils.getFormattedLocalDate(report.getStartDate(), report.getOffset()));
+        extraParams.put("endDate", CommonUtils.getFormattedLocalDate(report.getEndDate(), report.getOffset()));
         // report summary
         BigDecimal totalPaymentsAmount = BigDecimal.ZERO;
         if (CollectionUtils.isNotEmpty(dataList) ) {
@@ -177,5 +178,26 @@ public class ReportService {
             default:
                 return null;
         }
+    }
+
+    public Optional<FileDTO> getPaymentReport(Long reportId) {
+        Report report = reportRepository.getOne(reportId);
+        if (report == null) {
+            return Optional.empty();
+        }
+        String fileName = FILE_SUFFIX + reportId /*+ "_" + System.currentTimeMillis()*/ + ".xlsx";
+        String filePath = outputFolder + "/" + PAYMENT_FOLDER_NAME + "/" + fileName;
+        byte[] file;
+        try {
+            file = fileWrapper.extractBytes(filePath);
+        } catch (IOException e) {
+            return Optional.empty();
+        }
+        FileDTO fileDTO = FileDTO.builder()
+            .id(reportId)
+            .name(fileName)
+            .bytes(file)
+            .build();
+        return Optional.of(fileDTO);
     }
 }

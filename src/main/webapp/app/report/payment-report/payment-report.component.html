@@ -24,11 +24,14 @@
                         </div>
                     </div>-->
 
+
                     <br/>
 
-                    <div class="card-content">
-
+                    <div class="data-table-alert">
                         <jhi-alert></jhi-alert>
+                    </div>
+
+                    <div class="card-content">
                         <br/><br/>
                         <!--<div class="alert alert-warning" *ngIf="items?.length === 0">
                             <span jhiTranslate="tbsApp.item.home.notFound">No items found</span>
@@ -115,8 +118,8 @@
                                 <div class="col-md-4 dashboard-filter-element">
                                     <form class="navbar-form">
                                         <div class="input-group no-border">
-                                            <button type="button" class="btn btn-primary" (click)="generateReport()">Generate Report</button>
-                                            <button type="button" class="btn btn-danger" (click)="clearReportFilters()">Reset</button>
+                                            <button type="button" class="btn btn-primary" (click)="generateReport()" [disabled]="busy">Generate Report</button>
+                                            <button type="button" class="btn btn-danger" (click)="clearReportFilters()" [disabled]="busy">Reset</button>
                                         </div>
                                     </form>
                                 </div>
@@ -192,29 +195,26 @@
 
                                         <ng-template #reportStatusRowTemplate let-row="row">
                                             <div class="badge" [ngClass]="{
-                                                    'badge-warning': row.status === ReportStatus.WAITING,
-                                                    'badge-success': row.status === ReportStatus.READY
+                                                    'badge-warning': row.status == 'WAITING',
+                                                    'badge-success': row.status == 'READY',
+                                                    'badge-danger': row.status == 'FAILED'
                                                 }">
-                                                {{ 'tbsApp.payment.paymentStatus.' + row.paymentStatus |
+                                                {{ 'report.reportStatus.' + row.status |
                                                 translate }}
                                             </div>
                                         </ng-template>
 
                                         <ng-template #dateTemplate let-value="value">
-                                            <span>{{ value | tbsDateTime }}</span>
+                                            <span *ngIf="value">{{ value | tbsDateTime }}</span>
+                                            <span *ngIf="!value"> {{ 'report.notReady' | translate }}</span>
                                         </ng-template>
 
                                         <ng-template #actionsRowTemplate let-row="row">
                                             <div class="btn-group">
-                                                <!--                                                <button class="btn btn-info  btn-link" matTooltip="{{ 'global.datatable.view' | translate }}" [matTooltipPosition]="'above'" (click)="view(row)">-->
-                                                <!--                                                    <i class="material-icons">visibility</i>-->
-                                                <!--                                                </button>-->
-                                                <button class="btn btn-primary  btn-link" matTooltip="{{ 'global.datatable.edit' | translate }}" [matTooltipPosition]="'above'" (click)="edit(row)">
-                                                    <i class="material-icons">edit</i>
+                                                <button class="btn btn-primary  btn-link" matTooltip="{{ 'global.datatable.download' | translate }}"
+                                                        [matTooltipPosition]="'above'" (click)="downloadReport(row.id)" [disabled]=" row.status != 'READY'">
+                                                    <i class="material-icons">save_alt</i>
                                                 </button>
-                                                <!--<button class="btn btn-danger  btn-link" matTooltip="{{ 'global.datatable.delete' | translate }}" [matTooltipPosition]="'above'" (click)="delete(row)">
-                                                    <i class="material-icons">close</i>
-                                                </button>-->
                                             </div>
                                         </ng-template>
 
