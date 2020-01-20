@@ -166,7 +166,7 @@ export class PaymentReportComponent implements OnInit {
 
     pageQueryParams.fillDatatable(this.datatable);
 
-    this.router.navigate(['/report'], {queryParams: pageQueryParams});
+    this.router.navigate(['/report/payment-report'], {queryParams: pageQueryParams});
   }
 
   search() {

@@ -173,9 +173,9 @@ public class ReportService {
     private ZonedDateTime getExpireDate(ReportType type) {
         switch (type) {
             case PAYMENT:
-                return ZonedDateTime.now().plusDays(1);
+                return ZonedDateTime.now().plusDays(7);
             case REFUND:
-                return ZonedDateTime.now().plusDays(1);
+                return ZonedDateTime.now().plusDays(7);
             default:
                 return null;
         }
