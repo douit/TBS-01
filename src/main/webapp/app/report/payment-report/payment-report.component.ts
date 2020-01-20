@@ -271,6 +271,11 @@ export class PaymentReportComponent implements OnInit {
               this.loadData();
               this.busy = false;
               this.jhiAlertService.success('report.success.reportGeneration', null, null);
+              const that = this;
+              setInterval(
+                function () {
+                  that.loadData();
+                }, 10000);
             },
             (res: HttpErrorResponse) => {
               this.onError(res.message);
