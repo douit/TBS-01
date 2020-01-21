@@ -99,6 +99,14 @@ spring:
   thymeleaf:
     mode: HTML
 
+#  https://stackoverflow.com/questions/38070299/spring-boot-configuration-2-configuration-ldap-yml-file
+ldap:
+  url: ldap://10.60.73.203:389
+#  uri: ldap://10.60.73.203:389
+  base: OU=HDFBS,DC=HDFBS,DC=LOCAL
+  username: uid=svc-belling
+  password: Bellpaw$$44
+
 server:
   servlet:
     session:
@@ -166,26 +174,3 @@ tbs:
     sadad-url-refund: 'http://10.4.7.61:2020/Sender/api/Sadad/RefundLoadRq/test'
     sadad-shared-folder: '/sadad_share/'
 
-  ldap:
-
-    # Spring LDAP
-    #
-    # In this example we use an embedded ldap server. When using a real one,
-    # you can configure the settings here.
-    #
-#    urls: 'ldap://10.60.73.203:389'
-    uri: ldap://10.60.73.203:389
-    base: OU=HDFBS,DC=HDFBS,DC=LOCAL
-    username: uid=svc-belling
-    password: Bellpaw$$44
-
-    # Embedded Spring LDAP
-#    embedded:
-#      base-dn: OU=HDFBS,DC=HDFBS,DC=LOCAL
-#      credential:
-#        username: svc-belling
-#        password: Bellpaw$$44
-#      ldif: 10.60.73.203
-#      port: 389
-#      validation:
-#        enabled: false
