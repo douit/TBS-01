@@ -55,7 +55,9 @@
       "confirmpassword.label": "New password confirmation",
       "confirmpassword.placeholder": "Confirm the new password",
       "email.label": "Email",
-      "email.placeholder": "Your email"
+      "email.placeholder": "Your email",
+      "searchUser.label":"Search",
+      "searchUser.placeholder": "Search for user"
     },
     "messages": {
       "info": {
@@ -140,7 +142,8 @@
       "edit": "Edit",
       "open": "Open",
       "save": "Save",
-      "view": "View"
+      "view": "View",
+      "search": "Search"
     },
     "detail": {
       "field": "Field",
