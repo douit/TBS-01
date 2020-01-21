@@ -9,6 +9,7 @@ import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import sa.tamkeentech.tbs.domain.enumeration.ReportType;
 import sa.tamkeentech.tbs.service.ReportService;
 import sa.tamkeentech.tbs.service.dto.FileDTO;
 import sa.tamkeentech.tbs.service.dto.PaymentMethodDTO;
@@ -33,14 +34,27 @@ public class ReportResource {
     @PostMapping("/payment")
     // @PreAuthorize("hasAuthority('"+ PermissionConsts.Authorities.CREATE_REPORT +"')")
     // @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ReportDTO> createTripReport(@Valid @RequestBody ReportRequestDTO reportRequest){
-        return ResponseEntity.ok(reportService.requestPaymentReport(reportRequest));
+    public ResponseEntity<ReportDTO> createReport(@Valid @RequestBody ReportRequestDTO reportRequest){
+        return ResponseEntity.ok(reportService.requestReport(reportRequest, ReportType.PAYMENT));
     }
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/payment/datatable")
-    public DataTablesOutput<ReportDTO> getAllPaymentAuditReports(DataTablesInput input) {
-        return reportService.getPaymentReports(input);
+    public DataTablesOutput<ReportDTO> getAllPaymentReports(DataTablesInput input) {
+        return reportService.getReports(input, ReportType.PAYMENT);
+    }
+
+    @PostMapping("/refund")
+    // @PreAuthorize("hasAuthority('"+ PermissionConsts.Authorities.CREATE_REPORT +"')")
+    // @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ReportDTO> createRefundReport(@Valid @RequestBody ReportRequestDTO reportRequest){
+        return ResponseEntity.ok(reportService.requestReport(reportRequest, ReportType.REFUND));
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/refund/datatable")
+    public DataTablesOutput<ReportDTO> getAllRefundReports(DataTablesInput input) {
+        return reportService.getReports(input, ReportType.REFUND);
     }
 
     @GetMapping("/{id}")

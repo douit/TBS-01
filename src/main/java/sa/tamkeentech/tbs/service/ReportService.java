@@ -19,10 +19,7 @@ import sa.tamkeentech.tbs.domain.User;
 import sa.tamkeentech.tbs.domain.enumeration.ReportStatus;
 import sa.tamkeentech.tbs.domain.enumeration.ReportType;
 import sa.tamkeentech.tbs.repository.ReportRepository;
-import sa.tamkeentech.tbs.service.dto.FileDTO;
-import sa.tamkeentech.tbs.service.dto.PaymentDTO;
-import sa.tamkeentech.tbs.service.dto.ReportDTO;
-import sa.tamkeentech.tbs.service.dto.ReportRequestDTO;
+import sa.tamkeentech.tbs.service.dto.*;
 import sa.tamkeentech.tbs.service.mapper.ReportMapper;
 import sa.tamkeentech.tbs.service.util.CommonUtils;
 import sa.tamkeentech.tbs.service.util.JasperReportExporter;
@@ -63,16 +60,18 @@ public class ReportService {
     private FileWrapper fileWrapper;
     @Autowired
     private PaymentService paymentService;
+    @Autowired
+    private RefundService refundService;
 
     @Value("${tbs.report.reports-folder}")
     private String outputFolder;
 
-    public ReportDTO requestPaymentReport(ReportRequestDTO reportRequest) {
+    public ReportDTO requestReport(ReportRequestDTO reportRequest, ReportType reportType) {
         Report reportEntity = new Report();
         reportEntity.setRequestDate(ZonedDateTime.now());
         reportEntity.setStatus(ReportStatus.WAITING);
         reportEntity.setRequestUser(userService.getUser().get());
-        reportEntity.setType(ReportType.PAYMENT);
+        reportEntity.setType(reportType);
         String clientName = ALL_FILTER;
         if (reportRequest.getClientId() != null) {
             // Client
@@ -86,15 +85,10 @@ public class ReportService {
         reportEntity.setOffset(reportRequest.getOffset());
 
         reportEntity = reportRepository.save(reportEntity);
-        generatePaymentReport(reportEntity.getId(), clientName);
+        generateReport(reportEntity.getId(), clientName, reportType);
         return reportMapper.toDto(reportEntity);
     }
 
-
-    public Page<ReportDTO> listReports(Long userId, Pageable pageable) {
-        Page<Report> reportList = reportRepository.findByRequestUserId(userId, pageable);
-        return reportList.map(reportMapper::toDto);
-    }
 
     public ReportDTO getReport(Long userId, Long reportId) {
         Report reportEntity = reportRepository.getOne(reportId);
@@ -105,22 +99,32 @@ public class ReportService {
     }
 
     @Async
-    public void generatePaymentReport(Long reportId, String clientName) {
+    public void generateReport(Long reportId, String clientName, ReportType reportType) {
         log.debug("generating payment report id ---> {}", reportId);
         Report reportEntity = reportRepository.getOne(reportId);
         reportEntity.setStatus(ReportStatus.IN_PROGRESS);
         reportRepository.save(reportEntity);
         Long clientId = (reportEntity.getClient() != null) ? reportEntity.getClient().getId() : null;
 
-        List<PaymentDTO> dataList = paymentService.getPaymentsBetween(reportEntity.getStartDate(), reportEntity.getEndDate(), clientId);
+        List<?> dataList;
+        Map<String, Object> extraParams;
+        switch (reportType) {
+            case REFUND:
+                dataList = refundService.getRefundsBetween(reportEntity.getStartDate(), reportEntity.getEndDate(), clientId);
+                extraParams = refundReportExtraParams(reportEntity, (List<RefundDetailedDTO>) dataList, clientName);
+                break;
+            default:
+                dataList = paymentService.getPaymentsBetween(reportEntity.getStartDate(), reportEntity.getEndDate(), clientId);
+                extraParams = paymentReportExtraParams(reportEntity, (List<PaymentDTO>) dataList, clientName);
+                break;
+        }
+
         log.debug("report size ---> {}", dataList.size());
-        Map<String, Object> extraParams = paymentReportExtraParams(reportEntity, dataList, clientName);
         String reportFileName = FILE_SUFFIX + reportId /*+ "_" + System.currentTimeMillis()*/ + ".xlsx";
         try {
-            String reportUrl = generateReport(TEMPLATE_PAYMENT, reportFileName, dataList, extraParams);
+            generateReport(TEMPLATE_PAYMENT, reportFileName, dataList, extraParams);
             reportEntity.setStatus(ReportStatus.READY);
             reportEntity.setGeneratedDate(ZonedDateTime.now());
-            // reportEntity.setDownloadUrl(reportUrl);
             reportEntity.setExpireDate(getExpireDate(reportEntity.getType()));
             reportRepository.save(reportEntity);
         } catch (IOException| JRException e) {
@@ -147,6 +151,24 @@ public class ReportService {
         return extraParams;
     }
 
+    private Map<String, Object> refundReportExtraParams(Report report, List<RefundDetailedDTO> dataList, String clientName) {
+
+        Map<String, Object> extraParams = new HashMap<>();
+        extraParams.put("client", clientName);
+        extraParams.put("startDate", CommonUtils.getFormattedLocalDate(report.getStartDate(), report.getOffset()));
+        extraParams.put("endDate", CommonUtils.getFormattedLocalDate(report.getEndDate(), report.getOffset()));
+        // report summary
+        BigDecimal totalPaymentsAmount = BigDecimal.ZERO;
+        if (CollectionUtils.isNotEmpty(dataList) ) {
+            totalPaymentsAmount = dataList.stream().map(RefundDetailedDTO::getAmount)
+                .filter(x -> x != null).reduce(BigDecimal::add).get();
+        }
+        extraParams.put("numberOfPayments", dataList.size());
+        extraParams.put("totalPaymentsAmount", totalPaymentsAmount);
+        return extraParams;
+    }
+
+
     private String generateReport(String templateFile, String reportFileName, List<?> dataList, Map<String, Object> extraParams) throws IOException, JRException {
 
         Map<String, Object> parameterMap = new HashMap<>();
@@ -161,9 +183,10 @@ public class ReportService {
         return fileWrapper.saveBytesToFile(dirPath, reportFileName, report);
     }
 
-    public DataTablesOutput<ReportDTO> getPaymentReports(DataTablesInput input) {
+    public DataTablesOutput<ReportDTO> getReports(DataTablesInput input, ReportType reportType) {
         return reportMapper.toDto(reportRepository.findAll(input, (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
+            predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("type"), reportType)));
             predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("requestUser").get("id"), userService.getUser().get().getId())));
             predicates.add(criteriaBuilder.and(criteriaBuilder.or((criteriaBuilder.greaterThanOrEqualTo(root.get("expireDate"), ZonedDateTime.now())), criteriaBuilder.isNull(root.get("expireDate")))));
             return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));

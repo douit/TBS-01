@@ -38,6 +38,7 @@ public class Report extends AbstractAuditingEntity implements Serializable {
     @JoinColumn(name = "client_id", referencedColumnName = "id")
     private Client client;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "report_type")
     private ReportType type;
 
@@ -53,7 +54,8 @@ public class Report extends AbstractAuditingEntity implements Serializable {
     /*@Column(name = "download_url")
     private String downloadUrl;*/
 
-	@Column(name = "report_status")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "report_status")
 	private ReportStatus status;
 
 	@Column(name = "off_set")

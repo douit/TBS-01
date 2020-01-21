@@ -31,12 +31,14 @@ import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.repository.PaymentRepository;
 import sa.tamkeentech.tbs.repository.RefundRepository;
 import sa.tamkeentech.tbs.service.dto.RefundDTO;
+import sa.tamkeentech.tbs.service.dto.RefundDetailedDTO;
 import sa.tamkeentech.tbs.service.dto.RefundStatusCCResponseDTO;
 import sa.tamkeentech.tbs.service.dto.TBSEventReqDTO;
 import sa.tamkeentech.tbs.service.mapper.RefundMapper;
 import sa.tamkeentech.tbs.service.util.EventPublisherService;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
+import javax.persistence.criteria.Predicate;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -77,6 +79,9 @@ public class RefundService {
     @Autowired
     @Lazy
     EventPublisherService eventPublisherService;
+
+    @Autowired
+    private UserService userService;
 
     public RefundService(RefundRepository refundRepository, RefundMapper refundMapper, ObjectMapper objectMapper, PaymentRepository paymentRepository, InvoiceRepository invoiceResitory, FileSyncLogRepository fileSyncLogRepository) {
         this.refundRepository = refundRepository;
@@ -401,4 +406,23 @@ public class RefundService {
             log.info("Finish Processing Sadad File: " + file.getName() + ", TotalRefund: " +  totalRefund);
         }
     }
+
+    // payment report data
+    List<RefundDetailedDTO> getRefundsBetween(ZonedDateTime start, ZonedDateTime end, Long clientId) {
+        List<Long> clientIds = userService.listClientIds(clientId);
+
+        return refundMapper.toDetailedDto(refundRepository.findAll((root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(criteriaBuilder.and(root.get("payment").get("invoice").get("client").get("id").in(clientIds)));
+            // predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("status"), PaymentStatus.PAID)));
+            if (start != null) {
+                predicates.add(criteriaBuilder.and(criteriaBuilder.greaterThanOrEqualTo(root.get("createdDate"), start)));
+            }
+            if (end != null) {
+                predicates.add(criteriaBuilder.and(criteriaBuilder.lessThanOrEqualTo(root.get("createdDate"), end)));
+            }
+            return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
+        }));
+    }
+
 }

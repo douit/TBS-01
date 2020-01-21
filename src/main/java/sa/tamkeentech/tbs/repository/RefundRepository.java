@@ -1,5 +1,6 @@
 package sa.tamkeentech.tbs.repository;
 
+import org.springframework.data.jpa.datatables.repository.DataTablesRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -17,7 +18,7 @@ import java.util.Optional;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface RefundRepository extends JpaRepository<Refund, Long> {
+public interface RefundRepository extends JpaRepository<Refund, Long>, DataTablesRepository<Refund, Long> {
 
     @Query(value = "SELECT sum(amount) " +
         "FROM refund WHERE status != 'PAID' ", nativeQuery = true)
