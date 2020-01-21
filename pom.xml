@@ -8,11 +8,7 @@
     <version>0.0.1-Postgres</version>
     <packaging>jar</packaging>
     <name>TBS</name>
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>1.5.7.RELEASE</version>
-    </parent>
+
     <repositories>
         <!-- jhipster-needle-maven-repository -->
     </repositories>
@@ -112,11 +108,15 @@
 <!--            <groupId>org.springframework.boot</groupId>-->
 <!--            <artifactId>spring-boot-starter</artifactId>-->
 <!--        </dependency>-->
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-ldap</artifactId>
+            <version>${spring-boot.version}</version>
         </dependency>
-<!--        <dependency>-->
+
+
+        <!--        <dependency>-->
 <!--            <groupId>com.unboundid</groupId>-->
 <!--            <artifactId>unboundid-ldapsdk</artifactId>-->
 <!--        </dependency>-->
