@@ -1,5 +1,6 @@
 package sa.tamkeentech.tbs.domain.ldap;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.springframework.ldap.odm.annotations.*;
 
@@ -12,7 +13,11 @@ public final class Person {
     private static final String BASE_DN = "OU=Tamkeen,OU=HDFBS,DC=HDFBS,DC=LOCAL";
 
     @Id
+    @JsonIgnore
     private Name dn;
+
+    @Attribute(name="uid")
+    private String uid;
 
     @Attribute(name="sAMAccountName")
     private String userName;
