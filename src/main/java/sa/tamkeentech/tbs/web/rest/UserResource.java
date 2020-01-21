@@ -6,8 +6,10 @@ import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.Authority;
 import sa.tamkeentech.tbs.domain.Role;
 import sa.tamkeentech.tbs.domain.User;
+import sa.tamkeentech.tbs.domain.ldap.Person;
 import sa.tamkeentech.tbs.repository.RoleRepository;
 import sa.tamkeentech.tbs.repository.UserRepository;
+import sa.tamkeentech.tbs.repository.ldap.PersonRepository;
 import sa.tamkeentech.tbs.security.AuthoritiesConstants;
 import sa.tamkeentech.tbs.service.MailService;
 import sa.tamkeentech.tbs.service.UserService;
@@ -74,13 +76,15 @@ public class UserResource {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final PersonRepository personRepository;
 
     private final MailService mailService;
-    public UserResource(UserService userService, UserRepository userRepository, RoleRepository roleRepository, MailService mailService) {
+    public UserResource(UserService userService, UserRepository userRepository, RoleRepository roleRepository, PersonRepository personRepository, MailService mailService) {
 
         this.userService = userService;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.personRepository = personRepository;
         this.mailService = mailService;
     }
 
@@ -208,5 +212,11 @@ public class UserResource {
             authorities.add(authority.getName());
         }
         return authorities;
+    }
+    @GetMapping("/users/ldap/{uId}")
+    public Person getUserByLdap(@PathVariable String uId)
+    {
+       Person person = personRepository.findByUid(uId);
+        return person;
     }
 }
