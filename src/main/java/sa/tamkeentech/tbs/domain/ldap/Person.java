@@ -6,7 +6,7 @@ import javax.naming.Name;
 @Entry(objectClasses = { "person", "top" })
 public final class Person {
 
-    private static final String BASE_DN = "dc=memorynotfound,dc=com";
+    private static final String BASE_DN = "OU=HDFBS,DC=HDFBS,DC=LOCAL";
 
     @Id
     private Name dn;

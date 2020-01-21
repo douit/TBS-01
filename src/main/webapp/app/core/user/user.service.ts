@@ -46,4 +46,8 @@ export class UserService {
   authorities(): Observable<string[]> {
     return this.http.get<string[]>(SERVER_API_URL + 'api/users/authorities');
   }
+
+  findLdapUser(login: string): Observable<HttpResponse<any>> {
+    return this.http.get<IUser>(`${this.resourceUrl}/ldap/${login}`, { observe: 'response' });
+  }
 }

@@ -47,7 +47,7 @@ export class UserMgmtUpdateComponent implements OnInit {
     roleClient: [],
     roleName: [],
     isInternal: [true],
-
+    search: []
   });
 
   constructor(
@@ -118,7 +118,7 @@ export class UserMgmtUpdateComponent implements OnInit {
       this.editForm.controls['email'].disable();
     }
     if (this.user.clientRoles != null) {
-      let that = this;
+      const that = this;
       this.user.clientRoles.forEach(function (value) {
 
         that.userService.getRoleAuthorities(value.roleName.toString()).subscribe(
@@ -299,5 +299,17 @@ export class UserMgmtUpdateComponent implements OnInit {
         return t;
       }
     }).length > 0;
+  }
+
+  searchLdapUser() {
+    console.log('login val: ' + this.editForm.controls['search'].value);
+    this.userService.findLdapUser(this.editForm.controls['search'].value).subscribe(
+      res => {
+        console.log('Ldap user: ' + JSON.stringify(res));
+      },
+      res => {
+        console.log('An error has occurred when get ldap user');
+      }
+    );
   }
 }

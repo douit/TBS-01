@@ -12,7 +12,7 @@
         <addColumn
             schemaName="public"
             tableName="users">
-            <column name="internal" type="BOOLEAN"/>
+            <column name="internal" type="BOOLEAN" valueBoolean="false"/>
         </addColumn>
     </changeSet>
 

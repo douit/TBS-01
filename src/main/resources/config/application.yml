@@ -173,18 +173,19 @@ tbs:
     # In this example we use an embedded ldap server. When using a real one,
     # you can configure the settings here.
     #
-    # urls: ldap://localhost:12345
-    # base: dc=memorynotfound,dc=com
-    # username: uid=admin
-    # password: secret
+#    urls: 'ldap://10.60.73.203:389'
+    uri: ldap://10.60.73.203:389
+    base: OU=HDFBS,DC=HDFBS,DC=LOCAL
+    username: uid=svc-belling
+    password: Bellpaw$$44
 
     # Embedded Spring LDAP
-    embedded:
-      base-dn: OU=HDFBS,DC=HDFBS,DC=LOCAL
-      credential:
-        username: svc-belling
-        password: Bellpaw$$44
-      ldif: 10.60.73.203
-      port: 389
-      validation:
-        enabled: false
+#    embedded:
+#      base-dn: OU=HDFBS,DC=HDFBS,DC=LOCAL
+#      credential:
+#        username: svc-belling
+#        password: Bellpaw$$44
+#      ldif: 10.60.73.203
+#      port: 389
+#      validation:
+#        enabled: false
