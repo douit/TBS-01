@@ -98,14 +98,13 @@ spring:
         size: 2
   thymeleaf:
     mode: HTML
-
-#  https://stackoverflow.com/questions/38070299/spring-boot-configuration-2-configuration-ldap-yml-file
-ldap:
-  url: ldap://10.60.73.203:389
-#  uri: ldap://10.60.73.203:389
-  base: OU=HDFBS,DC=HDFBS,DC=LOCAL
-  username: uid=svc-belling
-  password: Bellpaw$$44
+#  https://dzone.com/articles/spring-ldap
+  ldap:
+    urls: ldap://10.60.73.203:389
+#    base: OU=HDFBS,DC=HDFBS,DC=LOCAL
+    base: OU=Tamkeen,OU=HDFBS,DC=HDFBS,DC=LOCAL
+    username: svc-belling
+    password: Bellpaw$$44
 
 server:
   servlet:

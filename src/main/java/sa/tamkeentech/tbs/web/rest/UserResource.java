@@ -213,10 +213,10 @@ public class UserResource {
         }
         return authorities;
     }
-    @GetMapping("/users/ldap/{uId}")
-    public Person getUserByLdap(@PathVariable String uId)
+    @GetMapping("/users/ldap/{userName}")
+    public Person getUserByLdap(@PathVariable String userName)
     {
-       Person person = personRepository.findByUid(uId);
+       Person person = personRepository.findByUserName(userName);
         return person;
     }
 }
