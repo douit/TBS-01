@@ -20,7 +20,8 @@
   // Top section of the modal w/ title and dismiss
   .modal-header {
     border-bottom: none;
-    padding-top:    24px;
+    // padding-top:    24px;
+    padding-top:    0;
     padding-right:  24px;
     padding-bottom: 0;
     padding-left:   24px;
@@ -40,7 +41,8 @@
   // Modal body
   // Where all modal content resides (sibling of .modal-header and .modal-footer)
   .modal-body {
-    padding-top:    24px;
+    // padding-top:    24px;
+    padding-top:    0;
     padding-right:  24px;
     padding-bottom: 16px;
     padding-left:   24px;
@@ -187,6 +189,7 @@
     margin-top: 5px;
     h3{
       padding-bottom: 16px;
+      margin: 0;
     }
   }
 }

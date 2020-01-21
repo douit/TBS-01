@@ -58,15 +58,6 @@ public class InvoiceResource {
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
-    @PostMapping("/invoices/search")
-    @ResponseBody
-    public DataTablesOutput<InvoiceDTO> getInvoiceBySearching( @RequestBody InvoiceSearchRequestDTO invoiceSearchRequestDTO) {
-        log.debug("REST request to get a page of Invoices");
-//        Page<InvoiceDTO> page = invoiceService.findAll(pageable);
-//        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-        return invoiceService.getInvoiceByQuerySearch(invoiceSearchRequestDTO);
-    }
-
     /**
      * {@code GET  /invoices} : get all the invoices.
      *
@@ -109,11 +100,30 @@ public class InvoiceResource {
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString())).build();
     }*/
 
+    /**
+     *
+     * @param input
+     * @return
+     */
     // @PreAuthorize("isAuthenticated()")
     @GetMapping("/invoices/datatable")
     public DataTablesOutput<InvoiceDTO> getAllItems(DataTablesInput input)
     {
         return invoiceService.get(input);
+    }
+
+    /**
+     *
+     * @param invoiceSearchRequestDTO
+     * @return
+     */
+    @PostMapping("/invoices/search")
+    @ResponseBody
+    public DataTablesOutput<InvoiceDTO> getInvoiceBySearching( @RequestBody InvoiceSearchRequestDTO invoiceSearchRequestDTO) {
+        log.debug("REST request to get a page of Invoices");
+//        Page<InvoiceDTO> page = invoiceService.findAll(pageable);
+//        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return invoiceService.getInvoiceByQuerySearch(invoiceSearchRequestDTO);
     }
 
     @GetMapping("/invoices/audit/{accountId}")

@@ -83,12 +83,7 @@ public class PaymentResource {
             .body(result);
     }
 
-    @PostMapping("/api/payments/search")
-    @ResponseBody
-    public DataTablesOutput<PaymentDTO> getPaymentStatusBySearching(@RequestBody PaymentSearchRequestDTO paymentSearchRequestDTO) {
-        log.debug("REST request to get a page of Invoices");
-        return paymentService.getPaymentStatusByQuerySearch(paymentSearchRequestDTO);
-    }
+
     @PostMapping("/billing/payments/status")
     public ResponseEntity<PaymentDTO> updatePaymentStatus(@RequestBody PaymentStatusResponseDTO paymentStatusResponseDTO) throws URISyntaxException {
         PaymentDTO result = paymentService.updateCreditCardPaymentAndSendEvent(paymentStatusResponseDTO);
@@ -178,10 +173,26 @@ public class PaymentResource {
         return ResponseUtil.wrapOrNotFound(paymentDTO);
     }
 
+    /**
+     *
+     * @param input
+     * @return
+     */
     // @PreAuthorize("isAuthenticated()")
     @GetMapping("/api/payments/datatable")
     public DataTablesOutput<PaymentDTO> getAllItems(DataTablesInput input) {
         return paymentService.get(input);
     }
 
+    /**
+     *
+     * @param paymentSearchRequestDTO
+     * @return
+     */
+     @PostMapping("/api/payments/search")
+     @ResponseBody
+     public DataTablesOutput<PaymentDTO> getPaymentStatusBySearching(@RequestBody PaymentSearchRequestDTO paymentSearchRequestDTO) {
+     log.debug("REST request to get a page of Invoices");
+     return paymentService.getPaymentStatusByQuerySearch(paymentSearchRequestDTO);
+     }
 }

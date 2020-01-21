@@ -171,15 +171,9 @@ public class ItemService {
         // return itemMapper.toDto(itemRepository.findAll(input));
 
         return itemMapper.toDto(itemRepository.findAll(input, (root, query, criteriaBuilder) -> {
-                List<Predicate> predicates = new ArrayList<>();
-            List<Long> clientIds = userService.listClientIds(0);
+            List<Predicate> predicates = new ArrayList<>();
+            List<Long> clientIds = userService.listClientIds(null);
             predicates.add(criteriaBuilder.and(root.get("client").get("id").in(clientIds)));
-            // if (start != null) {
-            //     predicates.add(criteriaBuilder.and(criteriaBuilder.greaterThanOrEqualTo(root.get("createdDate"), start)));
-            // }
-            // if (end != null) {
-            //     predicates.add(criteriaBuilder.and(criteriaBuilder.lessThanOrEqualTo(root.get("createdDate"), end)));
-            // }
              return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
         }));
     }

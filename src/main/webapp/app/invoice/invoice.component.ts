@@ -1,7 +1,6 @@
-import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {Component, OnInit, ViewChild} from '@angular/core';
 import {HttpErrorResponse} from '@angular/common/http';
 import {ActivatedRoute, Router} from '@angular/router';
-import {Subscription} from 'rxjs';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import {finalize} from 'rxjs/operators';
 import {JhiAlertService, JhiEventManager} from 'ng-jhipster';
@@ -12,17 +11,16 @@ import {InvoiceService} from './invoice.service';
 import {DatatableColumn} from 'app/shared/model/datatable/datatable-column';
 import {PageQueryParams} from 'app/shared/model/page-query-params';
 import {DatatableComponent} from '@swimlane/ngx-datatable';
-import {IItem} from 'app/shared/model/item.model';
 import {Datatable} from 'app/shared/model/datatable/datatable';
 import {TranslateService} from '@ngx-translate/core';
 import {_tbs} from 'app/shared/util/tbs-utility';
 import {InvoiceStatus, PaymentStatus} from 'app/shared/constants';
-import {NgbCalendar, NgbDate, NgbDateParserFormatter} from "@ng-bootstrap/ng-bootstrap";
-import {NgbDateStruct} from "@ng-bootstrap/ng-bootstrap/datepicker/ngb-date-struct";
-import {IClient} from "app/shared/model/client.model";
-import * as moment from "moment";
-import {IInvoiceSearchRequest} from "app/shared/model/invoice-serach-request";
-import {ClientService} from "app/client/client.service";
+import {NgbCalendar, NgbDate, NgbDateParserFormatter} from '@ng-bootstrap/ng-bootstrap';
+import {NgbDateStruct} from '@ng-bootstrap/ng-bootstrap/datepicker/ngb-date-struct';
+import {IClient} from 'app/shared/model/client.model';
+import * as moment from 'moment';
+import {IInvoiceSearchRequest} from 'app/shared/model/invoice-serach-request';
+import {ClientService} from 'app/client/client.service';
 
 @Component({
   selector: 'app-invoice',
@@ -90,10 +88,9 @@ export class InvoiceComponent implements OnInit {
   maxDate: NgbDateStruct;
   startDate: NgbDateStruct;
   selectedClient: IClient;
-  paymentStatusSelected: any;
   clients: IClient[];
-  customerId:string;
-  paymentStatus:any;
+  customerId: string;
+  paymentStatus: any;
 
   onDateSelection(date: NgbDate, datepicker) {
     if (!this.fromDate && !this.toDate) {
@@ -146,10 +143,10 @@ export class InvoiceComponent implements OnInit {
       fromDate : fromDate,
       toDate : toDate,
       clientId : clientId,
-      customerId :this.customerId,
+      customerId : this.customerId,
       // paymentStatus:this.paymentStatusSelected.value,
-      input :this.datatable.getDataTableInput()
-    }
+      input : this.datatable.getDataTableInput()
+    };
     this.initDatatable();
     this.activatedRoute.queryParams
       .subscribe((pageQueryParams: PageQueryParams) => {
@@ -287,11 +284,11 @@ export class InvoiceComponent implements OnInit {
 
   clearSearch() {
     this.datatable.search = '';
-    this.customerId = "";
-    this.selectedClient=null;
+    this.customerId = '';
     this.selectedClient = null;
-    this.fromDate =null;
-    this.toDate =null;
+    this.selectedClient = null;
+    this.fromDate = null;
+    this.toDate = null;
     this.search();
   }
 
@@ -330,7 +327,7 @@ export class InvoiceComponent implements OnInit {
     const that = this;
     this.invoiceService.getTripAudit(row.accountId).subscribe(
       data => {
-        that.busy = false
+        that.busy = false;
         data.forEach(log => {
           this.auditInvoice = data;
         });

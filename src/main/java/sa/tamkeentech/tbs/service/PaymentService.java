@@ -129,31 +129,6 @@ public class PaymentService {
         return eventPublisherService.initiateCreditCardPaymentEvent(reqNotification, invoice).getResp();
     }
 
-    @Transactional(readOnly = true)
-    public DataTablesOutput<PaymentDTO> getPaymentStatusByQuerySearch(PaymentSearchRequestDTO paymentSearchRequestDTO) {
-        // return itemMapper.toDto(itemRepository.findAll(input));
-        return paymentMapper.toDto(paymentRepository.findAll(paymentSearchRequestDTO.getInput(), (root, query, criteriaBuilder) -> {
-            List<Predicate> predicates = new ArrayList<>();
-
-            if (paymentSearchRequestDTO.getClientId() != 0) {
-                predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("invoice").get("client").get("id"), paymentSearchRequestDTO.getClientId())));
-            }
-            if (paymentSearchRequestDTO.getFromDate() != null) {
-                predicates.add(criteriaBuilder.and(criteriaBuilder.greaterThanOrEqualTo(root.get("createdDate"), paymentSearchRequestDTO.getFromDate())));
-            }
-            if (paymentSearchRequestDTO.getToDate() != null) {
-                predicates.add(criteriaBuilder.and(criteriaBuilder.lessThanOrEqualTo(root.get("createdDate"), paymentSearchRequestDTO.getToDate())));
-            }
-//            if (!paymentSearchRequestDTO.getCustomerId().isEmpty() ) {
-//                    predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("invoice").get("customer").get("identity"), paymentSearchRequestDTO.getCustomerId())));
-//            }
-            if (!paymentSearchRequestDTO.getPaymentStatus().equals(PaymentStatus.NONE)) {
-                predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("status"), paymentSearchRequestDTO.getPaymentStatus())));
-            }
-            return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
-        }));
-    }
-
     public PaymentDTO initiateCreditCardPayment(PaymentDTO req, Optional<Invoice> invoice) {
         // call payment gateway
         BigDecimal roundedAmount = invoice.get().getAmount().setScale(2, RoundingMode.HALF_UP);
@@ -469,10 +444,6 @@ public class PaymentService {
 
 
     }
-    public DataTablesOutput<PaymentDTO> get(DataTablesInput input) {
-        return paymentMapper.toDto(paymentRepository.findAll(input));
-    }
-
 
     public InvoiceResponseDTO changePaymentMethod(String referenceId, String paymentMethodCode) {
 
@@ -514,12 +485,45 @@ public class PaymentService {
         return invoiceResponseDTO;
     }
 
+    public DataTablesOutput<PaymentDTO> get(DataTablesInput input) {
+        return paymentMapper.toDto(paymentRepository.findAll(input, (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            List<Long> clientIds = userService.listClientIds(null);
+            predicates.add(criteriaBuilder.and(root.get("invoice").get("client").get("id").in(clientIds)));
+            return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
+        }));
+    }
+
+    @Transactional(readOnly = true)
+    public DataTablesOutput<PaymentDTO> getPaymentStatusByQuerySearch(PaymentSearchRequestDTO paymentSearchRequestDTO) {
+        // return itemMapper.toDto(itemRepository.findAll(input));
+        return paymentMapper.toDto(paymentRepository.findAll(paymentSearchRequestDTO.getInput(), (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            List<Long> clientIds = userService.listClientIds(paymentSearchRequestDTO.getClientId());
+            predicates.add(criteriaBuilder.and(root.get("invoice").get("client").get("id").in(clientIds)));
+
+            if (paymentSearchRequestDTO.getFromDate() != null) {
+                predicates.add(criteriaBuilder.and(criteriaBuilder.greaterThanOrEqualTo(root.get("createdDate"), paymentSearchRequestDTO.getFromDate())));
+            }
+            if (paymentSearchRequestDTO.getToDate() != null) {
+                predicates.add(criteriaBuilder.and(criteriaBuilder.lessThanOrEqualTo(root.get("createdDate"), paymentSearchRequestDTO.getToDate())));
+            }
+//            if (!paymentSearchRequestDTO.getCustomerId().isEmpty() ) {
+//                    predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("invoice").get("customer").get("identity"), paymentSearchRequestDTO.getCustomerId())));
+//            }
+            if (!paymentSearchRequestDTO.getPaymentStatus().equals(PaymentStatus.NONE)) {
+                predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("status"), paymentSearchRequestDTO.getPaymentStatus())));
+            }
+            return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
+        }));
+    }
+
+
     // payment report data
     List<PaymentDTO> getPaymentsBetween(ZonedDateTime start, ZonedDateTime end, Long clientId) {
-        List<Long> clientIds = userService.listClientIds(0);
-        if (clientId != null) {
-            clientIds.removeIf(id -> clientId != id);
-        }
+        List<Long> clientIds = userService.listClientIds(clientId);
+
         return paymentMapper.toDto(paymentRepository.findAll((root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(criteriaBuilder.and(root.get("invoice").get("client").get("id").in(clientIds)));

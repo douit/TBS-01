@@ -116,21 +116,6 @@
                                         </div>
                                     </div>
                                 </div>
-<!--                                <div class="col-md-2 dashboard-filter-element">-->
-<!--                                    <mat-form-field>-->
-<!--                                        <mat-label *ngIf="paymentStatusSelected == null">Select Payment Status-->
-<!--                                        </mat-label>-->
-<!--                                        &lt;!&ndash;<mat-label *ngIf="selectedClient != null">{{selectedClient.name}}</mat-label>&ndash;&gt;-->
-<!--                                        <mat-select class="form-control" id="field_client1" name="clint"-->
-<!--                                                    [(value)]="paymentStatusSelected">-->
-<!--                                            <mat-option [value]="null">None</mat-option>-->
-<!--                                            <mat-option [value]="status"-->
-<!--                                                        *ngFor="let status of paymentStatus; trackBy: trackClientById">{{status.type}}</mat-option>-->
-<!--                                        </mat-select>-->
-<!--                                    </mat-form-field>-->
-<!--                                </div>-->
-                                <!-- <pre>From: {{ fromDate | json }} </pre>
-                                 <pre>To: {{ toDate | json }} </pre>-->
                                 <div class="col-md-2 dashboard-filter-element">
                                     <form class="navbar-form">
                                         <div class="input-group no-border">
@@ -140,7 +125,9 @@
                                                 <i class="material-icons">search</i>
                                                 <div class="ripple-container"></div>
                                             </button>
-                                            info
+                                            <button (click)="clearSearch()" class="btn btn-white btn-round btn-just-icon">
+                                                <i class="material-icons">clear</i>
+                                            </button>
                                         </div>
                                     </form>
                                 </div>

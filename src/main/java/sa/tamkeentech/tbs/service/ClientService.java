@@ -68,7 +68,7 @@ public class ClientService {
     @Transactional(readOnly = true)
     public List<ClientDTO> findByRole() {
         log.debug("Request to get  Clients based on role");
-        List<Long> clientIds = userService.listClientIds(0);
+        List<Long> clientIds = userService.listClientIds(null);
         List<ClientDTO> clients = new ArrayList();
 
         for(Long clientId : clientIds){

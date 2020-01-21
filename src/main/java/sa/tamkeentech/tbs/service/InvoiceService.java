@@ -4,6 +4,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -70,6 +71,9 @@ public class InvoiceService {
     private final EventPublisherService eventPublisherService;
     private final EntityManager entityManager;
     private final PaymentMethodMapper paymentMethodMapper;
+
+    @Autowired
+    private UserService userService;
 
     public InvoiceService(InvoiceRepository invoiceRepository, InvoiceMapper invoiceMapper, ClientService clientService, CustomerService customerService, PaymentMethodService paymentMethodService, ItemService itemService, PaymentService paymentService, SequenceUtil sequenceUtil, EventPublisherService eventPublisherService, CustomerRepository customerRepository, EntityManager entityManager, PaymentMethodMapper paymentMethodMapper) {
         this.invoiceRepository = invoiceRepository;
@@ -150,29 +154,6 @@ public class InvoiceService {
         return eventPublisherService.saveInvoiceEvent(reqNotification).getResp();
     }
 
-    @Transactional(readOnly = true)
-    public DataTablesOutput<InvoiceDTO> getInvoiceByQuerySearch(InvoiceSearchRequestDTO invoiceSearchRequestDTO) {
-        // return itemMapper.toDto(itemRepository.findAll(input));
-        return invoiceMapper.toDto(invoiceRepository.findAll(invoiceSearchRequestDTO.getInput(), (root, query, criteriaBuilder) -> {
-            List<Predicate> predicates = new ArrayList<>();
-             if (invoiceSearchRequestDTO.getClientId() != 0) {
-                 predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("client").get("id"), invoiceSearchRequestDTO.getClientId())));
-             }
-            if (invoiceSearchRequestDTO.getFromDate() != null) {
-                predicates.add(criteriaBuilder.and(criteriaBuilder.greaterThanOrEqualTo(root.get("createdDate"), invoiceSearchRequestDTO.getFromDate())));
-            }
-             if (invoiceSearchRequestDTO.getToDate() != null) {
-                 predicates.add(criteriaBuilder.and(criteriaBuilder.lessThanOrEqualTo(root.get("createdDate"), invoiceSearchRequestDTO.getToDate())));
-             }
-            if (!invoiceSearchRequestDTO.getCustomerId().isEmpty()) {
-                predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("customer").get("identity"), invoiceSearchRequestDTO.getCustomerId())));
-            }
-//            if (!invoiceSearchRequestDTO.getPaymentStatus().equals(null)) {
-//                predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("paymentStatus"), invoiceSearchRequestDTO.getPaymentStatus())));
-//            }
-        return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
-        }));
-    }
     public InvoiceResponseDTO saveInvoice(InvoiceDTO invoiceDTO) {
 
         Invoice invoice = createNewInvoice(invoiceDTO);
@@ -574,7 +555,37 @@ public class InvoiceService {
     }
 
     public DataTablesOutput<InvoiceDTO> get(DataTablesInput input) {
-        return invoiceMapper.toDto(invoiceRepository.findAll(input));
+        return invoiceMapper.toDto(invoiceRepository.findAll(input, (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            List<Long> clientIds = userService.listClientIds(null);
+            predicates.add(criteriaBuilder.and(root.get("client").get("id").in(clientIds)));
+            return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
+        }));
+    }
+
+    @Transactional(readOnly = true)
+    public DataTablesOutput<InvoiceDTO> getInvoiceByQuerySearch(InvoiceSearchRequestDTO invoiceSearchRequestDTO) {
+        // return itemMapper.toDto(itemRepository.findAll(input));
+        return invoiceMapper.toDto(invoiceRepository.findAll(invoiceSearchRequestDTO.getInput(), (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            List<Long> clientIds = userService.listClientIds(invoiceSearchRequestDTO.getClientId());
+            predicates.add(criteriaBuilder.and(root.get("client").get("id").in(clientIds)));
+
+            if (invoiceSearchRequestDTO.getFromDate() != null) {
+                predicates.add(criteriaBuilder.and(criteriaBuilder.greaterThanOrEqualTo(root.get("createdDate"), invoiceSearchRequestDTO.getFromDate())));
+            }
+            if (invoiceSearchRequestDTO.getToDate() != null) {
+                predicates.add(criteriaBuilder.and(criteriaBuilder.lessThanOrEqualTo(root.get("createdDate"), invoiceSearchRequestDTO.getToDate())));
+            }
+            if (StringUtils.isNotEmpty(invoiceSearchRequestDTO.getCustomerId())) {
+                predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("customer").get("identity"), invoiceSearchRequestDTO.getCustomerId())));
+            }
+//            if (!invoiceSearchRequestDTO.getPaymentStatus().equals(null)) {
+//                predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("paymentStatus"), invoiceSearchRequestDTO.getPaymentStatus())));
+//            }
+            return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
+        }));
     }
 
     public List<Object[]> getMonthlyStat( ZonedDateTime lastDate , long clientId ) {

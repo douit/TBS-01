@@ -77,7 +77,7 @@ public class UserService {
     }
 
 
-    public List<Long> listClientIds(long clientId) {
+    public List<Long> listClientIds(Long clientId) {
         List<Long> clientIds = new ArrayList();
         Set<ClientRoleDTO> clientRoleDTO = accountResource.getAccount().getClientRoles();
 
@@ -85,14 +85,9 @@ public class UserService {
             for (ClientRoleDTO clientRole : clientRoleDTO) {
                 clientIds.add(clientRole.getClientId());
             }
-            if (clientId == 0) {
-                return clientIds;
-            } else if (clientIds.contains(clientId)) {
-                clientIds.clear();
-                clientIds.add(clientId);
-            } else {
-                clientIds.clear();
-            }
+        }
+        if (clientId != null && clientId != 0) {
+            clientIds.removeIf(id -> clientId != id);
         }
         return clientIds;
     }
@@ -259,7 +254,7 @@ public class UserService {
                 user.setActivated(userDTO.isActivated());
                 user.setLangKey(userDTO.getLangKey());
                 Set<UserRole> managedRoles = user.getUserRoles();
-                List<Long> clientIdsForAdmin = listClientIds(0);
+                List<Long> clientIdsForAdmin = listClientIds(null);
                 for (Iterator<UserRole> i =  managedRoles.iterator();i.hasNext();) {
                     UserRole userRole = i.next();
                     if(clientIdsForAdmin.contains(userRole.getClient().getId())){
