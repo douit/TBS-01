@@ -197,7 +197,7 @@
                                 </div>
                             </div>
 
-                            <div class="row" [hidden]="!user.id">
+                            <div class="row" >
 
                                 <label class="col-sm-2 col-form-label" jhiTranslate="userManagement.login">Login</label>
                                 <div class="col-sm-7">
@@ -254,7 +254,7 @@
                                     <mat-form-field class="example-full-width has-label"
                                                     [ngClass]="{'has-success':validTextType===true}"
                                                     [ngClass]="displayFieldCss(type, 'text')">
-                                        <input type="text" name="lastName" matInput formControlName="lastName" [disabled]="true">
+                                        <input type="text" name="lastName" matInput formControlName="lastName" >
                                     </mat-form-field>
                                     <!--<div *ngIf="editForm.get('lastName').invalid && (editForm.get('lastName').dirty || editForm.get('lastName').touched)">
                                         <small class="form-text text-danger"

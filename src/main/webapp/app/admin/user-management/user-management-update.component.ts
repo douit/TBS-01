@@ -38,16 +38,16 @@ export class UserMgmtUpdateComponent implements OnInit {
   editForm = this.fb.group({
     id: [null],
     login: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(50), Validators.pattern('^[_.@A-Za-z0-9-]*')]],
-    firstName: ['', [Validators.maxLength(50)]],
-    lastName: ['', [Validators.maxLength(50)]],
-    email: ['', [Validators.minLength(5), Validators.maxLength(254), Validators.email]],
+    firstName: ['', Validators.required,[Validators.maxLength(50)]],
+    lastName: ['', Validators.required, [Validators.maxLength(50)]],
+    email: ['', Validators.required, [Validators.minLength(5), Validators.maxLength(254), Validators.email]],
     activated: [true],
     langKey: [],
     authorities: [],
     roleClient: [],
     roleName: [],
     isInternal: [true],
-    search: []
+    search: ['', Validators.required]
   });
 
   constructor(
@@ -206,6 +206,7 @@ export class UserMgmtUpdateComponent implements OnInit {
   }
 
   save() {
+    this.user.internal=this.isInternal;
     this.isSaving = true;
     this.updateUser(this.user);
     if (this.user.id !== null) {
@@ -306,6 +307,10 @@ export class UserMgmtUpdateComponent implements OnInit {
     this.userService.findLdapUser(this.editForm.controls['search'].value).subscribe(
       res => {
         console.log('Ldap user: ' + JSON.stringify(res));
+        this.editForm.controls['login'].setValue(res.body.userName);
+        this.editForm.controls['firstName'].setValue(res.body.firstName);
+        this.editForm.controls['lastName'].setValue(res.body.lastName);
+        this.editForm.controls['email'].setValue(res.body.userName+"@tamkeentech.sa");
       },
       res => {
         console.log('An error has occurred when get ldap user');

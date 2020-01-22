@@ -2,7 +2,7 @@ import {Component, OnInit} from '@angular/core';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import {HttpErrorResponse, HttpResponse} from '@angular/common/http';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import {FormBuilder, FormControl, FormGroup, FormGroupDirective, NgForm} from '@angular/forms';
+import {FormBuilder, FormControl, FormGroup, FormGroupDirective, NgForm, Validators} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
 import {Observable} from 'rxjs';
 import {filter, map} from 'rxjs/operators';
@@ -60,14 +60,14 @@ export class ItemUpdateComponent implements OnInit {
 
   editForm = this.fb.group({
     id: [],
-    name: [],
+    name: ['', Validators.required],
     description: [],
-    price: [],
+    price: ['', Validators.required],
     defaultQuantity: [],
-    category: [],
-    client: [],
+    category: ['', Validators.required],
+    client: ['', Validators.required],
     taxes:[],
-    code:[]
+    code:['', Validators.required]
   });
 
   constructor(

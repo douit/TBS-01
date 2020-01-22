@@ -25,6 +25,9 @@ public final class Person {
     @Attribute(name="cn")
     private String fullName;
 
+    @Attribute(name="givenName")
+    private String firstName;
+
     @Attribute(name="sn")
     private String lastName;
 
