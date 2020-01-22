@@ -38,9 +38,9 @@ export class UserMgmtUpdateComponent implements OnInit {
   editForm = this.fb.group({
     id: [null],
     login: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(50), Validators.pattern('^[_.@A-Za-z0-9-]*')]],
-    firstName: ['', Validators.required,[Validators.maxLength(50)]],
-    lastName: ['', Validators.required, [Validators.maxLength(50)]],
-    email: ['', Validators.required, [Validators.minLength(5), Validators.maxLength(254), Validators.email]],
+    firstName: ['', [Validators.required,Validators.maxLength(50)]],
+    lastName: ['', [Validators.required, Validators.maxLength(50)]],
+    email: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(254), Validators.email]],
     activated: [true],
     langKey: [],
     authorities: [],
@@ -195,8 +195,8 @@ export class UserMgmtUpdateComponent implements OnInit {
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
+      langKey :user.langKey,
       activated: user.activated,
-      langKey: user.langKey,
       authorities: user.authorities
     });
   }
