@@ -11,6 +11,7 @@ import {filter, map} from 'rxjs/operators';
 import {ClientService} from 'app/client/client.service';
 import {JhiAlertService} from 'ng-jhipster';
 import {TranslateService} from "@ngx-translate/core";
+import {any} from "codelyzer/util/function";
 
 @Component({
   selector: 'app-user-mgmt-update',
@@ -27,23 +28,26 @@ export class UserMgmtUpdateComponent implements OnInit {
   validTextType = false;
   validEmailType = false;
   text: string[];
-  translateAuthorities: string []= [];
+  translateAuthorities: string [] = [];
   role: any = {};
   roleClient: string;
   roleName: string;
   roles: any [] = [];
+  isInternal: boolean = true;
 
   editForm = this.fb.group({
     id: [null],
     login: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(50), Validators.pattern('^[_.@A-Za-z0-9-]*')]],
-    firstName: ['', [Validators.maxLength(50)]],
-    lastName: ['', [Validators.maxLength(50)]],
-    email: ['', [Validators.minLength(5), Validators.maxLength(254), Validators.email]],
+    firstName: ['', Validators.required,[Validators.maxLength(50)]],
+    lastName: ['', Validators.required, [Validators.maxLength(50)]],
+    email: ['', Validators.required, [Validators.minLength(5), Validators.maxLength(254), Validators.email]],
     activated: [true],
     langKey: [],
     authorities: [],
     roleClient: [],
-    roleName: []
+    roleName: [],
+    isInternal: [true],
+    search: ['', Validators.required]
   });
 
   constructor(
@@ -55,7 +59,6 @@ export class UserMgmtUpdateComponent implements OnInit {
     protected clientService: ClientService,
     protected jhiAlertService: JhiAlertService,
     private translateService: TranslateService
-
   ) {
   }
 
@@ -107,6 +110,49 @@ export class UserMgmtUpdateComponent implements OnInit {
     //     map((response: HttpResponse<IClient[]>) => response.body)
     //   )
     //   .subscribe((res: IClient[]) => (this.initClientsAndExistingRoles(res)), (res: HttpErrorResponse) => this.onError(res.message));
+
+    if (this.user.internal || !this.user.id) {
+      this.editForm.controls['login'].disable();
+      this.editForm.controls['firstName'].disable();
+      this.editForm.controls['lastName'].disable();
+      this.editForm.controls['email'].disable();
+    }
+    if (this.user.clientRoles != null) {
+      const that = this;
+      this.user.clientRoles.forEach(function (value) {
+
+        that.userService.getRoleAuthorities(value.roleName.toString()).subscribe(
+          res => {
+            that.text = res;
+
+            that.text.forEach(element => {
+              that.translateAuthorities.push(that.translateService.instant('userManagement.authorities.' + element) + "<br>");
+            });
+          },
+          res => {
+            console.log('An error has occurred when get role authorities');
+          }
+        );
+      });
+    }
+  }
+
+  internalCheckBox(): boolean {
+    if (this.isInternal == true) {
+      this.editForm.controls['login'].enable();
+      this.editForm.controls['firstName'].enable();
+      this.editForm.controls['lastName'].enable();
+      this.editForm.controls['email'].enable();
+      return this.isInternal = false;
+
+    } else {
+      this.editForm.controls['login'].disable();
+      this.editForm.controls['firstName'].disable();
+      this.editForm.controls['lastName'].disable();
+      this.editForm.controls['email'].disable();
+      return this.isInternal = true;
+    }
+
   }
 
   private initClientsAndExistingRoles(res: IClient[]): void {
@@ -160,6 +206,7 @@ export class UserMgmtUpdateComponent implements OnInit {
   }
 
   save() {
+    this.user.internal=this.isInternal;
     this.isSaving = true;
     this.updateUser(this.user);
     if (this.user.id !== null) {
@@ -208,8 +255,8 @@ export class UserMgmtUpdateComponent implements OnInit {
       res => {
         this.text = res;
 
-        this.text.forEach(element=> {
-          this.translateAuthorities.push(this.translateService.instant('userManagement.authorities.'+element)+"<br>");
+        this.text.forEach(element => {
+          this.translateAuthorities.push(this.translateService.instant('userManagement.authorities.' + element) + "<br>");
         });
 
 
@@ -253,5 +300,21 @@ export class UserMgmtUpdateComponent implements OnInit {
         return t;
       }
     }).length > 0;
+  }
+
+  searchLdapUser() {
+    console.log('login val: ' + this.editForm.controls['search'].value);
+    this.userService.findLdapUser(this.editForm.controls['search'].value).subscribe(
+      res => {
+        console.log('Ldap user: ' + JSON.stringify(res));
+        this.editForm.controls['login'].setValue(res.body.userName);
+        this.editForm.controls['firstName'].setValue(res.body.firstName);
+        this.editForm.controls['lastName'].setValue(res.body.lastName);
+        this.editForm.controls['email'].setValue(res.body.userName+"@tamkeentech.sa");
+      },
+      res => {
+        console.log('An error has occurred when get ldap user');
+      }
+    );
   }
 }

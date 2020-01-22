@@ -63,6 +63,7 @@ public class UserDTO {
     private Set<String> authorities;
 
     private Set<ClientRoleDTO> clientRoles;
+    private boolean internal;
 
     public UserDTO(User user) {
         this.id = user.getId();
@@ -71,6 +72,7 @@ public class UserDTO {
         this.lastName = user.getLastName();
         this.email = user.getEmail();
         this.activated = user.isActivated();
+        this.internal = user.isInternal();
         this.imageUrl = user.getImageUrl();
         this.langKey = user.getLangKey();
         this.createdBy = user.getCreatedBy();

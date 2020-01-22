@@ -32,6 +32,8 @@ public class MailService {
 
     private static final String BASE_URL = "baseUrl";
 
+    private static final String LINK = "link";
+
     private final JHipsterProperties jHipsterProperties;
 
     private final JavaMailSender javaMailSender;
@@ -79,6 +81,14 @@ public class MailService {
         Context context = new Context(locale);
         context.setVariable(USER, user);
         context.setVariable(BASE_URL, jHipsterProperties.getMail().getBaseUrl());
+        if(user.isInternal() != true)
+            context.setVariable(LINK, "#/account/reset/finish?key="+user.getResetKey());
+        else
+            context.setVariable(LINK, "#/");
+
+
+
+
         String content = templateEngine.process(templateName, context);
         String subject = messageSource.getMessage(titleKey, null, locale);
         sendEmail(user.getEmail(), subject, content, false, true);

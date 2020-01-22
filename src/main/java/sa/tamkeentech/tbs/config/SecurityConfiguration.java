@@ -10,9 +10,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
+import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -31,7 +34,10 @@ import org.springframework.web.filter.CorsFilter;
 import org.zalando.problem.spring.web.advice.security.SecurityProblemSupport;
 import sa.tamkeentech.tbs.security.APIKeyAuthFilter;
 import sa.tamkeentech.tbs.security.AuthoritiesConstants;
+import sa.tamkeentech.tbs.security.DomainUserDetailsService;
 import sa.tamkeentech.tbs.service.ClientService;
+
+import javax.inject.Inject;
 
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
@@ -64,58 +70,12 @@ public class SecurityConfiguration {
                     return authentication;
                 }
             });
+
             httpSecurity.
                 antMatcher("/billing/**").// change this to invoicesApp ToDO !!!!
                 csrf().disable().
                 sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).
                 and().addFilter(filter).authorizeRequests().anyRequest().authenticated();
-
-            // No open all
-            /*httpSecurity.requestMatchers().
-                // antMatchers(HttpMethod.GET,"/restricgted/get/**","/restricgted2/get/**").
-                antMatchers(HttpMethod.POST,"/billing/createbill**","/api/payments**").
-                //csrf().disable().
-                and().addFilter(filter).csrf().disable().authorizeRequests().anyRequest().authenticated();*/
-
-            // No open all
-            /*httpSecurity.requestMatchers().
-                // antMatchers(HttpMethod.GET,"/restricgted/get/**","/restricgted2/get/**").
-                    antMatchers(HttpMethod.POST,"/billing/createbill**","/api/payments**").
-                and().csrf().disable().
-                addFilter(filter).authorizeRequests().anyRequest().authenticated();*/
-
-            // open all
-            /*httpSecurity.csrf().ignoringAntMatchers("/billing/createbill**","/api/payments**").
-                and().addFilter(filter).csrf().disable().authorizeRequests().anyRequest().authenticated();*/
-            // Build the request matcher for CSFR protection
-
-            /*RequestMatcher csrfRequestMatcher = new RequestMatcher() {
-
-                // Disable CSFR protection on the following urls:
-                private AntPathRequestMatcher[] requestMatchers = {
-                    new AntPathRequestMatcher("/billing/createbill**"),
-                    new AntPathRequestMatcher("/api/payments**")
-                };
-
-                @Override
-                public boolean matches(HttpServletRequest request) {
-                    // If the request match one url the CSFR protection will be disabled
-                    for (AntPathRequestMatcher rm : requestMatchers) {
-                        if (rm.matches(request)) { return false; }
-                    }
-                    return true;
-                } // method matches
-
-            }; // new RequestMatcher
-*/
-
-            /*httpSecurity
-                // Disable the csrf protection on some request matches
-                .csrf()
-                .requireCsrfProtectionMatcher(csrfRequestMatcher)
-
-                .and().addFilter(filter).csrf().disable().authorizeRequests().anyRequest().authenticated();*/
-
         }
     }
 
@@ -129,11 +89,17 @@ public class SecurityConfiguration {
         private final CorsFilter corsFilter;
         private final SecurityProblemSupport problemSupport;
 
-        public WebSecurityConfiguration(JHipsterProperties jHipsterProperties, RememberMeServices rememberMeServices, CorsFilter corsFilter, SecurityProblemSupport problemSupport) {
+        private final DomainUserDetailsService domainUserDetailsService;
+
+        private final Environment env;
+
+        public WebSecurityConfiguration(JHipsterProperties jHipsterProperties, RememberMeServices rememberMeServices, CorsFilter corsFilter, SecurityProblemSupport problemSupport, DomainUserDetailsService domainUserDetailsService, Environment env) {
             this.jHipsterProperties = jHipsterProperties;
             this.rememberMeServices = rememberMeServices;
             this.corsFilter = corsFilter;
             this.problemSupport = problemSupport;
+            this.domainUserDetailsService = domainUserDetailsService;
+            this.env = env;
         }
 
         @Bean
@@ -220,6 +186,29 @@ public class SecurityConfiguration {
                 .antMatchers("/management/prometheus").permitAll()
                 .antMatchers("/management/**").hasAuthority(AuthoritiesConstants.ADMIN);
             // @formatter:on
+        }
+
+        // LDAP
+        @Inject
+        public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+            auth.userDetailsService(domainUserDetailsService).passwordEncoder(passwordEncoder())
+                .and().ldapAuthentication().userSearchBase("") //don't add the base
+                .userSearchFilter("(sAMAccountName={0})")
+                // .groupSearchBase("ou=Groups") //don't add the base
+                // .groupSearchFilter("member={0}")
+                .contextSource(getContextSource());
+        }
+
+        @Bean
+        public LdapContextSource getContextSource() {
+            LdapContextSource contextSource = new LdapContextSource();
+            contextSource.setUrl(env.getProperty("spring.ldap.urls"));
+            contextSource.setBase(env.getProperty("spring.ldap.base"));
+            contextSource.setUserDn(env.getProperty("spring.ldap.username"));
+            contextSource.setPassword(env.getProperty("spring.ldap.password"));
+            contextSource.afterPropertiesSet(); //needed otherwise you will have a NullPointerException in spring
+
+            return contextSource;
         }
     }
 }

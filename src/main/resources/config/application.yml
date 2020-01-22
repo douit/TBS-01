@@ -98,6 +98,13 @@ spring:
         size: 2
   thymeleaf:
     mode: HTML
+#  https://dzone.com/articles/spring-ldap
+  ldap:
+    urls: ldap://10.60.73.203:389
+#    base: OU=HDFBS,DC=HDFBS,DC=LOCAL
+    base: OU=Tamkeen,OU=HDFBS,DC=HDFBS,DC=LOCAL
+    username: svc-belling
+    password: Bellpaw$$44
 
 server:
   servlet:

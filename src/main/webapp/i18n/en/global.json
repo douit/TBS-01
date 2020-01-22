@@ -55,7 +55,9 @@
       "confirmpassword.label": "New password confirmation",
       "confirmpassword.placeholder": "Confirm the new password",
       "email.label": "Email",
-      "email.placeholder": "Your email"
+      "email.placeholder": "Your email",
+      "searchUser.label":"Search",
+      "searchUser.placeholder": "Search for user"
     },
     "messages": {
       "info": {
@@ -141,7 +143,8 @@
       "edit": "Edit",
       "open": "Open",
       "save": "Save",
-      "view": "View"
+      "view": "View",
+      "search": "Search"
     },
     "detail": {
       "field": "Field",
@@ -168,7 +171,7 @@
     "internalServerError": "Internal server error",
     "server.not.reachable": "Server not reachable",
     "url.not.found": "Not found",
-    "NotNull": "Field {{ fieldName }} cannot be empty!",
+    "NotNull": "Field cannot be empty!",
     "Size": "Field {{ fieldName }} does not meet min/max size requirements!",
     "userexists": "Login name already used!",
     "emailexists": "Email is already in use!",

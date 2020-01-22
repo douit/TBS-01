@@ -20,6 +20,7 @@
     "lastName": "Last name",
     "email": "Email",
     "activated": "Activated",
+    "internal": "Internal",
     "deactivated": "Deactivated",
     "profiles": "Profiles",
     "langKey": "Language",

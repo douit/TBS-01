@@ -1,17 +1,13 @@
 package sa.tamkeentech.tbs.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import sa.tamkeentech.tbs.config.Constants;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.apache.commons.lang3.StringUtils;
-import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-
+import sa.tamkeentech.tbs.config.Constants;
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
@@ -19,9 +15,7 @@ import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.Collection;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -70,6 +64,10 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @NotNull
     @Column(nullable = false)
     private boolean activated = false;
+
+    @NotNull
+    @Column(nullable = false)
+    private boolean internal = false;
 
     @Size(min = 2, max = 10)
     @Column(name = "lang_key", length = 10)

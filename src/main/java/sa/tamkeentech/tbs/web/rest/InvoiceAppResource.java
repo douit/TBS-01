@@ -1,6 +1,7 @@
 package sa.tamkeentech.tbs.web.rest;
 
 import io.github.jhipster.web.util.HeaderUtil;
+import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +16,7 @@ import sa.tamkeentech.tbs.web.rest.errors.BadRequestAlertException;
 import javax.validation.Valid;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Optional;
 
 /**
  * REST controller for managing {@link sa.tamkeentech.tbs.domain.Invoice}.
@@ -82,7 +84,7 @@ public class InvoiceAppResource {
     }
 
     @GetMapping("/billing/getBillbyBillNumber")
-    public ResponseEntity<InvoiceStatusDTO> getInvoice(@RequestParam Long billNumber) throws URISyntaxException {
+    public ResponseEntity<InvoiceStatusDTO> getInvoiceStatus(@RequestParam Long billNumber) throws URISyntaxException {
         InvoiceStatusDTO result = invoiceService.getOneItemInvoice(billNumber);
         return ResponseEntity.created(new URI("/billing/getBillbyBillNumber" + result.getBillNumber()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, billNumber.toString()))
@@ -103,5 +105,11 @@ public class InvoiceAppResource {
         return new ResponseEntity<InvoiceResponseDTO>(resp,  HttpStatus.OK);
     }
 
+    @GetMapping("/billing/invoice/{id}")
+    public ResponseEntity<InvoiceDTO> getInvoice(@PathVariable Long id) {
+        log.debug("REST request to get Invoice : {}", id);
+        Optional<InvoiceDTO> invoiceDTO = invoiceService.findOne(id);
+        return ResponseUtil.wrapOrNotFound(invoiceDTO);
+    }
 
 }
