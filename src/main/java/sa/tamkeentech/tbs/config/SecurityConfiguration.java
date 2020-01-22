@@ -5,14 +5,13 @@ import io.github.jhipster.security.AjaxAuthenticationFailureHandler;
 import io.github.jhipster.security.AjaxAuthenticationSuccessHandler;
 import io.github.jhipster.security.AjaxLogoutSuccessHandler;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
-import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -92,12 +91,15 @@ public class SecurityConfiguration {
 
         private final DomainUserDetailsService domainUserDetailsService;
 
-        public WebSecurityConfiguration(JHipsterProperties jHipsterProperties, RememberMeServices rememberMeServices, CorsFilter corsFilter, SecurityProblemSupport problemSupport, DomainUserDetailsService domainUserDetailsService) {
+        private final Environment env;
+
+        public WebSecurityConfiguration(JHipsterProperties jHipsterProperties, RememberMeServices rememberMeServices, CorsFilter corsFilter, SecurityProblemSupport problemSupport, DomainUserDetailsService domainUserDetailsService, Environment env) {
             this.jHipsterProperties = jHipsterProperties;
             this.rememberMeServices = rememberMeServices;
             this.corsFilter = corsFilter;
             this.problemSupport = problemSupport;
             this.domainUserDetailsService = domainUserDetailsService;
+            this.env = env;
         }
 
         @Bean
@@ -200,10 +202,10 @@ public class SecurityConfiguration {
         @Bean
         public LdapContextSource getContextSource() {
             LdapContextSource contextSource = new LdapContextSource();
-            contextSource.setUrl("ldap://10.60.73.203:389");
-            contextSource.setBase("OU=Tamkeen,OU=HDFBS,DC=HDFBS,DC=LOCAL");
-            contextSource.setUserDn("svc-belling");
-            contextSource.setPassword("Bellpaw$$44");
+            contextSource.setUrl(env.getProperty("spring.ldap.urls"));
+            contextSource.setBase(env.getProperty("spring.ldap.base"));
+            contextSource.setUserDn(env.getProperty("spring.ldap.username"));
+            contextSource.setPassword(env.getProperty("spring.ldap.password"));
             contextSource.afterPropertiesSet(); //needed otherwise you will have a NullPointerException in spring
 
             return contextSource;
