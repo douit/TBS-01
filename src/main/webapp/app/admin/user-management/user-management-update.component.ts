@@ -34,11 +34,12 @@ export class UserMgmtUpdateComponent implements OnInit {
   roleName: string;
   roles: any [] = [];
   isInternal: boolean = true;
+  ldapDateEmpty: boolean = true;
 
   editForm = this.fb.group({
     id: [null],
     login: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(50), Validators.pattern('^[_.@A-Za-z0-9-]*')]],
-    firstName: ['', [Validators.required,Validators.maxLength(50)]],
+    firstName: ['', [Validators.required, Validators.maxLength(50)]],
     lastName: ['', [Validators.required, Validators.maxLength(50)]],
     email: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(254), Validators.email]],
     activated: [true],
@@ -47,7 +48,8 @@ export class UserMgmtUpdateComponent implements OnInit {
     roleClient: [],
     roleName: [],
     isInternal: [true],
-    search: ['', Validators.required]
+    search: ['']
+    // , Validators.required
   });
 
   constructor(
@@ -62,7 +64,6 @@ export class UserMgmtUpdateComponent implements OnInit {
   ) {
   }
 
-
   displayFieldCss(form: FormGroup, field: string) {
     return {
       'has-error': this.isFieldValid(form, field),
@@ -75,6 +76,7 @@ export class UserMgmtUpdateComponent implements OnInit {
   }
 
   ngOnInit() {
+
     this.isSaving = false;
     this.route.data.subscribe(({user}) => {
       this.user = user.body ? user.body : user;
@@ -87,6 +89,10 @@ export class UserMgmtUpdateComponent implements OnInit {
       }
       this.updateForm(this.user);
     });
+    const searchControl = this.editForm.get('search');
+    if (this.isInternal == true && !this.user.id) {
+      searchControl.setValidators([Validators.required]);
+    }
     this.authorities = [];
     this.userService.authorities().subscribe(authorities => {
       this.authorities = authorities;
@@ -195,7 +201,7 @@ export class UserMgmtUpdateComponent implements OnInit {
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
-      langKey :user.langKey,
+      langKey: user.langKey,
       activated: user.activated,
       authorities: user.authorities
     });
@@ -206,7 +212,7 @@ export class UserMgmtUpdateComponent implements OnInit {
   }
 
   save() {
-    this.user.internal=this.isInternal;
+    this.user.internal = this.isInternal;
     this.isSaving = true;
     this.updateUser(this.user);
     if (this.user.id !== null) {
@@ -310,7 +316,8 @@ export class UserMgmtUpdateComponent implements OnInit {
         this.editForm.controls['login'].setValue(res.body.userName);
         this.editForm.controls['firstName'].setValue(res.body.firstName);
         this.editForm.controls['lastName'].setValue(res.body.lastName);
-        this.editForm.controls['email'].setValue(res.body.userName+"@tamkeentech.sa");
+        this.editForm.controls['email'].setValue(res.body.userName + "@tamkeentech.sa");
+        this.ldapDateEmpty =false;
       },
       res => {
         console.log('An error has occurred when get ldap user');
