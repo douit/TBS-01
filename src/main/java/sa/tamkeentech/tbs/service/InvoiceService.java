@@ -138,6 +138,12 @@ public class InvoiceService {
             .map(invoiceMapper::toDto);
     }
 
+    public Optional<InvoiceDTO> findByAccountId(Long id) {
+        log.debug("Request to get Invoice by findByAccountId : {}", id);
+        return invoiceRepository.findByAccountId(id)
+            .map(invoiceMapper::toDto);
+    }
+
     /**
      * Delete the invoice by id.
      *

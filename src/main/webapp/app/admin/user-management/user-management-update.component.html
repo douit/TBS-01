@@ -360,7 +360,7 @@
                                                 <mat-select class="form-control" id="field_roleClient" name="roleClient"
                                                             formControlName="roleClient" [(value)]="roleClient">
                                                     <mat-option [value]="clientOption"
-                                                                *ngFor="let clientOption of filtredClients; trackBy: trackClientById">{{clientOption.name}}</mat-option>
+                                                                *ngFor="let clientOption of filtredClients;">{{clientOption.name}}</mat-option>
                                                 </mat-select>
                                             </mat-form-field>
                                         </div>

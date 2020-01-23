@@ -10,6 +10,7 @@ declare var $: any;
   templateUrl: './password-reset-finish.component.html'
 })
 export class PasswordResetFinishComponent implements OnInit, OnDestroy, AfterViewInit {
+  test: Date = new Date();
   doNotMatch: string;
   error: string;
   keyMissing: boolean;
