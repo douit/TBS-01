@@ -438,7 +438,7 @@ public class PaymentService {
             invoice.get().setStatus(InvoiceStatus.CLIENT_NOTIFIED);
             invoiceRepository.save(invoice.get());
         } else {
-            log.info("----Issue Client update: " + ((response2.getBody()!= null)? response2.getBody().getStatusId(): "Empty body"));
+            log.info("----Issue Client update: {} -- status code: {}", ((response2.getBody()!= null)? response2.getBody().getStatusId(): "Empty body"), response2.getStatusCode());
         }
 
 
