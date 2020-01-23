@@ -1,6 +1,7 @@
 {
   "report": {
     "paymentReport": "Payment Reports",
+    "refundReport": "Refund Reports",
     "requestDate": "Request date",
     "generatedDate": "Generated date",
     "expireDate": "Expire date",

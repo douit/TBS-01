@@ -1,11 +1,14 @@
 package sa.tamkeentech.tbs.service.mapper;
 
+import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.*;
 import sa.tamkeentech.tbs.service.dto.RefundDTO;
 
 import org.mapstruct.*;
 import sa.tamkeentech.tbs.service.dto.RefundDetailedDTO;
+import sa.tamkeentech.tbs.service.util.CommonUtils;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +25,16 @@ public interface RefundMapper extends EntityMapper<RefundDTO, Refund> {
 
     @Mapping(source = "refund.payment.invoice.accountId", target = "accountId")
     @Mapping(source = "refund.payment.invoice.customer.identity", target = "customerId")
+    @Mapping(source = "refund.payment.invoice.client.name", target = "clientName")
+    @Mapping(source = "refund.payment.paymentMethod", target = "paymentMethod")
+    @Mapping(source = "refund.payment.amount", target = "amount")
+    @Mapping(source = "lastModifiedDate", target = "formattedModifiedDate", qualifiedByName = "modifiedDateToDto")
     RefundDetailedDTO toDetailedDto(Refund refund);
+
+    @Named("modifiedDateToDto")
+    default String formatModifiedDate(ZonedDateTime modifiedDate) {
+        return CommonUtils.getFormattedLocalDate(modifiedDate, Constants.RIYADH_OFFSET);
+    }
 
     default List<RefundDetailedDTO> toDetailedDto(List<Refund> entityList) {
         if ( entityList == null ) {

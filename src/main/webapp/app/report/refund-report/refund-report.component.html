@@ -1,0 +1,231 @@
+<div class="main-content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <!--<div class="row">-->
+
+                    <div class="card-header card-header-text card-header-primary" data-background-color="primary-one">
+                        <div class="card-text">
+                            <h4 id="page-heading">
+                                <span jhiTranslate="report.refundReport">Refund Reports</span>
+                            </h4>
+                        </div>
+                    </div>
+
+
+                    <!--<div class="col-sm-12">
+                        <div class="pull-right ">
+                            <button [routerLink]="['/item/new']" id="jh-create-entity"
+                                    class="btn btn-success btn-round btn-fab btn-fab-mini"
+                                    title="Add Item">
+                                <i class="material-icons">add</i>
+                            </button>
+                        </div>
+                    </div>-->
+
+
+                    <br/>
+
+                    <div class="data-table-alert">
+                        <jhi-alert></jhi-alert>
+                    </div>
+
+                    <div class="card-content">
+                        <br/><br/>
+                        <!--<div class="alert alert-warning" *ngIf="items?.length === 0">
+                            <span jhiTranslate="tbsApp.item.home.notFound">No items found</span>
+                        </div>-->
+
+                        <div class="datatable-wrapper">
+
+                            <div class="row justify-content-end dashboard-filter">
+                                <div class="form-group hidden">
+                                    <div class="input-group">
+                                        <input name="datepicker" id="datepicker1"
+                                               class="form-control"
+                                               ngbDatepicker
+                                               #datepicker="ngbDatepicker"
+                                               [autoClose]="'outside'"
+                                               (dateSelect)="onDateSelection($event, datepicker)"
+                                               [displayMonths]="2"
+                                               [dayTemplate]="t"
+                                               outsideDays="hidden"
+                                               [maxDate]="maxDate"
+                                               [startDate]="startDate">
+                                        <ng-template #t let-date let-focused="focused" let-disabled="disabled">
+                                        <span class="custom-day"
+                                              [class.focused]="focused"
+                                              [class.range]="isRange(date)"
+                                              [class.faded]="isHovered(date) || isInside(date)"
+                                              (mouseenter)="hoveredDate = date"
+                                              (mouseleave)="hoveredDate = null"
+                                              [class.text-muted]="disabled">
+                                            {{ date.day }}
+                                        </span>
+                                        </ng-template>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-2 dashboard-filter-element">
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <input #dpFromDate
+                                                   class="form-control" placeholder="Start date"
+                                                   name="dpFromDate"
+                                                   [value]="formatter.format(fromDate)"
+                                                   (input)="fromDate = validateInput(fromDate, dpFromDate.value)">
+                                            <div class="input-group-append">
+                                                <button class="calendar-icon calendar fa fa-calendar "
+                                                        (click)="datepicker.toggle()"
+                                                        type="button"></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-2 dashboard-filter-element">
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <input #dpToDate
+                                                   class="form-control" placeholder="End date"
+                                                   name="dpToDate"
+                                                   [value]="formatter.format(toDate)"
+                                                   (input)="toDate = validateInput(toDate, dpToDate.value)">
+                                            <div class="input-group-append">
+                                                <button class="calendar-icon calendar fa fa-calendar"
+                                                        (click)="datepicker.toggle()"
+                                                        type="button"></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <div class="col-md-2 dashboard-filter-element">
+                                    <mat-form-field>
+                                        <mat-label *ngIf="selectedClient == null">Select Client</mat-label>
+                                        <!--<mat-label *ngIf="selectedClient != null">{{selectedClient.name}}</mat-label>-->
+                                        <mat-select class="form-control" id="field_client" name="clint"
+                                                    [(value)]="selectedClient">
+                                            <mat-option [value]="null">None</mat-option>
+                                            <mat-option [value]="clientOption"
+                                                        *ngFor="let clientOption of clients; trackBy: trackClientById">{{clientOption.name}}</mat-option>
+                                        </mat-select>
+                                    </mat-form-field>
+                                </div>
+
+                                <div class="col-md-4 dashboard-filter-element">
+                                    <form class="navbar-form">
+                                        <div class="input-group no-border">
+                                            <button type="button" class="btn btn-primary" (click)="generateReport()" [disabled]="busy">Generate Report</button>
+                                            <button type="button" class="btn btn-danger" (click)="clearReportFilters()" [disabled]="busy">Reset</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <br>
+
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <div class="datatable-length">
+                                        <div class="form-group label-floating">
+                                            <label class="control-label">{{ 'global.datatable.show_entries' | translate }}</label>
+                                            <mat-form-field>
+                                                <mat-select name="length" [(ngModel)]="datatable.length" (ngModelChange)="onPageSizeChanged()">
+                                                    <mat-option [value]=10>10</mat-option>
+                                                    <mat-option [value]=25>25</mat-option>
+                                                    <mat-option [value]=50>50</mat-option>
+                                                    <mat-option [value]=100>100</mat-option>
+                                                </mat-select>
+                                            </mat-form-field>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4" align="center">
+                                    <form class="form-inline">
+                                        <div class="form-group label-floating">
+                                            <label class="control-label">{{ 'global.datatable.search' | translate }}</label>
+                                            <input name="search" [(ngModel)]="datatable.search" type="text" class="form-control" style="padding-left: 5px;">
+                                        </div>
+                                        <button (click)="search()" class="btn btn-just-icon btn-info-second btn-round">
+                                            <i class="material-icons">search</i>
+                                        </button>
+                                        <button (click)="clearSearch()" class="btn btn-just-icon btn-round btn-info-second">
+                                            <i class="material-icons">clear</i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <div class="loader" *ngIf="busy">
+                                        <svg class="circular" viewBox="25 25 50 50">
+                                            <circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="2" stroke-miterlimit="10" />
+                                        </svg>
+                                    </div>
+
+                                    <div class="app-ngx-datatable-wrapper">
+                                        <ngx-datatable #table class="app-ngx-datatable" [columns]="datatable.visibleColumns" [headerHeight]="'auto'" [rowHeight]="'auto'" [summaryHeight]="'auto'" [summaryRow]="false" [summaryPosition]="'bottom'" [columnMode]="'flex'" [rows]="datatable.data" [footerHeight]="65" [externalPaging]="true" [externalSorting]="true" [count]="datatable.recordsFiltered" [limit]="datatable.length" (page)="onPageChanged($event)" (sort)="onSortChanged($event)">
+
+                                            <ngx-datatable-footer #footerRef>
+                                                <ng-template #pagerTempRef ngx-datatable-footer-template let-rowCount="rowCount" let-selectedCount="selectedCount" let-offset="offset" let-pageSize="pageSize" let-curPage="curPage">
+                                                    <div class="total-entries">
+                                                        <app-datatable-total-entries [rowCount]="rowCount" [offset]="offset" [pageSize]="pageSize" [curPage]="curPage">
+                                                        </app-datatable-total-entries>
+                                                    </div>
+                                                    <div class="datatable-pagination">
+                                                        <datatable-pager #pagerRef [pagerLeftArrowIcon]="'fa fa-angle-left'" [pagerRightArrowIcon]="'fa fa-angle-right'" [pagerPreviousIcon]="'fa fa-angle-double-left'" [pagerNextIcon]="'fa fa-angle-double-right'" [page]="curPage" [size]="pageSize" [count]="rowCount" (change)="table.onFooterPage($event)">
+                                                        </datatable-pager>
+                                                    </div>
+                                                </ng-template>
+                                            </ngx-datatable-footer>
+
+                                        </ngx-datatable>
+
+                                        <ng-template #headerTemplate let-column="column">
+                                            <span>{{ column.name }}</span>
+                                        </ng-template>
+
+                                        <ng-template #rowTemplate let-value="value">
+                                            <span>{{ value }}</span>
+                                        </ng-template>
+
+                                        <ng-template #reportStatusRowTemplate let-row="row">
+                                            <div class="badge" [ngClass]="{
+                                                    'badge-warning': row.status == 'WAITING',
+                                                    'badge-success': row.status == 'READY',
+                                                    'badge-danger': row.status == 'FAILED'
+                                                }">
+                                                {{ 'report.reportStatus.' + row.status |
+                                                translate }}
+                                            </div>
+                                        </ng-template>
+
+                                        <ng-template #dateTemplate let-value="value">
+                                            <span *ngIf="value">{{ value | tbsDateTime }}</span>
+                                            <span *ngIf="!value"> {{ 'report.notReady' | translate }}</span>
+                                        </ng-template>
+
+                                        <ng-template #actionsRowTemplate let-row="row">
+                                            <div class="btn-group">
+                                                <button class="btn btn-primary  btn-link" matTooltip="{{ 'global.datatable.download' | translate }}"
+                                                        [matTooltipPosition]="'above'" (click)="downloadReport(row.id)" [disabled]=" row.status != 'READY'">
+                                                    <i class="material-icons">save_alt</i>
+                                                </button>
+                                            </div>
+                                        </ng-template>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

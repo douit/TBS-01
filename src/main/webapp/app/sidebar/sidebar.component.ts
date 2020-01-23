@@ -77,11 +77,20 @@ export class SidebarComponent implements OnInit {
         icontype: 'timeline',
         collapse: 'report',
         children: [
-          {path: 'payment-report',
+          {
+            path: 'payment-report',
             title: 'Payments',
             authorities: [AuthConsts.VIEW_REPORT],
             icontype: 'list',
-            ab: ''}
+            ab: ''
+          },
+          {
+            path: 'refund-report',
+            title: 'Refunds',
+            authorities: [AuthConsts.VIEW_REPORT],
+            icontype: 'list',
+            ab: ''
+          }
         ]
     },
     {

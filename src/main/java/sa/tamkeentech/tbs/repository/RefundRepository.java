@@ -24,8 +24,6 @@ public interface RefundRepository extends JpaRepository<Refund, Long>, DataTable
         "FROM refund WHERE status != 'PAID' ", nativeQuery = true)
     public BigDecimal amountRefund();
 
-    Optional<Refund> findByRefundId(String refundId);
-
     @Modifying
     @Transactional
     @Query("update Refund r set r.status = ?2 where r.id = ?1")

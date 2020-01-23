@@ -15,7 +15,7 @@ import java.math.BigDecimal;
 /**
  * A DTO for the {@link sa.tamkeentech.tbs.domain.Refund} entity.
  */
-@ApiModel(description = "Refund DTO.")
+@ApiModel(description = "Refund Detailed DTO.")
 @Data
 @Builder
 @AllArgsConstructor
@@ -32,4 +32,12 @@ public class RefundDetailedDTO implements Serializable {
     private RequestStatus status;
 
     // ...
+    // private Long refundId;
+
+    // reporting
+    private String formattedModifiedDate;
+    private String bankId;
+    private String clientName;
+    private PaymentMethodDTO paymentMethod;
+
 }

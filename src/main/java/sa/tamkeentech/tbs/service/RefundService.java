@@ -24,6 +24,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.*;
+import sa.tamkeentech.tbs.domain.enumeration.IdentityType;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 import sa.tamkeentech.tbs.domain.enumeration.RequestStatus;
 import sa.tamkeentech.tbs.repository.FileSyncLogRepository;
@@ -178,7 +179,7 @@ public class RefundService {
         Customer customer =invoice.getCustomer();
         refundInfo.put("refundId", refund.getId());
         refundInfo.put("customerId", customer.getIdentity());
-        refundInfo.put("customerIdType", customer.getIdentityType().name());
+        refundInfo.put("customerIdType", (customer.getIdentityType() != null)? customer.getIdentityType().name(): IdentityType.NAT.name());
         refundInfo.put("amount", refund.getPayment().getAmount());
         refundInfo.put("paymetTransactionId", refund.getPayment().getTransactionId());
         Calendar c = Calendar.getInstance();
@@ -379,7 +380,7 @@ public class RefundService {
                         Node refundInfoNode = ((Element) refundRecordNode).getElementsByTagName("ReconRefundInfo").item(0);
                         String refundId = ((Element) refundInfoNode).getElementsByTagName("RefundId")
                             .item(0).getChildNodes().item(0).getNodeValue();
-                        Optional<Refund> refund = refundRepository.findByRefundId(refundId);
+                        Optional<Refund> refund = refundRepository.findById(Long.parseLong(refundId));
                         if(refund.isPresent() && refund.get().getStatus() == RequestStatus.PENDING) {
                             RefundDTO refundDTO = refundMapper.toDto(refund.get());
                             updateSadadRefundAndSendEvent(refundDTO);

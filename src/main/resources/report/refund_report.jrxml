@@ -7,25 +7,23 @@
 	<parameter name="endDate" class="java.lang.String"/>
 	<parameter name="numberOfRefunds" class="java.lang.Integer"/>
 	<parameter name="totalRefundsAmount" class="java.math.BigDecimal"/>
-	<field name="invoice" class="sa.tamkeentech.tbs.service.dto.InvoiceDTO">
-		<property name="accountId" value=""/>
-		<property name="taxFees" value=""/>
-		<property name="customer" value=""/>
-		<property name="client" value=""/>
-	</field>
 	<field name="paymentMethod" class="sa.tamkeentech.tbs.service.dto.PaymentMethodDTO">
 		<property name="id" value=""/>
 		<property name="name" value=""/>
 	</field>
-	<field name="status" class="sa.tamkeentech.tbs.domain.enumeration.PaymentStatus"/>
+	<field name="status" class="sa.tamkeentech.tbs.domain.enumeration.RequestStatus"/>
 	<field name="amount" class="java.math.BigDecimal"/>
 	<field name="formattedModifiedDate" class="java.lang.String"/>
+	<field name="customerId" class="java.lang.String"/>
+	<field name="clientName" class="java.lang.String"/>
+	<field name="accountId" class="java.lang.Long"/>
+	<field name="id" class="java.lang.Long"/>
 	<field name="bankId" class="java.lang.String"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="150" splitType="Stretch">
+		<band height="149" splitType="Stretch">
 			<staticText>
 				<reportElement mode="Opaque" x="0" y="0" width="940" height="30" backcolor="#F0F0F0" uuid="2fbfcd07-4ad3-454e-af72-bf22bc1b69b8"/>
 				<box>
@@ -208,7 +206,7 @@
 	<pageHeader>
 		<band height="45" splitType="Stretch">
 			<staticText>
-				<reportElement mode="Opaque" x="360" y="10" width="90" height="35" backcolor="#F0F0F0" uuid="fedc8986-d7a1-487a-8ff3-03b2a8dcc5b5"/>
+				<reportElement mode="Opaque" x="550" y="10" width="90" height="35" backcolor="#F0F0F0" uuid="fedc8986-d7a1-487a-8ff3-03b2a8dcc5b5"/>
 				<box>
 					<topPen lineWidth="0.5"/>
 					<leftPen lineWidth="0.5"/>
@@ -247,7 +245,7 @@
 				<text><![CDATA[Customer]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="160" y="10" width="100" height="35" backcolor="#F0F0F0" uuid="24463eee-a8e5-47fa-9562-912d7e27bc56"/>
+				<reportElement mode="Opaque" x="350" y="10" width="100" height="35" backcolor="#F0F0F0" uuid="24463eee-a8e5-47fa-9562-912d7e27bc56"/>
 				<box>
 					<topPen lineWidth="0.5"/>
 					<leftPen lineWidth="0.5"/>
@@ -260,7 +258,7 @@
 				<text><![CDATA[Date]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="540" y="10" width="100" height="35" backcolor="#F0F0F0" uuid="8e260fee-4ce8-411f-9cc9-3ab78a852bb9"/>
+				<reportElement mode="Opaque" x="170" y="10" width="100" height="35" backcolor="#F0F0F0" uuid="8e260fee-4ce8-411f-9cc9-3ab78a852bb9"/>
 				<box>
 					<topPen lineWidth="0.5"/>
 					<leftPen lineWidth="0.5"/>
@@ -273,7 +271,7 @@
 				<text><![CDATA[Status]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="260" y="10" width="100" height="35" backcolor="#F0F0F0" uuid="ec19b065-dedb-456f-b98c-427bf829441a"/>
+				<reportElement mode="Opaque" x="450" y="10" width="100" height="35" backcolor="#F0F0F0" uuid="ec19b065-dedb-456f-b98c-427bf829441a"/>
 				<box>
 					<topPen lineWidth="0.5"/>
 					<leftPen lineWidth="0.5"/>
@@ -286,7 +284,7 @@
 				<text><![CDATA[Time]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="450" y="10" width="90" height="35" backcolor="#F0F0F0" uuid="85735a2f-ce69-40f3-8bba-4a5e72056a18"/>
+				<reportElement mode="Opaque" x="80" y="10" width="90" height="35" backcolor="#F0F0F0" uuid="85735a2f-ce69-40f3-8bba-4a5e72056a18"/>
 				<box>
 					<topPen lineWidth="0.5"/>
 					<leftPen lineWidth="0.5"/>
@@ -296,10 +294,10 @@
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="12" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Vat]]></text>
+				<text><![CDATA[Refund Id]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="80" y="10" width="80" height="35" backcolor="#F0F0F0" uuid="bf39e474-f881-4e84-b831-2af86402d234"/>
+				<reportElement mode="Opaque" x="270" y="10" width="80" height="35" backcolor="#F0F0F0" uuid="bf39e474-f881-4e84-b831-2af86402d234"/>
 				<box>
 					<topPen lineWidth="0.5"/>
 					<leftPen lineWidth="0.5"/>
@@ -342,7 +340,7 @@
 	<detail>
 		<band height="30" splitType="Stretch">
 			<textField isBlankWhenNull="true">
-				<reportElement x="360" y="0" width="90" height="30" uuid="bd480cfe-5334-4e3b-aa32-ae5819ac053e"/>
+				<reportElement x="550" y="0" width="90" height="30" uuid="bd480cfe-5334-4e3b-aa32-ae5819ac053e"/>
 				<box>
 					<topPen lineWidth="0.5"/>
 					<leftPen lineWidth="0.5"/>
@@ -372,10 +370,10 @@
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$F{invoice}.getCustomer().getIdentity()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{customerId}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="160" y="0" width="100" height="30" uuid="3f14bbda-08bb-485a-bdd7-817a4b637bf6"/>
+				<reportElement x="350" y="0" width="100" height="30" uuid="3f14bbda-08bb-485a-bdd7-817a4b637bf6"/>
 				<box>
 					<topPen lineWidth="0.5"/>
 					<leftPen lineWidth="0.5"/>
@@ -386,7 +384,7 @@
 				<textFieldExpression><![CDATA[$F{formattedModifiedDate}.toString().substring(0,10)]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="540" y="0" width="100" height="30" uuid="42249d50-e311-4d82-825d-1264f3852641"/>
+				<reportElement x="170" y="0" width="100" height="30" uuid="42249d50-e311-4d82-825d-1264f3852641"/>
 				<box>
 					<topPen lineWidth="0.5"/>
 					<leftPen lineWidth="0.5"/>
@@ -397,7 +395,7 @@
 				<textFieldExpression><![CDATA[$F{status}.name().replaceAll("_", " ")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="260" y="0" width="100" height="30" uuid="90982fb0-cbb7-461d-b384-61c2e20ee8a1"/>
+				<reportElement x="450" y="0" width="100" height="30" uuid="90982fb0-cbb7-461d-b384-61c2e20ee8a1"/>
 				<box>
 					<topPen lineWidth="0.5"/>
 					<leftPen lineWidth="0.5"/>
@@ -408,7 +406,7 @@
 				<textFieldExpression><![CDATA[$F{formattedModifiedDate}.toString().substring(13,18)]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="450" y="0" width="90" height="30" uuid="6067ed33-3c7b-410a-a126-82666f08862d"/>
+				<reportElement x="80" y="0" width="90" height="30" uuid="6067ed33-3c7b-410a-a126-82666f08862d"/>
 				<box>
 					<topPen lineWidth="0.5"/>
 					<leftPen lineWidth="0.5"/>
@@ -416,7 +414,7 @@
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[($F{invoice}.getTaxFees() != null)? $F{invoice}.getTaxFees(): "0"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{id}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="0" y="0" width="80" height="30" uuid="aecbdbf7-71be-47fc-8bfd-3b3e3316198b"/>
@@ -427,10 +425,10 @@
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$F{invoice}.getAccountId()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{accountId}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="80" y="0" width="80" height="30" uuid="fd4ee547-894d-4d47-aeec-9de826b0c26a"/>
+				<reportElement x="270" y="0" width="80" height="30" uuid="fd4ee547-894d-4d47-aeec-9de826b0c26a"/>
 				<box>
 					<topPen lineWidth="0.5"/>
 					<leftPen lineWidth="0.5"/>
@@ -438,7 +436,7 @@
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$F{invoice}.getClient().getName()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{clientName}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="840" y="0" width="100" height="30" uuid="24ea7acb-8134-45eb-b402-91ea90746b43"/>

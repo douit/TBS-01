@@ -19,8 +19,16 @@ export class ReportService {
       return this.http.get<Pageable<IReport>>(`${this.apiUrl}/payment/datatable?${_tbs.serializeDataTableRequest(datatableInput)}`);
     }
 
+    getRefundReportList(datatableInput: DataTableInput): Observable<Pageable<IReport>> {
+      return this.http.get<Pageable<IReport>>(`${this.apiUrl}/refund/datatable?${_tbs.serializeDataTableRequest(datatableInput)}`);
+    }
+
     requestPaymentReport(report: any): Observable<any> {
         return this.http.post(this.apiUrl + '/payment', report);
+    }
+
+    requestRefundReport(report: any): Observable<any> {
+      return this.http.post(this.apiUrl + '/refund', report);
     }
 
     download(id: number): Observable<any> {

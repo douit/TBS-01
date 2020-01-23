@@ -35,15 +35,15 @@ public class Refund extends AbstractAuditingEntity implements Serializable {
     @SequenceGenerator(name = "sequence_generator", sequenceName="sequence_generator")*/
     private Long id;
 
-    @Column(name = "amount", precision = 21, scale = 2)
-    private BigDecimal amount;
+    /*@Column(name = "amount", precision = 21, scale = 2)
+    private BigDecimal amount;*/
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private RequestStatus status;
 
-    @Column(name = "refund_id")
-    private String refundId;
+    /*@Column(name = "refund_id")
+    private String refundId;*/
 
     @Column(name = "biller_id")
     private String billerId;

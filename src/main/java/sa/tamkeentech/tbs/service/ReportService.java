@@ -43,10 +43,13 @@ public class ReportService {
     private static final String FORMAT_XLSX = "xlsx";
     private static final String REPORT_KEY_FORMAT = "format";
     private static final String TEMPLATE_PAYMENT = "payment_report.jrxml";
+    private static final String TEMPLATE_REFUND = "refund_report.jrxml";
     private static final String ALL_FILTER = "All";
     private static final String PARAM_GENERATED_DATE = "generatedDate";
-    private static final String FILE_SUFFIX = "payment_report_";
+    private static final String PAYMENT_FILE_SUFFIX = "payment_report_";
     private static final String PAYMENT_FOLDER_NAME = "payments";
+    private static final String REFUND_FILE_SUFFIX = "refund_report_";
+    private static final String REFUND_FOLDER_NAME = "refunds";
 
     @Autowired
     private UserService userService;
@@ -89,15 +92,6 @@ public class ReportService {
         return reportMapper.toDto(reportEntity);
     }
 
-
-    public ReportDTO getReport(Long userId, Long reportId) {
-        Report reportEntity = reportRepository.getOne(reportId);
-        if (!reportEntity.getRequestUser().getId().equals(userId)) {
-            throw new TbsRunTimeException("User is not authorized to access report.");
-        }
-        return reportMapper.toDto(reportEntity);
-    }
-
     @Async
     public void generateReport(Long reportId, String clientName, ReportType reportType) {
         log.debug("generating payment report id ---> {}", reportId);
@@ -108,21 +102,29 @@ public class ReportService {
 
         List<?> dataList;
         Map<String, Object> extraParams;
+        String dirPath;
+        String reportFileName;
+        String template;
         switch (reportType) {
             case REFUND:
                 dataList = refundService.getRefundsBetween(reportEntity.getStartDate(), reportEntity.getEndDate(), clientId);
                 extraParams = refundReportExtraParams(reportEntity, (List<RefundDetailedDTO>) dataList, clientName);
+                dirPath = outputFolder + "/" + REFUND_FOLDER_NAME + "/";
+                reportFileName = REFUND_FILE_SUFFIX + reportId + ".xlsx";
+                template = TEMPLATE_REFUND;
                 break;
             default:
                 dataList = paymentService.getPaymentsBetween(reportEntity.getStartDate(), reportEntity.getEndDate(), clientId);
                 extraParams = paymentReportExtraParams(reportEntity, (List<PaymentDTO>) dataList, clientName);
+                dirPath = outputFolder + "/" + PAYMENT_FOLDER_NAME + "/";
+                reportFileName = PAYMENT_FILE_SUFFIX + reportId + ".xlsx";
+                template = TEMPLATE_PAYMENT;
                 break;
         }
 
         log.debug("report size ---> {}", dataList.size());
-        String reportFileName = FILE_SUFFIX + reportId /*+ "_" + System.currentTimeMillis()*/ + ".xlsx";
         try {
-            generateReport(TEMPLATE_PAYMENT, reportFileName, dataList, extraParams);
+            generateReport(template, dirPath, reportFileName, dataList, extraParams);
             reportEntity.setStatus(ReportStatus.READY);
             reportEntity.setGeneratedDate(ZonedDateTime.now());
             reportEntity.setExpireDate(getExpireDate(reportEntity.getType()));
@@ -144,7 +146,7 @@ public class ReportService {
         BigDecimal totalPaymentsAmount = BigDecimal.ZERO;
         if (CollectionUtils.isNotEmpty(dataList) ) {
             totalPaymentsAmount = dataList.stream().map(PaymentDTO::getAmount)
-                    .filter(x -> x != null).reduce(BigDecimal::add).get();
+                    .filter(x -> x != null).reduce(BigDecimal.ZERO, BigDecimal::add);
         }
         extraParams.put("numberOfPayments", dataList.size());
         extraParams.put("totalPaymentsAmount", totalPaymentsAmount);
@@ -161,15 +163,15 @@ public class ReportService {
         BigDecimal totalPaymentsAmount = BigDecimal.ZERO;
         if (CollectionUtils.isNotEmpty(dataList) ) {
             totalPaymentsAmount = dataList.stream().map(RefundDetailedDTO::getAmount)
-                .filter(x -> x != null).reduce(BigDecimal::add).get();
+                .filter(x -> x != null).reduce(BigDecimal.ZERO, BigDecimal::add);
         }
-        extraParams.put("numberOfPayments", dataList.size());
-        extraParams.put("totalPaymentsAmount", totalPaymentsAmount);
+        extraParams.put("numberOfRefunds", dataList.size());
+        extraParams.put("totalRefundsAmount", totalPaymentsAmount);
         return extraParams;
     }
 
 
-    private String generateReport(String templateFile, String reportFileName, List<?> dataList, Map<String, Object> extraParams) throws IOException, JRException {
+    private String generateReport(String templateFile, String dirPath, String reportFileName, List<?> dataList, Map<String, Object> extraParams) throws IOException, JRException {
 
         Map<String, Object> parameterMap = new HashMap<>();
         if (extraParams != null) {
@@ -179,7 +181,6 @@ public class ReportService {
         parameterMap.put(PARAM_GENERATED_DATE, new Date());
 
         byte[] report = JasperReportExporter.getInstance().generateXlsReport(dataList, parameterMap, templateFile);
-        String dirPath = outputFolder + "/" + PAYMENT_FOLDER_NAME + "/";
         return fileWrapper.saveBytesToFile(dirPath, reportFileName, report);
     }
 
@@ -204,14 +205,29 @@ public class ReportService {
         }
     }
 
-    public Optional<FileDTO> getPaymentReport(Long reportId) {
+    public Optional<FileDTO> getReport(Long reportId) {
         Report report = reportRepository.getOne(reportId);
         User user = userService.getUser().get();
-        if (report == null || !user.getId().equals(report.getRequestUser().getId())) {
+        if (report == null) {
             return Optional.empty();
         }
-        String fileName = FILE_SUFFIX + reportId /*+ "_" + System.currentTimeMillis()*/ + ".xlsx";
-        String filePath = outputFolder + "/" + PAYMENT_FOLDER_NAME + "/" + fileName;
+        if (!report.getRequestUser().getId().equals(user.getId())) {
+            throw new TbsRunTimeException("User is not authorized to access report.");
+        }
+        String fileName;
+        String filePath;
+
+        switch (report.getType()) {
+            case REFUND:
+                fileName = REFUND_FILE_SUFFIX + reportId + ".xlsx";
+                filePath = outputFolder + "/" + REFUND_FOLDER_NAME + "/" + fileName;
+                break;
+            default:
+                fileName = PAYMENT_FILE_SUFFIX + reportId + ".xlsx";
+                filePath = outputFolder + "/" + PAYMENT_FOLDER_NAME + "/" + fileName;
+                break;
+        }
+
         byte[] file;
         try {
             file = fileWrapper.extractBytes(filePath);

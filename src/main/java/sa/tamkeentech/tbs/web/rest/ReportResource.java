@@ -60,7 +60,7 @@ public class ReportResource {
     @GetMapping("/{id}")
     public ResponseEntity<FileDTO> getPaymentMethod(@PathVariable Long id) {
         log.debug("REST request to get report : {}", id);
-        Optional<FileDTO> reportDTO = reportService.getPaymentReport(id);
+        Optional<FileDTO> reportDTO = reportService.getReport(id);
         return ResponseUtil.wrapOrNotFound(reportDTO);
     }
 

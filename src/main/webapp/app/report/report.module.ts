@@ -11,6 +11,7 @@ import {Daterangepicker} from 'ng2-daterangepicker';
 import {reportRoutes} from './report.route';
 import {PaymentReportComponent} from './payment-report/payment-report.component';
 import {TbsSharedModule} from 'app/shared/shared.module';
+import {RefundReportComponent} from 'app/report/refund-report/refund-report.component';
 
 @NgModule({
     imports: [
@@ -27,7 +28,7 @@ import {TbsSharedModule} from 'app/shared/shared.module';
         Daterangepicker,
         AgmCoreModule.forRoot()
     ],
-    declarations: [PaymentReportComponent]
+    declarations: [PaymentReportComponent, RefundReportComponent]
 })
 export class ReportModule {
 }
