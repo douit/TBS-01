@@ -18,6 +18,7 @@ import sa.tamkeentech.tbs.domain.Report;
 import sa.tamkeentech.tbs.domain.User;
 import sa.tamkeentech.tbs.domain.enumeration.ReportStatus;
 import sa.tamkeentech.tbs.domain.enumeration.ReportType;
+import sa.tamkeentech.tbs.domain.enumeration.RequestStatus;
 import sa.tamkeentech.tbs.repository.ReportRepository;
 import sa.tamkeentech.tbs.service.dto.*;
 import sa.tamkeentech.tbs.service.mapper.ReportMapper;
@@ -162,7 +163,7 @@ public class ReportService {
         // report summary
         BigDecimal totalPaymentsAmount = BigDecimal.ZERO;
         if (CollectionUtils.isNotEmpty(dataList) ) {
-            totalPaymentsAmount = dataList.stream().map(RefundDetailedDTO::getAmount)
+            totalPaymentsAmount = dataList.stream().filter(x -> x.getStatus() == RequestStatus.SUCCEEDED).map(RefundDetailedDTO::getAmount)
                 .filter(x -> x != null).reduce(BigDecimal.ZERO, BigDecimal::add);
         }
         extraParams.put("numberOfRefunds", dataList.size());
