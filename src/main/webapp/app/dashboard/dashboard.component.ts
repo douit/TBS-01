@@ -25,6 +25,7 @@ import {JhiAlertService} from 'ng-jhipster';
 import {MOMENT} from 'angular-calendar';
 import {ZonedDateTime} from 'js-joda';
 import {NgbDateStruct} from '@ng-bootstrap/ng-bootstrap/datepicker/ngb-date-struct';
+import {TranslateService} from "@ngx-translate/core";
 
 @Component({
   selector: 'app-dashboard',
@@ -52,11 +53,15 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     series: []
   };
 
+  month: string;
+  year: string;
 
   constructor(private http: HttpClient, dashboardService: DashboardService,
               private calendar: NgbCalendar, public formatter: NgbDateParserFormatter,
               private config: NgbDatepickerConfig, protected clientService: ClientService,
-              protected jhiAlertService: JhiAlertService ) {
+              protected jhiAlertService: JhiAlertService,
+              private translateService: TranslateService
+  ) {
     this.dashboardService = dashboardService;
     const current = new Date();
     this.maxDate = {
@@ -64,6 +69,8 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       month: current.getMonth() + 1,
       day: current.getDate()
     };
+
+
     const previous = new Date();
     previous.setMonth(previous.getMonth() - 1);
     this.startDate = {
@@ -74,6 +81,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     // this.fromDate = calendar.getToday();
     // this.toDate = calendar.getNext(calendar.getToday(), 'd', 10);
   }
+
   public tableData: TableData;
   filterRangeDate: any = {};
   selectedClient: IClient;
@@ -94,17 +102,18 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
   formatDate(date: NgbDate) {
     // NgbDates use 1 for Jan, Moement uses 0, must substract 1 month for proper date conversion
-    const ngbObj =  JSON.parse(JSON.stringify(date));
+    const ngbObj = JSON.parse(JSON.stringify(date));
     // const jsDate = new Date(date.year, date.month - 1, date.day);
     if (ngbObj) {
       // ngbObj.month--;
-      return moment(ngbObj.year + '-' + ngbObj.month  + '-' +   ngbObj.day, 'YYYY-MM-DD');
+      return moment(ngbObj.year + '-' + ngbObj.month + '-' + ngbObj.day, 'YYYY-MM-DD');
     }
   }
 
   protected onError(errorMessage: string) {
     this.jhiAlertService.error(errorMessage, null, null);
   }
+
   onDateSelection(date: NgbDate, datepicker) {
     if (!this.fromDate && !this.toDate) {
       this.fromDate = date;
@@ -119,18 +128,18 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
   onClickFilter() {
     let toDate = null;
-    let fromDate =  null;
+    let fromDate = null;
     let clientId = null;
-    if (this.fromDate != null ) {
+    if (this.fromDate != null) {
       fromDate = this.formatDate(this.fromDate);
     }
-    if (this.toDate != null ) {
+    if (this.toDate != null) {
       toDate = this.formatDate(this.toDate).add(1, 'days');
     }
     if (this.selectedClient != null) {
       clientId = this.selectedClient.id;
     }
-
+    this.year = this.fromDate.year.toString();
     const chartMonthlyStatisticsRequest: IStatisticsRequest = {
       fromDate: fromDate,
       toDate: toDate,
@@ -140,7 +149,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
     };
     const chartAnnualStatisticsRequest: IStatisticsRequest = {
-      fromDate : fromDate,
+      fromDate: fromDate,
       toDate: toDate,
       type: TypeStatistics.ANNUAL,
       clientId: clientId,
@@ -148,14 +157,13 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
     };
     const generalStatisticsRequest: IStatisticsRequest = {
-      fromDate : fromDate,
+      fromDate: fromDate,
       toDate: toDate,
       type: TypeStatistics.GENERAL,
       clientId: clientId,
       offset: ZonedDateTime.now().offset()._id
 
     };
-
     this.dataAnnualChart.series.pop();
     this.dataAnnualChart.series.pop();
     this.dataMonthlyChart.series.pop();
@@ -185,63 +193,64 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   }
 
   startAnimationForLineChart(chart: any) {
-      let seq: any, delays: any, durations: any;
-      seq = 0;
-      delays = 80;
-      durations = 500;
-      chart.on('draw', function(data: any) {
+    let seq: any, delays: any, durations: any;
+    seq = 0;
+    delays = 80;
+    durations = 500;
+    chart.on('draw', function (data: any) {
 
-        if (data.type === 'line' || data.type === 'area') {
-          data.element.animate({
-            d: {
-              begin: 600,
-              dur: 700,
-              from: data.path.clone().scale(1, 0).translate(0, data.chartRect.height()).stringify(),
-              to: data.path.clone().stringify(),
-              easing: Chartist.Svg.Easing.easeOutQuint
-            }
-          });
-        } else if (data.type === 'point') {
-              seq++;
-              data.element.animate({
-                opacity: {
-                  begin: seq * delays,
-                  dur: durations,
-                  from: 0,
-                  to: 1,
-                  easing: 'ease'
-                }
-              });
+      if (data.type === 'line' || data.type === 'area') {
+        data.element.animate({
+          d: {
+            begin: 600,
+            dur: 700,
+            from: data.path.clone().scale(1, 0).translate(0, data.chartRect.height()).stringify(),
+            to: data.path.clone().stringify(),
+            easing: Chartist.Svg.Easing.easeOutQuint
           }
-      });
+        });
+      } else if (data.type === 'point') {
+        seq++;
+        data.element.animate({
+          opacity: {
+            begin: seq * delays,
+            dur: durations,
+            from: 0,
+            to: 1,
+            easing: 'ease'
+          }
+        });
+      }
+    });
 
-      seq = 0;
+    seq = 0;
   }
+
   startAnimationForBarChart(chart: any) {
-      let seq2: any, delays2: any, durations2: any;
-      seq2 = 0;
-      delays2 = 80;
-      durations2 = 500;
-      chart.on('draw', function(data: any) {
-        if (data.type === 'bar') {
-            seq2++;
-            data.element.animate({
-              opacity: {
-                begin: seq2 * delays2,
-                dur: durations2,
-                from: 0,
-                to: 1,
-                easing: 'ease'
-              }
-            });
-        }
-      });
+    let seq2: any, delays2: any, durations2: any;
+    seq2 = 0;
+    delays2 = 80;
+    durations2 = 500;
+    chart.on('draw', function (data: any) {
+      if (data.type === 'bar') {
+        seq2++;
+        data.element.animate({
+          opacity: {
+            begin: seq2 * delays2,
+            dur: durations2,
+            from: 0,
+            to: 1,
+            easing: 'ease'
+          }
+        });
+      }
+    });
 
-      seq2 = 0;
+    seq2 = 0;
   }
 
 
-   getStatistics(StatisticsRequest: IStatisticsRequest)  {
+  getStatistics(StatisticsRequest: IStatisticsRequest) {
     this.dashboardService.getStatistics(StatisticsRequest).subscribe(
       res => {
         this.statistics = res;
@@ -253,26 +262,31 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     );
 
   }
-   getMonthlyChartStatistics(chartStatisticsRequest: IStatisticsRequest )  {
+
+  getMonthlyChartStatistics(chartStatisticsRequest: IStatisticsRequest) {
     this.dashboardService.getChartStatistics(chartStatisticsRequest).subscribe(
       res => {
         const totalInvoiceList = [];
         const paidInvoiceList = [];
         let max = 0;
+        let monthNum=0;
         res.forEach(statMonth => {
-            totalInvoiceList.push(statMonth.totalInvoice);
-            paidInvoiceList.push(statMonth.totalPaid);
-            if (this.dataMonthlyChart.labels.indexOf(statMonth.day) == -1) {
-              this.dataMonthlyChart.labels.push(statMonth.day);
-            }
-            if (max < statMonth.totalInvoice) {
-              max = statMonth.totalInvoice;
-            }
-        });
+          totalInvoiceList.push(statMonth.totalInvoice);
+          paidInvoiceList.push(statMonth.totalPaid);
+          monthNum = statMonth.month;
 
-      // this.dataMonthlyChart.labels =daysList;
-       this.dataMonthlyChart.series.push(totalInvoiceList);
-       this.dataMonthlyChart.series.push(paidInvoiceList);
+          if (this.dataMonthlyChart.labels.indexOf(statMonth.day) == -1) {
+            this.dataMonthlyChart.labels.push(statMonth.day);
+          }
+          if (max < statMonth.totalInvoice) {
+            max = statMonth.totalInvoice;
+          }
+        });
+        this.month= this.translateService.instant('dashboard.statistics.monthly.' +monthNum);
+
+        // this.dataMonthlyChart.labels =daysList;
+        this.dataMonthlyChart.series.push(totalInvoiceList);
+        this.dataMonthlyChart.series.push(paidInvoiceList);
 
         const optionsColouredBarsChart: any = {
           lineSmooth: Chartist.Interpolation.simple({
@@ -302,64 +316,69 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     );
 
   }
-   getAnnualChartStatistics(chartStatisticsRequest: IStatisticsRequest) {
-     this.dashboardService.getChartStatistics(chartStatisticsRequest).subscribe(
-       res => {
-         const totalInvoiceList = [];
-         const paidInvoiceList = [];
-         let max = 0;
-         res.forEach(statYear => {
-           totalInvoiceList.push(statYear.totalInvoice);
-           paidInvoiceList.push(statYear.totalPaid);
-           if (max < statYear.totalInvoice) {
-           max = statYear.totalInvoice;
-           }
-         });
 
-         this.dataAnnualChart.series.push(totalInvoiceList);
-         this.dataAnnualChart.series.push(paidInvoiceList);
-
-         const optionsMultipleBarsChart = {
-           seriesBarDistance: 10,
-           axisX: {
-             showGrid: false
-           },
-           axisY: {
-             onlyInteger: true
-           },
-           height: '300px'
-         };
-
-         const responsiveOptionsMultipleBarsChart: any = [
-           ['screen and (max-width: 640px)', {
-             seriesBarDistance: 5,
-             axisX: {
-               labelInterpolationFnc: function (value: any) {
-                 return value[0];
-               }
-             },
-             high: this.roundToNearestTenUp(max)
-           }]
-         ];
-
-         const multipleBarsChart = new Chartist.Bar('#multipleBarsChart', this.dataAnnualChart, optionsMultipleBarsChart,
-           responsiveOptionsMultipleBarsChart);
-         // start animation for the Emails Subscription Chart
-         this.startAnimationForBarChart(multipleBarsChart);
-
-       },
-       res => {
-       console.log('An error has occurred when get statistics');
-     }
-   );
+  getAnnualChartStatistics(chartStatisticsRequest: IStatisticsRequest) {
+    this.dashboardService.getChartStatistics(chartStatisticsRequest).subscribe(
+      res => {
+        const totalInvoiceList = [];
+        const paidInvoiceList = [];
+        let max = 0;
+        res.forEach(statYear => {
+          totalInvoiceList.push(statYear.totalInvoice);
+          paidInvoiceList.push(statYear.totalPaid);
+          if (max < statYear.totalInvoice) {
+            max = statYear.totalInvoice;
+          }
+        });
 
 
+        this.dataAnnualChart.series.push(totalInvoiceList);
+        this.dataAnnualChart.series.push(paidInvoiceList);
 
-   }
+        const optionsMultipleBarsChart = {
+          seriesBarDistance: 10,
+          axisX: {
+            showGrid: false
+          },
+          axisY: {
+            onlyInteger: true
+          },
+          height: '300px'
+        };
+
+        const responsiveOptionsMultipleBarsChart: any = [
+          ['screen and (max-width: 640px)', {
+            seriesBarDistance: 5,
+            axisX: {
+              labelInterpolationFnc: function (value: any) {
+                return value[0];
+              }
+            },
+            high: this.roundToNearestTenUp(max)
+          }]
+        ];
+
+        const multipleBarsChart = new Chartist.Bar('#multipleBarsChart', this.dataAnnualChart, optionsMultipleBarsChart,
+          responsiveOptionsMultipleBarsChart);
+        // start animation for the Emails Subscription Chart
+        this.startAnimationForBarChart(multipleBarsChart);
+
+      },
+      res => {
+        console.log('An error has occurred when get statistics');
+      }
+    );
+
+
+  }
+
   trackClientById(index: number, item: IClient) {
     return item.id;
   }
+
   public ngOnInit() {
+
+
     // this.clientService
     //   .query()
     //   .pipe(
@@ -371,17 +390,17 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     this.clientService.getClientByRole()
       .subscribe(
         res => {
-          this.clients = res.body ;
+          this.clients = res.body;
         }, res => {
           console.log('An error has occurred when get clientByRole');
         }
       );
 
     const chartMonthlyStatisticsRequest: IStatisticsRequest = {
-     fromDate: moment(),
-     type: TypeStatistics.MONTHLY,
-     clientId: 0,
-     offset: ZonedDateTime.now().offset()._id
+      fromDate: moment(),
+      type: TypeStatistics.MONTHLY,
+      clientId: 0,
+      offset: ZonedDateTime.now().offset()._id
     };
 
     const chartAnnualStatisticsRequest: IStatisticsRequest = {
@@ -391,6 +410,8 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       offset: ZonedDateTime.now().offset()._id
 
     };
+    this.year = moment().year().toString();
+
     const generalStatisticsRequest: IStatisticsRequest = {
       type: TypeStatistics.GENERAL,
       clientId: 0,
@@ -401,42 +422,41 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     this.getMonthlyChartStatistics(chartMonthlyStatisticsRequest);
     this.getAnnualChartStatistics(chartAnnualStatisticsRequest);
 
-   }
-
-   ngAfterViewInit() {
-       const breakCards = true;
-       if (breakCards === true) {
-           // We break the cards headers if there is too much stress on them :-)
-           $('[data-header-animation="true"]').each(function() {
-               const $fix_button = $(this);
-               const $card = $(this).parent('.card');
-               $card.find('.fix-broken-card').click(function() {
-                   const $header = $(this).parent().parent().siblings('.card-header, .card-image');
-                   $header.removeClass('hinge').addClass('fadeInDown');
-
-                   $card.attr('data-count', 0);
-
-                   setTimeout(function() {
-                       $header.removeClass('fadeInDown animate');
-                   }, 480);
-               });
-
-               $card.mouseenter(function() {
-                   const $this = $(this);
-                   const hover_count = parseInt($this.attr('data-count'), 10) + 1 || 0;
-                   $this.attr('data-count', hover_count);
-                   if (hover_count >= 20) {
-                       $(this).children('.card-header, .card-image').addClass('hinge animated');
-                   }
-               });
-           });
-       }
-   }
-
-   roundToNearestTenUp(num: number) {
-    return ((Math.round(num / 10) + 1) * 10);
   }
 
+  ngAfterViewInit() {
+    const breakCards = true;
+    if (breakCards === true) {
+      // We break the cards headers if there is too much stress on them :-)
+      $('[data-header-animation="true"]').each(function () {
+        const $fix_button = $(this);
+        const $card = $(this).parent('.card');
+        $card.find('.fix-broken-card').click(function () {
+          const $header = $(this).parent().parent().siblings('.card-header, .card-image');
+          $header.removeClass('hinge').addClass('fadeInDown');
+
+          $card.attr('data-count', 0);
+
+          setTimeout(function () {
+            $header.removeClass('fadeInDown animate');
+          }, 480);
+        });
+
+        $card.mouseenter(function () {
+          const $this = $(this);
+          const hover_count = parseInt($this.attr('data-count'), 10) + 1 || 0;
+          $this.attr('data-count', hover_count);
+          if (hover_count >= 20) {
+            $(this).children('.card-header, .card-image').addClass('hinge animated');
+          }
+        });
+      });
+    }
+  }
+
+  roundToNearestTenUp(num: number) {
+    return ((Math.round(num / 10) + 1) * 10);
+  }
 
 
 }

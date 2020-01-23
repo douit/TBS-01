@@ -150,7 +150,7 @@
                             </div>
                             <!--<input [disabled]="user.id === null" matInput type="checkbox" id="activated" name="activated" formControlName="activated">-->
                             <!--<input [disabled]="user.id === null" class="form-check-input" type="checkbox" id="activated" name="activated" formControlName="activated">-->
-                            <div class="row" [hidden]="user.id" >
+                            <div class="row" [hidden]="user.id">
                                 <div class="col-sm-2">
                                 </div>
 
@@ -173,39 +173,42 @@
 
                             </div>
 
-                            <div class="row" [hidden]="user.id || !isInternal" >
-                                    <label class="col-sm-2 col-form-label" jhiTranslate="global.form.searchUser.label">Search</label>
-                                    <div class="col-sm-5">
-                                        <input type="text" placeholder="Search for user" class="form-control" jhiTranslate="global.form.searchUser.placeholder" name="search" formControlName="search">
-                                    </div>
-                                    <div class="col-sm-3">
-                                        <!--<input type="text" value="" class="form-control" placeholder="Search...">-->
-                                        <button mat-raised-button type="button" (click)="searchLdapUser()"
-                                                class="btn btn-default btn-round btn-just-icon">
-                                            <i class="material-icons">search</i>
-                                            <div class="ripple-container"></div>
-                                        </button>
+                            <div class="row" [hidden]="user.id || !isInternal">
+                                <label class="col-sm-2 col-form-label" jhiTranslate="global.form.searchUser.label">Search</label>
+                                <div class="col-sm-5">
+                                    <input type="text" placeholder="Search for user" class="form-control"
+                                           jhiTranslate="global.form.searchUser.placeholder" name="search"
+                                           formControlName="search">
+                                </div>
+                                <div class="col-sm-3">
+                                    <!--<input type="text" value="" class="form-control" placeholder="Search...">-->
+                                    <button mat-raised-button type="button" (click)="searchLdapUser()"
+                                            class="btn btn-default btn-round btn-just-icon">
+                                        <i class="material-icons">search</i>
+                                        <div class="ripple-container"></div>
+                                    </button>
 
-                                    </div>
+                                </div>
                             </div>
 
                             <div class="row" [hidden]="!user.id">
                                 <label class="col-sm-2 col-form-label" jhiTranslate="global.field.id">ID</label>
                                 <div class="col-sm-7">
-                                    <input type="text" matInput  class="form-control" name="id" formControlName="id"
+                                    <input type="text" matInput class="form-control" name="id" formControlName="id"
                                            readonly>
                                 </div>
                             </div>
 
-                            <div class="row" >
+                            <div class="row">
 
                                 <label class="col-sm-2 col-form-label" jhiTranslate="userManagement.login">Login</label>
                                 <div class="col-sm-7">
                                     <mat-form-field class="example-full-width has-label"
                                                     [ngClass]="{'has-success':validTextType===true}"
                                                     [ngClass]="displayFieldCss(type, 'text')"
-                                                    >
-                                        <input type="text" name="login" matInput formControlName="login" [disabled]="isInternal">
+                                    >
+                                        <input type="text" name="login" matInput formControlName="login"
+                                               [disabled]="isInternal">
                                         <!--<div *ngIf="editForm.get('login').invalid && (editForm.get('login').dirty || editForm.get('login').touched)">
                                             <small class="form-text text-danger"
                                                    *ngIf="editForm.get('login').errors.required" jhiTranslate="entity.validation.required">
@@ -233,8 +236,8 @@
                                 <div class="col-sm-7">
                                     <mat-form-field class="example-full-width has-label"
                                                     [ngClass]="{'has-success':validTextType===true}"
-                                                    [ngClass]="displayFieldCss(type, 'text')" >
-                                        <input type="text" name="firstName" matInput formControlName="firstName" >
+                                                    [ngClass]="displayFieldCss(type, 'text')">
+                                        <input type="text" name="firstName" matInput formControlName="firstName">
                                     </mat-form-field>
 
                                     <!--<div *ngIf="editForm.get('firstName').invalid && (editForm.get('firstName').dirty || editForm.get('firstName').touched)">
@@ -254,7 +257,7 @@
                                     <mat-form-field class="example-full-width has-label"
                                                     [ngClass]="{'has-success':validTextType===true}"
                                                     [ngClass]="displayFieldCss(type, 'text')">
-                                        <input type="text" name="lastName" matInput formControlName="lastName" >
+                                        <input type="text" name="lastName" matInput formControlName="lastName">
                                     </mat-form-field>
                                     <!--<div *ngIf="editForm.get('lastName').invalid && (editForm.get('lastName').dirty || editForm.get('lastName').touched)">
                                         <small class="form-text text-danger"
@@ -431,10 +434,7 @@
                                 </div>
                             </div>
                         </div>
-
-
                         <br>
-
                         <div class="row">
                             <div class="col-sm-4">
                             </div>
@@ -443,9 +443,9 @@
                                     <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span
                                     jhiTranslate="entity.action.cancel">Cancel</span>
                                 </button>
-
-
-                                <button type="submit" id="save-entity" [disabled]="editForm.invalid || isSaving"
+                                <!--                                || (isInternal&&ldapDateEmpty)-->
+                                <button type="submit" id="save-entity"
+                                        [disabled]=" editForm.invalid || isSaving ||  (isInternal&&ldapDateEmpty&&isCreate) "
                                         class="btn btn-primary">
                                     <fa-icon [icon]="'save'"></fa-icon>&nbsp;<span
                                     jhiTranslate="entity.action.save">Save</span>
