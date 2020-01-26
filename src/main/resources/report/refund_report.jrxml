@@ -137,7 +137,7 @@
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="12" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Total successful refunds]]></text>
+				<text><![CDATA[Total reconciled]]></text>
 			</staticText>
 			<textField>
 				<reportElement x="603" y="74" width="180" height="25" uuid="93e50cd4-2b16-4bbd-a922-a6ecf0b1171d"/>

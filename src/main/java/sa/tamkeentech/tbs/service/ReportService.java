@@ -163,7 +163,9 @@ public class ReportService {
         // report summary
         BigDecimal totalPaymentsAmount = BigDecimal.ZERO;
         if (CollectionUtils.isNotEmpty(dataList) ) {
-            totalPaymentsAmount = dataList.stream().filter(x -> x.getStatus() == RequestStatus.SUCCEEDED).map(RefundDetailedDTO::getAmount)
+            totalPaymentsAmount = dataList.stream()
+                .filter(x -> (x.getStatus() == RequestStatus.SUCCEEDED))
+                .map(RefundDetailedDTO::getAmount)
                 .filter(x -> x != null).reduce(BigDecimal.ZERO, BigDecimal::add);
         }
         extraParams.put("numberOfRefunds", dataList.size());
