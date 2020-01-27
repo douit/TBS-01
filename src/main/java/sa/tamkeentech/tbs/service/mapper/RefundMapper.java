@@ -29,6 +29,7 @@ public interface RefundMapper extends EntityMapper<RefundDTO, Refund> {
     @Mapping(source = "refund.payment.paymentMethod", target = "paymentMethod")
     @Mapping(source = "refund.payment.amount", target = "amount")
     @Mapping(source = "lastModifiedDate", target = "formattedModifiedDate", qualifiedByName = "modifiedDateToDto")
+    @Mapping(source = "refund.payment.bankId", target = "bankId")
     RefundDetailedDTO toDetailedDto(Refund refund);
 
     @Named("modifiedDateToDto")
