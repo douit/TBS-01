@@ -1,8 +1,12 @@
 package sa.tamkeentech.tbs.web.rest.errors;
 
 import io.github.jhipster.web.util.HeaderUtil;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.ConcurrencyFailureException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -16,10 +20,13 @@ import org.zalando.problem.Status;
 import org.zalando.problem.spring.web.advice.ProblemHandling;
 import org.zalando.problem.spring.web.advice.security.SecurityAdviceTrait;
 import org.zalando.problem.violations.ConstraintViolationProblem;
+import sa.tamkeentech.tbs.service.util.RandomUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
+import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -35,6 +42,10 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
     private static final String MESSAGE_KEY = "message";
     private static final String PATH_KEY = "path";
     private static final String VIOLATIONS_KEY = "violations";
+    private static final String CODE_KEY = "code";
+    private static final String CODE_TIME = "time";
+
+    private final Logger log = LoggerFactory.getLogger(ExceptionTranslator.class);
 
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
@@ -44,6 +55,7 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
      */
     @Override
     public ResponseEntity<Problem> process(@Nullable ResponseEntity<Problem> entity, NativeWebRequest request) {
+        String code = RandomUtil.randomAlphaNumeric(6);
         if (entity == null) {
             return entity;
         }
@@ -55,6 +67,8 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
             .withType(Problem.DEFAULT_TYPE.equals(problem.getType()) ? ErrorConstants.DEFAULT_TYPE : problem.getType())
             .withStatus(problem.getStatus())
             .withTitle(problem.getTitle())
+            .with(CODE_KEY, code)
+            .with(CODE_TIME, ZonedDateTime.now())
             .with(PATH_KEY, request.getNativeRequest(HttpServletRequest.class).getRequestURI());
 
         if (problem instanceof ConstraintViolationProblem) {
@@ -62,15 +76,18 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
                 .with(VIOLATIONS_KEY, ((ConstraintViolationProblem) problem).getViolations())
                 .with(MESSAGE_KEY, ErrorConstants.ERR_VALIDATION);
         } else {
-            builder
+            /*builder
                 .withCause(((DefaultProblem) problem).getCause())
                 .withDetail(problem.getDetail())
                 .withInstance(problem.getInstance());
-            problem.getParameters().forEach(builder::with);
-            if (!problem.getParameters().containsKey(MESSAGE_KEY) && problem.getStatus() != null) {
+            problem.getParameters().forEach(builder::with);*/
+           if (!problem.getParameters().containsKey(MESSAGE_KEY) && problem.getStatus() != null) {
                 builder.with(MESSAGE_KEY, "error.http." + problem.getStatus().getStatusCode());
-            }
+            } else {
+               builder.with(MESSAGE_KEY, ErrorConstants.ERR_VALIDATION);
+           }
         }
+        log.error("---PaymentGatewayException code: {}, title: {}, please check out the log below", code, problem.getTitle());
         return new ResponseEntity<>(builder.build(), entity.getHeaders(), entity.getStatusCode());
     }
 
@@ -131,14 +148,44 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
 
     @ExceptionHandler
     public ResponseEntity<Problem> tbsRuntime(TbsRunTimeException ex, NativeWebRequest request) {
-        // String code = RandomString.randomAlphaNumeric(6);
-        return ResponseEntity.badRequest()
-            .body(Problem.builder()
-            .withType(ErrorConstants.DEFAULT_TYPE)
+        String code = RandomUtil.randomAlphaNumeric(6);
+
+        Problem problem = Problem.builder()
             .withTitle(ex.getMessage())
-            //.withDetail(ex.getCause().getMessage())
-            // .withStatus(Status.INTERNAL_SERVER_ERROR)
+            .withStatus(Status.BAD_REQUEST)
+            .withType(ErrorConstants.DEFAULT_TYPE)
+            // .with(MESSAGE_KEY, ErrorConstants.ERR_VALIDATION)
             .with(MESSAGE_KEY, ErrorConstants.ERR_VALIDATION)
-            .build());
+            .with(CODE_KEY, code)
+            .with(CODE_TIME, ZonedDateTime.now())
+            .with(PATH_KEY, request.getNativeRequest(HttpServletRequest.class).getRequestURI())
+            .build();
+
+        log.warn("---TbsRunTimeException code: {}, title: {}, message: {}", code, problem.getTitle(), ErrorConstants.ERR_VALIDATION);
+
+        return ResponseEntity.badRequest()
+            .body(problem);
     }
+
+    @ExceptionHandler
+    public ResponseEntity<Problem> paymentGatewayRuntime(PaymentGatewayException ex, NativeWebRequest request) {
+        String code = RandomUtil.randomAlphaNumeric(6);
+
+        Problem problem = Problem.builder()
+            .withTitle(ex.getMessage())
+            .withStatus(Status.INTERNAL_SERVER_ERROR)
+            .withType(ErrorConstants.PAYMENT_PROVIDER_ISSUE_TYPE)
+            // .with(MESSAGE_KEY, ErrorConstants.ERR_VALIDATION)
+            .with(MESSAGE_KEY, ErrorConstants.ERR_PAYMENT_GATEWAY)
+            .with(CODE_KEY, code)
+            .with(CODE_TIME, ZonedDateTime.now())
+            .with(PATH_KEY, request.getNativeRequest(HttpServletRequest.class).getRequestURI())
+            .build();
+
+        log.error("---PaymentGatewayException code: {}, title: {}, message: {}, stack: {}", code, problem.getTitle(), ErrorConstants.ERR_PAYMENT_GATEWAY, ex);
+
+        return ResponseEntity.badRequest()
+            .body(problem);
+    }
+
 }

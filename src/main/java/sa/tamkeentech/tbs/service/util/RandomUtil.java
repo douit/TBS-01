@@ -22,6 +22,10 @@ public final class RandomUtil {
         return RandomStringUtils.random(DEF_COUNT, 0, 0, true, true, null, SECURE_RANDOM);
     }
 
+    public static String randomAlphaNumeric(int count) {
+        return RandomStringUtils.random(count, 0, 0, true, true, null, SECURE_RANDOM);
+    }
+
     /**
      * Generate a password.
      *

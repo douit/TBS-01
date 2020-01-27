@@ -37,6 +37,8 @@ import sa.tamkeentech.tbs.service.dto.RefundStatusCCResponseDTO;
 import sa.tamkeentech.tbs.service.dto.TBSEventReqDTO;
 import sa.tamkeentech.tbs.service.mapper.RefundMapper;
 import sa.tamkeentech.tbs.service.util.EventPublisherService;
+import sa.tamkeentech.tbs.web.rest.errors.ErrorConstants;
+import sa.tamkeentech.tbs.web.rest.errors.PaymentGatewayException;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
 import javax.persistence.criteria.Predicate;
@@ -137,13 +139,13 @@ public class RefundService {
                 sadadResult = sendEventAndCallRefundBySdad(refund, invoice);
             } catch (IOException | JSONException e) {
                 // ToDo add new exception 500 for sadad
-                throw new TbsRunTimeException("Sadad issue", e);
+                throw new PaymentGatewayException("Sadad issue");
             }
             // ToDo add new exception 500 for sadad
             // invoice = invoiceRepository.getOne(invoice.getId());
             if (sadadResult != 200) {
                 refund.setStatus(RequestStatus.FAILED);
-                throw new TbsRunTimeException("Sadad refund creation error");
+                throw new PaymentGatewayException("Sadad refund creation error");
             } else {
                 refund.setStatus(RequestStatus.PENDING);
                 payment.get().setStatus(PaymentStatus.REFUNDED);

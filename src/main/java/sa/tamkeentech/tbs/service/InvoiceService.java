@@ -24,6 +24,8 @@ import sa.tamkeentech.tbs.service.mapper.InvoiceMapper;
 import sa.tamkeentech.tbs.service.mapper.PaymentMethodMapper;
 import sa.tamkeentech.tbs.service.util.EventPublisherService;
 import sa.tamkeentech.tbs.service.util.SequenceUtil;
+import sa.tamkeentech.tbs.web.rest.errors.ErrorConstants;
+import sa.tamkeentech.tbs.web.rest.errors.PaymentGatewayException;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
 import javax.persistence.EntityManager;
@@ -180,10 +182,10 @@ public class InvoiceService {
                     try {
                         sadadResult = paymentService.sendEventAndCallSadad(invoice.getNumber(), invoice.getAccountId().toString(), invoice.getAmount(), invoiceDTO.getCustomer().getIdentity());
                     } catch (IOException | JSONException e) {
-                        throw new TbsRunTimeException("Sadad issue", e);
+                        throw new PaymentGatewayException("Sadad issue");
                     }
                     if (sadadResult != 200) {
-                        throw new TbsRunTimeException("Sadad bill creation error");
+                        throw new PaymentGatewayException("Sadad bill creation error");
                     }
                     break;
                 case Constants.VISA:
@@ -193,7 +195,7 @@ public class InvoiceService {
                     try {
                         paymentResponseDTO = paymentService.sendEventAndCreditCardCall(Optional.of(invoice), appCode, roundedAmount.multiply(new BigDecimal("100")));
                     } catch (JSONException | IOException e) {
-                        throw new TbsRunTimeException("Payment gateway issue: "+ e.getCause());
+                        throw new PaymentGatewayException("Payment gateway issue: "+ e.getCause());
                     }
                     invoiceItemsResponseDTO.setLink(paymentResponseDTO.getUrl());
                     log.info("CC payment method");
@@ -389,12 +391,12 @@ public class InvoiceService {
             InvoiceStatus status;
             switch (paymentMethodCode) {
                 case Constants.SADAD:
-                    int sadadResult;
+                    int sadadResult = 0;
                     try {
                         sadadResult = paymentService.sendEventAndCallSadad(invoice.getNumber(), invoice.getAccountId().toString(), invoice.getAmount(), oneItemInvoiceDTO.getCustomerId());
                     } catch (IOException | JSONException e) {
-                        // ToDo add new exception 500 for sadad
-                        throw new TbsRunTimeException("Sadad issue", e);
+                        // keep the old response
+                        // throw new TbsRunTimeException("Sadad issue", ErrorConstants.ERR_PAYMENT_GATEWAY);
                     }
                     if (sadadResult != 200) {
                         oneItemInvoiceRespDTO.setStatusId(sadadResult);
@@ -402,7 +404,9 @@ public class InvoiceService {
                         oneItemInvoiceRespDTO.setDescription("error_message");
                         status = InvoiceStatus.FAILED;
                         updateInvoice(invoice.getId(), status);
-                        throw new TbsRunTimeException("Sadad bill creation error");
+                        // keep the old response
+                        // throw new TbsRunTimeException("Sadad bill creation error", ErrorConstants.ERR_PAYMENT_GATEWAY);
+                        return oneItemInvoiceRespDTO;
                     }
                     break;
                 case Constants.VISA:
@@ -413,7 +417,7 @@ public class InvoiceService {
                     try {
                         paymentResponseDTO = paymentService.sendEventAndCreditCardCall(Optional.of(invoice), appCode, roundedAmount.multiply(new BigDecimal("100")));
                     } catch (JSONException | IOException e) {
-                        throw new TbsRunTimeException("Payment gateway issue: "+ e.getCause());
+                        throw new PaymentGatewayException("Payment gateway issue: "+ e.getCause());
                     }
                     oneItemInvoiceRespDTO.setLink(paymentResponseDTO.getUrl());
                 break;

@@ -39,6 +39,8 @@ import sa.tamkeentech.tbs.service.mapper.ClientMapper;
 import sa.tamkeentech.tbs.service.mapper.PaymentMapper;
 import sa.tamkeentech.tbs.service.mapper.PaymentMethodMapper;
 import sa.tamkeentech.tbs.service.util.EventPublisherService;
+import sa.tamkeentech.tbs.web.rest.errors.ErrorConstants;
+import sa.tamkeentech.tbs.web.rest.errors.PaymentGatewayException;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
 import javax.persistence.criteria.Predicate;
@@ -137,7 +139,7 @@ public class PaymentService {
         try {
             paymentResponseDTO = sendEventAndCreditCardCall(invoice, appCode, roundedAmount.multiply(new BigDecimal("100")));
         } catch (JSONException | IOException e) {
-            throw new TbsRunTimeException("Payment gateway issue: "+ e.getCause());
+            throw new PaymentGatewayException("Payment gateway issue: "+ e.getCause());
         }
 
         Optional<PaymentMethod> paymentMethod = paymentMethodService.findByCode(req.getPaymentMethod().getCode());
@@ -152,7 +154,7 @@ public class PaymentService {
         payment = paymentRepository.save(payment);
 
         if (paymentResponseDTO == null || paymentResponseDTO.getTransactionId() == null || StringUtils.isEmpty(paymentResponseDTO.getUrl())) {
-            throw new TbsRunTimeException("Payment gateway issue");
+            throw new PaymentGatewayException("Payment gateway issue");
         }
 
         PaymentDTO result = paymentMapper.toDto(payment);
@@ -468,10 +470,10 @@ public class PaymentService {
                 try {
                     sadadResult = sendEventAndCallSadad(invoice.get().getNumber(), invoice.get().getAccountId().toString(), invoice.get().getAmount(), invoice.get().getCustomer().getIdentity());
                 } catch (IOException | JSONException e) {
-                    throw new TbsRunTimeException("Sadad issue", e);
+                    throw new PaymentGatewayException("Sadad issue");
                 }
                 if (sadadResult != 200) {
-                    throw new TbsRunTimeException("Sadad bill creation error");
+                    throw new PaymentGatewayException("Sadad bill creation error");
                 }
             }
 
