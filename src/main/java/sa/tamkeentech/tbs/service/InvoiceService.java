@@ -261,7 +261,7 @@ public class InvoiceService {
         for(InvoiceItemDTO invoiceItemDTO : invoiceDTO.getInvoiceItems()){
             Optional<Item> item = itemService.findByCodeAndClient(invoiceItemDTO.getItemCode(), client.get().getId());
             if (!item.isPresent()) {
-                throw new TbsRunTimeException("Unknown item: "+ invoiceItemDTO.getName());
+                throw new TbsRunTimeException("Unknown item: "+ invoiceItemDTO.getItemCode());
             }
             InvoiceItem invoiceItem= InvoiceItem.builder()
                 .item(item.get())
