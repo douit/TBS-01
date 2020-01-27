@@ -184,8 +184,7 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
 
         log.error("---PaymentGatewayException code: {}, title: {}, message: {}, stack: {}", code, problem.getTitle(), ErrorConstants.ERR_PAYMENT_GATEWAY, ex);
 
-        return ResponseEntity.badRequest()
-            .body(problem);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(problem);
     }
 
 }
