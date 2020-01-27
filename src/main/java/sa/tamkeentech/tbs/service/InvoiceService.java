@@ -397,6 +397,7 @@ public class InvoiceService {
                     } catch (IOException | JSONException e) {
                         // keep the old response
                         // throw new TbsRunTimeException("Sadad issue", ErrorConstants.ERR_PAYMENT_GATEWAY);
+                        log.error("something went wrong with Sadad, please check out the log below: {}", e);
                     }
                     if (sadadResult != 200) {
                         oneItemInvoiceRespDTO.setStatusId(sadadResult);
