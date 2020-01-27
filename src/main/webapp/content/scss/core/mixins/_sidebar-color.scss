@@ -5,7 +5,8 @@
               color: $font-color;
             }
             i{
-              color: rgba($font-color, .8);
+              // color: rgba($font-color, .8);
+              color: rgba($brand-warning, .8);;
             }
 
             &.active,
@@ -13,7 +14,8 @@
                 [data-toggle="collapse"]{
                   color: $font-color;
                     i{
-                        color: rgba($font-color, .8);
+                        // color: rgba($font-color, .8);
+                      color: rgba($brand-warning, .8);
                     }
                 }
             }
@@ -42,7 +44,8 @@
                 @include shadow-big-color($font-color);
 
                 i{
-                    color: rgba($font-color, .8);
+                    // color: rgba($font-color, .8);
+                  color: rgba($brand-warning, .8);
                 }
             }
         }
