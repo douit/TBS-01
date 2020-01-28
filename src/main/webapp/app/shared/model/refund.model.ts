@@ -4,7 +4,8 @@ export interface IRefund {
   id?: number;
   amount?: number;
   requestStatus?: RequestStatus;
-  invoiceId?: number;
+  // invoiceId?: number;
+  accountId?: number;
 }
 
 export class Refund implements IRefund {
@@ -12,7 +13,8 @@ export class Refund implements IRefund {
     public id?: number,
     public amount?: number,
     public requestStatus?: RequestStatus,
-    public invoiceId?: number
+    // public invoiceId?: number,
+    public accountId?: number
 
   ) {}
 }

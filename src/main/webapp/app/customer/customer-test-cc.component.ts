@@ -103,14 +103,22 @@ export class CustomerTestCcComponent implements OnInit {
   save() {
     this.operation = 'payment';
     this.isSaving = true;
-    const payment = this.createFromForm(this.editForm);
+    const payment = this.createFromPaymentForm(this.editForm);
     this.subscribeToSaveResponse(this.paymentService.createCcPayment(payment));
   }
 
-  private createFromForm(editForm): IPayment {
+  private createFromPaymentForm(editForm): IPayment {
+    return {
+      ...new Payment(),
+      invoiceId: editForm.get(['invoiceId']).value.accountId,
+      amount: editForm.get(['amount']).value
+    };
+  }
+
+  private createFromRefundForm(editForm): IRefund {
     return {
       ...new Refund(),
-      invoiceId: editForm.get(['invoiceId']).value.accountId,
+      accountId: editForm.get(['invoiceId']).value.accountId,
       amount: editForm.get(['amount']).value
     };
   }
@@ -127,7 +135,7 @@ export class CustomerTestCcComponent implements OnInit {
   refund() {
     this.operation = 'refund';
     this.isSaving = true;
-    const refund = this.createFromForm(this.editForm2);
+    const refund = this.createFromRefundForm(this.editForm2);
     this.subscribeToRefundResponse(this.paymentService.createCcRefund(refund));
   }
 
