@@ -105,6 +105,20 @@ spring:
     base: OU=Tamkeen,OU=HDFBS,DC=HDFBS,DC=LOCAL
     username: svc-belling
     password: Bellpaw$$44
+  mail:
+    host: 10.60.73.8
+    port: 25
+#    username: HDFBS.LOCAL/tbs@tamkeentech.sa
+    username: tbs@tamkeentech.sa
+    password: P#ssword5124
+    protocol: smtp
+    tls: true
+    properties.mail.smtp:
+      auth: true
+      starttls.enable: true
+      ssl.trust: 10.60.73.8
+      connectiontimeout: 180000
+      timeout: 180000
 
 server:
   servlet:
@@ -135,7 +149,7 @@ jhipster:
   #     allow-credentials: true
   #     max-age: 1800
   mail:
-    from: TBS@localhost
+    from: tbs@tamkeentech.sa
   swagger:
     default-include-pattern: /api/.*
     title: TBS API
@@ -174,4 +188,4 @@ tbs:
     sadad-shared-folder: '/sadad_share/'
   report:
     reports-folder: '/reports_share/'
-
+  sentry-url:

@@ -57,11 +57,11 @@ spring:
 #    contexts: prod
     contexts: prod, faker
 #    enabled: false
-  mail:
-    host: localhost
-    port: 25
-    username:
-    password:
+#  mail:
+#    host: localhost
+#    port: 25
+#    username:
+#    password:
   thymeleaf:
     cache: true
 
@@ -110,7 +110,7 @@ jhipster:
       # security key (this key should be unique for your application, and kept secret)
       key: 335bc1a4e014b0714dde2cfb47366375b63c2b80a90c3cde9a01456069f4f5d6e2b265ab505ed28c1e454a211b31ddcff723
   mail: # specific JHipster mail property, for standard properties see MailProperties
-    base-url: http://my-server-url-to-change # Modify according to your server's URL
+    base-url: http://10.60.71.49:8081
   metrics:
     logs: # Reports metrics in the logs
       enabled: false
@@ -136,6 +136,7 @@ jhipster:
 
 # application:
 tbs:
+  sentry-url: https://86ae81ee91034904afa7c1d83fa5ac9e@debug.tamkeentech.sa/40
   payment:
     sadad-url: http://10.4.7.61:2020/sender/api/sadad/billloadrq
     sadad-application-id: 1

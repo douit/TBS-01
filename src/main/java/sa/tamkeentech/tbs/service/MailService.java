@@ -1,11 +1,14 @@
 package sa.tamkeentech.tbs.service;
 
+import org.springframework.boot.autoconfigure.mail.MailProperties;
 import sa.tamkeentech.tbs.domain.User;
 
 import io.github.jhipster.config.JHipsterProperties;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
+import java.util.Map;
+import javax.inject.Inject;
 import javax.mail.internet.MimeMessage;
 
 import org.slf4j.Logger;
@@ -42,6 +45,9 @@ public class MailService {
 
     private final SpringTemplateEngine templateEngine;
 
+    @Inject
+    private MailProperties mailProperties;
+
     public MailService(JHipsterProperties jHipsterProperties, JavaMailSender javaMailSender,
             MessageSource messageSource, SpringTemplateEngine templateEngine) {
 
@@ -64,6 +70,26 @@ public class MailService {
             message.setFrom(jHipsterProperties.getMail().getFrom());
             message.setSubject(subject);
             message.setText(content, isHtml);
+
+            // --- Debug Code
+            log.debug("----- spring: mail: -----");
+            log.debug("spring mail: host={}", mailProperties.getHost());
+            log.debug("spring mail: port={}", mailProperties.getPort());
+            log.debug("spring mail: username={}", mailProperties.getUsername());
+            // log.debug("spring mail: password={}", mailProperties.getPassword());
+            log.debug("spring mail: protocol={}", mailProperties.getProtocol());
+
+            log.debug("----- spring: mail: properties.mail.smtp -----");
+            for (Map.Entry<String, String> entry : mailProperties.getProperties().entrySet()) {
+                log.debug("properties.mail.smtp: {}={}", entry.getKey(), entry.getValue());
+            }
+
+            log.debug("----- session object -----");
+            for (Map.Entry<Object, Object> entry : message.getMimeMessage().getSession().getProperties().entrySet()) {
+                log.debug("session: {}={}", entry.getKey(), entry.getValue());
+            }
+            // --- Debug Code
+
             javaMailSender.send(mimeMessage);
             log.debug("Sent email to User '{}'", to);
         } catch (Exception e) {

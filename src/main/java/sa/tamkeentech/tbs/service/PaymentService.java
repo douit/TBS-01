@@ -38,6 +38,7 @@ import sa.tamkeentech.tbs.service.dto.*;
 import sa.tamkeentech.tbs.service.mapper.ClientMapper;
 import sa.tamkeentech.tbs.service.mapper.PaymentMapper;
 import sa.tamkeentech.tbs.service.mapper.PaymentMethodMapper;
+import sa.tamkeentech.tbs.service.util.CommonUtils;
 import sa.tamkeentech.tbs.service.util.EventPublisherService;
 import sa.tamkeentech.tbs.web.rest.errors.ErrorConstants;
 import sa.tamkeentech.tbs.web.rest.errors.PaymentGatewayException;
@@ -426,8 +427,9 @@ public class PaymentService {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
         String paymentDate = simpleDateFormat.format(Date.from(payment.getCreatedDate().toInstant()));
         String resourceUrl = "";
-        if(Arrays.stream(environment.getActiveProfiles()).anyMatch(
-            env -> (env.equalsIgnoreCase("prod")) )) {
+        /*if(Arrays.stream(environment.getActiveProfiles()).anyMatch(
+            env -> (env.equalsIgnoreCase("prod")) )) {*/
+        if (CommonUtils.isProfile(environment, "prod")) {
             resourceUrl += client.getNotificationUrl();
         }
         resourceUrl += ("?billnumber=" + accountId.toString() + "&paymentdate=" +  paymentDate + "&token=" + token);

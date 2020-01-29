@@ -32,6 +32,9 @@ public class PaymentStatusResponseDTO implements Serializable {
     @JsonProperty("Description")
     private String description;
 
+    @JsonProperty("CardNumber")
+    private String cardNumber;
+
     @JsonProperty("PaymentInternalInfo")
     private PaymentInternalInfo paymentInternalInfo;
 

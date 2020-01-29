@@ -58,11 +58,11 @@ spring:
     # Remove 'faker' if you do not want the sample data to be loaded automatically
     contexts: dev, faker
 #    enabled: false
-  mail:
-    host: localhost
-    port: 25
-    username:
-    password:
+#  mail:
+#    host: localhost
+#    port: 25
+#    username:
+#    password:
   messages:
     cache-duration: PT1S # 1 second, see the ISO 8601 standard
   thymeleaf:
@@ -95,7 +95,7 @@ jhipster:
       # security key (this key should be unique for your application, and kept secret)
       key: 335bc1a4e014b0714dde2cfb47366375b63c2b80a90c3cde9a01456069f4f5d6e2b265ab505ed28c1e454a211b31ddcff723
   mail: # specific JHipster mail property, for standard properties see MailProperties
-    base-url: http://127.0.0.1:8080
+    base-url: http://10.60.75.90:8081
   metrics:
     logs: # Reports metrics in the logs
       enabled: false
@@ -120,7 +120,8 @@ jhipster:
 # ===================================================================
 
 # application:
-#tbs:
+tbs:
+  sentry-url: https://5cbdc862b8994c0c975b8226ab575cfe@debug.tamkeentech.sa/48
 #  payment:
 #    sadad-url: http://10.4.7.61:2020/sender/api/sadad/billloadrq
 #    sadad-application-id: '1'
