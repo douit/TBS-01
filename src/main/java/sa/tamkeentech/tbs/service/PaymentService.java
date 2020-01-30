@@ -1,6 +1,7 @@
 package sa.tamkeentech.tbs.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.sentry.Sentry;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -16,15 +17,14 @@ import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
 import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.*;
@@ -429,20 +429,54 @@ public class PaymentService {
         String resourceUrl = "";
         /*if(Arrays.stream(environment.getActiveProfiles()).anyMatch(
             env -> (env.equalsIgnoreCase("prod")) )) {*/
-        if (CommonUtils.isProfile(environment, "prod")) {
+        //if (CommonUtils.isProfile(environment, "prod")) {
+        if (CommonUtils.isProdOrStaging(environment)) {
             resourceUrl += client.getNotificationUrl();
         }
-        resourceUrl += ("?billnumber=" + accountId.toString() + "&paymentdate=" +  paymentDate + "&token=" + token);
-        log.info("----calling Client update"+ resourceUrl);
-        ResponseEntity<NotifiRespDTO> response2= restTemplate.getForEntity(resourceUrl, NotifiRespDTO.class);
+        // resourceUrl += ("?billnumber=" + accountId.toString() + "&paymentdate=" +  paymentDate + "&token=" + token);
+        log.info("----calling Client update: "+ resourceUrl);
+        // ResponseEntity<NotifiRespDTO> response2= restTemplate.getForEntity(resourceUrl, NotifiRespDTO.class);
 
-        if(response2.getBody()!= null && response2.getBody().getStatusId() == 1){
+        //Mule Post query
+        PaymentNotifReqToClientDTO paymentNotifReqToClientDTO = PaymentNotifReqToClientDTO.builder()
+            .billNumber(accountId.toString())
+            .paymentDate(paymentDate)
+            .status("paid")
+            .paymentMethod(new PaymentNotifReqToClientDTO.PaymentInternalInfo("1", "SADAD"))
+            .build();
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer "+token);
+        headers.set("Content-Type", "application/json");
+        headers.set("client_id", environment.getProperty("tbs.payment.notification-client-id"));
+        headers.set("client_secret", environment.getProperty("tbs.payment.notification-client-secret"));
+
+        HttpEntity<PaymentNotifReqToClientDTO> request = new HttpEntity<>(paymentNotifReqToClientDTO, headers);
+        ResponseEntity<PaymentNotifResFromClientDTO> response2= null;
+        try {
+            response2 = restTemplate.exchange(resourceUrl, HttpMethod.POST, request, PaymentNotifResFromClientDTO.class);
+        } catch (HttpServerErrorException e) {
+            log.error("Payment notif Response satatus:{}, Body: {}", e.getStatusCode(), e.getResponseBodyAsString());
+            e.printStackTrace();
+            Sentry.capture(e);
+            // in case parsing is needed
+            /*if (e.getStatusCode() == HttpStatus.BAD_REQUEST || e.getStatusCode() == HttpStatus.INTERNAL_SERVER_ERROR) {
+                String responseString = e.getResponseBodyAsString();
+                ObjectMapper mapper = new ObjectMapper();
+                try {
+                    PaymentNotifResFromClientDTO res = mapper.readValue(responseString, PaymentNotifResFromClientDTO.class);
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }*/
+        }
+
+        if (response2 != null && response2.getBody()!= null && response2.getBody().getStatusId() == 1) {
             log.info("----Successful Client update: " + response2.getBody().getStatusId());
             Optional<Invoice> invoice = invoiceRepository.findByAccountId(accountId);
             invoice.get().setStatus(InvoiceStatus.CLIENT_NOTIFIED);
             invoiceRepository.save(invoice.get());
         } else {
-            log.info("----Issue Client update: {} -- status code: {}", ((response2.getBody()!= null)? response2.getBody().getStatusId(): "Empty body"), response2.getStatusCode());
+            log.info("----Issue Client update: {} -- status code: {}", ((response2 != null && response2.getBody()!= null)? response2.getBody().getStatusId(): "Empty body"), (response2 != null)? response2.getStatusCode(): "Null resp");
         }
 
 

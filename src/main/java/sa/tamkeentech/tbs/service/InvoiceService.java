@@ -557,7 +557,7 @@ public class InvoiceService {
             .vat(invoice.get().getAmount().subtract(invoice.get().getSubtotal()))
             .vatNumber("300879111900003")
             .price(invoice.get().getSubtotal())
-            .itemName(invoiceItem.getItem().getName())
+            .itemName(invoiceItem.getItem().getCode())
             .quantity(1)
             .billerId(156)
             .companyName("تمكين للتقنيات")
