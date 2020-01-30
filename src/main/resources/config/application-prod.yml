@@ -145,5 +145,7 @@ tbs:
     credit-card-biller-code: 'B1APP10092019'
     notification-client-id: '07a19e4224eb46ad988d6797fa7fff81'
     notification-client-secret: 'eC876200af3547129cbC03E7c29f1cDb'
+    wahid-url: 'https://accounts.wahid.sa/auth/realms/wahid/protocol/openid-connect/token'
+    wahid-secret: '076a2d1c-15c6-4abf-80a7-0b181f18d617'
   refund:
     sadad-url-refund: 'http://10.4.7.61:2020/Sender/api/Sadad/RefundLoadRq'

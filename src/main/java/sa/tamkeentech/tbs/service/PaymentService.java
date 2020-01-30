@@ -404,10 +404,10 @@ public class PaymentService {
             map1.add("grant_type", "client_credentials");
             map1.add("client_id", "tamkeen-billing-system");
             //map1.add("client_secret", "06f4c17f-5c4a-492a-9a8e-a10eafec66c6"); // staging
-            map1.add("client_secret", "076a2d1c-15c6-4abf-80a7-0b181f18d617"); // production
+            map1.add("client_secret", environment.getProperty("tbs.payment.wahid-url")); // production
             org.springframework.http.HttpEntity<MultiValueMap<String, String>> request1 = new org.springframework.http.HttpEntity<MultiValueMap<String, String>>(map1, headers1);
             //  String uri = "https://sso.tamkeen.land/auth/realms/tamkeen/protocol/openid-connect/token"; // staging
-            String uri = "https://accounts.wahid.sa/auth/realms/wahid/protocol/openid-connect/token"; // production
+            String uri =  environment.getProperty("tbs.payment.wahid-secret"); // production
             ResponseEntity<TokenResponseDTO> response1 = rt1.postForEntity(uri, request1, TokenResponseDTO.class);
             token = response1.getBody().getAccess_token();
 
