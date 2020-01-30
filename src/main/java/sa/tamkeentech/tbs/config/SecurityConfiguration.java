@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
+import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -216,6 +217,11 @@ public class SecurityConfiguration {
         public AttributesLDAPUserDetailsContextMapper userDetailsContextMapper() {
             AttributesLDAPUserDetailsContextMapper attributesLDAPUserDetailsContextMapper = new AttributesLDAPUserDetailsContextMapper();
             return attributesLDAPUserDetailsContextMapper;
+        }
+
+        @Bean
+        public LdapTemplate ldapTemplate() {
+            return new LdapTemplate(getContextSource());
         }
     }
 }
