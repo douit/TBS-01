@@ -208,7 +208,8 @@
                                                     [ngClass]="displayFieldCss(type, 'text')"
                                     >
                                         <input type="text" name="login" matInput formControlName="login"
-                                               [disabled]="isInternal">
+                                               [disabled]="isInternal"
+                                               (change)="fieldIsEmpty()">
                                         <!--<div *ngIf="editForm.get('login').invalid && (editForm.get('login').dirty || editForm.get('login').touched)">
                                             <small class="form-text text-danger"
                                                    *ngIf="editForm.get('login').errors.required" jhiTranslate="entity.validation.required">
@@ -237,7 +238,7 @@
                                     <mat-form-field class="example-full-width has-label"
                                                     [ngClass]="{'has-success':validTextType===true}"
                                                     [ngClass]="displayFieldCss(type, 'text')">
-                                        <input type="text" name="firstName" matInput formControlName="firstName">
+                                        <input type="text" name="firstName" matInput formControlName="firstName" (change)="fieldIsEmpty()">
                                     </mat-form-field>
 
                                     <!--<div *ngIf="editForm.get('firstName').invalid && (editForm.get('firstName').dirty || editForm.get('firstName').touched)">
@@ -257,7 +258,8 @@
                                     <mat-form-field class="example-full-width has-label"
                                                     [ngClass]="{'has-success':validTextType===true}"
                                                     [ngClass]="displayFieldCss(type, 'text')">
-                                        <input type="text" name="lastName" matInput formControlName="lastName">
+                                        <input type="text" name="lastName" matInput formControlName="lastName" (change)="fieldIsEmpty()">
+
                                     </mat-form-field>
                                     <!--<div *ngIf="editForm.get('lastName').invalid && (editForm.get('lastName').dirty || editForm.get('lastName').touched)">
                                         <small class="form-text text-danger"
@@ -275,7 +277,7 @@
                                     <mat-form-field class="example-full-width has-label"
                                                     [ngClass]="{'has-success':validTextType===true}"
                                                     [ngClass]="displayFieldCss(type, 'text')">
-                                        <input type="email" name="email" matInput formControlName="email">
+                                        <input type="email" name="email" matInput formControlName="email" (change)="fieldIsEmpty()" >
                                     </mat-form-field>
 
                                     <!--<div *ngIf="editForm.get('email').invalid && (editForm.get('email').dirty || editForm.get('email').touched)">
@@ -443,9 +445,20 @@
                                     <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span
                                     jhiTranslate="entity.action.cancel">Cancel</span>
                                 </button>
-                                <!--                                || (isInternal&&ldapDateEmpty)-->
+<!--                                <h5>-->
+<!--                                    {{(isInternal&&ldapDateEmpty&&isCreate )}}-->
+<!--                                </h5>-->
+<!--                                <h5>-->
+<!--                                    {{isSaving}}-->
+<!--                                </h5>-->
+<!--                                <h5>-->
+<!--                                    {{(editForm.invalid) }}-->
+<!--                                </h5>-->
+<!--                                <h5>-->
+<!--                                    {{(editForm.invalid&&IsFieldsEmpty) }}-->
+<!--                                </h5>-->
                                 <button type="submit" id="save-entity"
-                                        [disabled]=" editForm.invalid || isSaving ||  (isInternal&&ldapDateEmpty&&isCreate) "
+                                        [disabled]=" (editForm.invalid&&IsFieldsEmpty) || isSaving ||  (isInternal&&ldapDateEmpty&&isCreate )"
                                         class="btn btn-primary">
                                     <fa-icon [icon]="'save'"></fa-icon>&nbsp;<span
                                     jhiTranslate="entity.action.save">Save</span>

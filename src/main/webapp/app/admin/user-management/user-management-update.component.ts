@@ -35,6 +35,8 @@ export class UserMgmtUpdateComponent implements OnInit {
   roles: any [] = [];
   isInternal: boolean = true;
   ldapDateEmpty: boolean = true;
+  IsFieldsEmpty: boolean = true;
+
 
   editForm = this.fb.group({
     id: [null],
@@ -143,6 +145,19 @@ export class UserMgmtUpdateComponent implements OnInit {
     }
   }
 
+  fieldIsEmpty(){
+
+    if( !this.editForm.get(['login']).value.toString().isEmpty &&
+    this.editForm.get(['firstName']).value.toString().isEmpty &&
+      this.editForm.get(['lastName']).value.toString().isEmpty &&
+      this.editForm.get(['email']).value.toString().isEmpty
+    )
+      this.IsFieldsEmpty = false;
+    else
+      this.IsFieldsEmpty = true;
+
+      // alert(this.IsFieldsEmpty)
+  }
   internalCheckBox(): boolean {
     if (this.isInternal == true) {
       this.editForm.controls['login'].enable();
@@ -150,6 +165,8 @@ export class UserMgmtUpdateComponent implements OnInit {
       this.editForm.controls['lastName'].enable();
       this.editForm.controls['email'].enable();
       return this.isInternal = false;
+      const searchControl = this.editForm.get('search');
+      searchControl.setValidators([]);
 
     } else {
       this.editForm.controls['login'].disable();
