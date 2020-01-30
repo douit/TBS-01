@@ -33,6 +33,7 @@ import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWrite
 import org.springframework.web.filter.CorsFilter;
 import org.zalando.problem.spring.web.advice.security.SecurityProblemSupport;
 import sa.tamkeentech.tbs.security.APIKeyAuthFilter;
+import sa.tamkeentech.tbs.security.AttributesLDAPUserDetailsContextMapper;
 import sa.tamkeentech.tbs.security.AuthoritiesConstants;
 import sa.tamkeentech.tbs.security.DomainUserDetailsService;
 import sa.tamkeentech.tbs.service.ClientService;
@@ -209,6 +210,12 @@ public class SecurityConfiguration {
             contextSource.afterPropertiesSet(); //needed otherwise you will have a NullPointerException in spring
 
             return contextSource;
+        }
+
+        @Bean
+        public AttributesLDAPUserDetailsContextMapper userDetailsContextMapper() {
+            AttributesLDAPUserDetailsContextMapper attributesLDAPUserDetailsContextMapper = new AttributesLDAPUserDetailsContextMapper();
+            return attributesLDAPUserDetailsContextMapper;
         }
     }
 }
