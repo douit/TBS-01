@@ -33,14 +33,13 @@ public class Initializr implements CommandLineRunner {
 
 	public void captureError(String logError) {
 		Sentry.capture(logError);
-
 	}
 
     @Override
     public void run(String... strings) {
 	    log.debug("---> start running the initializr");
 	    if (CommonUtils.isProdOrStaging(environment)) {
-            InitSentry();
+            // InitSentry();
             // captureError("Test error sent to Sentry...");
         }
     }

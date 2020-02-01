@@ -20,6 +20,7 @@ import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -59,7 +60,7 @@ import java.util.stream.Collectors;
  * Service Implementation for managing {@link Payment}.
  */
 @Service
-@Transactional
+// @Transactional
 public class PaymentService {
 
     private final Logger log = LoggerFactory.getLogger(PaymentService.class);
@@ -169,6 +170,7 @@ public class PaymentService {
      * @param paymentStatusResponseDTO
      * @return
      */
+    @Transactional
     public PaymentDTO updateCreditCardPaymentAndSendEvent(PaymentStatusResponseDTO paymentStatusResponseDTO) {
         log.debug("Request to update status Payment : {}", paymentStatusResponseDTO);
         Payment payment = paymentRepository.findByTransactionId(paymentStatusResponseDTO.getTransactionId());
@@ -180,12 +182,12 @@ public class PaymentService {
         return eventPublisherService.creditCardNotificationEvent(reqNotification, payment, invoice).getResp();
     }
 
+    @Transactional
     public PaymentDTO updateCreditCardPayment(PaymentStatusResponseDTO paymentStatusResponseDTO, Payment payment, Invoice invoice) {
         log.debug("Request to update status Payment : {}", paymentStatusResponseDTO);
         if (Constants.CC_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode().toString())) {
             payment.setStatus(PaymentStatus.PAID);
             invoice.setPaymentStatus(PaymentStatus.PAID);
-        //    sendPaymentNotificationToClint(clientMapper.toDto(invoice.getClient()) ,invoice.getAccountId(),payment);
         } else {
             payment.setStatus(PaymentStatus.UNPAID);
             invoice.setPaymentStatus(PaymentStatus.UNPAID);
@@ -202,6 +204,7 @@ public class PaymentService {
      * @param paymentDTO the entity to save.
      * @return the persisted entity.
      */
+    @Transactional
     public PaymentDTO save(PaymentDTO paymentDTO) {
         log.debug("Request to save Payment : {}", paymentDTO);
         Payment payment = paymentMapper.toEntity(paymentDTO);
@@ -241,12 +244,13 @@ public class PaymentService {
      *
      * @param id the id of the entity.
      */
-    public void delete(Long id) {
+    /*public void delete(Long id) {
         log.debug("Request to delete Payment : {}", id);
         paymentRepository.deleteById(id);
     }
+*/
 
-
+    @Transactional
     public int sendEventAndCallSadad(Long sadadBillId, String sadadAccount , BigDecimal amount, String principal) throws IOException, JSONException {
 
         JSONObject billInfo = new JSONObject();
@@ -274,6 +278,7 @@ public class PaymentService {
 
     }
 
+    @Transactional
     public Integer callSadad(String req) throws IOException {
         HttpClient client = HttpClientBuilder.create().build();
         HttpPost post = new HttpPost(sadadUrl);
@@ -291,6 +296,7 @@ public class PaymentService {
         return response.getStatusLine().getStatusCode();
     }
 
+    @Transactional
     public PaymentResponseDTO sendEventAndCreditCardCall(Optional<Invoice> invoice , String appCode, BigDecimal amount) throws JSONException, IOException {
 
         JSONObject billInfoContent = new JSONObject();
@@ -306,6 +312,7 @@ public class PaymentService {
 
     }
 
+    @Transactional
     public PaymentResponseDTO callCreditCard(String jsonStr) throws IOException {
         HttpClient client = HttpClientBuilder.create().build();
         HttpPost post = new HttpPost(creditCardUrl);
@@ -320,8 +327,6 @@ public class PaymentService {
         return paymentResponseDTO;
     }
 
-
-    // ToDo divide into 2 parts: receive from connector | notify client
     @Transactional
     public ResponseEntity<NotifiRespDTO> sendEventAndPaymentNotification(NotifiReqDTO req, String apiKey, String apiSecret) {
         log.debug("----Sadad Notification : {}", req);
@@ -335,6 +340,7 @@ public class PaymentService {
         return new ResponseEntity<NotifiRespDTO>(resp,  HttpStatus.OK);
     }
 
+    // @Transactional
     public NotifiRespDTO sendPaymentNotification(NotifiReqDTO reqNotification, Invoice invoice) {
         NotifiRespDTO resp = NotifiRespDTO.builder().statusId(1).build();
         for (Payment payment : invoice.getPayments()) {
@@ -354,15 +360,33 @@ public class PaymentService {
             .transactionId(reqNotification.getTransactionPaymentId())
             //.expirationDate()
             .build();
+
+        // Refactoring notification
+        // in case of update client error (wahid or client exception) payment must be saved
+        /*
         paymentRepository.save(payment);
 
         log.info("Successful TBS update bill: {}", reqNotification.getBillAccount());
 
         invoice.setPaymentStatus(PaymentStatus.PAID);
         invoice.setStatus(InvoiceStatus.WAITING);
-        invoiceRepository.save(invoice);
-        sendPaymentNotificationToClint(clientMapper.toDto(invoice.getClient()) ,invoice.getAccountId(),payment);
+        invoiceRepository.save(invoice);*/
+        // ToDO -------Check code and test must reproduce wahid issue,
+        // ToDO        why got in this case: title: Internal Server Error, please check out the log
+        if (createSadadPaymentAndUpdateInvoice(reqNotification, invoice, payment)) {
+            sendPaymentNotificationToClient(clientMapper.toDto(invoice.getClient()) ,invoice.getAccountId(), payment);
+        }
         return resp;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    boolean createSadadPaymentAndUpdateInvoice(NotifiReqDTO reqNotification, Invoice invoice, Payment payment) {
+        paymentRepository.save(payment);
+        invoice.setPaymentStatus(PaymentStatus.PAID);
+        invoice.setStatus(InvoiceStatus.WAITING);
+        invoiceRepository.save(invoice);
+        log.info("Successful TBS update bill: {}", reqNotification.getBillAccount());
+        return true;
     }
 
     @Scheduled(cron = "0  5  *  *  * ?")
@@ -372,17 +396,19 @@ public class PaymentService {
         for(ClientDTO clientDTO : clients){
             List<Optional<Invoice>> invoices = invoiceRepository.findByStatusAndClient(InvoiceStatus.WAITING,clientMapper.toEntity(clientDTO));
             for (Optional<Invoice> invoice : invoices) {
-                for (Payment payment : invoice.get().getPayments()) {
-                    if (payment.getStatus() == PaymentStatus.PAID) {
-                        sendPaymentNotificationToClint(clientDTO,invoice.get().getAccountId(),payment);
-                    }
+                Optional<Payment> payment = paymentRepository.findFirstByInvoiceAccountIdAndStatus(invoice.get().getAccountId(), PaymentStatus.PAID);
+                if (payment.isPresent()) {
+                    sendPaymentNotificationToClient(clientDTO,invoice.get().getAccountId(),payment.get());
+                } else {
+                    log.warn("----Invoice status is waiting but no payment found, Invoice: {}"+ invoice.get().getAccountId());
                 }
             }
         }
 
     }
 
-    public void sendPaymentNotificationToClint(ClientDTO client , Long accountId , Payment payment){
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void sendPaymentNotificationToClient(ClientDTO client , Long accountId , Payment payment){
         Date currentDate = new Date();
         Date tokenModifiedDate = new Date();
         if (client.getTokenModifiedDate() != null) {
@@ -396,7 +422,7 @@ public class PaymentService {
 
 
         String token = null;
-        if (diffDays >= 1 || diffHours >= 1 || diffMinutes > 59 || client.getClientToken() == null ) {
+        // if (diffDays >= 1 || diffHours >= 1 || diffMinutes > 4 || client.getClientToken() == null ) {
             RestTemplate rt1 = new RestTemplate();
             HttpHeaders headers1 = new HttpHeaders();
             headers1.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -404,10 +430,10 @@ public class PaymentService {
             map1.add("grant_type", "client_credentials");
             map1.add("client_id", "tamkeen-billing-system");
             //map1.add("client_secret", "06f4c17f-5c4a-492a-9a8e-a10eafec66c6"); // staging
-            map1.add("client_secret", environment.getProperty("tbs.payment.wahid-url")); // production
+            map1.add("client_secret", environment.getProperty("tbs.payment.wahid-secret")); // production
             org.springframework.http.HttpEntity<MultiValueMap<String, String>> request1 = new org.springframework.http.HttpEntity<MultiValueMap<String, String>>(map1, headers1);
             //  String uri = "https://sso.tamkeen.land/auth/realms/tamkeen/protocol/openid-connect/token"; // staging
-            String uri =  environment.getProperty("tbs.payment.wahid-secret"); // production
+            String uri =  environment.getProperty("tbs.payment.wahid-url"); // production
             ResponseEntity<TokenResponseDTO> response1 = rt1.postForEntity(uri, request1, TokenResponseDTO.class);
             token = response1.getBody().getAccess_token();
 
@@ -417,9 +443,9 @@ public class PaymentService {
             clientRepository.save(clientEntity.get());
 
             // log.info("DVS Token" + token);
-        } else {
+        /*} else {
             token = client.getClientToken();
-        }
+        }*/
 
 
         RestTemplate restTemplate = new RestTemplate();
@@ -429,8 +455,8 @@ public class PaymentService {
         String resourceUrl = "";
         /*if(Arrays.stream(environment.getActiveProfiles()).anyMatch(
             env -> (env.equalsIgnoreCase("prod")) )) {*/
-        //if (CommonUtils.isProfile(environment, "prod")) {
-        if (CommonUtils.isProdOrStaging(environment)) {
+        if (CommonUtils.isProfile(environment, "prod")) {
+        // if (CommonUtils.isProdOrStaging(environment)) {
             resourceUrl += client.getNotificationUrl();
         }
         // resourceUrl += ("?billnumber=" + accountId.toString() + "&paymentdate=" +  paymentDate + "&token=" + token);
@@ -483,6 +509,7 @@ public class PaymentService {
 
     }
 
+    @Transactional
     public InvoiceResponseDTO changePaymentMethod(String referenceId, String paymentMethodCode) {
 
         if (!Constants.SADAD.equals(paymentMethodCode) && !Constants.VISA.equals(paymentMethodCode)) {

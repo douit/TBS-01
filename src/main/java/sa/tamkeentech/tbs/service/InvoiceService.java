@@ -217,6 +217,7 @@ public class InvoiceService {
         return invoiceItemsResponseDTO;
 
     }
+
     @Transactional(propagation = Propagation.REQUIRES_NEW, noRollbackFor=TbsRunTimeException.class)
     Invoice createNewInvoice(InvoiceDTO invoiceDTO) {
         // Client
