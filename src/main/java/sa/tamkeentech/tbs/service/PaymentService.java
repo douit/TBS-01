@@ -133,6 +133,13 @@ public class PaymentService {
         return eventPublisherService.initiateCreditCardPaymentEvent(reqNotification, invoice).getResp();
     }
 
+    /**
+     *
+     * @param req
+     * @param invoice
+     * @return
+     */
+    @Transactional
     public PaymentDTO initiateCreditCardPayment(PaymentDTO req, Optional<Invoice> invoice) {
         // call payment gateway
         BigDecimal roundedAmount = invoice.get().getAmount().setScale(2, RoundingMode.HALF_UP);
