@@ -18,6 +18,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
 import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
 import org.springframework.http.*;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -25,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.*;
@@ -41,7 +41,6 @@ import sa.tamkeentech.tbs.service.mapper.PaymentMapper;
 import sa.tamkeentech.tbs.service.mapper.PaymentMethodMapper;
 import sa.tamkeentech.tbs.service.util.CommonUtils;
 import sa.tamkeentech.tbs.service.util.EventPublisherService;
-import sa.tamkeentech.tbs.web.rest.errors.ErrorConstants;
 import sa.tamkeentech.tbs.web.rest.errors.PaymentGatewayException;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
@@ -247,16 +246,15 @@ public class PaymentService {
     }
 
     /**
-     * Delete the payment by id.
      *
-     * @param id the id of the entity.
+     * @param sadadBillId
+     * @param sadadAccount
+     * @param amount
+     * @param principal
+     * @return
+     * @throws IOException
+     * @throws JSONException
      */
-    /*public void delete(Long id) {
-        log.debug("Request to delete Payment : {}", id);
-        paymentRepository.deleteById(id);
-    }
-*/
-
     @Transactional
     public int sendEventAndCallSadad(Long sadadBillId, String sadadAccount , BigDecimal amount, String principal) throws IOException, JSONException {
 
@@ -334,7 +332,7 @@ public class PaymentService {
         return paymentResponseDTO;
     }
 
-    @Transactional
+    // @Transactional
     public ResponseEntity<NotifiRespDTO> sendEventAndPaymentNotification(NotifiReqDTO req, String apiKey, String apiSecret) {
         log.debug("----Sadad Notification : {}", req);
         Invoice invoice = invoiceRepository.findByAccountId(Long.parseLong(req.getBillAccount())).get();
@@ -349,13 +347,16 @@ public class PaymentService {
 
     // @Transactional
     public NotifiRespDTO sendPaymentNotification(NotifiReqDTO reqNotification, Invoice invoice) {
-        NotifiRespDTO resp = NotifiRespDTO.builder().statusId(1).build();
-        for (Payment payment : invoice.getPayments()) {
-            if (payment.getStatus() == PaymentStatus.PAID) {
-                log.warn("Payment already received, Exit without updating Client app");
-                resp.setStatusDescription("Payment already received, Exit without updating Client app");
-                return resp;
-            }
+        /*for (Payment payment : invoice.getPayments()) {
+            if (payment.getStatus() == PaymentStatus.PAID) {*/
+        Optional<Payment> paymentFromDb = paymentRepository.findFirstByInvoiceAccountIdAndStatus(invoice.getAccountId(), PaymentStatus.PAID);
+        if (paymentFromDb.isPresent()) {
+            log.warn("Payment already received, Exit without updating Client app");
+            return NotifiRespDTO.builder()
+                .statusId(1)
+                .statusDescription("Payment already received, Exit without updating Client app")
+                .build();
+        //    }
         }
         Optional<PaymentMethod> paymentMethod = paymentMethodService.findByCode(Constants.SADAD);
         Payment payment = Payment.builder()
@@ -378,12 +379,21 @@ public class PaymentService {
         invoice.setPaymentStatus(PaymentStatus.PAID);
         invoice.setStatus(InvoiceStatus.WAITING);
         invoiceRepository.save(invoice);*/
-        // ToDO -------Check code and test must reproduce wahid issue,
-        // ToDO        why got in this case: title: Internal Server Error, please check out the log
         if (createSadadPaymentAndUpdateInvoice(reqNotification, invoice, payment)) {
-            sendPaymentNotificationToClient(clientMapper.toDto(invoice.getClient()) ,invoice.getAccountId(), payment);
+            try {
+                sendPaymentNotificationToClient(clientMapper.toDto(invoice.getClient()) ,invoice.getAccountId(), payment);
+            } catch (Exception e) {
+                log.error("---Payment notification Failed");
+                e.printStackTrace();
+                Sentry.capture(e);
+            }
+            return NotifiRespDTO.builder()
+                .statusId(1)
+                .build();
         }
-        return resp;
+        return NotifiRespDTO.builder()
+            .statusId(0)
+            .build();
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -392,7 +402,7 @@ public class PaymentService {
         invoice.setPaymentStatus(PaymentStatus.PAID);
         invoice.setStatus(InvoiceStatus.WAITING);
         invoiceRepository.save(invoice);
-        log.info("Successful TBS update bill: {}", reqNotification.getBillAccount());
+        log.info("---Successful TBS update bill: {}", reqNotification.getBillAccount());
         return true;
     }
 
@@ -415,6 +425,7 @@ public class PaymentService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Async
     public void sendPaymentNotificationToClient(ClientDTO client , Long accountId , Payment payment){
         Date currentDate = new Date();
         Date tokenModifiedDate = new Date();
@@ -465,6 +476,8 @@ public class PaymentService {
         if (CommonUtils.isProfile(environment, "prod")) {
         // if (CommonUtils.isProdOrStaging(environment)) {
             resourceUrl += client.getNotificationUrl();
+        } else {
+            resourceUrl += "https://test";
         }
         // resourceUrl += ("?billnumber=" + accountId.toString() + "&paymentdate=" +  paymentDate + "&token=" + token);
         log.info("----calling Client update: "+ resourceUrl);
@@ -511,9 +524,6 @@ public class PaymentService {
         } else {
             log.info("----Issue Client update: {} -- status code: {}", ((response2 != null && response2.getBody()!= null)? response2.getBody().getStatusId(): "Empty body"), (response2 != null)? response2.getStatusCode(): "Null resp");
         }
-
-
-
     }
 
     @Transactional
