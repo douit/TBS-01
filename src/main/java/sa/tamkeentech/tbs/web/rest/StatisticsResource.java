@@ -62,8 +62,8 @@ public class StatisticsResource {
             BigInteger totalInvoice = (BigInteger) stats.get(0)[0];
             BigInteger setTotalPaid = (BigInteger) stats.get(0)[1];
             BigDecimal amountRefund = statisticsService.prepareRefundQuery(chartStatisticsRequest, clientIds);
-            statisticsDTO.setTotalInvoice(totalInvoice);
-            statisticsDTO.setTotalPaid(setTotalPaid);
+            statisticsDTO.setTotalInvoice(totalInvoice != null? totalInvoice: BigInteger.ZERO);
+            statisticsDTO.setTotalPaid(setTotalPaid != null? setTotalPaid: BigInteger.ZERO);
             statisticsDTO.setAmountRefund(amountRefund != null ? amountRefund : BigDecimal.ZERO);
             statisticsDTO.setIncome(income != null ? income : BigDecimal.ZERO);
             return statisticsDTO;

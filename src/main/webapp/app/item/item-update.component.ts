@@ -14,8 +14,7 @@ import {CategoryService} from 'app/category/category.service';
 import {IClient} from 'app/shared/model/client.model';
 import {ClientService} from 'app/client/client.service';
 import {ErrorStateMatcher} from '@angular/material/core';
-import { IDropdownSettings } from 'ng-multiselect-dropdown';
-import {ITax} from 'app/shared/model/tax.model';
+import {IDropdownSettings} from 'ng-multiselect-dropdown';
 import {TaxService} from 'app/item/tax.service';
 
 export class MyErrorStateMatcher implements ErrorStateMatcher {
@@ -25,38 +24,38 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
   }
 }
 @Component({
-  selector: 'jhi-item-update',
+  selector: 'app-item-update',
   templateUrl: './item-update.component.html'
 })
 export class ItemUpdateComponent implements OnInit {
   isSaving: boolean;
   selectedCategory: ICategory;
   selectedClient: IClient;
-  allTaxes: ITax[];
-  selectedTaxes: ITax[] = [];
+  // allTaxes: ITax[];
+  // selectedTaxes: ITax[] = [];
 
-  selectedTax: ITax;
-  validSourceType: boolean = false;
+  // selectedTax: ITax;
+  validSourceType = false;
   categories: ICategory[];
-  type : FormGroup;
-  validUrlType: boolean = false;
-  validDestinationType: boolean = false;
+  type: FormGroup;
+  validUrlType = false;
+  validDestinationType = false;
   clients: IClient[];
-  validTextType: boolean = false;
-  validEmailType: boolean = false;
+  validTextType = false;
+  validEmailType = false;
 
-  validEmailRegister: boolean = false;
-  validConfirmPasswordRegister: boolean = false;
-  validPasswordRegister: boolean = false;
+  validEmailRegister = false;
+  validConfirmPasswordRegister = false;
+  validPasswordRegister = false;
 
-  validEmailLogin: boolean = false;
-  validPasswordLogin: boolean = false;
-  validNumberType: boolean = false;
-  register : FormGroup;
-  taxesList = [];
+  validEmailLogin = false;
+  validPasswordLogin = false;
+  validNumberType = false;
+  register: FormGroup;
+  // taxesList = [];
   dropdownList = [];
-  selectedItems = [];
-  dropdownSettings : IDropdownSettings= {};
+  // selectedItems = [];
+  dropdownSettings: IDropdownSettings = {};
 
   editForm = this.fb.group({
     id: [],
@@ -66,8 +65,8 @@ export class ItemUpdateComponent implements OnInit {
     defaultQuantity: [],
     category: ['', Validators.required],
     client: ['', Validators.required],
-    taxes:[],
-    code:['', Validators.required]
+    taxes: [],
+    code: ['', Validators.required]
   });
 
   constructor(
@@ -86,23 +85,21 @@ export class ItemUpdateComponent implements OnInit {
   ngOnInit() {
     // let taxss = {item_id: 1, item_text: 'KSA Tax' }
     // this.dropdownList.push(taxss)
-
-this.taxService.getTaxes().subscribe(res => {
-
-  this.allTaxes = res.body;
-  res.body.forEach(tax => {
-    this.taxesList.push(
-      {item_id: tax.id, item_text: tax.code }
-    )
-  });
-  this.dropdownList= this.taxesList;
+    this.taxService.getTaxes().subscribe(res => {
+      this.dropdownList = res.body;
+ /* res.body.forEach(tax => {
+    this.dropdownList.push(tax
+      // item_id: tax.id, item_text: tax.code }
+      );
+  });*/
+  // this.dropdownList = this.taxesList;
 
   });
 
-    this.dropdownSettings = {
+  this.dropdownSettings = {
       singleSelection: false,
-      idField: 'item_id',
-      textField: 'item_text',
+      idField: 'id',
+      textField: 'code',
       selectAllText: 'Select All',
       unSelectAllText: 'UnSelect All',
       itemsShowLimit: 3,
@@ -110,7 +107,6 @@ this.taxService.getTaxes().subscribe(res => {
     };
     this.isSaving = false;
     this.activatedRoute.data.subscribe(({ item }) => {
-
       this.updateForm(item);
     });
     this.categoryService
@@ -139,7 +135,7 @@ this.taxService.getTaxes().subscribe(res => {
   onItemSelect(item: any) {
     // alert(item.valueOf().item_id)
     console.log(item);
-    const that = this;
+    /*const that = this;
     this.taxService.getTax(item.valueOf().item_id).subscribe(res => {
       that.selectedTax = res.body;
       // this.selectedTax = {
@@ -152,16 +148,14 @@ this.taxService.getTaxes().subscribe(res => {
       this.selectedItems.push(item);
       // alert(this.selectedTaxes.length);
 
-    });
-
-
+    });*/
   }
   onSelectAll(items: any) {
-    console.log(items);
+    // console.log(items);
   }
   onItemDeSelect(item: any) {
 
-    for (let i = 1; i <= this.selectedItems.length; i++) {
+    /*for (let i = 1; i <= this.selectedItems.length; i++) {
       const tax = this.selectedItems.pop();
       this.selectedTaxes.pop();
       if (tax.valueOf().item_id != item.valueOf().item_id) {
@@ -172,13 +166,13 @@ this.taxService.getTaxes().subscribe(res => {
       } else {
         // alert(this.selectedTaxes.length)
       }
-    }
-
-
+    }*/
   }
+
   updateForm(item: IItem) {
-    this.selectedCategory= item.category;
+    this.selectedCategory = item.category;
     this.selectedClient = item.client;
+
     this.editForm.patchValue({
       id: item.id,
       code: item.code,
@@ -187,10 +181,9 @@ this.taxService.getTaxes().subscribe(res => {
       price: item.price,
       defaultQuantity: item.defaultQuantity,
       category: item.category,
-      client: item.client
-
+      client: item.client,
+      taxes: item.taxes
     });
-
   }
 
   previousState() {
@@ -220,7 +213,7 @@ this.taxService.getTaxes().subscribe(res => {
       defaultQuantity: this.editForm.get(['defaultQuantity']).value,
       category: this.editForm.get(['category']).value,
       client: this.editForm.get(['client']).value,
-      taxes :this.selectedTaxes
+      taxes : /*this.selectedTaxes*/this.editForm.get(['taxes']).value
 
     };
   }
@@ -249,10 +242,10 @@ this.taxService.getTaxes().subscribe(res => {
     return item.id;
   }
 
-  sourceValidationType(e){
+  sourceValidationType(e) {
     if (e) {
       this.validSourceType = true;
-    }else{
+    } else {
       this.validSourceType = false;
     }
   }
@@ -262,10 +255,10 @@ this.taxService.getTaxes().subscribe(res => {
       'has-feedback': this.isFieldValid(form, field)
     };
   }
-  confirmDestinationValidationType(e){
+  confirmDestinationValidationType(e) {
     if (this.type.controls['password'].value === e) {
       this.validDestinationType = true;
-    }else{
+    } else {
       this.validDestinationType = false;
     }
   }
@@ -286,7 +279,7 @@ this.taxService.getTaxes().subscribe(res => {
     });
   }
 
-  urlValidationType(e){
+  urlValidationType(e) {
     try {
       new URL(e);
       this.validUrlType = true;
@@ -294,57 +287,57 @@ this.taxService.getTaxes().subscribe(res => {
       this.validUrlType = false;
     }
   }
-  textValidationType(e){
+  textValidationType(e) {
     if (e) {
       this.validTextType = true;
-    }else{
+    } else {
       this.validTextType = false;
     }
   }
 
-  emailValidationRegister(e){
-    var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  emailValidationRegister(e) {
+    let re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     if (re.test(String(e).toLowerCase())) {
       this.validEmailRegister = true;
     } else {
       this.validEmailRegister = false;
     }
   }
-  passwordValidationRegister(e){
+  passwordValidationRegister(e) {
     if (e.length > 5) {
       this.validPasswordRegister = true;
-    }else{
+    } else {
       this.validPasswordRegister = false;
     }
   }
-  confirmPasswordValidationRegister(e){
+  confirmPasswordValidationRegister(e) {
     if (this.register.controls['password'].value === e) {
       this.validConfirmPasswordRegister = true;
-    }else{
+    } else {
       this.validConfirmPasswordRegister = false;
     }
   }
 
-  emailValidationLogin(e){
-    var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  emailValidationLogin(e) {
+    let re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     if (re.test(String(e).toLowerCase())) {
-      this.validEmailLogin= true;
+      this.validEmailLogin = true;
     } else {
       this.validEmailLogin = false;
     }
   }
-  passwordValidationLogin(e){
+  passwordValidationLogin(e) {
     if (e.length > 5) {
       this.validPasswordLogin = true;
-    }else{
+    } else {
       this.validPasswordLogin = false;
     }
   }
 
 
 
-  emailValidationType(e){
-    var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  emailValidationType(e) {
+    let re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     if (re.test(String(e).toLowerCase())) {
       this.validEmailType = true;
     } else {
@@ -354,7 +347,7 @@ this.taxService.getTaxes().subscribe(res => {
   numberValidationType(e){
     if (e) {
       this.validNumberType = true;
-    }else{
+    } else {
       this.validNumberType = false;
     }
   }

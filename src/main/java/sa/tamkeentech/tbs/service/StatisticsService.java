@@ -194,11 +194,11 @@ public class StatisticsService {
 
         if (statisticsRequestDTO.getFromDate() != null) {
             ZonedDateTime localFistDate = statisticsRequestDTO.getFromDate().withZoneSameLocal(Constants.UTC_ZONE_ID).withZoneSameInstant(ZoneId.ofOffset("UTC", ZoneOffset.of(statisticsRequestDTO.getOffset())));
-            whereClause += "AND i.created_date >= " + localFistDate.toLocalDateTime();
+            whereClause += "AND i.created_date >= '" + localFistDate.toLocalDateTime()+ "'";
         }
         if (statisticsRequestDTO.getToDate() != null) {
             ZonedDateTime localLastDate = statisticsRequestDTO.getToDate().withZoneSameLocal(Constants.UTC_ZONE_ID).withZoneSameInstant(ZoneId.ofOffset("UTC", ZoneOffset.of(statisticsRequestDTO.getOffset())));
-            whereClause += " AND i.created_date <= " + localLastDate.toLocalDateTime() + "'";
+            whereClause += " AND i.created_date <= '" + localLastDate.toLocalDateTime() + "'";
         }
         if (CollectionUtils.isNotEmpty(clientIds)) {
             whereClause = whereClause + " AND client_id IN :clientIds ";

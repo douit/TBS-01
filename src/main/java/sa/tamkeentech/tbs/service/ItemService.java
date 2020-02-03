@@ -1,5 +1,6 @@
 package sa.tamkeentech.tbs.service;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -139,12 +140,14 @@ public class ItemService {
         }
         // update tax
         Set<Tax> taxes = new HashSet<>();
-        for(TaxDTO taxDTO : itemDTO.getTaxes()){
-            Optional<Tax> tax = taxRepository.findByCode(taxDTO.getCode());
-            if (tax.isPresent()) {
-                taxes.add(tax.get());
-            } else {
-                throw new TbsRunTimeException("Tax doesn't exist");
+        if (CollectionUtils.isNotEmpty(itemDTO.getTaxes())) {
+            for(TaxDTO taxDTO : itemDTO.getTaxes()){
+                Optional<Tax> tax = taxRepository.findByCode(taxDTO.getCode());
+                if (tax.isPresent()) {
+                    taxes.add(tax.get());
+                } else {
+                    throw new TbsRunTimeException("Tax doesn't exist");
+                }
             }
         }
         item.get().setTaxes(taxes);

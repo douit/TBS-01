@@ -184,7 +184,7 @@
                                     <ng-multiselect-dropdown
                                         [placeholder]="'Chose Tax'"
                                         [data]="dropdownList"
-                                        [(ngModel)]="selectedItems"
+                                        formControlName="taxes"
                                         [settings]="dropdownSettings"
                                         (onSelect)="onItemSelect($event)"
                                         (onSelectAll)="onSelectAll($event)"
