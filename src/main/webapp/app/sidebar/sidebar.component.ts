@@ -63,13 +63,13 @@ export class SidebarComponent implements OnInit {
         authorities: [AuthConsts.VIEW_PAYMENT],
         type: 'link',
         icontype: 'attach_money'
-    }, {
+    }/*, {
       path: '/customer/test_cc',
         title: 'Test Credit Card Payment',
         authorities: [],
         type: 'link',
         icontype: 'widgets'
-    }, {
+    }*/, {
         path: '/report',
         title: 'Reports',
         authorities: [AuthConsts.VIEW_REPORT],

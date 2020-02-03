@@ -61,6 +61,9 @@ public class ItemAppResource {
         }
 
         ItemDTO result = itemService.save(itemDTO, true);
+        if (result != null) {
+            result.setClient(null);
+        }
         return ResponseEntity.created(new URI("/api/items/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -77,18 +80,18 @@ public class ItemAppResource {
      */
     @PutMapping("/items")
     public ResponseEntity<ItemDTO> updateItem(@RequestBody ItemDTO itemDTO) throws URISyntaxException {
-        log.debug("REST request to update Item : {}", itemDTO);
-        if (itemDTO.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
+        log.debug("REST request from app to update Item : {}", itemDTO);
+        if (itemDTO.getCode() == null) {
+            throw new BadRequestAlertException("Invalid Code", ENTITY_NAME, " code null");
         }
-//        Optional<Item> item = itemRepository.findById(itemDTO.getId());
-        ItemDTO result = itemService.save(itemDTO, true);
-//        if(item != null){
-//            throw new TbsRunTimeException("Item code Type is mandatory");
-//        }
+        // no code update --> get by code then update
+        ItemDTO result = itemService.updateItemByApp(itemDTO);//.save(itemDTO, true);
+        if (result != null) {
+            result.setClient(null);
+        }
 
         return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, itemDTO.getId().toString()))
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
             .body(result);
     }
 
@@ -117,10 +120,10 @@ public class ItemAppResource {
      * @param id the id of the itemDTO to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the itemDTO, or with status {@code 404 (Not Found)}.
      */
-    @GetMapping("/items/{id}")
-    public ResponseEntity<ItemDTO> getItem(@PathVariable Long id) {
-        log.debug("REST request to get Item : {}", id);
-        Optional<ItemDTO> itemDTO = itemService.findOne(id);
+    @GetMapping("/item/{code}")
+    public ResponseEntity<ItemDTO> getItem(@PathVariable String code) {
+        log.debug("REST request to get Item from app : {}", code);
+        Optional<ItemDTO> itemDTO = itemService.findByCodeForCurrentClient(code);
         if (itemDTO.isPresent()) {
             itemDTO.get().setClient(null);
         }

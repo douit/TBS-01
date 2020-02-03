@@ -125,6 +125,56 @@ public class ItemService {
         return itemResultDTO;
     }
 
+
+    public ItemDTO updateItemByApp(ItemDTO itemDTO) {
+
+        String appName = SecurityUtils.getCurrentUserLogin().orElse("");
+        Optional<Client> client =  clientService.getClientByClientId(appName);
+        if (!client.isPresent()) {
+            throw new TbsRunTimeException("Client not Authorized");
+        }
+        Optional<Item> item = itemRepository.findByCodeAndClientId(itemDTO.getCode(), client.get().getId());
+        if (!item.isPresent()) {
+            throw new TbsRunTimeException("Item not found");
+        }
+        // update tax
+        Set<Tax> taxes = new HashSet<>();
+        for(TaxDTO taxDTO : itemDTO.getTaxes()){
+            Optional<Tax> tax = taxRepository.findByCode(taxDTO.getCode());
+            if (tax.isPresent()) {
+                taxes.add(tax.get());
+            } else {
+                throw new TbsRunTimeException("Tax doesn't exist");
+            }
+        }
+        item.get().setTaxes(taxes);
+        // update Category
+        if(itemDTO.getCategory() != null && StringUtils.isNotEmpty(itemDTO.getCategory().getCode())) {
+            // set category and client
+            Optional<Category> category = categoryRepository.findByCode(itemDTO.getCategory().getCode());
+            if (!category.isPresent()) {
+                throw new TbsRunTimeException("Category doesn't exist");
+            }
+            item.get().setCategory(category.get());
+        }
+        // update price
+        if (itemDTO.getPrice() != null) {
+            item.get().setPrice(itemDTO.getPrice());
+        }
+        // update name
+        if (StringUtils.isNotEmpty(itemDTO.getName())) {
+            item.get().setName(itemDTO.getName());
+        }
+        // update default quantity
+        if (itemDTO.getDefaultQuantity() != null) {
+            item.get().setDefaultQuantity(itemDTO.getDefaultQuantity());
+        }
+        Item persitedItem = itemRepository.save(item.get());
+        ItemDTO itemResultDTO = itemMapper.toDto(persitedItem);
+        return itemResultDTO;
+    }
+
+
     /**
      * Get all the items.
      *
@@ -164,6 +214,15 @@ public class ItemService {
 
     public Optional<Item> findByCodeAndClient(String code, Long id) {
         return itemRepository.findByCodeAndClientId(code, id);
+    }
+
+    public Optional<ItemDTO> findByCodeForCurrentClient(String code) {
+        String appName = SecurityUtils.getCurrentUserLogin().orElse("");
+        Optional<Client> client =  clientService.getClientByClientId(appName);
+        if (!client.isPresent()) {
+            return Optional.empty();
+        }
+        return itemRepository.findByCodeAndClientId(code, client.get().getId()).map(itemMapper::toDto);
     }
 
     @Transactional(readOnly = true)

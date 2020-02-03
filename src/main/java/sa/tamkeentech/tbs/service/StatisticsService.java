@@ -190,22 +190,18 @@ public class StatisticsService {
 
     public BigDecimal prepareRefundQuery(StatisticsRequestDTO statisticsRequestDTO, List<Long> clientIds) {
 
-        String whereClause = "";
+        String whereClause = "i.payment_status = 'REFUNDED' ";
 
-        if (statisticsRequestDTO.getFromDate() != null && statisticsRequestDTO.getToDate() == null) {
+        if (statisticsRequestDTO.getFromDate() != null) {
             ZonedDateTime localFistDate = statisticsRequestDTO.getFromDate().withZoneSameLocal(Constants.UTC_ZONE_ID).withZoneSameInstant(ZoneId.ofOffset("UTC", ZoneOffset.of(statisticsRequestDTO.getOffset())));
-            whereClause = "i.created_date >= '" + localFistDate.toLocalDateTime();
-        } else if (statisticsRequestDTO.getFromDate() != null && statisticsRequestDTO.getToDate() != null) {
-            ZonedDateTime localFistDate = statisticsRequestDTO.getFromDate().withZoneSameLocal(Constants.UTC_ZONE_ID).withZoneSameInstant(ZoneId.ofOffset("UTC", ZoneOffset.of(statisticsRequestDTO.getOffset())));
-            ZonedDateTime localLastDate = statisticsRequestDTO.getToDate().withZoneSameLocal(Constants.UTC_ZONE_ID).withZoneSameInstant(ZoneId.ofOffset("UTC", ZoneOffset.of(statisticsRequestDTO.getOffset())));
-            whereClause = "i.created_date >= '" + localFistDate.toLocalDateTime() + "' AND i.created_date <= '" + localLastDate.toLocalDateTime() + "'";
+            whereClause += "AND i.created_date >= " + localFistDate.toLocalDateTime();
         }
-
+        if (statisticsRequestDTO.getToDate() != null) {
+            ZonedDateTime localLastDate = statisticsRequestDTO.getToDate().withZoneSameLocal(Constants.UTC_ZONE_ID).withZoneSameInstant(ZoneId.ofOffset("UTC", ZoneOffset.of(statisticsRequestDTO.getOffset())));
+            whereClause += " AND i.created_date <= " + localLastDate.toLocalDateTime() + "'";
+        }
         if (CollectionUtils.isNotEmpty(clientIds)) {
-            if (StringUtils.isNotEmpty(whereClause)) {
-                whereClause = whereClause + " AND";
-            }
-            whereClause = whereClause + " client_id IN :clientIds ";
+            whereClause = whereClause + " AND client_id IN :clientIds ";
         }
 
         return getRefundUsingWhereClause(entityManager, whereClause, clientIds);
