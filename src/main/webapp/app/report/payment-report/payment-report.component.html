@@ -71,7 +71,8 @@
                                     <div class="form-group">
                                         <div class="input-group">
                                             <input #dpFromDate
-                                                   class="form-control" placeholder="Start date"
+                                                   class="form-control"
+                                                   placeholder="{{'report.search.startDate'|translate}}"                                                   name="dpFromDate"
                                                    name="dpFromDate"
                                                    [value]="formatter.format(fromDate)"
                                                    (input)="fromDate = validateInput(fromDate, dpFromDate.value)">
@@ -88,7 +89,8 @@
                                     <div class="form-group">
                                         <div class="input-group">
                                             <input #dpToDate
-                                                   class="form-control" placeholder="End date"
+                                                   class="form-control"
+                                                   placeholder="{{'report.search.endStart'|translate}}"                                                   name="dpFromDate"
                                                    name="dpToDate"
                                                    [value]="formatter.format(toDate)"
                                                    (input)="toDate = validateInput(toDate, dpToDate.value)">
@@ -104,7 +106,7 @@
 
                                 <div class="col-md-2 dashboard-filter-element">
                                     <mat-form-field>
-                                        <mat-label *ngIf="selectedClient == null">Select Client</mat-label>
+                                        <mat-label *ngIf="selectedClient == null">{{'report.search.selectClient'|translate}}</mat-label>
                                         <!--<mat-label *ngIf="selectedClient != null">{{selectedClient.name}}</mat-label>-->
                                         <mat-select class="form-control" id="field_client" name="clint"
                                                     [(value)]="selectedClient">
@@ -118,8 +120,8 @@
                                 <div class="col-md-4 dashboard-filter-element">
                                     <form class="navbar-form">
                                         <div class="input-group no-border">
-                                            <button type="button" class="btn btn-primary" (click)="generateReport()" [disabled]="busy">Generate Report</button>
-                                            <button type="button" class="btn btn-danger" (click)="clearReportFilters()" [disabled]="busy">Reset</button>
+                                            <button type="button" class="btn btn-primary" (click)="generateReport()" [disabled]="busy" jhiTranslate="report.generateReport" >Generate Report</button>
+                                            <button type="button" class="btn btn-danger" (click)="clearReportFilters()" [disabled]="busy"  jhiTranslate="report.rest">Reset</button>
                                         </div>
                                     </form>
                                 </div>

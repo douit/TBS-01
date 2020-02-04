@@ -1,20 +1,18 @@
 {
-  "dashboard": {
-    "statistics": {
-      "monthly": {
-        "1": "January",
-        "2": "February",
-        "3": "March",
-        "4": "April",
-        "5": "May",
-        "6": "June",
-        "7": "July",
-        "8": "August",
-        "9": "September",
-        "10": "October",
-        "11": "November",
-        "12": "December"
-      }
+  "tbsApp": {
+    "dashboard": {
+      "income": "Income",
+      "refund": "Refund",
+      "paidinvoices": "Paid Invoices" ,
+      "invoices": "Invoices",
+      "dailystatistics": "Daily Statistics",
+      "monthlystatistics": "Monthly Statistics",
+      "startdate": "Start Date",
+      "endstart": "End Start",
+      "selectclient": "Select Client",
+      "update": "Update",
+      "justupdated": "now"
     }
   }
+
 }

@@ -27,7 +27,16 @@
         "PAID": "PAID",
         "PENDING": "PENDING",
         "REFUNDED": "REFUNDED"
+      },
+      "search": {
+        "startdate": "Start Date",
+        "endstart": "End Start",
+        "selectclient": "Select Client",
+        "selectpaymentstatus": "Select payment Status"
+
+
       }
+
     }
   }
 }

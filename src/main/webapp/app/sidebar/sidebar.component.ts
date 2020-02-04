@@ -81,7 +81,7 @@ export class SidebarComponent implements OnInit {
         children: [
           {
             path: 'payment-report',
-            title: 'Payments',
+            title: this.translateService.instant('tbsApp.sidebar.payments'),
             authorities: [AuthConsts.VIEW_REPORT],
             icontype: 'list',
             ab: ''
@@ -97,14 +97,14 @@ export class SidebarComponent implements OnInit {
     },
     {
       path: '/admin',
-        title: this.translateService.instant('tbsApp.sidebar.dministrative'),
+        title: this.translateService.instant('tbsApp.sidebar.administrative'),
         authorities: [AuthConsts.VIEW_USER],
         type: 'sub',
         icontype: 'settings',
         collapse: 'admin',
         children: [
         {path: 'user-management',
-          title: 'Users',
+          title: this.translateService.instant('tbsApp.sidebar.users'),
           authorities: [AuthConsts.VIEW_USER],
           icontype: 'list',
           ab: ''}

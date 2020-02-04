@@ -1,0 +1,33 @@
+{
+  "report": {
+    "paymentReport": "تقارير المدفوعات",
+    "refundReport": "تقارير المسترجعات",
+    "requestDate": "تاريخ الطلب",
+    "generatedDate": "تاريخ الإنشاء",
+    "expireDate": "تاريخ الإنتهاء",
+    "status": "الحالة",
+    "rest": "اعادة ضبط الحقول",
+    "generateReport": "إنشاء التقرير",
+    "id": "المعرف",
+    "reportStatus": {
+      "WAITING": "قيد الإنتظار",
+      "READY": "جاهز",
+      "FAILED": "فشل"
+    },
+    "download": "تحميل",
+    "notReady": "لم يجهز بعد",
+    "success": {
+      "reportGeneration": "تم تنفيذ طلب التقرير بنجاح"
+    },
+    "error": {
+      "reportGeneration": "فشل في طلب التقرير",
+      "reportDownload": "فشل في تحميل التقرير"
+
+    },
+    "search": {
+      "startDate": "تاريخ البداية",
+      "endDate": "تاريخ الإنتهاء",
+      "selectClient": "اختر العميل"
+    }
+  }
+}

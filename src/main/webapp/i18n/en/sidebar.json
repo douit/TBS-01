@@ -6,7 +6,13 @@
       "testcreditcardpayment": "Test Credit Card Payment",
       "invoices": "Invoices",
       "reports": "Reports",
-      "refunds": "Refunds"
+      "refunds": "Refunds",
+      "administrative": "Administrative",
+      "dashboard": "Dashboard",
+      "users": "Users"
+
+
+
     }
   }
 }

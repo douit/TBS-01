@@ -30,7 +30,14 @@
       "customer": "الزبون",
       "issueDate": "تاريخ الإصدار",
       "paymentStatus": "حالة الدفع",
-      "accountId": "رقم الحساب"
+      "accountId": "رقم الحساب",
+      "search": {
+        "startdate": "تاريخ البداية",
+        "endstart": "تاريخ الإنتهاء",
+        "selectclient": "اختر العميل",
+        "customerid": "رقم الزبون"
+      }
     }
+
   }
 }

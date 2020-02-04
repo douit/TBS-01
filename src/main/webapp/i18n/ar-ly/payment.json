@@ -27,7 +27,17 @@
         "UNPAID": "غير مدفوعة",
         "REFUNDED": "مستردة"
 
+      },
+      "search": {
+        "startdate": "تاريخ البداية",
+        "endstart": "تاريخ الإنتهاء",
+        "selectclient": "اختر العميل",
+        "customerid": "رقم الزبون",
+        "selectpaymentstatus": "اختر حالة الدفع"
+
       }
     }
+
+    }
   }
-}
+

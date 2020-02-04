@@ -63,8 +63,8 @@
                                     <div class="form-group">
                                         <div class="input-group">
                                             <input #dpFromDate
-                                                   class="form-control" placeholder="Start date"
-                                                   name="dpFromDate"
+                                                   class="form-control"
+                                                   placeholder="{{'tbsApp.invoice.search.startdate'|translate}}"                                                   name="dpFromDate"
                                                    [value]="formatter.format(fromDate)"
                                                    (input)="fromDate = validateInput(fromDate, dpFromDate.value)">
                                             <div class="input-group-append">
@@ -80,7 +80,8 @@
                                     <div class="form-group">
                                         <div class="input-group">
                                             <input #dpToDate
-                                                   class="form-control" placeholder="End date"
+                                                   class="form-control"
+                                                   placeholder="{{'tbsApp.invoice.search.endstart'|translate}}"
                                                    name="dpToDate"
                                                    [value]="formatter.format(toDate)"
                                                    (input)="toDate = validateInput(toDate, dpToDate.value)">
@@ -96,7 +97,7 @@
 
                                 <div class="col-md-2 dashboard-filter-element">
                                     <mat-form-field>
-                                        <mat-label *ngIf="selectedClient == null">Select Client</mat-label>
+                                        <mat-label *ngIf="selectedClient == null" >{{'tbsApp.invoice.search.selectclient'|translate}}</mat-label>
                                         <!--<mat-label *ngIf="selectedClient != null">{{selectedClient.name}}</mat-label>-->
                                         <mat-select class="form-control" id="field_client" name="clint"
                                                     [(value)]="selectedClient">
@@ -110,7 +111,7 @@
                                     <div class="form-group">
                                         <div class="input-group">
                                             <input class="form-control"
-                                                   placeholder="Customer Id "
+                                                   placeholder="{{'tbsApp.invoice.search.customerid'|translate}}"
                                                    [(ngModel)]="customerId"
                                                    type="text">
                                         </div>
@@ -122,11 +123,11 @@
                                             <!--<input type="text" value="" class="form-control" placeholder="Search...">-->
                                             <button mat-raised-button type="submit" (click)="onClickFilter()"
                                                     class="btn btn-white btn-round btn-just-icon">
-                                                <i class="material-icons">search</i>
+                                                <i class="material-icons" >search</i>
                                                 <div class="ripple-container"></div>
                                             </button>
                                             <button (click)="clearSearch()" class="btn btn-white btn-round btn-just-icon">
-                                                <i class="material-icons">clear</i>
+                                                <i class="material-icons" >clear</i>
                                             </button>
                                         </div>
                                     </form>

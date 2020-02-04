@@ -6,6 +6,9 @@
     "generatedDate": "Generated date",
     "expireDate": "Expire date",
     "status": "Status",
+    "rest": "Rest",
+    "generateReport": "Generate Report",
+    "id": "Id",
     "reportStatus": {
       "WAITING": "Waiting",
       "READY": "Ready",
@@ -20,6 +23,11 @@
       "reportGeneration": "Report Request Failed",
       "reportDownload": "Report Download Failed"
 
+    },
+    "search": {
+      "startDate": "Start Date",
+      "endDate": "End Start",
+      "selectClient": "Select Client"
     }
   }
 }

@@ -66,7 +66,8 @@
                                     <div class="form-group">
                                         <div class="input-group">
                                             <input #dpFromDate
-                                                   class="form-control" placeholder="Start date"
+                                                   class="form-control"
+                                                   placeholder="{{'tbsApp.payment.search.startDate'|translate}}"                                                   name="dpFromDate"
                                                    name="dpFromDate"
                                                    [value]="formatter.format(fromDate)"
                                                    (input)="fromDate = validateInput(fromDate, dpFromDate.value)">
@@ -83,7 +84,8 @@
                                     <div class="form-group">
                                         <div class="input-group">
                                             <input #dpToDate
-                                                   class="form-control" placeholder="End date"
+                                                   class="form-control"
+                                                   placeholder="{{'tbsApp.payment.search.endDate'|translate}}"
                                                    name="dpToDate"
                                                    [value]="formatter.format(toDate)"
                                                    (input)="toDate = validateInput(toDate, dpToDate.value)">
@@ -99,7 +101,7 @@
 
                                 <div class="col-md-2 dashboard-filter-element">
                                     <mat-form-field>
-                                        <mat-label *ngIf="selectedClient == null">Select Client</mat-label>
+                                        <mat-label *ngIf="selectedClient == null">{{'tbsApp.payment.search.selectclient'|translate}}</mat-label>
                                         <!--<mat-label *ngIf="selectedClient != null">{{selectedClient.name}}</mat-label>-->
                                         <mat-select class="form-control" id="field_client" name="clint"
                                                     [(value)]="selectedClient">
@@ -112,7 +114,7 @@
 
                                 <div class="col-md-2 dashboard-filter-element">
                                     <mat-form-field>
-                                        <mat-label *ngIf="paymentStatusSelectedLable == null" >Select Payment Status</mat-label>
+                                        <mat-label *ngIf="paymentStatusSelectedLable == null" >{{'tbsApp.payment.search.selectpaymentstatus'|translate}}</mat-label>
                                         <!--<mat-label *ngIf="selectedClient != null">{{selectedClient.name}}</mat-label>-->
                                         <mat-select class="form-control" id="field_client1" name="clint"
                                                     [(value)]="paymentStatusSelectedLable">

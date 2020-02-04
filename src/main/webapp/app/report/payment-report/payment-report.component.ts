@@ -104,7 +104,7 @@ export class PaymentReportComponent implements OnInit {
     this.datatable.setTable(this.table);
     this.datatable.setColumns([
       new DatatableColumn({
-        name: this.translateService.instant('global.datatable.id'),
+        name: this.translateService.instant('report.id'),
         prop: 'id',
         headerTemplate: this.headerTemplate,
         cellTemplate: this.rowTemplate,
