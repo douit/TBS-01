@@ -146,11 +146,14 @@ export class UserMgmtUpdateComponent implements OnInit {
   }
 
   fieldIsEmpty(){
-
-    if( !this.editForm.get(['login']).value.toString().isEmpty &&
-    this.editForm.get(['firstName']).value.toString().isEmpty &&
-      this.editForm.get(['lastName']).value.toString().isEmpty &&
-      this.editForm.get(['email']).value.toString().isEmpty
+    if( !this.editForm.get(['login']).value.toString().isEmpty&&
+      this.editForm.get(['login']).value.toString() != "" &&
+    !this.editForm.get(['firstName']).value.toString().isEmpty &&
+      this.editForm.get(['firstName']).value.toString()!=""&&
+      !this.editForm.get(['lastName']).value.toString().isEmpty &&
+      this.editForm.get(['lastName']).value.toString() !=""&&
+      !this.editForm.get(['email']).value.toString().isEmpty&&
+      this.editForm.get(['email']).value.toString() !=""
     )
       this.IsFieldsEmpty = false;
     else
