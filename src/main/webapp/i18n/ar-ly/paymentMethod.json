@@ -2,22 +2,22 @@
   "tbsApp": {
     "paymentMethod": {
       "home": {
-        "title": "Payment Methods",
-        "createLabel": "Create a new Payment Method",
-        "createOrEditLabel": "Create or edit a Payment Method",
-        "notFound": "No Payment Methods found"
+        "title": "طرق الدفع",
+        "createLabel": "إنشاء طريقة دفع جديدة",
+        "createOrEditLabel": "إنشاء أو تعديل طريقة دفع",
+        "notFound": "لم يتم العثور على طرق الدفع"
       },
-      "created": "A new Payment Method is created with identifier {{ param }}",
-      "updated": "A Payment Method is updated with identifier {{ param }}",
-      "deleted": "A Payment Method is deleted with identifier {{ param }}",
+      "created": "تم إنشاء طريقة دفع برقم {{ param }}",
+      "updated": "تم تحديث عملية دفع برقم {{ param }}",
+      "deleted": "تم حذف طريقة الدفع رقم {{ param }}",
       "delete": {
-        "question": "Are you sure you want to delete Payment Method {{ id }}?"
+        "question": "هل أنت متأكد من حذف طريقة الدفعم رقم {{ id }}؟"
       },
       "detail": {
-        "title": "Payment Method"
+        "title": "طريقة الدفع"
       },
-      "name": "Name",
-      "code": "Code"
+      "name": "الأسم",
+      "code": "الرمز"
     }
   }
 }

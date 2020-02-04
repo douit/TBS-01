@@ -2,31 +2,35 @@
   "tbsApp": {
     "invoice": {
       "home": {
-        "title": "Invoices",
-        "createLabel": "Create a new Invoice",
-        "createOrEditLabel": "Create or edit a Invoice",
-        "notFound": "No Invoices found"
+        "title": "الفواتير",
+        "createLabel": "إنشاء فاتورة جديدة",
+        "createOrEditLabel": "إنشاء أو تعديل فاتورة",
+        "notFound": "لم يتم العثور على الفواتير"
       },
-      "created": "A new Invoice is created with identifier {{ param }}",
-      "updated": "A Invoice is updated with identifier {{ param }}",
-      "deleted": "A Invoice is deleted with identifier {{ param }}",
+      "created": "تمت إضافة فاتورة جديدة برقم {{ param }}",
+      "updated": "تم التعديل على الفاتورة رقم {{ param }}",
+      "deleted": "تم حذف الفاتورة رقم {{ param }}",
       "delete": {
-        "question": "Are you sure you want to delete Invoice {{ id }}?"
+        "question": "هل أنت متأكد من حذف الفاتورة {{ id }؟"
       },
       "detail": {
-        "title": "Invoice"
+        "title": "الفواتير"
       },
-      "customerId": "Customer Id",
-      "status": "Status",
-      "number": "Number",
-      "note": "Note",
-      "dueDate": "Due Date",
-      "subtotal": "Subtotal",
-      "amount": "Amount",
-      "discount": "Discount",
-      "invoiceItem": "Invoice Item",
-      "payment": "Payment",
-      "client": "Client"
+      "customerId": "معرف الزبون",
+      "status": "الحالة",
+      "number": "الرقم",
+      "note": "ملاحظة",
+      "dueDate": "تاريخ الإستحقاق",
+      "subtotal": "المجموع الجزئي",
+      "amount": "الكمية",
+      "discount": "الخصم",
+      "invoiceItem": "محتوى الفاتورة",
+      "payment": "الدفع",
+      "client": "العميل",
+      "customer": "الزبون",
+      "issueDate": "تاريخ الإصدار",
+      "paymentStatus": "حالة الدفع",
+      "accountId": "رقم الحساب"
     }
   }
 }

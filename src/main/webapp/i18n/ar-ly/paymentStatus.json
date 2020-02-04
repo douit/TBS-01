@@ -2,9 +2,9 @@
   "tbsApp": {
     "PaymentStatus": {
       "null": "",
-      "SUCCESSFUL": "SUCCESSFUL",
-      "FAILED": "FAILED",
-      "PENDING": "PENDING"
+      "SUCCESSFUL": "ناجحة",
+      "FAILED": "فاشلة",
+      "PENDING": "مدفوعة"
     }
   }
 }

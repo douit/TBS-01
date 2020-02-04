@@ -29,7 +29,8 @@ module.exports = webpackMerge(commonConfig({ env: ENV }), {
         "./node_modules/sweetalert2/src/sweetalert2.scss",
         "./src/main/webapp/content/scss/global.scss",
         "./node_modules/datatables.net-bs4/css/dataTables.bootstrap4.css",
-        "./src/main/webapp/content/scss/material-dashboard.scss"
+        "./src/main/webapp/content/scss/material-dashboard.scss",
+        "./node_modules/bootstrap-rtl/dist/css/bootstrap-rtl.css"
       ],
       scripts: [
         "./node_modules/jquery/dist/jquery.js",

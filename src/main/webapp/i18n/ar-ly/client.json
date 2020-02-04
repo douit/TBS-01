@@ -2,27 +2,27 @@
   "tbsApp": {
     "client": {
       "home": {
-        "title": "Clients",
-        "createLabel": "Create a new Client",
-        "createOrEditLabel": "Create or edit a Client",
-        "notFound": "No Clients found"
+        "title": "العملاء",
+        "createLabel": "إنشاء عميل جديد",
+        "createOrEditLabel": "إنشاء أو تعديل عميل",
+        "notFound": "لم يتم العثور على العميل"
       },
-      "created": "A new Client is created with identifier {{ param }}",
-      "updated": "A Client is updated with identifier {{ param }}",
-      "deleted": "A Client is deleted with identifier {{ param }}",
+      "created": "تمت إضافة عميل جديد برقم {{ param }}",
+      "updated": "تم التعديل على العميل رقم {{ param }}",
+      "deleted": "تم حذف العميل رقم {{ param }}",
       "delete": {
-        "question": "Are you sure you want to delete Client {{ id }}?"
+        "question": "هل أنت متأكد من حذف العميل {{ id }؟"
       },
       "detail": {
-        "title": "Client"
+        "title": "العملاء"
       },
-      "clientId": "Client Id",
-      "clientSecret": "Client Secret",
-      "name": "Name",
-      "logo": "Logo",
+      "clientId": "معرف العميل",
+      "clientSecret": "رمز العميل",
+      "name": "الأسم",
+      "logo": "الشعار",
       "dueDateUnit": "Due Date Unit",
       "dueDateValue": "Due Date Value",
-      "vatNumber": "Vat Number"
+      "vatNumber": "رقم الضريبة المضافة"
     }
   }
 }

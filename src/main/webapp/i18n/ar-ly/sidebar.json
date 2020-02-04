@@ -1,0 +1,14 @@
+{
+  "tbsApp": {
+    "sidebar": {
+      "items": "المحتويات",
+      "payments": "عمليات الدفع",
+      "testcreditcardpayment": "تجربة الدفع بالبطاقة الإئتمانية",
+      "invoices": "الفواتير",
+      "reports": "التقارير",
+      "refunds": "المسترجعات",
+      "dashboard": "لوحة التحكم",
+      "dministrative": "الإدارة"
+    }
+  }
+}

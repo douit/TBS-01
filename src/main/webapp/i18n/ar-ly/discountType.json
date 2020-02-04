@@ -2,8 +2,8 @@
   "tbsApp": {
     "DiscountType": {
       "null": "",
-      "Invoice": "Invoice",
-      "Item": "Item"
+      "Invoice": "فاتورة",
+      "Item": "محتوى"
     }
   }
 }

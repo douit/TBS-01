@@ -2,27 +2,30 @@
   "tbsApp": {
     "item": {
       "home": {
-        "title": "Items",
-        "createLabel": "Create a new Item",
-        "createOrEditLabel": "Create or edit a Item",
-        "notFound": "No Items found"
+        "title": "المحتويات",
+        "createLabel": "إنشاء محتوى جديد",
+        "createOrEditLabel": "إنشاء أو تعديل المحتوى",
+        "notFound": "المحتوى غير موجود"
       },
-      "created": "A new Item is created with identifier {{ param }}",
-      "updated": "A Item is updated with identifier {{ param }}",
-      "deleted": "A Item is deleted with identifier {{ param }}",
+      "created": "تمت إضافة محتوى جديد برقم {{ param }}",
+      "updated": "تم التعديل على المحتوى رقم {{ param }}",
+      "deleted": "تم حذف المحتوى رقم {{ param }}",
       "delete": {
-        "question": "Are you sure you want to delete Item {{ id }}?"
+        "question": "هل أنت متأكد من حذف المحتوى {{ id }؟"
       },
       "detail": {
-        "title": "Item"
+        "title": "المحتويات"
       },
-      "name": "Name",
-      "description": "Description",
-      "price": "Price",
-      "defaultQuantity": "Default Quantity",
-      "tax": "Tax",
-      "category": "Category",
-      "client": "Client"
+      "name": "الأسم",
+      "description": "الوصف",
+      "price": "السعر",
+      "defaultQuantity": "الكمية الإفتراضية",
+      "tax": "الضريبة",
+      "category": "الصنف",
+      "client": "العميل",
+      "actions": "العمليات",
+      "id": "المعرف"
+
     }
   }
 }

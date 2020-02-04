@@ -2,13 +2,13 @@
   "tbsApp": {
     "InvoiceStatus": {
       "null": "",
-      "DRAFT": "DRAFT",
-      "SENT": "SENT",
-      "VIEWED": "VIEWED",
-      "APPROVED": "APPROVED",
-      "PARTIAL": "PARTIAL",
-      "PAID": "PAID",
-      "OVERDUE": "OVERDUE"
+      "DRAFT": "مسودة",
+      "SENT": "مرسل",
+      "VIEWED": "عرض",
+      "APPROVED": "معتمد",
+      "PARTIAL": "مجزئ",
+      "PAID": "مدفوع",
+      "OVERDUE": "متأخر"
     }
   }
 }

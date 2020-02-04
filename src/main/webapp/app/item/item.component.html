@@ -76,7 +76,9 @@
                                     </div>
 
                                     <div class="app-ngx-datatable-wrapper">
-                                        <ngx-datatable #table class="app-ngx-datatable" [columns]="datatable.visibleColumns" [headerHeight]="'auto'" [rowHeight]="'auto'" [summaryHeight]="'auto'" [summaryRow]="false" [summaryPosition]="'bottom'" [columnMode]="'flex'" [rows]="datatable.data" [footerHeight]="65" [externalPaging]="true" [externalSorting]="true" [count]="datatable.recordsFiltered" [limit]="datatable.length" (page)="onPageChanged($event)" (sort)="onSortChanged($event)">
+                                        <ngx-datatable #table class="app-ngx-datatable" [columns]="datatable.visibleColumns" [headerHeight]="'auto'" [rowHeight]="'auto'" [summaryHeight]="'auto'" [summaryRow]="false" [summaryPosition]="'bottom'" [columnMode]="'flex'" [rows]="datatable.data" [footerHeight]="65" [externalPaging]="true" [externalSorting]="true"
+                                                       [count]="datatable.recordsFiltered" [limit]="datatable.length" (page)="onPageChanged($event)"
+                                                       (sort)="onSortChanged($event)">
 
                                             <ngx-datatable-footer #footerRef>
                                                 <ng-template #pagerTempRef ngx-datatable-footer-template let-rowCount="rowCount" let-selectedCount="selectedCount" let-offset="offset" let-pageSize="pageSize" let-curPage="curPage">

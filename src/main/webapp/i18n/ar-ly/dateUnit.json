@@ -2,9 +2,9 @@
   "tbsApp": {
     "DateUnit": {
       "null": "",
-      "DAY": "DAY",
-      "MONTH": "MONTH",
-      "YEAR": "YEAR"
+      "DAY": "اليوم",
+      "MONTH": "الشهر",
+      "YEAR": "السنة"
     }
   }
 }

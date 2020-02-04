@@ -2,29 +2,29 @@
   "tbsApp": {
     "invoiceItem": {
       "home": {
-        "title": "Invoice Items",
-        "createLabel": "Create a new Invoice Item",
-        "createOrEditLabel": "Create or edit a Invoice Item",
-        "notFound": "No Invoice Items found"
+        "title": "محتويات الفاتورة",
+        "createLabel": "إنشاء محتوى فاتورة جديد",
+        "createOrEditLabel": "إنشاء أو تعديل محتوى فاتورة",
+        "notFound": "لم يتم العثور على محتوى الفاتورة"
       },
-      "created": "A new Invoice Item is created with identifier {{ param }}",
-      "updated": "A Invoice Item is updated with identifier {{ param }}",
-      "deleted": "A Invoice Item is deleted with identifier {{ param }}",
+      "created": "تمت إضافة فاتورة جديدة برقم {{ param }}",
+      "updated": "تم التعديل على الفاتورة رقم {{ param }}",
+      "deleted": "تم حذف الفاتورة رقم {{ param }}",
       "delete": {
-        "question": "Are you sure you want to delete Invoice Item {{ id }}?"
+        "question": "هل أنت متأكد من حذف الفاتورة {{ id }؟"
       },
       "detail": {
-        "title": "Invoice Item"
+        "title": "الفواتير"
       },
-      "name": "Name",
-      "description": "Description",
-      "amount": "Amount",
-      "quantity": "Quantity",
-      "taxName": "Tax Name",
-      "taxRate": "Tax Rate",
-      "invoice": "Invoice",
-      "discount": "Discount",
-      "item": "Item"
+      "name": "الأسم",
+      "description": "الوصف",
+      "amount": "الكمية",
+      "quantity": "الكمية",
+      "taxName": "اسم الضريبة",
+      "taxRate": "معدل الضريبة",
+      "invoice": "الفاتورة",
+      "discount": "الخصم",
+      "item": "المحتوى"
     }
   }
 }

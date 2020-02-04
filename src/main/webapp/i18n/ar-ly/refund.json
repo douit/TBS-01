@@ -2,23 +2,23 @@
   "tbsApp": {
     "refund": {
       "home": {
-        "title": "Refunds",
-        "createLabel": "Create a new Refund",
-        "createOrEditLabel": "Create or edit a Refund",
-        "notFound": "No Refunds found"
+        "title": "المستردات",
+        "createLabel": "إنشاء طلب استرداد جديد",
+        "createOrEditLabel": "إنشاء أو تعديل طلب استرداد",
+        "notFound": "لم يتم العثور على المستردات"
       },
-      "created": "A new Refund is created with identifier {{ param }}",
-      "updated": "A Refund is updated with identifier {{ param }}",
-      "deleted": "A Refund is deleted with identifier {{ param }}",
+      "created": "تم إنشاء طلب استرداد برقم {{ param }}",
+      "updated": "تم التعديل على طلب الاسترداد برقم {{ param }}",
+      "deleted": "تم حذف طلب الاسترداد رقم {{ param }}",
       "delete": {
-        "question": "Are you sure you want to delete Refund {{ id }}?"
+        "question": "هل أنت متأكد من حذف طلب الاسترداد رقم {{ id }}؟"
       },
       "detail": {
-        "title": "Refund"
+        "title": "المستردات"
       },
-      "amount": "Amount",
-      "status": "Status",
-      "refundId": "Refund Id"
+      "amount": "الكمية",
+      "status": "الحالة",
+      "refundId": "معرف المسترد"
     }
   }
 }

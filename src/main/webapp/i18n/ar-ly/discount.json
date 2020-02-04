@@ -2,23 +2,23 @@
   "tbsApp": {
     "discount": {
       "home": {
-        "title": "Discounts",
-        "createLabel": "Create a new Discount",
-        "createOrEditLabel": "Create or edit a Discount",
-        "notFound": "No Discounts found"
+        "title": "الخصومات",
+        "createLabel": "إنشاء خصم جديد",
+        "createOrEditLabel": "إنشاء أو تعديل خصم",
+        "notFound": "لم يتم العثور على الخصم"
       },
-      "created": "A new Discount is created with identifier {{ param }}",
-      "updated": "A Discount is updated with identifier {{ param }}",
-      "deleted": "A Discount is deleted with identifier {{ param }}",
+      "created": "تمت إضافة خصم جديد برقم {{ param }}",
+      "updated": "تم التعديل على الخصم رقم {{ param }}",
+      "deleted": "تم حذف الخصم رقم {{ param }}",
       "delete": {
-        "question": "Are you sure you want to delete Discount {{ id }}?"
+        "question": "هل أنت متأكد من حذف الخصم {{ id }؟"
       },
       "detail": {
-        "title": "Discount"
+        "title": "الخصومات"
       },
-      "iPercentage": "I Percentage",
-      "value": "Value",
-      "type": "Type"
+      "iPercentage": "مئوي",
+      "value": "القيمة",
+      "type": "النوع"
     }
   }
 }

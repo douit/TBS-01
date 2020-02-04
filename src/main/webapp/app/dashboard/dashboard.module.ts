@@ -9,6 +9,8 @@ import { DashboardComponent } from './dashboard.component';
 import { DashboardRoutes } from './dashboard.routing';
 import {NgbDatepickerModule} from "@ng-bootstrap/ng-bootstrap";
 import {Daterangepicker} from "ng2-daterangepicker";
+import {TranslateModule} from "@ngx-translate/core";
+import {TbsSharedModule} from "app/shared/shared.module";
 
 @NgModule({
     imports: [
@@ -18,7 +20,9 @@ import {Daterangepicker} from "ng2-daterangepicker";
         MdModule,
         MaterialModule,
         NgbDatepickerModule,
-        Daterangepicker
+        Daterangepicker,
+        TranslateModule,
+      TbsSharedModule
     ],
     declarations: [DashboardComponent]
 })

@@ -7,6 +7,8 @@ import {AuthConsts} from 'app/shared/auth-consts';
 import {type} from 'os';
 import {LoginService} from 'app/core/login/login.service';
 import {Router} from '@angular/router';
+import {translate} from "googleapis/build/src/apis/translate";
+import {TranslateService} from "@ngx-translate/core";
 
 // Metadata
 export interface RouteInfo {
@@ -41,37 +43,37 @@ export class SidebarComponent implements OnInit {
     private ROUTES: RouteInfo[] = [
     {
       path: '/dashboard',
-      title: 'Dashboard',
+      title: this.translateService.instant('tbsApp.sidebar.dashboard'),
       authorities: [],
       type: 'link',
       icontype: 'dashboard'
     }, {
     path: '/item',
-      title: 'Items',
+      title: this.translateService.instant('tbsApp.sidebar.items'),
       authorities: [AuthConsts.VIEW_ITEM],
       type: 'link',
       icontype: 'grid_on'
     }, {
       path: '/invoice',
-        title: 'Invoices',
+        title: this.translateService.instant('tbsApp.sidebar.invoices'),
         authorities: [AuthConsts.VIEW_INVOICE],
         type: 'link',
         icontype: 'content_paste'
     }, {
       path: '/payment',
-        title: 'Payments',
+        title:this.translateService.instant('tbsApp.sidebar.payments'),
         authorities: [AuthConsts.VIEW_PAYMENT],
         type: 'link',
         icontype: 'attach_money'
     }, {
       path: '/customer/test_cc',
-        title: 'Test Credit Card Payment',
+        title:this.translateService.instant('tbsApp.sidebar.testcreditcardpayment'),
         authorities: [],
         type: 'link',
         icontype: 'widgets'
     }, {
         path: '/report',
-        title: 'Reports',
+        title: this.translateService.instant('tbsApp.sidebar.reports'),
         authorities: [AuthConsts.VIEW_REPORT],
         type: 'sub',
         icontype: 'timeline',
@@ -86,7 +88,7 @@ export class SidebarComponent implements OnInit {
           },
           {
             path: 'refund-report',
-            title: 'Refunds',
+            title: this.translateService.instant('tbsApp.sidebar.refunds'),
             authorities: [AuthConsts.VIEW_REPORT],
             icontype: 'list',
             ab: ''
@@ -95,7 +97,7 @@ export class SidebarComponent implements OnInit {
     },
     {
       path: '/admin',
-        title: 'Administrative',
+        title: this.translateService.instant('tbsApp.sidebar.dministrative'),
         authorities: [AuthConsts.VIEW_USER],
         type: 'sub',
         icontype: 'settings',
@@ -193,7 +195,8 @@ export class SidebarComponent implements OnInit {
 
   constructor(private accountService: AccountService,
               private router: Router,
-              private loginService: LoginService) {
+              private loginService: LoginService,
+              private translateService: TranslateService) {
   }
 
     isMobileMenu() {

@@ -2,24 +2,24 @@
   "tbsApp": {
     "tax": {
       "home": {
-        "title": "Taxes",
-        "createLabel": "Create a new Tax",
-        "createOrEditLabel": "Create or edit a Tax",
-        "notFound": "No Taxes found"
+        "title": "الضرائب",
+        "createLabel": "إنشاء ضريبة جديدة",
+        "createOrEditLabel": "إنشاء أو تعديل ضريبة",
+        "notFound": "لم يتم العثور على الضرائب"
       },
-      "created": "A new Tax is created with identifier {{ param }}",
-      "updated": "A Tax is updated with identifier {{ param }}",
-      "deleted": "A Tax is deleted with identifier {{ param }}",
+      "created": "تمت إضافة الضريبة برقم {{ param }}",
+      "updated": "تم تحديث الضريبة رقم {{ param }}",
+      "deleted": "تم حذف الضريبة رقم {{ param }}",
       "delete": {
-        "question": "Are you sure you want to delete Tax {{ id }}?"
+        "question": "هل أنت متأكد من حذف الضريبة  رقم {{ id }}؟"
       },
       "detail": {
-        "title": "Tax"
+        "title": "الضرائب"
       },
-      "name": "Name",
-      "description": "Description",
-      "rate": "Rate",
-      "item": "Item"
+      "name": "الأسم",
+      "description": "الوصف",
+      "rate": "المعدل",
+      "item": "المحتوى"
     }
   }
 }

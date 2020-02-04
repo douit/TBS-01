@@ -2,25 +2,32 @@
   "tbsApp": {
     "payment": {
       "home": {
-        "title": "Payments",
-        "createLabel": "Create a new Payment",
-        "createOrEditLabel": "Create or edit a Payment",
-        "notFound": "No Payments found"
+        "title": "المدفوعات",
+        "createLabel": "انشاء عملية دفع جديدة",
+        "createOrEditLabel": "انشاء أو تعديل عملية دفع",
+        "notFound": "لم يتم العثور على المدفوعات"
       },
-      "created": "A new Payment is created with identifier {{ param }}",
-      "updated": "A Payment is updated with identifier {{ param }}",
-      "deleted": "A Payment is deleted with identifier {{ param }}",
+      "created": "تم  إنشاء عملية دفع جديدة برقم {{ param }}",
+      "updated": "تم التعديل على عملية الدفع رقم {{ param }}",
+      "deleted": "تم حذف عملية الدفع رقم {{ param }}",
       "delete": {
-        "question": "Are you sure you want to delete Payment {{ id }}?"
+        "question": "هل أنت متأكد من حذف عملية الدفع رقم {{ id }}؟"
       },
       "detail": {
-        "title": "Payment"
+        "title": "المدفوعات"
       },
-      "amount": "Amount",
-      "status": "Status",
-      "expirationDate": "Expiration Date",
-      "invoice": "Invoice",
-      "paymentMethod": "Payment Method"
+      "amount": "الكمية",
+      "status": "الحالة",
+      "expirationDate": "تاريخ إنتهاء الصلاحية",
+      "invoice": "الفاتورة",
+      "paymentMethod": "عملية الدفع",
+      "paymentStatus": {
+        "PENDING": "قيد الإنتظار",
+        "PAID": "مدفوعة",
+        "UNPAID": "غير مدفوعة",
+        "REFUNDED": "مستردة"
+
+      }
     }
   }
 }

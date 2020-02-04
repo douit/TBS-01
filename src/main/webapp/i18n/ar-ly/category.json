@@ -2,23 +2,23 @@
   "tbsApp": {
     "category": {
       "home": {
-        "title": "Categories",
-        "createLabel": "Create a new Category",
-        "createOrEditLabel": "Create or edit a Category",
-        "notFound": "No Categories found"
+        "title": "الأصناف",
+        "createLabel": "إنشاء تصنيف جديد",
+        "createOrEditLabel": "إنشاء أو تعديل تصنيف",
+        "notFound": "التصنيف غير موجود"
       },
-      "created": "A new Category is created with identifier {{ param }}",
-      "updated": "A Category is updated with identifier {{ param }}",
-      "deleted": "A Category is deleted with identifier {{ param }}",
+      "created": "تمت إضافة تصنيف جديد برقم {{ param }}",
+      "updated": "تم التعديل على التصنيف رقم {{ param }}",
+      "deleted": "تم حذف التصنيف رقم {{ param }}",
       "delete": {
-        "question": "Are you sure you want to delete Category {{ id }}?"
+        "question": "هل أنت متأكد من حذف التصنيف {{ id }؟"
       },
       "detail": {
-        "title": "Category"
+        "title": "التصنيف"
       },
-      "code": "Code",
-      "name": "Name",
-      "description": "Description"
+      "code": "الرمز",
+      "name": "الأسم",
+      "description": "الوصف"
     }
   }
 }

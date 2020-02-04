@@ -273,7 +273,11 @@ export class UserMgmtUpdateComponent implements OnInit {
     this.role.clientId = this.editForm.controls['roleClient'].value.id;
     this.role.roleName = this.editForm.controls['roleName'].value;
     this.roles.splice(this.roles.length, 0, this.role);
-
+    // if(this.translateAuthorities.length >0){
+    //   for(let i =0; i<=this.translateAuthorities.length;i++){
+    //     this.translateAuthorities.pop();
+    //   }
+    // }
     this.userService.getRoleAuthorities(this.role.roleName).subscribe(
       res => {
         this.text = res;
@@ -305,6 +309,11 @@ export class UserMgmtUpdateComponent implements OnInit {
   }
 
   delete(id: number, index: number) {
+
+    let lengthOfStack = this.translateAuthorities.length;
+    for(let i =0; i <= lengthOfStack;i++){
+      this.translateAuthorities.pop();
+    }
     /*if (id) {
       this.roles.filter((t) => {
         if (t.id === id) {
