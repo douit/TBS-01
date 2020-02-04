@@ -25,7 +25,7 @@ import {JhiAlertService} from 'ng-jhipster';
 import {MOMENT} from 'angular-calendar';
 import {ZonedDateTime} from 'js-joda';
 import {NgbDateStruct} from '@ng-bootstrap/ng-bootstrap/datepicker/ngb-date-struct';
-import {TranslateService} from "@ngx-translate/core";
+import {TranslateService} from '@ngx-translate/core';
 
 @Component({
   selector: 'app-dashboard',
@@ -139,7 +139,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     if (this.selectedClient != null) {
       clientId = this.selectedClient.id;
     }
-    this.year = this.fromDate.year.toString();
+    this.year = (this.fromDate != null) ? this.fromDate.year.toString() : moment().year().toString();
     const chartMonthlyStatisticsRequest: IStatisticsRequest = {
       fromDate: fromDate,
       toDate: toDate,
@@ -269,7 +269,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         const totalInvoiceList = [];
         const paidInvoiceList = [];
         let max = 0;
-        let monthNum=0;
+        let monthNum = 0;
         res.forEach(statMonth => {
           totalInvoiceList.push(statMonth.totalInvoice);
           paidInvoiceList.push(statMonth.totalPaid);
@@ -282,7 +282,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
             max = statMonth.totalInvoice;
           }
         });
-        this.month= this.translateService.instant('dashboard.statistics.monthly.' +monthNum);
+        this.month = this.translateService.instant('dashboard.statistics.monthly.' + monthNum);
 
         // this.dataMonthlyChart.labels =daysList;
         this.dataMonthlyChart.series.push(totalInvoiceList);
