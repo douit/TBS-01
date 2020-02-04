@@ -38,7 +38,7 @@ public class ReportResource {
         return ResponseEntity.ok(reportService.requestReport(reportRequest, ReportType.PAYMENT));
     }
 
-    @PreAuthorize("isAuthenticated()")
+    // @PreAuthorize("isAuthenticated()")
     @GetMapping("/payment/datatable")
     public DataTablesOutput<ReportDTO> getAllPaymentReports(DataTablesInput input) {
         return reportService.getReports(input, ReportType.PAYMENT);
@@ -51,7 +51,7 @@ public class ReportResource {
         return ResponseEntity.ok(reportService.requestReport(reportRequest, ReportType.REFUND));
     }
 
-    @PreAuthorize("isAuthenticated()")
+    // @PreAuthorize("isAuthenticated()")
     @GetMapping("/refund/datatable")
     public DataTablesOutput<ReportDTO> getAllRefundReports(DataTablesInput input) {
         return reportService.getReports(input, ReportType.REFUND);

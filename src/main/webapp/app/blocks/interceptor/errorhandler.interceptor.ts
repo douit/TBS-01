@@ -14,7 +14,10 @@ export class ErrorHandlerInterceptor implements HttpInterceptor {
         (event: HttpEvent<any>) => {},
         (err: any) => {
           if (err instanceof HttpErrorResponse) {
-            if (!(err.status === 401 && (err.message === '' || (err.url && err.url.includes('api/account'))))) {
+            if (!(
+                  (err.status === 401 || err.status === 503 || err.status === 504)
+                  && (err.message === '' || (err.url && err.url.includes('api/account')) || (err.url && err.url.includes('/datatable?columns')))
+            )) {
               this.eventManager.broadcast({ name: 'tbsApp.httpError', content: err });
             }
           }

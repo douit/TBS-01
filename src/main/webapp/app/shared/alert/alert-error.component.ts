@@ -25,15 +25,16 @@ export class JhiAlertErrorComponent implements OnDestroy {
       let i;
       const httpErrorResponse = response.content;
       switch (httpErrorResponse.status) {
-        // connection refused, server not reachable
+        // connection refused, server not reachable, timeout
         case 0:
+        case 504:
           this.addErrorAlert('Server not reachable', 'error.server.not.reachable');
           break;
 
         case 400: {
           const arr = httpErrorResponse.headers.keys();
-          let errorHeader = null;
           let entityKey = null;
+          let errorHeader = null;
           arr.forEach(entry => {
             if (entry.toLowerCase().endsWith('app-error')) {
               errorHeader = httpErrorResponse.headers.get(entry);
@@ -59,7 +60,8 @@ export class JhiAlertErrorComponent implements OnDestroy {
           } else if (httpErrorResponse.error !== '' && httpErrorResponse.error.message) {
             this.addErrorAlert(httpErrorResponse.error.message, httpErrorResponse.error.message, httpErrorResponse.error.params);
           } else {
-            this.addErrorAlert(httpErrorResponse.error);
+            // avoid not translated message
+            // this.addErrorAlert(httpErrorResponse.error);
           }
           break;
         }
@@ -68,11 +70,12 @@ export class JhiAlertErrorComponent implements OnDestroy {
           break;
 
         default:
-          if (httpErrorResponse.error !== '' && httpErrorResponse.error.message) {
+          // avoid not translated message
+          /*if (httpErrorResponse.error !== '' && httpErrorResponse.error.message) {
             this.addErrorAlert(httpErrorResponse.error.message);
           } else {
             this.addErrorAlert(httpErrorResponse.error);
-          }
+          }*/
       }
     });
   }
