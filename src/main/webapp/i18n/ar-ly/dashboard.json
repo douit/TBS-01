@@ -1,18 +1,18 @@
 {
   "tbsApp": {
     "dashboard": {
-      "income": "الدخل",
-      "refund": "المستردات",
-      "paidinvoices": "الفواتير المدفوعة",
-      "invoices": "الفواتير",
-      "dailystatistics": "الإحصائيات اليومية",
-      "monthlystatistics": "الإحصائيات الشهرية",
-      "startdate": "تاريخ البداية",
-      "endstart": "تاريخ الإنتهاء",
-      "selectclient": "اختر العميل",
-      "search": "بحث",
-      "update": "التحديث",
-      "justupdated": "الآن"
+      "income": "Income",
+      "refund": "Refund",
+      "paidinvoices": "Paid Invoices" ,
+      "invoices": "Invoices",
+      "dailystatistics": "Daily Statistics",
+      "monthlystatistics": "Monthly Statistics",
+      "startdate": "Start Date",
+      "endstart": "End Start",
+      "selectclient": "Select Client",
+      "search": "Search",
+      "update": "Update",
+      "justupdated": "now"
     }
   }
 
