@@ -30,7 +30,7 @@
       },
       "search": {
         "startdate": "تاريخ البداية",
-        "endstart": "تاريخ الإنتهاء",
+        "enddate": "تاريخ الإنتهاء",
         "selectclient": "اختر العميل",
         "customerid": "رقم الزبون",
         "selectpaymentstatus": "اختر حالة الدفع"

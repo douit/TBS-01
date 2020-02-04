@@ -30,7 +30,7 @@
       },
       "search": {
         "startdate": "Start Date",
-        "endstart": "End Start",
+        "enddate": "End Start",
         "selectclient": "Select Client",
         "selectpaymentstatus": "Select payment Status"
 
