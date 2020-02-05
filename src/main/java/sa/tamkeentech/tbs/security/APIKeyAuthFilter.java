@@ -23,9 +23,9 @@ public class APIKeyAuthFilter extends AbstractPreAuthenticatedProcessingFilter {
     protected Object getPreAuthenticatedPrincipal(HttpServletRequest request) {
         // temp as TAHAQAQ client does not send
         String secretKey = request.getHeader(principalRequestHeader);
-        if (StringUtils.isEmpty(secretKey)) {
+        /*if (StringUtils.isEmpty(secretKey)) {
             secretKey = "06400E55EF3DD14AC6477E56681BF609B0A99B3620CB648CC4E8EF794F9C3AE8";
-        }
+        }*/
         // Optional<Client> client =  clientService.getClientBySecretKey(request.getHeader(principalRequestHeader));
         // Optional<Client> client =  clientService.getClientBySecretKey("06400E55EF3DD14AC6477E56681BF609B0A99B3620CB648CC4E8EF794F9C3AE8");
         Optional<Client> client =  clientService.getClientBySecretKey(secretKey);

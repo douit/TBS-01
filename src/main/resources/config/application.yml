@@ -173,7 +173,7 @@ jhipster:
 # application:
 tbs:
   http:
-    token-header-name: Authorization
+    token-header-name: consumer-secret
     authentication-token: bearer AFDD0B4AD2EC172C586E2150770FBF9E
   payment:
     sadad-url: 'http://10.60.75.60:1001/api/sadad/billloadrq'
