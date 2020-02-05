@@ -15,9 +15,9 @@
 
 logging:
   level:
-    ROOT: DEBUG
-    io.github.jhipster: DEBUG
-    sa.tamkeentech.tbs: DEBUG
+    ROOT: INFO
+    io.github.jhipster: INFO
+    sa.tamkeentech.tbs: INFO
 
 spring:
   profiles:
@@ -45,7 +45,7 @@ spring:
   jpa:
     database-platform: io.github.jhipster.domain.util.FixedPostgreSQL95Dialect
     database: POSTGRESQL
-    show-sql: true
+    show-sql: false
     properties:
       hibernate.id.new_generator_mappings: true
       hibernate.connection.provider_disables_autocommit: true
