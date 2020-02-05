@@ -180,7 +180,8 @@
                                                                                                    aria-hidden="true"></i></span>
                                                                 {{audit.successful ? 'Ok' : 'Not Ok'}}
                                                             </td>
-                                                            <td>{{formatDate(audit.auditEventDate)}}</td>
+                                                            <!--<td>{{formatDate(audit.auditEventDate)}}</td>-->
+                                                            <td> {{audit.auditEventDate | tbsDateTime}}</td>
                                                         </tr>
 
                                                         </thead>

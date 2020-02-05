@@ -4,6 +4,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,7 +37,7 @@ public class PersistentAuditEvent implements Serializable {
     private boolean successful;
 
     @Column(name = "event_date")
-    private Instant auditEventDate;
+    private ZonedDateTime auditEventDate;
 
     @Column(name = "event_type")
     private String auditEventType;
@@ -67,11 +68,11 @@ public class PersistentAuditEvent implements Serializable {
         this.principal = principal;
     }
 
-    public Instant getAuditEventDate() {
+    public ZonedDateTime getAuditEventDate() {
         return auditEventDate;
     }
 
-    public void setAuditEventDate(Instant auditEventDate) {
+    public void setAuditEventDate(ZonedDateTime auditEventDate) {
         this.auditEventDate = auditEventDate;
     }
 

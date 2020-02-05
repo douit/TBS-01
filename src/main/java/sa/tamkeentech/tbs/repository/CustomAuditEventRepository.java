@@ -12,6 +12,8 @@ import sa.tamkeentech.tbs.config.audit.AuditEventConverter;
 import sa.tamkeentech.tbs.domain.PersistentAuditEvent;
 
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,7 +60,7 @@ public class CustomAuditEventRepository implements AuditEventRepository {
             PersistentAuditEvent persistentAuditEvent = new PersistentAuditEvent();
             persistentAuditEvent.setPrincipal(event.getPrincipal());
             persistentAuditEvent.setAuditEventType(event.getType());
-            persistentAuditEvent.setAuditEventDate(event.getTimestamp());
+            persistentAuditEvent.setAuditEventDate(ZonedDateTime.ofInstant(event.getTimestamp(), ZoneId.systemDefault()));
             Map<String, String> eventData = auditEventConverter.convertDataToStrings(event.getData(), persistentAuditEvent);
             persistentAuditEvent.setData(truncate(eventData));
             persistenceAuditEventRepository.save(persistentAuditEvent);
