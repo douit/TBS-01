@@ -71,13 +71,15 @@ public class ItemService {
     public ItemDTO save(ItemDTO itemDTO, boolean isApp) {
         log.debug("Request to save Item : {}", itemDTO);
         Set<Tax> taxes = new HashSet<>();
-        for(TaxDTO taxDTO : itemDTO.getTaxes()){
-            Optional<Tax> tax = taxRepository.findByCode(taxDTO.getCode());
-            if (tax.isPresent()) {
-                taxes.add(tax.get());
+        if (CollectionUtils.isNotEmpty(itemDTO.getTaxes())) {
+            for(TaxDTO taxDTO : itemDTO.getTaxes()){
+                Optional<Tax> tax = taxRepository.findByCode(taxDTO.getCode());
+                if (tax.isPresent()) {
+                    taxes.add(tax.get());
 
-            } else {
-                throw new TbsRunTimeException("Tax doesn't exist");
+                } else {
+                    throw new TbsRunTimeException("Tax doesn't exist");
+                }
             }
         }
         Item item = itemMapper.toEntity(itemDTO);
@@ -187,6 +189,20 @@ public class ItemService {
     public List<ItemDTO> findAll() {
         log.debug("Request to get all Items");
         return itemRepository.findAll().stream()
+            .map(itemMapper::toDto)
+            .collect(Collectors.toCollection(LinkedList::new));
+    }
+
+    /**
+     *
+     * @return
+     */
+    @Transactional(readOnly = true)
+    public List<ItemDTO> findAllByClient() {
+        log.debug("Request to get all Items by client");
+        String appName = SecurityUtils.getCurrentUserLogin().orElse("");
+        Optional<Client> client =  clientService.getClientByClientId(appName);
+        return itemRepository.findByClientId(client.get().getId()).stream()
             .map(itemMapper::toDto)
             .collect(Collectors.toCollection(LinkedList::new));
     }

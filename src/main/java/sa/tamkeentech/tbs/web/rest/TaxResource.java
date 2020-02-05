@@ -22,7 +22,7 @@ import java.util.Optional;
  * REST controller for managing {@link sa.tamkeentech.tbs.domain.Tax}.
  */
 @RestController
-//@RequestMapping("/api")
+@RequestMapping("/api")
 public class TaxResource {
 
     private final Logger log = LoggerFactory.getLogger(TaxResource.class);
@@ -66,7 +66,7 @@ public class TaxResource {
      * or with status {@code 500 (Internal Server Error)} if the taxDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PutMapping("/api/taxes")
+    @PutMapping("/taxes")
     public ResponseEntity<TaxDTO> updateTax(@RequestBody TaxDTO taxDTO) throws URISyntaxException {
         log.debug("REST request to update Tax : {}", taxDTO);
         if (taxDTO.getId() == null) {
@@ -84,7 +84,7 @@ public class TaxResource {
 
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of taxes in body.
      */
-    @GetMapping("/billing/taxes")
+    @GetMapping("/taxes")
     public List<TaxDTO> getAllTaxes() {
         log.debug("REST request to get all Taxes");
         return taxService.findAll();
@@ -96,7 +96,7 @@ public class TaxResource {
      * @param id the id of the taxDTO to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the taxDTO, or with status {@code 404 (Not Found)}.
      */
-    @GetMapping("/billing/taxes/{id}")
+    @GetMapping("/taxes/{id}")
     public ResponseEntity<TaxDTO> getTax(@PathVariable Long id) {
         log.debug("REST request to get Tax : {}", id);
         Optional<TaxDTO> taxDTO = taxService.findOne(id);
@@ -109,10 +109,10 @@ public class TaxResource {
      * @param id the id of the taxDTO to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
-    @DeleteMapping("/api/taxes/{id}")
+    /*@DeleteMapping("/taxes/{id}")
     public ResponseEntity<Void> deleteTax(@PathVariable Long id) {
         log.debug("REST request to delete Tax : {}", id);
         taxService.delete(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString())).build();
-    }
+    }*/
 }

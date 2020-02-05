@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 import sa.tamkeentech.tbs.service.dto.ItemDTO;
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -16,6 +17,7 @@ import java.util.Optional;
 public interface ItemRepository extends JpaRepository<Item, Long>, DataTablesRepository<Item, Long> {
     Optional<Item> findById( Long id);
     Optional<Item> findByCodeAndClientId(String itemName, Long id);
+    List<Item> findByClientId(Long id);
     Optional<Item> findByCodeAndId(String itemName, Long id);
 
 

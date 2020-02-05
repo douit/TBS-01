@@ -10,7 +10,7 @@ import {ITax} from "app/shared/model/tax.model";
 
 @Injectable({ providedIn: 'root' })
 export class TaxService {
-  public resourceUrl = SERVER_API_URL + 'billing/taxes';
+  public resourceUrl = SERVER_API_URL + 'api/taxes';
 
   constructor(protected http: HttpClient) {}
 

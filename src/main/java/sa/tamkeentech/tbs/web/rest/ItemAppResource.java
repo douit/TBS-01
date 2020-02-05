@@ -102,7 +102,7 @@ public class ItemAppResource {
     @GetMapping("/items")
     public List<ItemDTO> getAllItems() {
         log.debug("REST request to get all Items");
-        List<ItemDTO> items = itemService.findAll();
+        List<ItemDTO> items = itemService.findAllByClient();
         if (CollectionUtils.isNotEmpty(items)) {
             return items.stream().map(item -> {
                 item.setClient(null);
