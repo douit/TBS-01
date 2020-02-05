@@ -1,29 +1,25 @@
-import { NgModule } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import {NgModule} from '@angular/core';
+import {RouterModule} from '@angular/router';
 
-import { TbsSharedModule } from 'app/shared/shared.module';
-
-import { SessionsComponent } from './sessions/sessions.component';
-import { PasswordStrengthBarComponent } from './password/password-strength-bar.component';
-import { RegisterComponent } from './register/register.component';
-import { ActivateComponent } from './activate/activate.component';
-import { PasswordComponent } from './password/password.component';
-import { PasswordResetInitComponent } from './password-reset/init/password-reset-init.component';
-import { PasswordResetFinishComponent } from './password-reset/finish/password-reset-finish.component';
-import { SettingsComponent } from './settings/settings.component';
-import { accountState } from './account.route';
+import {TbsSharedModule} from 'app/shared/shared.module';
+import {PasswordStrengthBarComponent} from './password/password-strength-bar.component';
+import {PasswordComponent} from './password/password.component';
+import {PasswordResetFinishComponent} from './password-reset/finish/password-reset-finish.component';
+import {accountState} from './account.route';
+import {CommonModule} from '@angular/common';
+import {FormsModule} from '@angular/forms';
 
 @NgModule({
-  imports: [TbsSharedModule, RouterModule.forChild(accountState)],
+  imports: [TbsSharedModule, CommonModule, RouterModule.forChild(accountState), FormsModule],
   declarations: [
-    ActivateComponent,
-    RegisterComponent,
+    // ActivateComponent,
+    // RegisterComponent,
     PasswordComponent,
     PasswordStrengthBarComponent,
-    PasswordResetInitComponent,
+    // PasswordResetInitComponent,
     PasswordResetFinishComponent,
-    SessionsComponent,
-    SettingsComponent
+    // SessionsComponent,
+    // SettingsComponent
   ]
 })
 export class TbsAccountModule {}

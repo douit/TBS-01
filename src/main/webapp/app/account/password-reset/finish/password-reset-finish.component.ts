@@ -3,6 +3,7 @@ import { FormBuilder, Validators } from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
 import { NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { PasswordResetFinishService } from './password-reset-finish.service';
+import {JhiLanguageService} from 'ng-jhipster';
 declare var $: any;
 
 @Component({
@@ -34,6 +35,7 @@ export class PasswordResetFinishComponent implements OnInit, OnDestroy, AfterVie
     private fb: FormBuilder,
     private router: Router,
     private element: ElementRef,
+    private languageService: JhiLanguageService
   ) {}
 
   ngOnInit() {
