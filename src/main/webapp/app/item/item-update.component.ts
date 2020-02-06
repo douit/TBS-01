@@ -56,6 +56,7 @@ export class ItemUpdateComponent implements OnInit {
   dropdownList = [];
   // selectedItems = [];
   dropdownSettings: IDropdownSettings = {};
+  isCreate: boolean;
 
   editForm = this.fb.group({
     id: [],
@@ -83,17 +84,8 @@ export class ItemUpdateComponent implements OnInit {
   }
 
   ngOnInit() {
-    // let taxss = {item_id: 1, item_text: 'KSA Tax' }
-    // this.dropdownList.push(taxss)
     this.taxService.getTaxes().subscribe(res => {
       this.dropdownList = res.body;
- /* res.body.forEach(tax => {
-    this.dropdownList.push(tax
-      // item_id: tax.id, item_text: tax.code }
-      );
-  });*/
-  // this.dropdownList = this.taxesList;
-
   });
 
   this.dropdownSettings = {
@@ -107,6 +99,11 @@ export class ItemUpdateComponent implements OnInit {
     };
     this.isSaving = false;
     this.activatedRoute.data.subscribe(({ item }) => {
+      if (item && item.id != null) {
+        this.isCreate = false;
+      } else {
+        this.isCreate = true;
+      }
       this.updateForm(item);
     });
     this.categoryService

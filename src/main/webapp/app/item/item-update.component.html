@@ -67,17 +67,19 @@
                     <div class="card-header card-header-text card-header-primary" data-background-color="primary-one">
                         <div class="card-text">
                             <h4 id="page-heading">
-                                <span jhiTranslate="tbsApp.item.home.title">Add New Item</span>
+                               <!-- <span jhiTranslate="tbsApp.item.home.title">Add New Item</span>-->
+                                <span *ngIf="isCreate" jhiTranslate="tbsApp.item.home.createLabel"> </span>
+                                <span *ngIf="!isCreate" jhiTranslate="tbsApp.item.home.editLabel"> </span>
                             </h4>
                         </div>
                     </div>
 
                     <form name="editForm"  (ngSubmit)="save()" [formGroup]="editForm">
 
-                                <h3 class="ml-4">Create an
-                                    Item</h3>
-
                         <div class="card-body">
+
+                            <jhi-alert-error></jhi-alert-error>
+
                             <div class="row">
                                 <label class="col-sm-2 col-form-label">Code </label>
                                 <div class="col-sm-7">

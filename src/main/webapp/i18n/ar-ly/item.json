@@ -5,7 +5,8 @@
         "title": "Items",
         "createLabel": "Create a new Item",
         "createOrEditLabel": "Create or edit a Item",
-        "notFound": "No Items found"
+        "notFound": "No Items found",
+        "editLabel": "Edit Item"
       },
       "created": "A new Item is created with identifier {{ param }}",
       "updated": "A Item is updated with identifier {{ param }}",
