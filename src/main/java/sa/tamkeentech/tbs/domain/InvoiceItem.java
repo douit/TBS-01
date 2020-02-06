@@ -61,4 +61,10 @@ public class InvoiceItem extends AbstractAuditingEntity implements Serializable 
     @JsonIgnoreProperties("invoiceItems")
     private Item item;
 
+    @Column(name = "details")
+    private String details;
+
+
+
+
 }

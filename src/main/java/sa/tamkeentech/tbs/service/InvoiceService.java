@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
 import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -170,7 +171,7 @@ public class InvoiceService {
         // Payment method
         Optional<PaymentMethod> paymentMethod = paymentMethodService.findByCode(invoiceDTO.getPaymentMethod().getCode());
 
-        InvoiceResponseDTO invoiceItemsResponseDTO= InvoiceResponseDTO.builder()
+        InvoiceResponseDTO invoiceItemsResponseDTO = InvoiceResponseDTO.builder()
             .paymentMethod(invoiceDTO.getPaymentMethod().getId()).build();
 
         if (paymentMethod.isPresent()) {
@@ -195,7 +196,7 @@ public class InvoiceService {
                     try {
                         paymentResponseDTO = paymentService.sendEventAndCreditCardCall(Optional.of(invoice), appCode, roundedAmount.multiply(new BigDecimal("100")));
                     } catch (JSONException | IOException e) {
-                        throw new PaymentGatewayException("Payment gateway issue: "+ e.getCause());
+                        throw new PaymentGatewayException("Payment gateway issue: " + e.getCause());
                     }
                     invoiceItemsResponseDTO.setLink(paymentResponseDTO.getUrl());
                     log.info("CC payment method");
@@ -205,7 +206,7 @@ public class InvoiceService {
                     log.info("Cash payment method");
                     break;
             }
-            status =  InvoiceStatus.CREATED;
+            status = InvoiceStatus.CREATED;
             updateInvoice(invoice.getId(), status);
             invoiceItemsResponseDTO.setStatusId(1);
             invoiceItemsResponseDTO.setShortDesc("success");
@@ -218,11 +219,11 @@ public class InvoiceService {
 
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW, noRollbackFor=TbsRunTimeException.class)
+    @Transactional(propagation = Propagation.REQUIRES_NEW, noRollbackFor = TbsRunTimeException.class)
     Invoice createNewInvoice(InvoiceDTO invoiceDTO) {
         // Client
         String appName = SecurityUtils.getCurrentUserLogin().orElse("");
-        Optional<Client> client =  clientService.getClientByClientId(appName);
+        Optional<Client> client = clientService.getClientByClientId(appName);
 
         // check if Customer Type not null
         if (invoiceDTO.getCustomer().getIdentityType() == null) {
@@ -259,25 +260,37 @@ public class InvoiceService {
         BigDecimal avgTax = BigDecimal.ZERO;
         BigDecimal avgTaxNumerator = BigDecimal.ZERO;
         BigDecimal avgTaxDenominator = BigDecimal.ZERO;
-        for(InvoiceItemDTO invoiceItemDTO : invoiceDTO.getInvoiceItems()){
+        boolean flexibleAmount = false ;
+        for (InvoiceItemDTO invoiceItemDTO : invoiceDTO.getInvoiceItems()) {
             Optional<Item> item = itemService.findByCodeAndClient(invoiceItemDTO.getItemCode(), client.get().getId());
             if (!item.isPresent()) {
-                throw new TbsRunTimeException("Unknown item: "+ invoiceItemDTO.getItemCode());
+                throw new TbsRunTimeException("Unknown item: " + invoiceItemDTO.getItemCode());
             }
-            InvoiceItem invoiceItem= InvoiceItem.builder()
+            InvoiceItem invoiceItem = InvoiceItem.builder()
                 .item(item.get())
-                .amount(item.get().getPrice())
                 .name(item.get().getName())
                 .code(item.get().getCode())
                 .quantity(invoiceItemDTO.getQuantity())
                 .invoice(invoice)
                 .build();
+            if (item.get().isFlexiblePrice()) {
+                flexibleAmount = true;
+                if (!invoiceItemDTO.getDetails().isEmpty() && !invoiceItemDTO.getAmount().equals(BigDecimal.ZERO)) {
+                    invoiceItem.setAmount(invoiceItemDTO.getAmount());
+                } else {
+                    throw new TbsRunTimeException("Item amount is mandatory");
+                }
+            } else {
+                invoiceItem.setAmount(item.get().getPrice());
+
+            }
+
 
             BigDecimal totalInvoiceItem = invoiceItem.getAmount().multiply(new BigDecimal(invoiceItem.getQuantity()));
             BigDecimal discountValue = BigDecimal.ZERO;
             // Add sub discount for each item invoice  :
             // Item discount is Tax exclusive -> apply discount then add tax
-            if (invoiceItemDTO.getDiscount().getValue().compareTo(BigDecimal.ZERO)>0) {
+            if (invoiceItemDTO.getDiscount().getValue().compareTo(BigDecimal.ZERO) > 0) {
                 if (invoiceItemDTO.getDiscount().getIsPercentage() == false) {
                     Discount discount = Discount.builder().isPercentage(false).type(DiscountType.ITEM).value(invoiceItemDTO.getDiscount().getValue()).build();
                     invoiceItem.setDiscount(discount);
@@ -289,8 +302,8 @@ public class InvoiceService {
                     Discount discount = Discount.builder().isPercentage(true).type(DiscountType.ITEM).value(invoiceItemDTO.getDiscount().getValue()).build();
                     invoiceItem.setDiscount(discount);
                     BigDecimal discountRate = invoiceItemDTO.getDiscount().getValue().divide(new BigDecimal("100"));
-                    discountValue =totalInvoiceItem.multiply(discountRate);
-                    totalInvoiceItem= totalInvoiceItem.subtract(totalInvoiceItem.multiply(discountRate));
+                    discountValue = totalInvoiceItem.multiply(discountRate);
+                    totalInvoiceItem = totalInvoiceItem.subtract(totalInvoiceItem.multiply(discountRate));
                 }
             }
             //Add total discount
@@ -313,8 +326,8 @@ public class InvoiceService {
             if (CollectionUtils.isNotEmpty(item.get().getTaxes())) {
                 invoiceItem.setTaxName("total_tax");
                 for (Tax tax : item.get().getTaxes()) {
-                    if (tax.getRate().compareTo(BigDecimal.ZERO) > 0 ) {
-                        totalTaxes= totalTaxes.add(tax.getRate());
+                    if (tax.getRate().compareTo(BigDecimal.ZERO) > 0) {
+                        totalTaxes = totalTaxes.add(tax.getRate());
                     }
                 }
                 invoiceItem.setTaxRate(totalTaxes);
@@ -330,12 +343,12 @@ public class InvoiceService {
         }
 
         // Invoice discount is Tax inclusive  -> add tax then apply discount
-        if(invoiceDTO.getDiscount().getValue().compareTo(BigDecimal.ZERO) >0){
-            if (invoiceDTO.getDiscount().getIsPercentage() == false){
+        if (invoiceDTO.getDiscount().getValue().compareTo(BigDecimal.ZERO) > 0) {
+            if (invoiceDTO.getDiscount().getIsPercentage() == false) {
                 Discount discount = Discount.builder().isPercentage(false).type(DiscountType.INVOICE).value(invoiceDTO.getDiscount().getValue()).build();
                 invoice.setDiscount(discount);
                 totalPriceInvoice = totalPriceInvoice.subtract(invoice.getDiscount().getValue());
-            }else{
+            } else {
                 Discount discount = Discount.builder().isPercentage(true).type(DiscountType.INVOICE).value(invoiceDTO.getDiscount().getValue()).build();
                 invoice.setDiscount(discount);
                 BigDecimal discountRate = invoice.getDiscount().getValue().divide(new BigDecimal("100"));
@@ -343,17 +356,16 @@ public class InvoiceService {
                 totalPriceInvoice = totalPriceInvoice.subtract(discountValue);
             }
         }
-
-        if(invoiceDTO.getAmount().compareTo(totalPriceInvoice.setScale(2, RoundingMode.HALF_UP)) != 0) {
-            throw new TbsRunTimeException("Wrong invoice amount");
+        if (!flexibleAmount) {
+            if (invoiceDTO.getAmount().compareTo(totalPriceInvoice.setScale(2, RoundingMode.HALF_UP)) != 0) {
+                throw new TbsRunTimeException("Wrong invoice amount");
+            }
         }
-
         // calculate average tax
         if (avgTaxDenominator.compareTo(BigDecimal.ZERO) > 0) {
             avgTax = avgTaxNumerator.divide(avgTaxDenominator, RoundingMode.HALF_UP);
             subTotalInvoice = totalPriceInvoice.divide(avgTax, RoundingMode.HALF_UP);
         }
-
         // get bill seq
         Long seq = sequenceUtil.getNextInvoiceNumber(client.get().getClientId());
         invoice.setAccountId(seq + Constants.CLIENT_SADAD_CONFIG.valueOf(client.get().getClientId().toString()).getInitialAccountId());
@@ -365,7 +377,11 @@ public class InvoiceService {
         // Now
         invoice.setDueDate(ZonedDateTime.now());
         // Now + 2days
-        invoice.setExpiryDate(ZonedDateTime.now().plusDays(Constants.INVOICE_EXPIRY_DAYS));
+        if(invoiceDTO.getExpirationDays() >0)
+            invoice.setExpiryDate(ZonedDateTime.now().plusDays(invoiceDTO.getExpirationDays()));
+        else
+            invoice.setExpiryDate(ZonedDateTime.now().plusDays(Constants.INVOICE_EXPIRY_DAYS));
+
         invoice.setStatus(InvoiceStatus.NEW);
         invoice.setPaymentStatus(PaymentStatus.PENDING);
         return invoiceRepository.saveAndFlush(invoice);
@@ -385,7 +401,7 @@ public class InvoiceService {
         // Payment method
         Optional<PaymentMethod> paymentMethod = paymentMethodService.findById(oneItemInvoiceDTO.getPaymentMethodId());
 
-        InvoiceResponseDTO oneItemInvoiceRespDTO= InvoiceResponseDTO.builder()
+        InvoiceResponseDTO oneItemInvoiceRespDTO = InvoiceResponseDTO.builder()
             .paymentMethod(oneItemInvoiceDTO.getPaymentMethodId()).build();
         if (paymentMethod.isPresent()) {
             String paymentMethodCode = paymentMethod.get().getCode();
@@ -419,10 +435,10 @@ public class InvoiceService {
                     try {
                         paymentResponseDTO = paymentService.sendEventAndCreditCardCall(Optional.of(invoice), appCode, roundedAmount.multiply(new BigDecimal("100")));
                     } catch (JSONException | IOException e) {
-                        throw new PaymentGatewayException("Payment gateway issue: "+ e.getCause());
+                        throw new PaymentGatewayException("Payment gateway issue: " + e.getCause());
                     }
                     oneItemInvoiceRespDTO.setLink(paymentResponseDTO.getUrl());
-                break;
+                    break;
                 default:
                     log.info("Cash payment method");
 
@@ -440,11 +456,11 @@ public class InvoiceService {
         return oneItemInvoiceRespDTO;
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW, noRollbackFor=TbsRunTimeException.class)
+    @Transactional(propagation = Propagation.REQUIRES_NEW, noRollbackFor = TbsRunTimeException.class)
     public Invoice addNewOneItemInvoice(OneItemInvoiceDTO oneItemInvoiceDTO) {
         // Client
         String appName = SecurityUtils.getCurrentUserLogin().orElse("");
-        Optional<Client> client =  clientService.getClientByClientId(appName);
+        Optional<Client> client = clientService.getClientByClientId(appName);
 
         // Customer check if exists else create new
         Optional<Customer> customer = customerService.findByIdentifier(oneItemInvoiceDTO.getCustomerId());
@@ -455,9 +471,9 @@ public class InvoiceService {
                 .name(oneItemInvoiceDTO.getCustomerName())
                 .contact(Contact.builder().email(oneItemInvoiceDTO.getEmail()).phone(oneItemInvoiceDTO.getMobile()).build())
                 .build());
-            if (StringUtils.isNotEmpty(oneItemInvoiceDTO.getCustomerIdType()) &&  oneItemInvoiceDTO.getCustomerIdType().startsWith(IdentityType.IQA.name())) {
+            if (StringUtils.isNotEmpty(oneItemInvoiceDTO.getCustomerIdType()) && oneItemInvoiceDTO.getCustomerIdType().startsWith(IdentityType.IQA.name())) {
                 customer.get().setIdentityType(IdentityType.IQA);
-            } else if (StringUtils.isNotEmpty(oneItemInvoiceDTO.getCustomerIdType()) &&  oneItemInvoiceDTO.getCustomerIdType().startsWith(IdentityType.NAT.name())) {
+            } else if (StringUtils.isNotEmpty(oneItemInvoiceDTO.getCustomerIdType()) && oneItemInvoiceDTO.getCustomerIdType().startsWith(IdentityType.NAT.name())) {
                 customer.get().setIdentityType(IdentityType.NAT);
             } else if (oneItemInvoiceDTO.getCustomerId().startsWith("2")) {
                 customer.get().setIdentityType(IdentityType.IQA);
@@ -470,7 +486,7 @@ public class InvoiceService {
         //invoiceItem
         Optional<Item> item = itemService.findByCodeAndClient(oneItemInvoiceDTO.getItemName(), client.get().getId());
         if (!item.isPresent()) {
-            throw new TbsRunTimeException("Unknown item: "+ oneItemInvoiceDTO.getItemName());
+            throw new TbsRunTimeException("Unknown item: " + oneItemInvoiceDTO.getItemName());
         }
 
         // get bill seq
@@ -504,7 +520,7 @@ public class InvoiceService {
                 Discount discount = Discount.builder().isPercentage(false).type(DiscountType.ITEM).value(discountAmount).build();
                 invoiceItem.setDiscount(discount);
                 totalPrice = oneItemInvoiceDTO.getPrice();
-            }else{
+            } else {
                 totalPrice = item.get().getPrice();
                 invoiceItem.setQuantity(1);
             }
@@ -516,7 +532,7 @@ public class InvoiceService {
         // adding vat
         BigDecimal totalTaxes = BigDecimal.ZERO;
         if (CollectionUtils.isNotEmpty(item.get().getTaxes())) {
-            for (Tax tax: item.get().getTaxes()) {
+            for (Tax tax : item.get().getTaxes()) {
                 if (tax.getRate() != null) {
                     totalPrice = totalPrice.add(totalPrice.multiply(tax.getRate().divide(new BigDecimal("100"))));
                     totalTaxes = totalTaxes.add(tax.getRate());
@@ -541,7 +557,7 @@ public class InvoiceService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public int updateInvoice(Long invoiceId, InvoiceStatus status) {
-        return  invoiceRepository.setStatus(invoiceId, status);
+        return invoiceRepository.setStatus(invoiceId, status);
     }
 
 
@@ -600,20 +616,25 @@ public class InvoiceService {
         }));
     }
 
-    public List<Object[]> getMonthlyStat( ZonedDateTime lastDate , long clientId ) {
+    public List<Object[]> getMonthlyStat(ZonedDateTime lastDate, long clientId) {
         ZonedDateTime first = lastDate.withDayOfMonth(1);
         YearMonth yearMonthObject = YearMonth.of(lastDate.getYear(), lastDate.getMonth());
-        ZonedDateTime last = lastDate.withDayOfMonth( yearMonthObject.lengthOfMonth());
-        List<Object[]> stats = invoiceRepository.getStatisticsByMonth(first, last,clientId);
+        ZonedDateTime last = lastDate.withDayOfMonth(yearMonthObject.lengthOfMonth());
+        List<Object[]> stats = invoiceRepository.getStatisticsByMonth(first, last, clientId);
         return stats;
     }
 
-    public List<Object[]> getAnnualyStat( ZonedDateTime lastDate, long clientId ) {
+    public List<Object[]> getAnnualyStat(ZonedDateTime lastDate, long clientId) {
         ZonedDateTime first = lastDate.withMonth(1).withDayOfMonth(1);
         YearMonth yearMonthObject = YearMonth.of(lastDate.getYear(), lastDate.getMonth());
         ZonedDateTime last = lastDate.withMonth(12).withDayOfMonth(31);
-        List<Object[]> stats = invoiceRepository.getStatisticsByYear(first, last,clientId);
+        List<Object[]> stats = invoiceRepository.getStatisticsByYear(first, last, clientId);
         return stats;
+    }
+
+    @Scheduled(cron = "0  5  *  *  * ?")
+    public void checkExpiredInvoice(){
+
     }
 
 }

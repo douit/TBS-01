@@ -37,5 +37,8 @@ public class ItemDTO implements Serializable {
 
     private Integer quantity;
 
+    private boolean flexiblePrice;
+
+
 
 }

@@ -14,6 +14,8 @@ export interface IItem {
   clientId?: number;
   category?: ICategory;
   client?: IClient;
+  flexiblePrice?: boolean;
+
 
 }
 
@@ -29,7 +31,9 @@ export class Item implements IItem {
     public clientId?: number,
     category?: ICategory,
     client?: IClient,
-    code?: number
+    code?: number,
+    flexiblePrice?: boolean
 
-  ) {}
+
+) {}
 }

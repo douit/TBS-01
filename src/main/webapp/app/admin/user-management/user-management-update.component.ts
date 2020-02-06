@@ -65,7 +65,7 @@ export class UserMgmtUpdateComponent implements OnInit {
     private translateService: TranslateService
   ) {
   }
-
+   searchControl = this.editForm.get('search');
   displayFieldCss(form: FormGroup, field: string) {
     return {
       'has-error': this.isFieldValid(form, field),
@@ -91,9 +91,8 @@ export class UserMgmtUpdateComponent implements OnInit {
       }
       this.updateForm(this.user);
     });
-    const searchControl = this.editForm.get('search');
-    if (this.isInternal == true && !this.user.id) {
-      searchControl.setValidators([Validators.required]);
+    if (this.isInternal  && !this.user.id) {
+      this.searchControl.setValidators([Validators.required]);
     }
     this.authorities = [];
     this.userService.authorities().subscribe(authorities => {
@@ -147,7 +146,7 @@ export class UserMgmtUpdateComponent implements OnInit {
 
   fieldIsEmpty(){
 
-    if( !this.editForm.get(['login']).value.toString().isEmpty&&
+      if( !this.editForm.get(['login']).value.toString().isEmpty&&
       this.editForm.get(['login']).value.toString() != "" &&
       !this.editForm.get(['firstName']).value.toString().isEmpty &&
       this.editForm.get(['firstName']).value.toString()!=""&&
@@ -163,14 +162,14 @@ export class UserMgmtUpdateComponent implements OnInit {
       // alert(this.IsFieldsEmpty)
   }
   internalCheckBox(): boolean {
-    if (this.isInternal == true) {
+    if (this.isInternal) {
       this.editForm.controls['login'].enable();
       this.editForm.controls['firstName'].enable();
       this.editForm.controls['lastName'].enable();
       this.editForm.controls['email'].enable();
+      this.searchControl.setValidators([]);
       return this.isInternal = false;
-      const searchControl = this.editForm.get('search');
-      searchControl.setValidators([]);
+
 
     } else {
       this.editForm.controls['login'].disable();

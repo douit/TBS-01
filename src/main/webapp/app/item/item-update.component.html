@@ -72,10 +72,10 @@
                         </div>
                     </div>
 
-                    <form name="editForm"  (ngSubmit)="save()" [formGroup]="editForm">
+                    <form name="editForm" (ngSubmit)="save()" [formGroup]="editForm">
 
-                                <h3 class="ml-4">Create an
-                                    Item</h3>
+                        <h3 class="ml-4">Create an
+                            Item</h3>
 
                         <div class="card-body">
                             <div class="row">
@@ -112,23 +112,27 @@
                                 </div>
 
                             </div>
+                            <div class="row">
+                                <label class="col-sm-2 col-form-label"></label>
+                                <div class="col-sm-7 form-check mr-auto">
+                                    <label class="form-check-label">
+                                        Price is flexible?
+                                        <!--<input class="form-check-input" type="checkbox" value="">Subscribe to newsletter-->
+                                        <input class="form-check-input"
+                                               [checked]= "isFlexiblePrice"
+                                               type="checkbox" id="flexiblePrice"
+                                               (change)="FlexiblePriceCheck()"
+                                               name="flexiblePrice" formControlName="flexiblePrice"
+                                        >
+                                        <span class="form-check-sign">
+                                            <span class="check"></span>
+                                            </span>
+                                    </label>
+                                </div>
+
+                            </div>
 
                             <div class="row">
-
-                                <label class="col-sm-2 col-form-label">Price</label>
-                                <div class="col-sm-2">
-                                    <mat-form-field class="example-full-width"
-                                                    [ngClass]="{'has-success':validSourceType===true}"
-                                                    [ngClass]="displayFieldCss(type, 'password')">
-                                        <input type="text"
-                                               matInput
-                                               name="price"
-                                               (ngModelChange)="sourceValidationType($event)"
-                                               formControlName="price">
-                                        <!-- <app-field-error-display [displayError]="isFieldValid(type, 'password')" errorMsg="IdSource is required">
-                                         </app-field-error-display>-->
-                                    </mat-form-field>
-                                </div>
                                 <label class="col-sm-2 col-form-label">DefaultQuantity</label>
                                 <div class="col-sm-2">
                                     <mat-form-field class="example-full-width"
@@ -144,6 +148,23 @@
                                     </mat-form-field>
                                 </div>
 
+                                <label class="col-sm-2 col-form-label" [hidden]="isFlexiblePrice">Price</label>
+                                <div class="col-sm-2" [hidden]="isFlexiblePrice">
+                                    <mat-form-field class="example-full-width"
+
+                                                    [ngClass]="{'has-success':validSourceType===true}"
+                                                    [ngClass]="displayFieldCss(type, 'password')">
+                                        <input type="text"
+                                               matInput
+                                               name="price"
+                                               (change)="paddingPrice()"
+                                               [hidden]="isFlexiblePrice"
+                                               (ngModelChange)="sourceValidationType($event)"
+                                               formControlName="price">
+                                        <!-- <app-field-error-display [displayError]="isFieldValid(type, 'password')" errorMsg="IdSource is required">
+                                         </app-field-error-display>-->
+                                    </mat-form-field>
+                                </div>
                             </div>
 
                             <div class="row">
@@ -151,7 +172,8 @@
                                 <div class="col-sm-7">
                                     <mat-form-field>
                                         <mat-label *ngIf="selectedCategory == null">Select an option</mat-label>
-                                        <mat-label *ngIf="selectedCategory != null">{{selectedCategory.name}}</mat-label>
+                                        <mat-label
+                                            *ngIf="selectedCategory != null">{{selectedCategory.name}}</mat-label>
                                         <mat-select class="form-control" id="field_category" name="category"
                                                     formControlName="category" selected="category">
                                             <mat-option [value]="null">None</mat-option>
@@ -164,19 +186,19 @@
                             </div>
                             <div class="row">
                                 <label class="col-sm-2 col-form-label">Client</label>
-                                    <div class="col-sm-7">
-                                        <mat-form-field>
-                                            <mat-label *ngIf="selectedClient == null">Select an option</mat-label>
-                                            <mat-label *ngIf="selectedClient != null">{{selectedClient.name}}</mat-label>
-                                            <mat-select class="form-control" id="field_client" name="clint"
-                                                        formControlName="client" [(value)]="selectedClient" >
+                                <div class="col-sm-7">
+                                    <mat-form-field>
+                                        <mat-label *ngIf="selectedClient == null">Select an option</mat-label>
+                                        <mat-label *ngIf="selectedClient != null">{{selectedClient.name}}</mat-label>
+                                        <mat-select class="form-control" id="field_client" name="clint"
+                                                    formControlName="client" [(value)]="selectedClient">
 
-                                                <mat-option [value]="null">None</mat-option>
-                                                <mat-option [value]="clientOption"
-                                                            *ngFor="let clientOption of clients; trackBy: trackClientById" >{{clientOption.name}}</mat-option>
-                                            </mat-select>
-                                        </mat-form-field>
-                                    </div>
+                                            <mat-option [value]="null">None</mat-option>
+                                            <mat-option [value]="clientOption"
+                                                        *ngFor="let clientOption of clients; trackBy: trackClientById">{{clientOption.name}}</mat-option>
+                                        </mat-select>
+                                    </mat-form-field>
+                                </div>
                             </div>
                             <div class="row">
                                 <label class="col-sm-2 col-form-label">Tax</label>
@@ -199,20 +221,34 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-sm-4" >
+                            <div class="col-sm-4">
                             </div>
                             <div class="col-sm-4" align="center">
-                            <button type="button" id="cancel-save" class="btn btn-dark"(click)="previousState()">
-                                <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span
-                                jhiTranslate="entity.action.cancel">Cancel</span>
-                            </button>
+                                <button type="button" id="cancel-save" class="btn btn-dark" (click)="previousState()">
+                                    <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span
+                                    jhiTranslate="entity.action.cancel">Cancel</span>
+                                </button>
 
-
-                            <button type="submit" id="save-entity" [disabled]="editForm.invalid || isSaving"
-                                    class="btn btn-primary">
-                                <fa-icon [icon]="'save'"></fa-icon>&nbsp;<span
-                                jhiTranslate="entity.action.save">Save</span>
-                            </button>
+<!--                                <h5>-->
+<!--                                    {{(isFlexiblePrice ) }}-->
+<!--                                </h5>-->
+<!--                                <h5>-->
+<!--                                    {{(isEmptyPrice) }}-->
+<!--                                </h5>-->
+<!--                                <h5>-->
+<!--                                    {{(!isFlexiblePrice&&isEmptyPrice) }}-->
+<!--                                </h5>-->
+<!--                                <h5>-->
+<!--                                    {{(editForm.invalid) }}-->
+<!--                                </h5>-->
+<!--                                <h5>-->
+<!--                                    {{(editForm.invalid||(!isFlexiblePrice&&isEmptyPrice)) }}-->
+<!--                                </h5>-->
+                                <button type="submit" id="save-entity" [disabled]="editForm.invalid||(!isFlexiblePrice&&isEmptyPrice) || isSaving"
+                                        class="btn btn-primary">
+                                    <fa-icon [icon]="'save'"></fa-icon>&nbsp;<span
+                                    jhiTranslate="entity.action.save">Save</span>
+                                </button>
                             </div>
                         </div>
 

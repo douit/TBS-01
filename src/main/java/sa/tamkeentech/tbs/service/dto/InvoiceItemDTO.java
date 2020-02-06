@@ -3,6 +3,7 @@ package sa.tamkeentech.tbs.service.dto;
 import io.swagger.annotations.ApiModel;
 import lombok.*;
 
+import javax.persistence.Column;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
@@ -37,5 +38,8 @@ public class InvoiceItemDTO implements Serializable {
     private BigDecimal taxRate;
 
     private DiscountDTO discount;
+
+    private String details;
+
 
 }
