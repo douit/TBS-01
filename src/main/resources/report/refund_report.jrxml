@@ -211,6 +211,36 @@
 				</textElement>
 				<text><![CDATA[Summary]]></text>
 			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="433" y="124" width="170" height="25" backcolor="#F0F0F0" uuid="0f8fdb33-a47a-40ae-ba20-f7cf14b70258">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.0"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Generated Date]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="603" y="124" width="180" height="25" uuid="ec9cbf64-ae68-4165-acf3-ab072a68db78"/>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())]]></textFieldExpression>
+			</textField>
 		</band>
 	</title>
 	<pageHeader>
