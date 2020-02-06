@@ -57,6 +57,8 @@ public class InvoiceDTO implements Serializable {
 
     private BigDecimal taxFees;
 
+    private int expirationDays;
+
     public InvoiceDTO() {
     }
 }

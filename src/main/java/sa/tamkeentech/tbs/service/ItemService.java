@@ -27,6 +27,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -81,6 +82,9 @@ public class ItemService {
                     throw new TbsRunTimeException("Tax doesn't exist");
                 }
             }
+        }
+        if(itemDTO.isFlexiblePrice()){
+            itemDTO.setPrice(BigDecimal.ZERO);
         }
         Item item = itemMapper.toEntity(itemDTO);
         item.setTaxes(taxes);

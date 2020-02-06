@@ -61,4 +61,10 @@ public class Item extends AbstractAuditingEntity implements Serializable {
     @ManyToOne(cascade = CascadeType.MERGE)
     @JsonIgnoreProperties("items")
     private Client client;
+
+    @Column(name = "is_flexible_price")
+    private boolean flexiblePrice;
+
+
+
 }
