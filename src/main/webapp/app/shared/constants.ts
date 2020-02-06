@@ -34,7 +34,7 @@ export enum PaymentStatus {
 
 export enum PaymentMethod {
   SADAD = 'SADAD',
-  VISA = 'VISA',
+  CREDIT_CARD = 'CREDIT_CARD',
   CASH = 'CASH'
 }
 

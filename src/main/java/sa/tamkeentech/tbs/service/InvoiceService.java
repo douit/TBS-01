@@ -188,7 +188,7 @@ public class InvoiceService {
                         throw new PaymentGatewayException("Sadad bill creation error");
                     }
                     break;
-                case Constants.VISA:
+                case Constants.CREDIT_CARD:
                     BigDecimal roundedAmount = invoice.getAmount().setScale(2, RoundingMode.HALF_UP);
                     String appCode = invoice.getClient().getPaymentKeyApp();
                     PaymentResponseDTO paymentResponseDTO = null;
@@ -411,7 +411,7 @@ public class InvoiceService {
                         return oneItemInvoiceRespDTO;
                     }
                     break;
-                case Constants.VISA:
+                case Constants.CREDIT_CARD:
                     log.info("CC payment method");
                     BigDecimal roundedAmount = invoice.getAmount().setScale(2, RoundingMode.HALF_UP);
                     String appCode = invoice.getClient().getPaymentKeyApp();

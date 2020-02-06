@@ -97,7 +97,7 @@ public class InvoiceAppResource {
         return paymentService.sendEventAndPaymentNotification(req, apiKey, apiSecret);
     }
 
-    // possible values SADAD or VISA
+    // possible values SADAD or CREDIT_CARD
     @GetMapping("/billing/changePaymentMethod/{referenceId}/{paymentMethodCode}")
     public ResponseEntity<InvoiceResponseDTO> getPayment(@PathVariable String referenceId, @PathVariable String paymentMethodCode) {
         log.debug("REST request to change payment method Payment to : {}", paymentMethodCode);

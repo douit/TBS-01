@@ -75,7 +75,7 @@ public class PaymentResource {
             throw new BadRequestAlertException("A new payment cannot already have an ID", ENTITY_NAME, "idexists");
         }
         if (paymentDTO.getPaymentMethod() == null) {
-            paymentDTO.setPaymentMethod(PaymentMethodDTO.builder().code(Constants.VISA).build());
+            paymentDTO.setPaymentMethod(PaymentMethodDTO.builder().code(Constants.CREDIT_CARD).build());
         }
         PaymentDTO result = paymentService.prepareCreditCardPayment(paymentDTO);
         return ResponseEntity.created(new URI("/api/payments/" + result.getId()))

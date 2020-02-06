@@ -58,5 +58,6 @@
     <include file="config/liquibase/changelog/2020120115030700_added_entity_report.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20202011473498_alter_user.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20200123030700_alter_refund.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20200206105213_alter_payment_method.xml" relativeToChangelogFile="false"/>
 
 </databaseChangeLog>

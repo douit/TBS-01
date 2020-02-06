@@ -16,7 +16,7 @@ public final class Constants {
 
     // Payment
     public static final String SADAD = "SADAD";
-    public static final String VISA = "VISA";
+    public static final String CREDIT_CARD = "CREDIT_CARD";
     public static final String CASH = "CASH";
 
     public static final String CC_PAYMENT_SUCCESS_CODE = "1007";

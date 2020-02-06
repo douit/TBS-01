@@ -529,7 +529,7 @@ public class PaymentService {
     @Transactional
     public InvoiceResponseDTO changePaymentMethod(String referenceId, String paymentMethodCode) {
 
-        if (!Constants.SADAD.equals(paymentMethodCode) && !Constants.VISA.equals(paymentMethodCode)) {
+        if (!Constants.SADAD.equals(paymentMethodCode) && !Constants.CREDIT_CARD.equals(paymentMethodCode)) {
             throw new TbsRunTimeException("Unkown payment method");
         }
         Optional<Invoice> invoice = invoiceRepository.findByAccountId(Long.parseLong(referenceId));
