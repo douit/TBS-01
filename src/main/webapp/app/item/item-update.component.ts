@@ -186,7 +186,7 @@ export class ItemUpdateComponent implements OnInit {
     this.selectedCategory = item.category;
     this.selectedClient = item.client;
     this.isFlexiblePrice = item.flexiblePrice;
-    if(!this.isFlexiblePrice ){
+    if(!this.isFlexiblePrice && item.id){
       this.isEmptyPrice= false;
     }
 
