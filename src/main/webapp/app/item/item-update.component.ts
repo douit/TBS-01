@@ -190,8 +190,8 @@ export class ItemUpdateComponent implements OnInit {
     this.selectedCategory = item.category;
     this.selectedClient = item.client;
     this.isFlexiblePrice = item.flexiblePrice;
-    if(!this.isFlexiblePrice ){
-      this.isEmptyPrice= false;
+    if (!this.isFlexiblePrice ) {
+      this.isEmptyPrice = false;
     }
 
     this.editForm.patchValue({
@@ -403,11 +403,11 @@ export class ItemUpdateComponent implements OnInit {
   paddingPrice() {
 
     if (this.editForm.get(['price']).value != 0 &&
-      this.editForm.get(['price']).value.toString() != "")
-      this.isEmptyPrice = false
-    else
-      this.isEmptyPrice= true
-
-
+      this.editForm.get(['price']).value.toString() != "") {
+      this.isEmptyPrice = false;
+    } else {
+      this.isEmptyPrice = true;
+    }
   }
+
 }
