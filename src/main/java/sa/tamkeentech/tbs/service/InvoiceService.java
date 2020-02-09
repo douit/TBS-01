@@ -275,23 +275,26 @@ public class InvoiceService {
                 .build();
             if (item.get().isFlexiblePrice()) {
                 flexibleAmount = true;
-                if (!invoiceItemDTO.getDetails().isEmpty() && !invoiceItemDTO.getAmount().equals(BigDecimal.ZERO)) {
-                    invoiceItem.setAmount(invoiceItemDTO.getAmount());
+                if (StringUtils.isEmpty(invoiceItemDTO.getDetails()) || invoiceItemDTO.getAmount() == null || invoiceItemDTO.getAmount().equals(BigDecimal.ZERO)) {
+                    throw new TbsRunTimeException("Item amount and details are mandatory");
                 } else {
-                    throw new TbsRunTimeException("Item amount is mandatory");
+                    invoiceItem.setAmount(invoiceItemDTO.getAmount());
+                    invoiceItem.setDetails(invoiceItemDTO.getDetails());
                 }
             } else {
                 invoiceItem.setAmount(item.get().getPrice());
-
+                invoiceItem.setDetails(invoiceItemDTO.getDetails());
             }
 
-
             BigDecimal totalInvoiceItem = invoiceItem.getAmount().multiply(new BigDecimal(invoiceItem.getQuantity()));
-            BigDecimal discountValue = BigDecimal.ZERO;
             // Add sub discount for each item invoice  :
             // Item discount is Tax exclusive -> apply discount then add tax
-            if (invoiceItemDTO.getDiscount().getValue().compareTo(BigDecimal.ZERO) > 0) {
+            if (invoiceItemDTO.getDiscount() != null && invoiceItemDTO.getDiscount().getValue().compareTo(BigDecimal.ZERO) > 0) {
                 if (invoiceItemDTO.getDiscount().getIsPercentage() == false) {
+                    if (invoiceItemDTO.getDiscount().getValue().compareTo(invoiceItem.getAmount()) > 0) {
+                        throw new TbsRunTimeException("Wrong discount value");
+                    }
+                    BigDecimal discountValue = BigDecimal.ZERO;
                     Discount discount = Discount.builder().isPercentage(false).type(DiscountType.ITEM).value(invoiceItemDTO.getDiscount().getValue()).build();
                     invoiceItem.setDiscount(discount);
                     discountValue = invoiceItemDTO.getDiscount().getValue().multiply(new BigDecimal(invoiceItemDTO.getQuantity()));
@@ -299,10 +302,13 @@ public class InvoiceService {
                 }
                 // Percentage Discount
                 else {
+                    if (invoiceItemDTO.getDiscount().getValue().compareTo(new BigDecimal("100")) > 0) {
+                        throw new TbsRunTimeException("Wrong discount value");
+                    }
                     Discount discount = Discount.builder().isPercentage(true).type(DiscountType.ITEM).value(invoiceItemDTO.getDiscount().getValue()).build();
                     invoiceItem.setDiscount(discount);
                     BigDecimal discountRate = invoiceItemDTO.getDiscount().getValue().divide(new BigDecimal("100"));
-                    discountValue = totalInvoiceItem.multiply(discountRate);
+                    // discountValue = totalInvoiceItem.multiply(discountRate);
                     totalInvoiceItem = totalInvoiceItem.subtract(totalInvoiceItem.multiply(discountRate));
                 }
             }
@@ -343,7 +349,7 @@ public class InvoiceService {
         }
 
         // Invoice discount is Tax inclusive  -> add tax then apply discount
-        if (invoiceDTO.getDiscount().getValue().compareTo(BigDecimal.ZERO) > 0) {
+        if (invoiceDTO.getDiscount() != null && invoiceDTO.getDiscount().getValue().compareTo(BigDecimal.ZERO) > 0) {
             if (invoiceDTO.getDiscount().getIsPercentage() == false) {
                 Discount discount = Discount.builder().isPercentage(false).type(DiscountType.INVOICE).value(invoiceDTO.getDiscount().getValue()).build();
                 invoice.setDiscount(discount);
@@ -356,10 +362,9 @@ public class InvoiceService {
                 totalPriceInvoice = totalPriceInvoice.subtract(discountValue);
             }
         }
-        if (!flexibleAmount) {
-            if (invoiceDTO.getAmount().compareTo(totalPriceInvoice.setScale(2, RoundingMode.HALF_UP)) != 0) {
-                throw new TbsRunTimeException("Wrong invoice amount");
-            }
+        // Check based on passed values in case of flexible price
+        if (invoiceDTO.getAmount().compareTo(totalPriceInvoice.setScale(2, RoundingMode.HALF_UP)) != 0 || invoiceDTO.getAmount().compareTo(BigDecimal.ZERO) < 0) {
+            throw new TbsRunTimeException("Wrong invoice amount");
         }
         // calculate average tax
         if (avgTaxDenominator.compareTo(BigDecimal.ZERO) > 0) {
@@ -376,7 +381,7 @@ public class InvoiceService {
         invoice.setTaxFees(totalPriceInvoice.subtract(subTotalInvoice));
         // Now
         invoice.setDueDate(ZonedDateTime.now());
-        // Now + 2days
+        // default expiry date: Now + 1 days
         if(invoiceDTO.getExpirationDays() >0)
             invoice.setExpiryDate(ZonedDateTime.now().plusDays(invoiceDTO.getExpirationDays()));
         else

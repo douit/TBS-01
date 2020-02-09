@@ -170,6 +170,7 @@ public class ItemService {
         if (itemDTO.getPrice() != null) {
             item.get().setPrice(itemDTO.getPrice());
         }
+        item.get().setFlexiblePrice(itemDTO.isFlexiblePrice());
         // update name
         if (StringUtils.isNotEmpty(itemDTO.getName())) {
             item.get().setName(itemDTO.getName());
