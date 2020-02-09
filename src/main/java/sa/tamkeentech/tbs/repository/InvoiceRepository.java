@@ -63,4 +63,11 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long>, DataTab
     @Query("update Invoice i set i.status = ?2 where i.id = ?1")
     int setStatus(Long id, InvoiceStatus status);
 
+    @Query(value = "SELECT date_trunc('month', invoice.created_date) As Month, count(*) As totalInvoice ,\n" +
+        "sum(case when payment_status = 'PAID' then 1 else 0 end) As totalPaid" +
+        " FROM invoice WHERE invoice.created_date >= ?1 " +
+        "    AND invoice.created_date <= ?2 " +
+        "        AND invoice.client_id = ?3 "+
+        "group by Month ORDER BY Month;", nativeQuery = true)
+    List<Object[]> getExpiredInvoices(ZonedDateTime from, ZonedDateTime to, long clientId);
 }

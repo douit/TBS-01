@@ -190,7 +190,7 @@ export class ItemUpdateComponent implements OnInit {
     this.selectedCategory = item.category;
     this.selectedClient = item.client;
     this.isFlexiblePrice = item.flexiblePrice;
-    if (!this.isFlexiblePrice ) {
+    if (!this.isFlexiblePrice && item.id) {
       this.isEmptyPrice = false;
     }
 
@@ -222,7 +222,6 @@ export class ItemUpdateComponent implements OnInit {
       this.subscribeToSaveResponse(this.itemService.create(item));
     }
   }
-
 
 
   private createFromForm(): IItem {
@@ -366,7 +365,6 @@ export class ItemUpdateComponent implements OnInit {
       this.validPasswordLogin = false;
     }
   }
-
 
 
   emailValidationType(e) {
