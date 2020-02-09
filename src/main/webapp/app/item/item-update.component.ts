@@ -64,7 +64,7 @@ export class ItemUpdateComponent implements OnInit {
     id: [],
     name: ['', Validators.required],
     description: [],
-    defaultQuantity: [],
+    defaultQuantity: ['', [Validators.required, Validators.min(1)]],
     price: [''],
     category: ['', Validators.required],
     client: ['', Validators.required],

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import org.checkerframework.checker.units.qual.C;
 
+import javax.validation.constraints.Min;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Set;
@@ -27,6 +28,7 @@ public class ItemDTO implements Serializable {
 
     private BigDecimal price;
 
+    @Min(value= 1)
     private Integer defaultQuantity;
 
     private CategoryDTO category;

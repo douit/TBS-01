@@ -27,13 +27,13 @@ public class InvoiceItemDTO implements Serializable {
 
     private String name;
 
-    private String description;
+    // private String description;
 
     private BigDecimal amount;
 
     private Integer quantity;
 
-    private String taxName;
+    // private String taxName;
 
     private BigDecimal taxRate;
 

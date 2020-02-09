@@ -140,7 +140,7 @@
                                     <mat-form-field class="example-full-width"
                                                     [ngClass]="{'has-success':validDestinationType===true}"
                                                     [ngClass]="displayFieldCss(type, 'confirmPassword')">
-                                        <input type="text"
+                                        <input type="number"  min="1" step="1"
                                                matInput
                                                name="defaultQuantity"
                                                (ngModelChange)="confirmDestinationValidationType($event)"

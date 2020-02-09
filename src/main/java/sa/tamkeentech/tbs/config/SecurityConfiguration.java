@@ -133,7 +133,8 @@ public class SecurityConfiguration {
                 .antMatchers("/swagger-ui/index.html")
                 .antMatchers("/test/**")
                 .antMatchers("/h2-console/**")
-                .antMatchers("/sadad/paymentnotification**");
+                .antMatchers("/sadad/paymentnotification**")
+                .antMatchers("/billing/payments/credit-card");
         }
 
         @Override

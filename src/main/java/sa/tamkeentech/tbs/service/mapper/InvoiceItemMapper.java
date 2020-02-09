@@ -14,6 +14,7 @@ public interface InvoiceItemMapper extends EntityMapper<InvoiceItemDTO, InvoiceI
     // @Mapping(source = "invoice.id", target = "invoiceId")
     // @Mapping(source = "discount.id", target = "discountId")
     @Mapping(source = "item.id", target = "itemId")
+    @Mapping(source = "code", target = "itemCode")
     InvoiceItemDTO toDto(InvoiceItem invoiceItem);
 
     // @Mapping(source = "invoiceId", target = "invoice")
