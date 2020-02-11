@@ -34,6 +34,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -632,9 +633,13 @@ public class InvoiceService {
         return stats;
     }
 
-    @Scheduled(cron = "0  5  *  *  * ?")
+    @Scheduled(cron = "0 5 * * * ? ")
     public void checkExpiredInvoice(){
-
+    List<Invoice> invoices = invoiceRepository.getExpiryInvoices(ZonedDateTime.now());
+    for(Invoice invoice : invoices){
+        invoice.setStatus(InvoiceStatus.EXPIRED);
+        save(invoiceMapper.toDto(invoice));
+    }
     }
 
 }

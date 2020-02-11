@@ -147,6 +147,18 @@ export class InvoiceComponent implements OnInit {
       // paymentStatus:this.paymentStatusSelected.value,
       input : this.datatable.getDataTableInput()
     };
+
+    // this.invoiceService.getInvoiceBySearch(invoiceSearch)
+    //   .pipe(
+    //     finalize(() => this.busy = false)
+    //   )
+    //   .subscribe(
+    //     (res) => {
+    //       this.datatable.update(res);
+    //     },
+    //     (res: HttpErrorResponse) => this.onError(res.message)
+    //   );
+    this.filter(true);
     this.initDatatable();
     this.activatedRoute.queryParams
       .subscribe((pageQueryParams: PageQueryParams) => {
@@ -159,6 +171,26 @@ export class InvoiceComponent implements OnInit {
             (res: HttpErrorResponse) => this.onError(res.message)
           );
       });
+
+    // this.activatedRoute.queryParams
+    //   .subscribe(pageQueryParams => {
+    //     this.invoiceService.getInvoiceBySearch(invoiceSearch)
+    //       .subscribe(
+    //         (res) => {
+    //           this.filter(false);
+    //           this.datatable.update(res);
+    //         },
+    //         (res: HttpErrorResponse) => this.onError(res.message)
+    //       );
+    //   });
+
+    // this.initDatatable();
+    // this.activatedRoute.queryParams
+    //   .subscribe((pageQueryParams: PageQueryParams) => {
+    //     this.datatable.fillPageQueryParams(pageQueryParams);
+    //     this.loadData();
+    //
+    //   });
 
   }
 
@@ -179,13 +211,14 @@ export class InvoiceComponent implements OnInit {
           console.log('An error has occurred when get clientByRole');
         }
       );
-
     this.initDatatable();
-    this.activatedRoute.queryParams
-      .subscribe((pageQueryParams: PageQueryParams) => {
-        this.datatable.fillPageQueryParams(pageQueryParams);
-        this.loadData();
-      });
+    this.onClickFilter()
+
+    // this.activatedRoute.queryParams
+    //   .subscribe((pageQueryParams: PageQueryParams) => {
+    //     this.datatable.fillPageQueryParams(pageQueryParams);
+    //     this.loadData();
+    //   });
 
   }
 
@@ -289,7 +322,8 @@ export class InvoiceComponent implements OnInit {
     this.selectedClient = null;
     this.fromDate = null;
     this.toDate = null;
-    this.search();
+    this.ngOnInit()
+
   }
 
   onPageChanged(data) {

@@ -56,6 +56,13 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long>, DataTab
         "group by Month ORDER BY Month;", nativeQuery = true)
     List<Object[]> getStatisticsByYear(ZonedDateTime from, ZonedDateTime to, long clientId);
 
+    @Query(value = "SELECT * " +
+        " FROM invoice WHERE invoice.expiry_date <= ?1 " +
+        "    AND invoice.payment_status = 'UNPAID'  \n"+
+        "AND invoice.status != 'EXPIRED' \n"+
+        "AND invoice.status != 'FAILED'", nativeQuery = true)
+    List<Invoice> getExpiryInvoices(ZonedDateTime currentDate);
+
     Page<Invoice> findByPaymentStatusOrderByIdDesc(PaymentStatus status, Pageable pageable);
 
     @Modifying

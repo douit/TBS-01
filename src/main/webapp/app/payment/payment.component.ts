@@ -307,7 +307,7 @@ export class PaymentComponent implements OnInit {
     this.toDate =null;
     this.paymentStatusSelected =null;
     this.paymentStatusSelectedLable = null;
-    this.search();
+    this.ngOnInit();
   }
 
   onPageChanged(data) {

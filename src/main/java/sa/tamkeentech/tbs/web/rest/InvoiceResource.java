@@ -107,8 +107,9 @@ public class InvoiceResource {
      */
     // @PreAuthorize("isAuthenticated()")
     @GetMapping("/invoices/datatable")
-    public DataTablesOutput<InvoiceDTO> getAllItems(DataTablesInput input)
+    public DataTablesOutput<InvoiceDTO> getAllInvoices(DataTablesInput input)
     {
+
         return invoiceService.get(input);
     }
 
