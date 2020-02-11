@@ -66,4 +66,10 @@ public class Client implements Serializable {
     @Column(name = "notification_url")
     private String notificationUrl;
 
+    @Column(name = "initial_account_id")
+    private Long initialAccountId;
+
+    @Column(name = "initial_bill_id")
+    private Long initialBillId;
+
 }

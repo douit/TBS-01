@@ -373,8 +373,11 @@ public class InvoiceService {
         }
         // get bill seq
         Long seq = sequenceUtil.getNextInvoiceNumber(client.get().getClientId());
-        invoice.setAccountId(seq + Constants.CLIENT_SADAD_CONFIG.valueOf(client.get().getClientId().toString()).getInitialAccountId());
-        invoice.setNumber(seq + Constants.CLIENT_SADAD_CONFIG.valueOf(client.get().getClientId().toString()).getInitialBillId());
+        if (seq == null || client.get().getInitialAccountId() == null || client.get().getInitialBillId() == null) {
+            throw new TbsRunTimeException("Unable to get invoice number.");
+        }
+        invoice.setAccountId(seq + client.get().getInitialAccountId());
+        invoice.setNumber(seq + client.get().getInitialBillId());
         invoice.setInvoiceItems(invoiceItemList);
         invoice.setAmount(totalPriceInvoice);
         invoice.setSubtotal(subTotalInvoice);
@@ -496,10 +499,12 @@ public class InvoiceService {
 
         // get bill seq
         Long seq = sequenceUtil.getNextInvoiceNumber(client.get().getClientId());
-
+        if (seq == null || client.get().getInitialAccountId() == null || client.get().getInitialBillId() == null) {
+            throw new TbsRunTimeException("Unable to get invoice number.");
+        }
         Invoice invoice = Invoice.builder()
-            .accountId(seq + Constants.CLIENT_SADAD_CONFIG.valueOf(client.get().getClientId().toString()).getInitialAccountId())
-            .number(seq + Constants.CLIENT_SADAD_CONFIG.valueOf(client.get().getClientId().toString()).getInitialBillId())
+            .accountId(seq + client.get().getInitialAccountId())
+            .number(seq + client.get().getInitialBillId())
             .client(client.get())
             .customer(customer.get())
             .paymentStatus(PaymentStatus.PENDING)

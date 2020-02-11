@@ -25,7 +25,8 @@ public final class Constants {
     public static Integer INVOICE_EXPIRY_DAYS = 1;
 
 
-    public enum CLIENT_SADAD_CONFIG {
+    // Moved to client entity
+    /*public enum CLIENT_SADAD_CONFIG {
         MUSANED(5000000000l, 1000l),
         AJIR(6000000000l, 1000l),
         TAHAQAQ(7000000000l, 4000l);
@@ -45,7 +46,7 @@ public final class Constants {
         public Long getInitialBillId() {
             return initialBillId;
         }
-    }
+    }*/
 
     public static final String INVOICE_DEFAULT_SEQ = "invoice_%s_id_seq";
 
