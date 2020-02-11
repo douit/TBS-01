@@ -21,6 +21,7 @@ public interface RefundMapper extends EntityMapper<RefundDTO, Refund> {
 
     @Mapping(source = "refund.payment.invoice.accountId", target = "accountId")
     @Mapping(source = "refund.payment.invoice.customer.identity", target = "customerId")
+    @Mapping(source = "refund.payment.amount", target = "amount")
     RefundDTO toDto(Refund refund);
 
     @Mapping(source = "refund.payment.invoice.accountId", target = "accountId")

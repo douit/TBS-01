@@ -86,9 +86,7 @@ public class InvoiceAppResource {
     @GetMapping("/billing/getBillbyBillNumber")
     public ResponseEntity<InvoiceStatusDTO> getInvoiceStatus(@RequestParam Long billNumber) throws URISyntaxException {
         InvoiceStatusDTO result = invoiceService.getOneItemInvoice(billNumber);
-        return ResponseEntity.created(new URI("/billing/getBillbyBillNumber" + result.getBillNumber()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, billNumber.toString()))
-            .body(result);
+        return ResponseEntity.ok().body(result);
     }
 
 

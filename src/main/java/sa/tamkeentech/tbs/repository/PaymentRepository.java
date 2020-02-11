@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 import sa.tamkeentech.tbs.service.dto.PaymentDTO;
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -19,4 +20,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Long>, DataTab
     Payment findByTransactionId(String transactionId);
 
     Optional<Payment> findFirstByInvoiceAccountIdAndStatus(Long accountId, PaymentStatus status);
+
+    List<Payment> findByInvoiceAccountIdOrderById(Long accountId);
 }

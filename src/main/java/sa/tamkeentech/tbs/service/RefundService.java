@@ -107,6 +107,16 @@ public class RefundService {
             throw new TbsRunTimeException("Invoice Id is mandatory to process the refund");
         }
         Optional<Payment> payment = paymentRepository.findFirstByInvoiceAccountIdAndStatus(refundDTO.getAccountId(), PaymentStatus.PAID);
+        // check if there is a payment
+        if (!payment.isPresent()) {
+            throw new TbsRunTimeException("No successful payment for invoice or invoice already refunded: "+ refundDTO.getAccountId().toString());
+        }
+        // check if there is a previous refund
+        for (Refund refund : payment.get().getRefunds()) {
+            if (refund.getStatus() == RequestStatus.PENDING || refund.getStatus() == RequestStatus.SUCCEEDED) {
+                throw new TbsRunTimeException("There is an existing refund for invoice: " + refundDTO.getAccountId() + " with status: "+ refund.getStatus().name());
+            }
+        }
         Invoice invoice = payment.get().getInvoice();
 
 
@@ -119,16 +129,7 @@ public class RefundService {
 
 
     public RefundDTO createNewRefund(RefundDTO refundDTO, Invoice invoice, Optional<Payment> payment) {
-        // check if there is a payment
-        if (!payment.isPresent()) {
-            throw new TbsRunTimeException("No successful payment for invoice or invoice already refunded: "+ refundDTO.getAccountId().toString());
-        }
-        // check if there is a previous refund
-        for (Refund refund : payment.get().getRefunds()) {
-            if (refund.getStatus() == RequestStatus.PENDING || refund.getStatus() == RequestStatus.SUCCEEDED) {
-                throw new TbsRunTimeException("There is an existing refund for invoice: " + refundDTO.getAccountId() + " with status: "+ refund.getStatus().name());
-            }
-        }
+
         Refund refund = refundMapper.toEntity(refundDTO);
         refund.setStatus(RequestStatus.CREATED);
         refund.setPayment(payment.get());

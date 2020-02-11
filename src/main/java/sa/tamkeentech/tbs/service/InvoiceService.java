@@ -382,7 +382,7 @@ public class InvoiceService {
         // Now
         invoice.setDueDate(ZonedDateTime.now());
         // default expiry date: Now + 1 days
-        if(invoiceDTO.getExpirationDays() >0)
+        if(invoiceDTO.getExpirationDays() != null  && invoiceDTO.getExpirationDays() > 0)
             invoice.setExpiryDate(ZonedDateTime.now().plusDays(invoiceDTO.getExpirationDays()));
         else
             invoice.setExpiryDate(ZonedDateTime.now().plusDays(Constants.INVOICE_EXPIRY_DAYS));

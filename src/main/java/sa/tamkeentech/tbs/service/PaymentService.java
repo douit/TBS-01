@@ -335,10 +335,11 @@ public class PaymentService {
     // @Transactional
     public ResponseEntity<NotifiRespDTO> sendEventAndPaymentNotification(NotifiReqDTO req, String apiKey, String apiSecret) {
         log.debug("----Sadad Notification : {}", req);
-        Invoice invoice = invoiceRepository.findByAccountId(Long.parseLong(req.getBillAccount())).get();
+        Invoice invoice = invoiceRepository.findByAccountId(Long.parseLong(req.getBillAccount())).orElse(null);
 
         TBSEventReqDTO<NotifiReqDTO> reqNotification = TBSEventReqDTO.<NotifiReqDTO>builder()
-            .principalId(invoice.getCustomer().getIdentity()).referenceId(invoice.getAccountId().toString())
+            .principalId((invoice != null)? invoice.getCustomer().getIdentity(): null)
+            .referenceId((invoice != null)?invoice.getAccountId().toString():null)
             .req(req).build();
         NotifiRespDTO resp = eventPublisherService.sendPaymentNotification(reqNotification, invoice).getResp();
 
@@ -347,50 +348,45 @@ public class PaymentService {
 
     // @Transactional
     public NotifiRespDTO sendPaymentNotification(NotifiReqDTO reqNotification, Invoice invoice) {
-        /*for (Payment payment : invoice.getPayments()) {
-            if (payment.getStatus() == PaymentStatus.PAID) {*/
-        Optional<Payment> paymentFromDb = paymentRepository.findFirstByInvoiceAccountIdAndStatus(invoice.getAccountId(), PaymentStatus.PAID);
-        if (paymentFromDb.isPresent()) {
-            log.warn("Payment already received, Exit without updating Client app");
-            return NotifiRespDTO.builder()
-                .statusId(1)
-                .statusDescription("Payment already received, Exit without updating Client app")
-                .build();
-        //    }
-        }
-        Optional<PaymentMethod> paymentMethod = paymentMethodService.findByCode(Constants.SADAD);
-        Payment payment = Payment.builder()
-            .invoice(invoice)
-            .status(PaymentStatus.PAID)
-            .amount(new BigDecimal(reqNotification.getAmount()))
-            .paymentMethod(paymentMethod.get())
-            .bankId(reqNotification.getBankId())
-            .transactionId(reqNotification.getTransactionPaymentId())
-            //.expirationDate()
-            .build();
 
-        // Refactoring notification
-        // in case of update client error (wahid or client exception) payment must be saved
-        /*
-        paymentRepository.save(payment);
+        if (invoice != null) {
+            Optional<Payment> paymentFromDb = paymentRepository.findFirstByInvoiceAccountIdAndStatus(invoice.getAccountId(), PaymentStatus.PAID);
+            if (paymentFromDb.isPresent()) {
+                log.warn("Payment already received, Exit without updating Client app");
+                return NotifiRespDTO.builder()
+                    .statusId(1)
+                    .statusDescription("Payment already received, Exit without updating Client app")
+                    .build();
 
-        log.info("Successful TBS update bill: {}", reqNotification.getBillAccount());
-
-        invoice.setPaymentStatus(PaymentStatus.PAID);
-        invoice.setStatus(InvoiceStatus.WAITING);
-        invoiceRepository.save(invoice);*/
-        if (createSadadPaymentAndUpdateInvoice(reqNotification, invoice, payment)) {
-            try {
-                sendPaymentNotificationToClient(clientMapper.toDto(invoice.getClient()) ,invoice.getAccountId(), payment);
-            } catch (Exception e) {
-                log.error("---Payment notification Failed");
-                e.printStackTrace();
-                Sentry.capture(e);
             }
-            return NotifiRespDTO.builder()
-                .statusId(1)
+            Optional<PaymentMethod> paymentMethod = paymentMethodService.findByCode(Constants.SADAD);
+            Payment payment = Payment.builder()
+                .invoice(invoice)
+                .status(PaymentStatus.PAID)
+                .amount(new BigDecimal(reqNotification.getAmount()))
+                .paymentMethod(paymentMethod.get())
+                .bankId(reqNotification.getBankId())
+                .transactionId(reqNotification.getTransactionPaymentId())
+                //.expirationDate()
                 .build();
+
+            if (createSadadPaymentAndUpdateInvoice(reqNotification, invoice, payment)) {
+                try {
+                    // call sso only in prod, Later limit this to Tahaquq to avoid timeout and Sentry issue
+                    if (CommonUtils.isProfile(environment, "prod")) {
+                        sendPaymentNotificationToClient(clientMapper.toDto(invoice.getClient()), invoice.getAccountId(), payment);
+                    }
+                } catch (Exception e) {
+                    log.error("---Payment notification Failed");
+                    e.printStackTrace();
+                    Sentry.capture(e);
+                }
+                return NotifiRespDTO.builder()
+                    .statusId(1)
+                    .build();
+            }
         }
+
         return NotifiRespDTO.builder()
             .statusId(0)
             .build();
@@ -415,7 +411,12 @@ public class PaymentService {
             for (Optional<Invoice> invoice : invoices) {
                 Optional<Payment> payment = paymentRepository.findFirstByInvoiceAccountIdAndStatus(invoice.get().getAccountId(), PaymentStatus.PAID);
                 if (payment.isPresent()) {
-                    sendPaymentNotificationToClient(clientDTO,invoice.get().getAccountId(),payment.get());
+                    // call sso only in prod, Later limit this to Tahaquq to avoid timeout and Sentry issue
+                    if (CommonUtils.isProfile(environment, "prod")) {
+                        sendPaymentNotificationToClient(clientDTO, invoice.get().getAccountId(), payment.get());
+                    } else {
+                        log.warn("----Not prod env, Invoice status is waiting and payment found, Invoice: {}"+ invoice.get().getAccountId());
+                    }
                 } else {
                     log.warn("----Invoice status is waiting but no payment found, Invoice: {}"+ invoice.get().getAccountId());
                 }

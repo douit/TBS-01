@@ -1,6 +1,7 @@
 package sa.tamkeentech.tbs.web.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -26,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
 import java.io.IOException;
 import java.net.URI;
@@ -94,39 +96,50 @@ public class PaymentResource {
     }
 
 
-    @GetMapping("/billing/payments/checkStatus/{transactionId}")
-    public PaymentDTO checkPaymentStatus(@PathVariable  String transactionId) throws URISyntaxException, JSONException, IOException {
-        Payment payment = paymentRepository.findByTransactionId(transactionId);
-        PaymentDTO result =paymentMapper.toDto(payment);
+    @GetMapping("/billing/check-payment/{accountId}")
+    public PaymentDTO checkPaymentStatus(@PathVariable  Long accountId) throws JSONException, IOException {
+        List<Payment> payments = paymentRepository.findByInvoiceAccountIdOrderById(accountId);
+        if (CollectionUtils.isEmpty(payments)) {
+            throw new TbsRunTimeException("No payments found");
+        }
+        PaymentDTO result = null;
 
-        if(result.getStatus() != PaymentStatus.PAID){
-            JSONObject req = new JSONObject();
-            req.put("transactionId",result.getTransactionId());
-            HttpClient client = HttpClientBuilder.create().build();
-            HttpPost post = new HttpPost(checkPaymentUrl);
-            post.setHeader("Content-Type", "application/json");
-            post.setEntity(new StringEntity(req.toString()));
-            HttpResponse response = client.execute(post);
-            log.debug("----check payment request : {}", req);
-            PaymentStatusResponseDTO paymentStatusResponseDTO = objectMapper.readValue(response.getEntity().getContent(), PaymentStatusResponseDTO.class);
+        for (Payment payment: payments) {
+            if (payment.getStatus() == PaymentStatus.PAID) {
+                result =paymentMapper.toDto(payment);
+            }
+        }
 
-            result = paymentService.updateCreditCardPayment(paymentStatusResponseDTO,payment,payment.getInvoice());
+        // check last payment
+        if (result == null) {
+            for (Payment payment: payments) {
+                if (payment.getPaymentMethod().getCode().equals(Constants.CREDIT_CARD)) {
+                    JSONObject req = new JSONObject();
+                    // Payment payment = payments.get(payments.size()-1);
+                    req.put("transactionId",payment.getTransactionId());
+                    HttpClient client = HttpClientBuilder.create().build();
+                    HttpPost post = new HttpPost(checkPaymentUrl);
+                    post.setHeader("Content-Type", "application/json");
+                    post.setEntity(new StringEntity(req.toString()));
+                    HttpResponse response = client.execute(post);
+                    log.debug("----check payment request : {}", req);
+                    PaymentStatusResponseDTO paymentStatusResponseDTO = objectMapper.readValue(response.getEntity().getContent(), PaymentStatusResponseDTO.class);
+                    result = paymentService.updateCreditCardPayment(paymentStatusResponseDTO, payment, payment.getInvoice());
+                    if (result.getStatus() == PaymentStatus.PAID) {
+                        break;
+                    }
+                }
+            }
+        }
 
-            return PaymentDTO.builder()
-                .transactionId(result.getTransactionId())
+        PaymentDTO.PaymentDTOBuilder paymentStatus = PaymentDTO.builder().status(PaymentStatus.UNPAID);
+        if (result != null) {
+            paymentStatus.transactionId(result.getTransactionId())
                 .status(result.getStatus())
                 .paymentMethod(result.getPaymentMethod())
-                .amount(result.getAmount())
-                .build();
+                .amount(result.getAmount());
         }
-        else{
-            return PaymentDTO.builder()
-                .transactionId(result.getTransactionId())
-                .status(result.getStatus())
-                .paymentMethod(result.getPaymentMethod())
-                .amount(result.getAmount())
-                .build();
-        }
+        return paymentStatus.build();
     }
     /**
      * {@code PUT  /payments} : Updates an existing payment.

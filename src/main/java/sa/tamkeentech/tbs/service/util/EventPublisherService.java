@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,6 +61,9 @@ public class EventPublisherService {
 
     @Value("${tbs.payment.sadad-url}")
     private String sadadUrl;
+
+    @Autowired
+    private Environment environment;
 
     public EventPublisherService(SequenceUtil sequenceUtil, ClientService clientService, CustomerService customerService, ItemService itemService, InvoiceRepository invoiceRepository, PaymentMethodService paymentMethodService, PaymentRepository paymentRepository) {
         this.sequenceUtil = sequenceUtil;
@@ -140,7 +144,14 @@ public class EventPublisherService {
     @TBSEventPub(eventName = Constants.EventType.SADAD_REFUND_REQUEST)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public TBSEventRespDTO<Integer> callSadadRefundEvent(TBSEventReqDTO<String> eventReq) throws IOException {
-        Integer sadadResp = refundService.callRefundBySdad(eventReq.getReq());
+        Integer sadadResp;
+        if (CommonUtils.isProfile(environment, "prod")) {
+            sadadResp = refundService.callRefundBySdad(eventReq.getReq());
+        } else {
+            log.debug("----Sadad refund request : {}", eventReq.getReq());
+            log.info("----Sadad refund response status code : ***** Mocking *** eventReq.getReq()");
+            sadadResp = 200;
+        }
         TBSEventRespDTO<Integer> eventResp = TBSEventRespDTO.<Integer>builder().resp(sadadResp).build();
         return eventResp;
     }
