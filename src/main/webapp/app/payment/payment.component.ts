@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {Component, OnInit, ViewChild} from '@angular/core';
 import {HttpErrorResponse} from '@angular/common/http';
 import {Subscription} from 'rxjs';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -15,11 +15,9 @@ import {DatatableColumn} from 'app/shared/model/datatable/datatable-column';
 import {PageQueryParams} from 'app/shared/model/page-query-params';
 import {TranslateService} from '@ngx-translate/core';
 import {ActivatedRoute, Router} from '@angular/router';
-import {PaymentStatus, PaymentMethod} from 'app/shared/constants';
-import {_tbs} from 'app/shared/util/tbs-utility';
+import {PaymentMethod, PaymentStatus} from 'app/shared/constants';
 import {NgbCalendar, NgbDate, NgbDateParserFormatter} from '@ng-bootstrap/ng-bootstrap';
 import {IClient} from 'app/shared/model/client.model';
-import {IInvoiceSearchRequest} from 'app/shared/model/invoice-serach-request';
 import * as moment from 'moment';
 import {NgbDateStruct} from '@ng-bootstrap/ng-bootstrap/datepicker/ngb-date-struct';
 import {IPaymentSearchRequest} from 'app/shared/model/payment-serach-request';
@@ -89,6 +87,13 @@ export class PaymentComponent implements OnInit {
   paymentStatusSelected: any;
   paymentStatusSelectedLable: any;
   paymentStatus:any;
+  isSearchOpr : boolean = false;
+  paymentSearch: IPaymentSearchRequest = {
+    fromDate : null,
+    toDate : null,
+    clientId : null,
+     paymentStatus:null
+  };
   onDateSelection(date: NgbDate, datepicker) {
     if (!this.fromDate && !this.toDate) {
       this.fromDate = date;
@@ -145,33 +150,29 @@ export class PaymentComponent implements OnInit {
     if (this.selectedClient != null) {
       clientId = this.selectedClient.id;
     }
-      const paymentSearch : IPaymentSearchRequest= {
-        fromDate : fromDate,
-        toDate : toDate,
-        clientId : clientId,
-        customerId :0,
-        input :this.datatable.getDataTableInput(),
-        paymentStatus: this.paymentStatusSelected
-      }
+    this.paymentSearch.fromDate = fromDate;
+    this.paymentSearch.toDate =toDate;
+    this.paymentSearch.clientId =clientId;
+    this.paymentSearch.paymentStatus= this.paymentStatusSelected
 
+    if(!this.isSearchOpr){
+      this.initDatatable();
+      this.activatedRoute.queryParams
+        .subscribe((pageQueryParams: PageQueryParams) => {
+          this.datatable.fillPageQueryParams(pageQueryParams);
+          this.paymentSearch.input = this.datatable.getDataTableInput();
+          this.paymentService.getPaymentBySearch(this.paymentSearch)
+            .subscribe(
+              (res) => {
+                this.datatable.update(res);
+              },
+              (res: HttpErrorResponse) => this.onError(res.message)
+            );
+        });
+    }else
+      this.filter(this.isSearchOpr);
 
-
-    this.initDatatable();
-    this.activatedRoute.queryParams
-      .subscribe((pageQueryParams: PageQueryParams) => {
-        this.datatable.fillPageQueryParams(pageQueryParams);
-        this.paymentService.getPaymentBySearch(paymentSearch)
-          .subscribe(
-            (res) => {
-              this.datatable.update(res);
-            },
-            (res: HttpErrorResponse) => this.onError(res.message)
-          );
-      });
-
-
-
-
+    this.isSearchOpr =true;
 
   }
   formatDate(date: NgbDate) {
@@ -196,12 +197,6 @@ export class PaymentComponent implements OnInit {
       );
 
     this.initDatatable();
-    this.activatedRoute.queryParams
-      .subscribe((pageQueryParams: PageQueryParams) => {
-        this.datatable.fillPageQueryParams(pageQueryParams);
-        this.loadData();
-      });
-
     const paymentStatusMapping = [
       { value: PaymentStatus.NONE, type: 'None' },
       { value: PaymentStatus.PAID, type: 'PAID' },
@@ -211,6 +206,8 @@ export class PaymentComponent implements OnInit {
     ];
 
     this.paymentStatus = paymentStatusMapping;
+
+    this.onClickFilter();
   }
 
   initDatatable() {

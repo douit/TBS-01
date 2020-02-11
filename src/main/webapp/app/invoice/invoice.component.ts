@@ -91,7 +91,15 @@ export class InvoiceComponent implements OnInit {
   clients: IClient[];
   customerId: string;
   paymentStatus: any;
+  isSearchOpr : boolean = false;
 
+   invoiceSearch: IInvoiceSearchRequest = {
+    fromDate : null,
+    toDate : null,
+    clientId : null,
+    customerId : null,
+    // paymentStatus:this.paymentStatusSelected.value,
+  };
   onDateSelection(date: NgbDate, datepicker) {
     if (!this.fromDate && !this.toDate) {
       this.fromDate = date;
@@ -139,14 +147,29 @@ export class InvoiceComponent implements OnInit {
     if (this.selectedClient != null) {
       clientId = this.selectedClient.id;
     }
-    const invoiceSearch: IInvoiceSearchRequest = {
-      fromDate : fromDate,
-      toDate : toDate,
-      clientId : clientId,
-      customerId : this.customerId,
-      // paymentStatus:this.paymentStatusSelected.value,
-      input : this.datatable.getDataTableInput()
-    };
+    this.invoiceSearch.fromDate = fromDate;
+    this.invoiceSearch.toDate =toDate;
+    this.invoiceSearch.clientId =clientId;
+    this.invoiceSearch.customerId =this.customerId;
+
+    if(!this.isSearchOpr){
+      this.initDatatable();
+      this.activatedRoute.queryParams
+        .subscribe((pageQueryParams: PageQueryParams) => {
+          this.datatable.fillPageQueryParams(pageQueryParams);
+          this.invoiceSearch.input = this.datatable.getDataTableInput();
+          this.invoiceService.getInvoiceBySearch(this.invoiceSearch)
+            .subscribe(
+              (res) => {
+                this.datatable.update(res);
+              },
+              (res: HttpErrorResponse) => this.onError(res.message)
+            );
+        });
+    }else
+      this.filter(this.isSearchOpr);
+    this.isSearchOpr =true;
+
 
     // this.invoiceService.getInvoiceBySearch(invoiceSearch)
     //   .pipe(
@@ -158,19 +181,9 @@ export class InvoiceComponent implements OnInit {
     //     },
     //     (res: HttpErrorResponse) => this.onError(res.message)
     //   );
-    this.filter(true);
-    this.initDatatable();
-    this.activatedRoute.queryParams
-      .subscribe((pageQueryParams: PageQueryParams) => {
-        this.datatable.fillPageQueryParams(pageQueryParams);
-        this.invoiceService.getInvoiceBySearch(invoiceSearch)
-          .subscribe(
-            (res) => {
-              this.datatable.update(res);
-            },
-            (res: HttpErrorResponse) => this.onError(res.message)
-          );
-      });
+
+
+
 
     // this.activatedRoute.queryParams
     //   .subscribe(pageQueryParams => {
