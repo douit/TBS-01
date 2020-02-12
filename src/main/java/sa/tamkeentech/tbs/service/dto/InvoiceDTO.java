@@ -59,6 +59,10 @@ public class InvoiceDTO implements Serializable {
 
     private Integer expirationDays;
 
+    private String vatNumber;
+
+    private Integer billerId;
+
     public InvoiceDTO() {
     }
 }

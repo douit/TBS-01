@@ -363,8 +363,13 @@ public class InvoiceService {
                 totalPriceInvoice = totalPriceInvoice.subtract(discountValue);
             }
         }
+        if (totalPriceInvoice.compareTo(BigDecimal.ZERO) < 0) {
+            throw new TbsRunTimeException("Wrong discount value");
+        }
+
         // Check based on passed values in case of flexible price
-        if (invoiceDTO.getAmount().compareTo(totalPriceInvoice.setScale(2, RoundingMode.HALF_UP)) != 0 || invoiceDTO.getAmount().compareTo(BigDecimal.ZERO) < 0) {
+        if (invoiceDTO.getAmount()!= null && (invoiceDTO.getAmount().compareTo(totalPriceInvoice.setScale(2, RoundingMode.HALF_UP)) != 0
+            || invoiceDTO.getAmount().compareTo(BigDecimal.ZERO) < 0)) {
             throw new TbsRunTimeException("Wrong invoice amount");
         }
         // calculate average tax

@@ -1,13 +1,9 @@
 package sa.tamkeentech.tbs.repository;
 
-import sa.tamkeentech.tbs.domain.PersistentAuditEvent;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
-
 import org.springframework.data.jpa.repository.JpaRepository;
-
-
+import sa.tamkeentech.tbs.domain.PersistentAuditEvent;
 
 import java.time.Instant;
 import java.util.List;
@@ -31,7 +27,7 @@ public interface PersistenceAuditEventRepository extends JpaRepository<Persisten
     List<PersistentAuditEvent> findByAuditEventDateBefore(Instant before);
     Optional<PersistentAuditEvent> findFirstByRefIdOrderByIdDesc(long refId);
 
-    Optional<PersistentAuditEvent> findFirstByRefIdAndSuccessfulOrderByIdDesc(long refId, boolean successful);
+    Optional<PersistentAuditEvent> findFirstByRefIdAndSuccessfulAndAuditEventTypeOrderByIdDesc(long refId, boolean successful, String eventType);
 
     List<PersistentAuditEvent> findByRefId(Long accountId);
 }

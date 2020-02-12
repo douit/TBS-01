@@ -8,6 +8,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sa.tamkeentech.tbs.config.Constants;
+import sa.tamkeentech.tbs.domain.PersistentAuditEvent;
+import sa.tamkeentech.tbs.repository.PersistenceAuditEventRepository;
 import sa.tamkeentech.tbs.service.InvoiceService;
 import sa.tamkeentech.tbs.service.PaymentService;
 import sa.tamkeentech.tbs.service.dto.*;
@@ -36,10 +39,13 @@ public class InvoiceAppResource {
 
     private final PaymentService paymentService;
 
+    private final PersistenceAuditEventRepository persistenceAuditEventRepository;
 
-    public InvoiceAppResource(InvoiceService invoiceService, PaymentService paymentService) {
+
+    public InvoiceAppResource(InvoiceService invoiceService, PaymentService paymentService, PersistenceAuditEventRepository persistenceAuditEventRepository) {
         this.invoiceService = invoiceService;
         this.paymentService = paymentService;
+        this.persistenceAuditEventRepository = persistenceAuditEventRepository;
     }
 
     /**
@@ -109,6 +115,11 @@ public class InvoiceAppResource {
         Optional<InvoiceDTO> invoiceDTO = invoiceService.findByAccountId(id);
         if (invoiceDTO.isPresent()) {
             invoiceDTO.get().setClient(null);
+            invoiceDTO.get().setVatNumber("300879111900003");
+            Optional<PersistentAuditEvent> event = persistenceAuditEventRepository.findFirstByRefIdAndSuccessfulAndAuditEventTypeOrderByIdDesc(invoiceDTO.get().getAccountId(), true, Constants.EventType.SADAD_INITIATE.name());
+            if (event.isPresent()) {
+                invoiceDTO.get().setBillerId(156);
+            }
         }
         return ResponseUtil.wrapOrNotFound(invoiceDTO);
     }
