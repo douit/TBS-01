@@ -7,6 +7,7 @@ public final class ErrorConstants {
     public static final String ERR_CONCURRENCY_FAILURE = "error.concurrencyFailure";
     public static final String ERR_VALIDATION = "error.validation";
     public static final String ERR_PAYMENT_GATEWAY = "error.paymentgateway";
+    public static final String ERR_ITEM_ALREADY_USED = "error.itemAlreadyUsed";
     public static final String ERR_INTERNAL = "error.internal";
     public static final String PROBLEM_BASE_URL = "";
     public static final URI DEFAULT_TYPE = URI.create(PROBLEM_BASE_URL + "problem-with-message");

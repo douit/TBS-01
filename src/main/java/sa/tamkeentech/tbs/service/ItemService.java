@@ -20,6 +20,7 @@ import sa.tamkeentech.tbs.service.dto.ItemDTO;
 import sa.tamkeentech.tbs.service.dto.TaxDTO;
 import sa.tamkeentech.tbs.service.mapper.ItemMapper;
 import sa.tamkeentech.tbs.service.mapper.TaxMapper;
+import sa.tamkeentech.tbs.web.rest.errors.ItemAlreadyUsedException;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
 import javax.persistence.EntityManager;
@@ -83,8 +84,12 @@ public class ItemService {
                 }
             }
         }
+
         if(itemDTO.isFlexiblePrice()){
             itemDTO.setPrice(BigDecimal.ZERO);
+        }
+        if (StringUtils.isNotEmpty(itemDTO.getCode())) {
+            itemDTO.setCode(itemDTO.getCode().trim());
         }
         Item item = itemMapper.toEntity(itemDTO);
         item.setTaxes(taxes);
@@ -111,16 +116,18 @@ public class ItemService {
         if(StringUtils.isEmpty(itemDTO.getCode())){
             throw new TbsRunTimeException("Item code Type is mandatory");
         }
+
         if (itemDTO.getId() == null) {
             // check if code is unique per client
             if (itemRepository.findByCodeAndClientId(itemDTO.getCode(), client.get().getId()).isPresent()) {
-                throw new TbsRunTimeException("Item already created");
+                throw new ItemAlreadyUsedException("Item already created");
             }
         }else{
             Optional<Item> oldItem = itemRepository.findById(itemDTO.getId());
-            if(oldItem.isPresent() && !oldItem.get().getCode().equalsIgnoreCase(itemDTO.getCode())){
+            if(oldItem.isPresent()
+                && (!oldItem.get().getCode().equalsIgnoreCase(itemDTO.getCode()) || !oldItem.get().getClient().getId().equals(client.get().getId()))){
                 if (itemRepository.findByCodeAndClientId(itemDTO.getCode(), client.get().getId()).isPresent()) {
-                    throw new TbsRunTimeException("Item code exists");
+                    throw new ItemAlreadyUsedException("Item already created");
                 }
             }
         }

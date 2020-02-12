@@ -208,6 +208,26 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(problem);
     }
 
+    @ExceptionHandler
+    public ResponseEntity<Problem> itemAlreadyUsedRuntime(ItemAlreadyUsedException ex, NativeWebRequest request) {
+        String code = RandomUtil.randomAlphaNumeric(6);
+
+        Problem problem = Problem.builder()
+            .withTitle(ex.getMessage())
+            .withStatus(Status.BAD_REQUEST)
+            .withType(ErrorConstants.DEFAULT_TYPE)
+            // .with(MESSAGE_KEY, ErrorConstants.ERR_VALIDATION)
+            .with(MESSAGE_KEY, ErrorConstants.ERR_ITEM_ALREADY_USED)
+            .with(CODE_KEY, code)
+            .with(CODE_TIME, ZonedDateTime.now())
+            .with(PATH_KEY, request.getNativeRequest(HttpServletRequest.class).getRequestURI())
+            .build();
+
+        log.error("---PaymentGatewayException code: {}, title: {}, message: {}, stack: {}", code, problem.getTitle(), ErrorConstants.ERR_PAYMENT_GATEWAY, ex.getStackTrace());
+        // Sentry.capture(ex);
+        return ResponseEntity.badRequest().body(problem);
+    }
+
 /*    @ExceptionHandler
     public ResponseEntity<Problem> exceptionRuntime(Exception ex, NativeWebRequest request) {
         String code = RandomUtil.randomAlphaNumeric(6);

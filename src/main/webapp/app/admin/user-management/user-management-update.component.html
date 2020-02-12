@@ -320,18 +320,18 @@
                                     <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span
                                     jhiTranslate="entity.action.cancel">Cancel</span>
                                 </button>
-                                <h5>
-                                    {{(isInternal&&ldapDateEmpty&&isCreate )}}
-                                </h5>
-                                <h5>
-                                    {{isSaving}}
-                                </h5>
-                                <h5>
-                                    {{(editForm.invalid) }}
-                                </h5>
-                                <h5>
-                                    {{(editForm.invalid&&IsFieldsEmpty) }}
-                                </h5>
+<!--                                <h5>-->
+<!--                                    {{(isInternal&&ldapDateEmpty&&isCreate )}}-->
+<!--                                </h5>-->
+<!--                                <h5>-->
+<!--                                    {{isSaving}}-->
+<!--                                </h5>-->
+<!--                                <h5>-->
+<!--                                    {{(editForm.invalid) }}-->
+<!--                                </h5>-->
+<!--                                <h5>-->
+<!--                                    {{(editForm.invalid&&IsFieldsEmpty) }}-->
+<!--                                </h5>-->
                                 <button type="submit" id="save-entity"
                                         [disabled]=" (editForm.invalid&&IsFieldsEmpty) || isSaving ||  (isInternal&&ldapDateEmpty&&isCreate )"
                                         class="btn btn-primary">

@@ -24,9 +24,9 @@
 
     <changeSet id="20191223105213-2" author="Ahmed B" context="faker">
         <sql dbms="postgresql">
-            update client set initialAccountId=7000000000, initialBillId=4000 where client_id='TAHAQAQ';
-            update client set initialAccountId=5000000000, initialBillId=1000 where client_id='MUSANED';
-            update client set initialAccountId=6000000000, initialBillId=1000 where client_id='AJIR';
+            update client set initial_account_id=7000000000, initial_bill_id=4000 where client_id='TAHAQAQ';
+            update client set initial_account_id=5000000000, initial_bill_id=1000 where client_id='MUSANED';
+            update client set initial_account_id=6000000000, initial_bill_id=1000 where client_id='AJIR';
         </sql>
     </changeSet>
 

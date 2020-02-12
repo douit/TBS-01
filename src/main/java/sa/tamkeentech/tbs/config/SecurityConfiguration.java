@@ -73,10 +73,10 @@ public class SecurityConfiguration {
             });
 
             httpSecurity.
-                antMatcher("/billing/**").// change this to invoicesApp ToDO !!!!
-                csrf().disable().
-                sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).
-                and().addFilter(filter).authorizeRequests().anyRequest().authenticated();
+                antMatcher("/billing/**")
+                .csrf().disable()
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and().addFilter(filter).authorizeRequests().anyRequest().authenticated();
         }
     }
 
