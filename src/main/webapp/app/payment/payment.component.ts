@@ -155,7 +155,7 @@ export class PaymentComponent implements OnInit {
     this.paymentSearch.clientId =clientId;
     this.paymentSearch.paymentStatus= this.paymentStatusSelected
 
-    if(!this.isSearchOpr){
+    // if(!this.isSearchOpr){
       this.initDatatable();
       this.activatedRoute.queryParams
         .subscribe((pageQueryParams: PageQueryParams) => {
@@ -169,7 +169,8 @@ export class PaymentComponent implements OnInit {
               (res: HttpErrorResponse) => this.onError(res.message)
             );
         });
-    }else
+    // }else
+
       this.filter(this.isSearchOpr);
 
     this.isSearchOpr =true;
