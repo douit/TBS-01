@@ -163,6 +163,7 @@ export class Datatable<T> extends Pageable<T> {
         datatableInput.length = this.length;
         datatableInput.search.value = this.search;
 
+
         let index = 0;
         let sortColumnIndex = null;
 
