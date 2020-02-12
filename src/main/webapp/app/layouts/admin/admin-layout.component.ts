@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, ViewChild, HostListener, AfterViewInit } from '@angular/core';
-import { Router, NavigationEnd, NavigationStart } from '@angular/router';
+import {Router, NavigationEnd, NavigationStart, ActivatedRouteSnapshot} from '@angular/router';
 import { NavItem, NavItemType } from '../../md/md.module';
 import { Subscription } from 'rxjs/Subscription';
 import { Location, LocationStrategy, PathLocationStrategy, PopStateEvent } from '@angular/common';
@@ -7,6 +7,7 @@ import 'rxjs/add/operator/filter';
 import { NavbarComponent } from '../../shared/navbar/navbar.component';
 import PerfectScrollbar from 'perfect-scrollbar';
 import { filter, tap} from 'rxjs/operators';
+import {JhiLanguageHelper} from 'app/core/language/language.helper';
 
 declare const $: any;
 
@@ -25,7 +26,7 @@ export class AdminLayoutComponent implements OnInit, AfterViewInit {
 
     @ViewChild('sidebar', {static: false}) sidebar: any;
     @ViewChild(NavbarComponent, {static: false}) navbar: NavbarComponent;
-    constructor( private router: Router, location: Location ) {
+    constructor( private router: Router, location: Location, private languageHelper: JhiLanguageHelper) {
       this.location = location;
     }
     ngOnInit() {
@@ -121,9 +122,24 @@ export class AdminLayoutComponent implements OnInit, AfterViewInit {
           },
           { type: NavItemType.NavbarLeft, title: 'Log out' }
         ];
+
+      this.router.events.subscribe((event) => {
+        if (event instanceof NavigationEnd) {
+          this.languageHelper.updateTitle(this.getPageTitle(this.router.routerState.snapshot.root));
+        }
+      });
     }
+
+    private getPageTitle(routeSnapshot: ActivatedRouteSnapshot) {
+      let title: string = routeSnapshot.data && routeSnapshot.data['pageTitle'] ? routeSnapshot.data['pageTitle'] : 'global.title';
+      if (routeSnapshot.firstChild) {
+        title = this.getPageTitle(routeSnapshot.firstChild) || title;
+      }
+      return title;
+    }
+
     ngAfterViewInit() {
-        this.runOnRouteChange();
+      this.runOnRouteChange();
     }
     public isMap() {
         if (this.location.prepareExternalUrl(this.location.path()) === '/maps/fullscreen') {

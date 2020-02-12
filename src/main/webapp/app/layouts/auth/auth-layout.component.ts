@@ -1,7 +1,8 @@
 import { Component, OnInit, ElementRef } from '@angular/core';
-import { Router, NavigationEnd, NavigationStart } from '@angular/router';
+import {Router, NavigationEnd, NavigationStart, ActivatedRouteSnapshot} from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
 import { filter} from 'rxjs/operators';
+import {JhiLanguageHelper} from 'app/core/language/language.helper';
 
 @Component({
   selector: 'app-layout',
@@ -13,10 +14,10 @@ export class AuthLayoutComponent implements OnInit {
   mobile_menu_visible: any = 0;
   private _router: Subscription;
 
-  constructor(private router: Router, private element: ElementRef) {
+  constructor(private router: Router, private element: ElementRef, private languageHelper: JhiLanguageHelper) {
       this.sidebarVisible = false;
   }
-  ngOnInit(){
+  ngOnInit() {
     const navbar: HTMLElement = this.element.nativeElement;
 
     this.toggleButton = navbar.getElementsByClassName('navbar-toggler')[0];
@@ -27,7 +28,21 @@ export class AuthLayoutComponent implements OnInit {
         $layer.remove();
       }
     });*/
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        this.languageHelper.updateTitle(this.getPageTitle(this.router.routerState.snapshot.root));
+      }
+    });
   }
+
+  private getPageTitle(routeSnapshot: ActivatedRouteSnapshot) {
+    let title: string = routeSnapshot.data && routeSnapshot.data['pageTitle'] ? routeSnapshot.data['pageTitle'] : 'global.title';
+    if (routeSnapshot.firstChild) {
+      title = this.getPageTitle(routeSnapshot.firstChild) || title;
+    }
+    return title;
+  }
+
   sidebarOpen() {
     const $toggle = document.getElementsByClassName('navbar-toggler')[0];
       const toggleButton = this.toggleButton;

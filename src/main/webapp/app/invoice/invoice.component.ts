@@ -148,11 +148,11 @@ export class InvoiceComponent implements OnInit {
       clientId = this.selectedClient.id;
     }
     this.invoiceSearch.fromDate = fromDate;
-    this.invoiceSearch.toDate =toDate;
-    this.invoiceSearch.clientId =clientId;
-    this.invoiceSearch.customerId =this.customerId;
+    this.invoiceSearch.toDate = toDate;
+    this.invoiceSearch.clientId = clientId;
+    this.invoiceSearch.customerId = this.customerId;
 
-    if(!this.isSearchOpr){
+    // if(!this.isSearchOpr){
       this.initDatatable();
       this.activatedRoute.queryParams
         .subscribe((pageQueryParams: PageQueryParams) => {
@@ -166,9 +166,9 @@ export class InvoiceComponent implements OnInit {
               (res: HttpErrorResponse) => this.onError(res.message)
             );
         });
-    }else
+    // }else
       this.filter(this.isSearchOpr);
-    this.isSearchOpr =true;
+    this.isSearchOpr = true;
 
 
     // this.invoiceService.getInvoiceBySearch(invoiceSearch)

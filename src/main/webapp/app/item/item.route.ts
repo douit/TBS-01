@@ -58,7 +58,7 @@ export const itemRoute: Routes = [
     },
     data: {
       authorities: ['ROLE_USER'],
-      pageTitle: 'tbsApp.item.home.title'
+      pageTitle: 'tbsApp.item.home.createLabel'
     },
     canActivate: [UserRouteAccessService]
   },
@@ -70,7 +70,7 @@ export const itemRoute: Routes = [
     },
     data: {
       authorities: ['ROLE_USER'],
-      pageTitle: 'tbsApp.item.home.title'
+      pageTitle: 'tbsApp.item.home.editLabel'
     },
     canActivate: [UserRouteAccessService]
   }

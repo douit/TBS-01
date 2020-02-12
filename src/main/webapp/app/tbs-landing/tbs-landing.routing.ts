@@ -8,7 +8,11 @@ export const TbsLandingRoutes: Routes = [
       path: 'login',
       children: [ {
         path: '',
-        component: TbsLandingComponent
+        component: TbsLandingComponent,
+        data: {
+          authorities: [],
+          pageTitle: 'global.menu.account.login'
+        },
     }]
 }
 ];

@@ -81,7 +81,7 @@
                             <jhi-alert-error></jhi-alert-error>
 
                             <div class="row">
-                                <label class="col-sm-2 col-form-label">Code </label>
+                                <label class="col-sm-2 col-form-label required-input">Code </label>
                                 <div class="col-sm-7">
                                     <mat-form-field class="example-full-width has-label"
                                                     [ngClass]="{'has-success':validTextType===true}"
@@ -99,7 +99,7 @@
                             </div>
 
                             <div class="row">
-                                <label class="col-sm-2 col-form-label">Name</label>
+                                <label class="col-sm-2 col-form-label required-input">Name</label>
                                 <div class="col-sm-7">
                                     <mat-form-field class="example-full-width has-label"
                                                     [ngClass]="{'has-success':validNumberType===true}"
@@ -135,7 +135,7 @@
                             </div>
 
                             <div class="row">
-                                <label class="col-sm-2 col-form-label">DefaultQuantity</label>
+                                <label class="col-sm-2 col-form-label required-input">DefaultQuantity</label>
                                 <div class="col-sm-2">
                                     <mat-form-field class="example-full-width"
                                                     [ngClass]="{'has-success':validDestinationType===true}"
@@ -150,7 +150,7 @@
                                     </mat-form-field>
                                 </div>
 
-                                <label class="col-sm-2 col-form-label" [hidden]="isFlexiblePrice">Price</label>
+                                <label class="col-sm-2 col-form-label required-input" [hidden]="isFlexiblePrice">Price</label>
                                 <div class="col-sm-2" [hidden]="isFlexiblePrice">
                                     <mat-form-field class="example-full-width"
 
@@ -170,7 +170,7 @@
                             </div>
 
                             <div class="row">
-                                <label class="col-sm-2 col-form-label">Category</label>
+                                <label class="col-sm-2 col-form-label required-input">Category</label>
                                 <div class="col-sm-7">
                                     <mat-form-field>
                                         <mat-label *ngIf="selectedCategory == null">Select an option</mat-label>
@@ -187,7 +187,7 @@
                                 </div>
                             </div>
                             <div class="row">
-                                <label class="col-sm-2 col-form-label">Client</label>
+                                <label class="col-sm-2 col-form-label required-input">Client</label>
                                 <div class="col-sm-7">
                                     <mat-form-field>
                                         <mat-label *ngIf="selectedClient == null">Select an option</mat-label>

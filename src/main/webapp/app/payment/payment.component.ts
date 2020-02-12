@@ -242,7 +242,8 @@ export class PaymentComponent implements OnInit {
         name: this.translateService.instant('tbsApp.payment.invoice'),
         prop: 'invoice.id',
         headerTemplate: this.headerTemplate,
-        cellTemplate: this.invoiceRowTemplate
+        // cellTemplate: this.invoiceRowTemplate
+        cellTemplate: this.rowTemplate
       }),
       new DatatableColumn({
         name: this.translateService.instant('tbsApp.payment.paymentMethod'),

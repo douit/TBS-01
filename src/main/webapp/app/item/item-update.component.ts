@@ -282,11 +282,11 @@ export class ItemUpdateComponent implements OnInit {
   }
 
   confirmDestinationValidationType(e) {
-    if (this.type.controls['password'].value === e) {
+    /*if (this.type.controls['password'].value === e) {
       this.validDestinationType = true;
     } else {
       this.validDestinationType = false;
-    }
+    }*/
   }
 
   onType() {

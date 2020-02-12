@@ -12,13 +12,23 @@ export const reportRoutes: Routes = [
         },
         canActivate: [UserRouteAccessService],
         children: [
-            {
-                path: 'payment-report',
-                component: PaymentReportComponent
-            },
           {
-            path: 'refund-report',
-            component: RefundReportComponent
+              path: 'payment-report',
+              component: PaymentReportComponent,
+              data: {
+                authorities: ['ROLE_USER'],
+                pageTitle: 'report.paymentReport'
+              },
+              canActivate: [UserRouteAccessService]
+          },
+          {
+              path: 'refund-report',
+              component: RefundReportComponent,
+              data: {
+                authorities: ['ROLE_USER'],
+                pageTitle: 'report.refundReport'
+              },
+              canActivate: [UserRouteAccessService]
           }
         ]
     }

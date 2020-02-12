@@ -44,6 +44,11 @@ export const adminState: Routes = [
       {
         path: 'user-management',
         component: UserMgmtComponent,
+        data: {
+          authorities: ['ROLE_ADMIN'],
+          pageTitle: 'userManagement.home.title'
+        },
+        canActivate: [UserRouteAccessService],
         resolve: {
           pagingParams: JhiResolvePagingParams
         }
@@ -51,6 +56,11 @@ export const adminState: Routes = [
       {
         path: 'user-management/new',
         component: UserMgmtUpdateComponent,
+        data: {
+          authorities: ['ROLE_ADMIN'],
+          pageTitle: 'userManagement.home.createLabel'
+        },
+        canActivate: [UserRouteAccessService],
         resolve: {
           user: UserMgmtResolve
         }
@@ -58,6 +68,11 @@ export const adminState: Routes = [
       {
         path: 'user-management/:login/edit',
         component: UserMgmtUpdateComponent,
+        data: {
+          authorities: ['ROLE_ADMIN'],
+          pageTitle: 'userManagement.home.editLabel'
+        },
+        canActivate: [UserRouteAccessService],
         resolve: {
           user: UserMgmtResolve
         }

@@ -230,6 +230,7 @@ export class NavbarComponent implements OnInit {
         }*/
         return 'Dashboard';
     }
+
     getPath() {
         return this.location.prepareExternalUrl(this.location.path());
     }

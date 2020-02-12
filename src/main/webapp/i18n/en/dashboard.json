@@ -1,5 +1,6 @@
 {
   "dashboard": {
+    "title": "Dashboard",
     "statistics": {
       "monthly": {
         "1": "January",
