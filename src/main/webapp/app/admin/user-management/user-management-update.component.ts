@@ -28,7 +28,7 @@ export class UserMgmtUpdateComponent implements OnInit {
   validTextType = false;
   validEmailType = false;
   text: string[];
-  translateAuthorities: string [] = [];
+  translateAuthorities: string [][] = [];
   role: any = {};
   roleClient: string;
   roleName: string;
@@ -127,19 +127,20 @@ export class UserMgmtUpdateComponent implements OnInit {
     if (this.user.clientRoles != null) {
       const that = this;
       this.user.clientRoles.forEach(function (value) {
-
+        let authoritiesForOneClient: string [] = [];
         that.userService.getRoleAuthorities(value.roleName.toString()).subscribe(
           res => {
             that.text = res;
-
             that.text.forEach(element => {
-              that.translateAuthorities.push(that.translateService.instant('userManagement.authorities.' + element) + "<br>");
+              authoritiesForOneClient.push(that.translateService.instant('userManagement.authorities.' + element) + "<br>");
             });
+
           },
           res => {
             console.log('An error has occurred when get role authorities');
           }
         );
+        that.translateAuthorities.push(authoritiesForOneClient);
       });
     }
   }
@@ -280,11 +281,11 @@ export class UserMgmtUpdateComponent implements OnInit {
     this.userService.getRoleAuthorities(this.role.roleName).subscribe(
       res => {
         this.text = res;
-
+        let authoritiesForOneClient: string [] = [];
         this.text.forEach(element => {
-          this.translateAuthorities.push(this.translateService.instant('userManagement.authorities.' + element) + "<br>");
+          authoritiesForOneClient.push(this.translateService.instant('userManagement.authorities.' + element) + "<br>");
         });
-
+        this.translateAuthorities.push(authoritiesForOneClient);
 
       },
       res => {
@@ -317,6 +318,7 @@ export class UserMgmtUpdateComponent implements OnInit {
     } else {*/
     this.roles.splice(index, 1);
     this.filterClients();
+    this.translateAuthorities.splice(index, 1);
     // }
   }
 
