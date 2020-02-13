@@ -87,6 +87,8 @@ public class ItemService {
 
         if(itemDTO.isFlexiblePrice()){
             itemDTO.setPrice(BigDecimal.ZERO);
+        } else if (itemDTO.getPrice() == null || itemDTO.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new TbsRunTimeException("Wrong price");
         }
         if (StringUtils.isNotEmpty(itemDTO.getCode())) {
             itemDTO.setCode(itemDTO.getCode().trim());
@@ -174,10 +176,15 @@ public class ItemService {
             item.get().setCategory(category.get());
         }
         // update price
-        if (itemDTO.getPrice() != null) {
+        if (!itemDTO.isFlexiblePrice() && itemDTO.getPrice() != null) {
             item.get().setPrice(itemDTO.getPrice());
+        } else if(itemDTO.isFlexiblePrice()) {
+            item.get().setPrice(BigDecimal.ZERO);
         }
         item.get().setFlexiblePrice(itemDTO.isFlexiblePrice());
+        if (!itemDTO.isFlexiblePrice() && (itemDTO.getPrice() == null || itemDTO.getPrice().compareTo(BigDecimal.ZERO) <= 0)) {
+            throw new TbsRunTimeException("Wrong price");
+        }
         // update name
         if (StringUtils.isNotEmpty(itemDTO.getName())) {
             item.get().setName(itemDTO.getName());

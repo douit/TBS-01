@@ -134,6 +134,7 @@ public class SecurityConfiguration {
                 .antMatchers("/test/**")
                 .antMatchers("/h2-console/**")
                 .antMatchers("/sadad/paymentnotification**")
+                .antMatchers("/billing/payments/status")
                 .antMatchers("/billing/payments/credit-card");
         }
 
