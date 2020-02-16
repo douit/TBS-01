@@ -58,7 +58,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long>, DataTab
 
     @Query(value = "SELECT * " +
         " FROM invoice WHERE invoice.expiry_date <= ?1 " +
-        "    AND invoice.payment_status = 'UNPAID'  \n"+
+        "    AND invoice.payment_status in ('UNPAID', 'PENDING')  \n"+
         "AND invoice.status != 'EXPIRED' \n"+
         "AND invoice.status != 'FAILED'", nativeQuery = true)
     List<Invoice> getExpiryInvoices(ZonedDateTime currentDate);

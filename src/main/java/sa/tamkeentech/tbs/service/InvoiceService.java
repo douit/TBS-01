@@ -648,7 +648,7 @@ public class InvoiceService {
         return stats;
     }
 
-    @Scheduled(cron = "0 5 * * * ? ")
+    @Scheduled(cron = "0 30 * * * ? ")
     public void checkExpiredInvoice(){
     List<Invoice> invoices = invoiceRepository.getExpiryInvoices(ZonedDateTime.now());
     for(Invoice invoice : invoices){
