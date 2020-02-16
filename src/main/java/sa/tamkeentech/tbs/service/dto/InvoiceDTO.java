@@ -63,6 +63,8 @@ public class InvoiceDTO implements Serializable {
 
     private Integer billerId;
 
+    private String companyName;
+
     public InvoiceDTO() {
     }
 }

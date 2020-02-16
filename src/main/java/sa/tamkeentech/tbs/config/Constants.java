@@ -48,6 +48,38 @@ public final class Constants {
         }
     }*/
 
+    // Default language
+    public static final String DEFAULT_HEADER_LANGUAGE = "ar";
+
+    /**
+     * Language enumeration
+     */
+    public enum LANGUAGE {
+        ARABIC("ar-ly", "ar"),
+        ENGLISH("en", "en");
+        LANGUAGE(String languageKey, String headerKey) {
+            this.languageKey = languageKey;
+            this.headerKey = headerKey;
+        }
+
+        public static String getLanguageByHeaderKey(String headerKey) {
+            switch (headerKey){
+                case "en": return ENGLISH.getLanguageKey();
+                default: return ARABIC.getLanguageKey();
+            }
+        }
+        String languageKey;
+        String headerKey;
+
+        public String getLanguageKey() {
+            return this.languageKey;
+        }
+
+        public String getHeaderKey() {
+            return headerKey;
+        }
+    }
+
     public static final String INVOICE_DEFAULT_SEQ = "invoice_%s_id_seq";
 
     /**

@@ -2,6 +2,7 @@ package sa.tamkeentech.tbs.web.rest;
 
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +15,7 @@ import sa.tamkeentech.tbs.repository.PersistenceAuditEventRepository;
 import sa.tamkeentech.tbs.service.InvoiceService;
 import sa.tamkeentech.tbs.service.PaymentService;
 import sa.tamkeentech.tbs.service.dto.*;
+import sa.tamkeentech.tbs.service.util.LanguageUtil;
 import sa.tamkeentech.tbs.web.rest.errors.BadRequestAlertException;
 
 import javax.validation.Valid;
@@ -41,11 +43,14 @@ public class InvoiceAppResource {
 
     private final PersistenceAuditEventRepository persistenceAuditEventRepository;
 
+    private final LanguageUtil languageUtil;
 
-    public InvoiceAppResource(InvoiceService invoiceService, PaymentService paymentService, PersistenceAuditEventRepository persistenceAuditEventRepository) {
+
+    public InvoiceAppResource(InvoiceService invoiceService, PaymentService paymentService, PersistenceAuditEventRepository persistenceAuditEventRepository, LanguageUtil languageUtil) {
         this.invoiceService = invoiceService;
         this.paymentService = paymentService;
         this.persistenceAuditEventRepository = persistenceAuditEventRepository;
+        this.languageUtil = languageUtil;
     }
 
     /**
@@ -110,7 +115,8 @@ public class InvoiceAppResource {
     }
 
     @GetMapping("/billing/invoice/{id}")
-    public ResponseEntity<InvoiceDTO> getInvoice(@PathVariable Long id) {
+    public ResponseEntity<InvoiceDTO> getInvoice(@PathVariable Long id,
+                                                 @RequestHeader(value = "accept-language", defaultValue = Constants.DEFAULT_HEADER_LANGUAGE) String language) {
         log.debug("REST request to get Invoice : {}", id);
         Optional<InvoiceDTO> invoiceDTO = invoiceService.findByAccountId(id);
         if (invoiceDTO.isPresent()) {
@@ -120,6 +126,9 @@ public class InvoiceAppResource {
             if (event.isPresent()) {
                 invoiceDTO.get().setBillerId(156);
             }
+            String lang = StringUtils.isNotEmpty(language)? language: Constants.LANGUAGE.ARABIC.getHeaderKey();
+            invoiceDTO.get().setCompanyName(languageUtil.getMessageByKey("company.name", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
+
         }
         return ResponseUtil.wrapOrNotFound(invoiceDTO);
     }
