@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.configurationprocessor.json.JSONException;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
@@ -19,9 +20,11 @@ import sa.tamkeentech.tbs.domain.*;
 import sa.tamkeentech.tbs.domain.enumeration.*;
 import sa.tamkeentech.tbs.repository.CustomerRepository;
 import sa.tamkeentech.tbs.repository.InvoiceRepository;
+import sa.tamkeentech.tbs.repository.PaymentRepository;
 import sa.tamkeentech.tbs.security.SecurityUtils;
 import sa.tamkeentech.tbs.service.dto.*;
 import sa.tamkeentech.tbs.service.mapper.InvoiceMapper;
+import sa.tamkeentech.tbs.service.mapper.PaymentMapper;
 import sa.tamkeentech.tbs.service.mapper.PaymentMethodMapper;
 import sa.tamkeentech.tbs.service.util.EventPublisherService;
 import sa.tamkeentech.tbs.service.util.SequenceUtil;
@@ -78,6 +81,10 @@ public class InvoiceService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    @Lazy
+    private PaymentRepository paymentRepository;
 
     public InvoiceService(InvoiceRepository invoiceRepository, InvoiceMapper invoiceMapper, ClientService clientService, CustomerService customerService, PaymentMethodService paymentMethodService, ItemService itemService, PaymentService paymentService, SequenceUtil sequenceUtil, EventPublisherService eventPublisherService, CustomerRepository customerRepository, EntityManager entityManager, PaymentMethodMapper paymentMethodMapper) {
         this.invoiceRepository = invoiceRepository;
@@ -201,6 +208,17 @@ public class InvoiceService {
                     }
                     invoiceItemsResponseDTO.setLink(paymentResponseDTO.getUrl());
                     log.info("CC payment method");
+                    // save payment
+                    // PaymentDTO paymentDTO = PaymentDTO.builder().invoiceId(invoice.getAccountId()).build();
+                    Payment payment = Payment.builder().build();//paymentMapper.toEntity(paymentDTO);
+                    payment.setPaymentMethod(paymentMethod.get());
+                    payment.setInvoice(invoice);
+                    payment.setAmount(invoice.getAmount());
+                    payment.setStatus(PaymentStatus.PENDING);
+                    if (paymentResponseDTO != null) {
+                        payment.setTransactionId(paymentResponseDTO.getTransactionId());
+                    }
+                    paymentRepository.save(payment);
 
                     break;
                 default:

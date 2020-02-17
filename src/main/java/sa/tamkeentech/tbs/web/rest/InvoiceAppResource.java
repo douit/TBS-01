@@ -107,10 +107,10 @@ public class InvoiceAppResource {
     }
 
     // possible values SADAD or CREDIT_CARD
-    @GetMapping("/billing/changePaymentMethod/{referenceId}/{paymentMethodCode}")
+    @GetMapping("/billing/newPayment/{referenceId}/{paymentMethodCode}")
     public ResponseEntity<InvoiceResponseDTO> getPayment(@PathVariable String referenceId, @PathVariable String paymentMethodCode) {
         log.debug("REST request to change payment method Payment to : {}", paymentMethodCode);
-        InvoiceResponseDTO resp = paymentService.changePaymentMethod(referenceId, paymentMethodCode);
+        InvoiceResponseDTO resp = paymentService.requestNewPayment(referenceId, paymentMethodCode);
         return new ResponseEntity<InvoiceResponseDTO>(resp,  HttpStatus.OK);
     }
 

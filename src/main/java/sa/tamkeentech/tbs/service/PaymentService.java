@@ -349,7 +349,17 @@ public class PaymentService {
     // @Transactional
     public NotifiRespDTO sendPaymentNotification(NotifiReqDTO reqNotification, Invoice invoice) {
 
-        if (invoice != null) {
+        if (invoice == null) {
+            return NotifiRespDTO.builder()
+                .statusId(0)
+                .statusDescription("Invoice does not exist")
+                .build();
+        } else if (invoice.getAmount().compareTo(new BigDecimal(reqNotification.getAmount())) != 0) {
+            return NotifiRespDTO.builder()
+                .statusId(0)
+                .statusDescription("Wrong amount")
+                .build();
+        } else {
             Optional<Payment> paymentFromDb = paymentRepository.findFirstByInvoiceAccountIdAndStatus(invoice.getAccountId(), PaymentStatus.PAID);
             if (paymentFromDb.isPresent()) {
                 log.warn("Payment already received, Exit without updating Client app");
@@ -528,7 +538,7 @@ public class PaymentService {
     }
 
     @Transactional
-    public InvoiceResponseDTO changePaymentMethod(String referenceId, String paymentMethodCode) {
+    public InvoiceResponseDTO requestNewPayment(String referenceId, String paymentMethodCode) {
 
         if (!Constants.SADAD.equals(paymentMethodCode) && !Constants.CREDIT_CARD.equals(paymentMethodCode)) {
             throw new TbsRunTimeException("Unkown payment method");
@@ -536,9 +546,12 @@ public class PaymentService {
         Optional<Invoice> invoice = invoiceRepository.findByAccountId(Long.parseLong(referenceId));
         if (!invoice.isPresent()) {
             throw new TbsRunTimeException("Invoice does not exist");
-        }
-        if (invoice.get().getPaymentStatus() == PaymentStatus.PAID) {
+        } else if (invoice.get().getPaymentStatus() == PaymentStatus.PAID) {
             throw new TbsRunTimeException("Invoice already paid");
+        } else if (invoice.get().getPaymentStatus() == PaymentStatus.REFUNDED) {
+            throw new TbsRunTimeException("Invoice already refunded");
+        } else if (invoice.get().getStatus() == InvoiceStatus.EXPIRED) {
+            throw new TbsRunTimeException("Invoice already expired");
         }
         InvoiceResponseDTO invoiceResponseDTO = InvoiceResponseDTO.builder().statusId(1).shortDesc("success").description("").build();
         invoiceResponseDTO.setBillNumber(invoice.get().getAccountId().toString());
