@@ -31,10 +31,7 @@ import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.*;
 import sa.tamkeentech.tbs.domain.enumeration.InvoiceStatus;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
-import sa.tamkeentech.tbs.repository.ClientRepository;
-import sa.tamkeentech.tbs.repository.InvoiceRepository;
-import sa.tamkeentech.tbs.repository.PaymentRepository;
-import sa.tamkeentech.tbs.repository.PersistenceAuditEventRepository;
+import sa.tamkeentech.tbs.repository.*;
 import sa.tamkeentech.tbs.service.dto.*;
 import sa.tamkeentech.tbs.service.mapper.ClientMapper;
 import sa.tamkeentech.tbs.service.mapper.PaymentMapper;
@@ -69,6 +66,8 @@ public class PaymentService {
     private final PaymentMapper paymentMapper;
 
     private final InvoiceRepository invoiceRepository;
+    private final BankRepository bankRepository;
+    private final BinRepository binRepository;
 
     private final PaymentMethodService paymentMethodService;
 
@@ -98,10 +97,12 @@ public class PaymentService {
     @Autowired
     private UserService userService;
 
-    public PaymentService(PaymentRepository paymentRepository, PaymentMapper paymentMapper, InvoiceRepository invoiceRepository, PaymentMethodService paymentMethodService, ObjectMapper objectMapper, EventPublisherService eventPublisherService, ClientService clientService, ClientMapper clientMapper, PersistenceAuditEventRepository persistenceAuditEventRepository, PaymentMethodMapper paymentMethodMapper, ClientRepository clientRepository) {
+    public PaymentService(PaymentRepository paymentRepository, PaymentMapper paymentMapper, InvoiceRepository invoiceRepository, BankRepository bankRepository, BinRepository binRepository, PaymentMethodService paymentMethodService, ObjectMapper objectMapper, EventPublisherService eventPublisherService, ClientService clientService, ClientMapper clientMapper, PersistenceAuditEventRepository persistenceAuditEventRepository, PaymentMethodMapper paymentMethodMapper, ClientRepository clientRepository) {
         this.paymentRepository = paymentRepository;
         this.paymentMapper = paymentMapper;
         this.invoiceRepository = invoiceRepository;
+        this.bankRepository = bankRepository;
+        this.binRepository = binRepository;
         this.paymentMethodService = paymentMethodService;
         this.objectMapper = objectMapper;
         this.eventPublisherService = eventPublisherService;
@@ -198,9 +199,19 @@ public class PaymentService {
             payment.setStatus(PaymentStatus.UNPAID);
             invoice.setPaymentStatus(PaymentStatus.UNPAID);
         }
+        payment.setBankId(findBankCode(paymentStatusResponseDTO.getCardNumber()));
         paymentRepository.save(payment);
         PaymentDTO result = paymentMapper.toDto(payment);
         return result;
+    }
+
+    private String findBankCode(String cardNumber) {
+        for(Bin bin : binRepository.findAll()){
+            if(bin.getBin().toString().substring(0,5).equals(cardNumber.substring(0,5))){
+               return bankRepository.findById(bin.getIdBank()).get().getCode();
+            }
+        }
+        return "";
     }
 
 
