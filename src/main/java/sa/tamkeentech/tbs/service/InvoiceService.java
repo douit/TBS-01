@@ -191,10 +191,10 @@ public class InvoiceService {
                     try {
                         sadadResult = paymentService.sendEventAndCallSadad(invoice.getNumber(), invoice.getAccountId().toString(), invoice.getAmount(), invoiceDTO.getCustomer().getIdentity());
                     } catch (IOException | JSONException e) {
-                        throw new PaymentGatewayException("Sadad issue");
+                        throw new PaymentGatewayException("Payment gateway Sadad issue invoice: " + invoice.getAccountId() + " cause: "+ e.getCause());
                     }
                     if (sadadResult != 200) {
-                        throw new PaymentGatewayException("Sadad bill creation error");
+                        throw new PaymentGatewayException("Payment gateway Sadad result:"+ sadadResult +", issue invoice: " + invoice.getAccountId());
                     }
                     break;
                 case Constants.CREDIT_CARD:
@@ -204,7 +204,7 @@ public class InvoiceService {
                     try {
                         paymentResponseDTO = paymentService.sendEventAndCreditCardCall(Optional.of(invoice), appCode, roundedAmount.multiply(new BigDecimal("100")));
                     } catch (JSONException | IOException e) {
-                        throw new PaymentGatewayException("Payment gateway issue: " + e.getCause());
+                        throw new PaymentGatewayException("Payment gateway online issue invoice: " + invoice.getAccountId());
                     }
                     invoiceItemsResponseDTO.setLink(paymentResponseDTO.getUrl());
                     log.info("CC payment method");
@@ -467,7 +467,7 @@ public class InvoiceService {
                     try {
                         paymentResponseDTO = paymentService.sendEventAndCreditCardCall(Optional.of(invoice), appCode, roundedAmount.multiply(new BigDecimal("100")));
                     } catch (JSONException | IOException e) {
-                        throw new PaymentGatewayException("Payment gateway issue: " + e.getCause());
+                        throw new PaymentGatewayException("Payment gateway online issue invoice: " + invoice.getAccountId() + " cause: "+ e.getCause());
                     }
                     oneItemInvoiceRespDTO.setLink(paymentResponseDTO.getUrl());
                     break;

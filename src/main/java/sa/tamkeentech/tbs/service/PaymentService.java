@@ -147,7 +147,7 @@ public class PaymentService {
         try {
             paymentResponseDTO = sendEventAndCreditCardCall(invoice, appCode, roundedAmount.multiply(new BigDecimal("100")));
         } catch (JSONException | IOException e) {
-            throw new PaymentGatewayException("Payment gateway issue: "+ e.getCause());
+            throw new PaymentGatewayException("Payment gateway online issue invoice: " + invoice.get().getAccountId() + " cause: "+ e.getCause());
         }
 
         Optional<PaymentMethod> paymentMethod = paymentMethodService.findByCode(req.getPaymentMethod().getCode());
@@ -162,7 +162,7 @@ public class PaymentService {
         payment = paymentRepository.save(payment);
 
         if (paymentResponseDTO == null || paymentResponseDTO.getTransactionId() == null || StringUtils.isEmpty(paymentResponseDTO.getUrl())) {
-            throw new PaymentGatewayException("Payment gateway issue");
+            throw new PaymentGatewayException("Payment gateway online issue invoice: " + invoice.get().getAccountId());
         }
 
         PaymentDTO result = paymentMapper.toDto(payment);
@@ -293,7 +293,7 @@ public class PaymentService {
         response = client.execute(post);
 
         log.debug("----Sadad request : {}", req);
-        log.info("----Sadad response status code : {}", response.getStatusLine().getStatusCode());
+        log.debug("----Sadad response status code : {}", response.getStatusLine().getStatusCode());
         if (response.getEntity() != null) {
             log.debug("----Sadad response entity : {}", response.getEntity().toString());
         }
@@ -564,10 +564,10 @@ public class PaymentService {
                 try {
                     sadadResult = sendEventAndCallSadad(invoice.get().getNumber(), invoice.get().getAccountId().toString(), invoice.get().getAmount(), invoice.get().getCustomer().getIdentity());
                 } catch (IOException | JSONException e) {
-                    throw new PaymentGatewayException("Sadad issue");
+                    throw new PaymentGatewayException("Payment gateway Sadad issue invoice: " + invoice.get().getAccountId() + " cause: "+ e.getCause());
                 }
                 if (sadadResult != 200) {
-                    throw new PaymentGatewayException("Sadad bill creation error");
+                    throw new PaymentGatewayException("Payment gateway Sadad result:"+ sadadResult +", issue invoice: " + invoice.get().getAccountId());
                 }
             }
 
