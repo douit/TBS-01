@@ -1,0 +1,25 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title>Tamkeen Billing System</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    </head>
+    <body onload="javascript:document.redirectForm.submit();">
+        <form th:action="${RedirectURL}" method="post" name="redirectForm">
+            <input name="MerchantID" type="hidden" th:value="${MerchantID}"/>
+            <input name="Amount" type="hidden" th:value="${Amount}"/>
+            <input name="CurrencyISOCode" type="hidden" th:value="${CurrencyISOCode}"/>
+            <input name="ItemID" type="hidden" th:value="${ItemID}" >
+            <input name="Language" type="hidden" th:value="${Language}"/>
+            <input name="MessageID" type="hidden" th:value="${MessageID}"/>
+            <input name="PaymentDescription" type="hidden"  th:value="${PaymentDescription}" >
+            <input name="TransactionID" type="hidden" th:value="${TransactionID}"/>
+            <input name="ThemeID" type="hidden" th:value="${ThemeID}"/>
+            <input name="ResponseBackURL" type="hidden" th:value="${ResponseBackURL}"/>
+            <input name="Quantity" type="hidden" th:value="${Quantity}"/>
+            <input name="Channel" type="hidden" th:value="${Channel}"/>
+            <input name="Version" type="hidden" th:value="${Version}"/>
+            <input name="SecureHash" type="hidden" th:value="${SecureHash}"/>
+        </form>
+    </body>
+</html>
