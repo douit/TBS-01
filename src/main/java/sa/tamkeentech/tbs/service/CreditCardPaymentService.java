@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
+import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 import org.springframework.web.servlet.view.RedirectView;
 import sa.tamkeentech.tbs.domain.Invoice;
 import sa.tamkeentech.tbs.domain.Payment;
@@ -16,6 +17,9 @@ import sa.tamkeentech.tbs.service.dto.PaymentStatusResponseDTO;
 import sa.tamkeentech.tbs.web.rest.errors.PaymentGatewayException;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
+import java.io.*;
+import java.net.URL;
+import java.net.URLConnection;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -24,9 +28,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URLEncoder;
-import java.util.Enumeration;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 @Service
 @Transactional
@@ -94,7 +96,9 @@ public class CreditCardPaymentService {
             model.addAttribute(entry.getKey(), entry.getValue());
         }
         model.addAttribute("SecureHash", secureHash);
-        model.addAttribute("RedirectURL", stsPostFormUrl);
+        model.addAttribute("RedirectURL", url);
+
+
         return "submitPayment";
     }
 
@@ -147,6 +151,119 @@ public class CreditCardPaymentService {
         RedirectView redirectView = new RedirectView();
         redirectView.setUrl("https://www.google.com");
         return redirectView;
+
+    }
+
+
+
+    public PaymentStatusResponseDTO checkPaymentStatus(String transactionID) throws IOException {
+
+        //Step 1: Generate Secure Hash
+
+        // put the parameters in a TreeMap to have the parameters to have them sorted alphabetically.
+        Map <String,String> parameters = new TreeMap<String,String> ();
+        String transactionId=String.valueOf(System.currentTimeMillis());
+
+        // fill required parameters
+        parameters.put("MessageID", "2"); parameters.put("OriginalTransactionID", "1440954863817");
+        parameters.put("MerchantID", "010000085"); parameters.put("Version", "1.0");
+
+        //Create an ordered String of The Parameters Map with Secret Key
+        StringBuilder orderedString = new StringBuilder(); orderedString.append(SECRET_KEY);
+        for (String treeMapKey : parameters.keySet()) {
+            orderedString.append(parameters.get(treeMapKey));
+        }
+        System.out.println("orderdString "+orderedString);
+
+        // Generate SecureHash with SHA256
+        // Using DigestUtils from appache.commons.codes.jar Library
+        String secureHash = new String(DigestUtils.sha256Hex(orderedString.toString()).getBytes());
+
+        StringBuffer requestQuery = new  StringBuffer ();
+        requestQuery
+            .append("OriginalTransactionID").append("=").append(transactionID)
+            .append("&").append("MerchantID").append("=").append("010000085").append("&")
+            .append("MessageID").append("=").append("2").append("&") .append("Version")
+            .append("=").append("1.0").append("&") .append("SecureHash").append("=")
+            .append(secureHash).append("&");
+
+
+        //Send the request
+        URL url = new URL("https://srstaging.stspayone.com/SmartRoutePaymentWeb/SRMsgHandler");
+        URLConnection conn = url.openConnection();
+        conn.setDoOutput(true);
+        OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream(), "UTF-8");
+
+        //write parameters
+        writer.write(requestQuery.toString());
+        writer.flush();
+
+        // Get the response
+        StringBuffer output = new StringBuffer();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            output.append(line);
+        }
+        writer.close();
+        reader.close();
+
+        //Output the response
+        System.out.println(output.toString());
+
+        // this string is formatted as a "Query String" - name=value&name2=value2.......
+        String outputString=output.toString();
+
+        // To read the output string you might want to split it
+        // on '&' to get pairs then on '=' to get name and value
+        // and for a better and ease on verifying secure hash you should put them in a TreeMap String [] pairs=outputString.split("&");
+        String [] pairs=outputString.split("&");
+        Map<String,String> result=new TreeMap<String,String>();
+
+        // now we have separated the pairs from each other {"name1=value1","name2=value2",....}
+        for(String pair:pairs){
+
+            // now we have separated the pair to {"name","value"}
+            String[] nameValue=pair.split("=");
+            String name=nameValue[0];//first element is the name
+            String value=nameValue[1];//second element is the value
+            // put the pair in the result map
+            result.put(name,value);
+        }
+
+        // Now that we have the map, order it to generate secure hash and compare it with the received one
+        StringBuilder responseOrderdString = new StringBuilder(); responseOrderdString.append(SECRET_KEY);
+
+        for (String treeMapKey : result.keySet()) { responseOrderdString.append(result.get(treeMapKey));
+        }
+        System.out.println("Response Orderd String is " + responseOrderdString.toString());
+
+        // Generate SecureHash with SHA256
+        // Using DigestUtils from appache.commons.codes.jar Library
+        String generatedsecureHash = new String(DigestUtils.sha256Hex(responseOrderdString.toString()).getBytes());
+
+        // get the received secure hash from result map
+        String receivedSecurehash=result.get("Response.SecureHash");
+        if(!receivedSecurehash.equals(generatedsecureHash)){
+            //IF they are not equal then the response shall not be accepted
+            throw new TbsRunTimeException("Received Secure Hash does not Equal generated Secure hash");
+        }
+        else{
+            // Complete the Action get other parameters from result map and do your processes // Please refer to The Integration Manual to See The List of The Received Parameters String status=result.get("Response.Status");
+            PaymentStatusResponseDTO paymentStatusResponseDTO = CCPaymentStatusResponseDTO.builder()
+                .code(result.get("Response.Status"))
+                .cardNumber(result.get("Response.CardNumber"))
+                .transactionId(result.get("Response.TransactionID"))
+                .build();
+
+            if(true){
+
+            }
+            return paymentStatusResponseDTO;
+        }
+
+
+
 
     }
 
