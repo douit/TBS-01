@@ -19,34 +19,12 @@ public final class Constants {
     public static final String CREDIT_CARD = "CREDIT_CARD";
     public static final String CASH = "CASH";
 
-    public static final String CC_PAYMENT_SUCCESS_CODE = "1007";
-    public static final String CC_REFUND_SUCCESS_CODE = "7004";
+    // public static final String CC_PAYMENT_SUCCESS_CODE = "1007";
+    public static final String CC_PAYMENT_SUCCESS_CODE = "00000";
 
     public static Integer INVOICE_EXPIRY_DAYS = 1;
 
-
-    // Moved to client entity
-    /*public enum CLIENT_SADAD_CONFIG {
-        MUSANED(5000000000l, 1000l),
-        AJIR(6000000000l, 1000l),
-        TAHAQAQ(7000000000l, 4000l);
-
-        CLIENT_SADAD_CONFIG(Long initialAccountId, Long initialBillId) {
-            this.initialAccountId = initialAccountId;
-            this.initialBillId = initialBillId;
-        }
-
-        Long initialAccountId;
-        Long initialBillId;
-
-        public Long getInitialAccountId() {
-            return initialAccountId;
-        }
-
-        public Long getInitialBillId() {
-            return initialBillId;
-        }
-    }*/
+    public static String TRANSACTION_IDENTIFIER_BASE_64 = "dHJhbnNhY3Rpb25JZGVudGlmaWVy";
 
     // Default language
     public static final String DEFAULT_HEADER_LANGUAGE = "ar";

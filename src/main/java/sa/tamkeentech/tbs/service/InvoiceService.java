@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
@@ -41,6 +42,7 @@ import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.YearMonth;
 import java.time.ZonedDateTime;
@@ -78,6 +80,9 @@ public class InvoiceService {
     private final EventPublisherService eventPublisherService;
     private final EntityManager entityManager;
     private final PaymentMethodMapper paymentMethodMapper;
+
+    @Value("${tbs.payment.url}")
+    private String paymentUrl;
 
     @Autowired
     private UserService userService;
@@ -198,15 +203,18 @@ public class InvoiceService {
                     }
                     break;
                 case Constants.CREDIT_CARD:
-                    BigDecimal roundedAmount = invoice.getAmount().setScale(2, RoundingMode.HALF_UP);
+                    /*BigDecimal roundedAmount = invoice.getAmount().setScale(2, RoundingMode.HALF_UP);
                     String appCode = invoice.getClient().getPaymentKeyApp();
+
                     PaymentResponseDTO paymentResponseDTO = null;
                     try {
                         paymentResponseDTO = paymentService.sendEventAndCreditCardCall(Optional.of(invoice), appCode, roundedAmount.multiply(new BigDecimal("100")));
                     } catch (JSONException | IOException e) {
                         throw new PaymentGatewayException("Payment gateway issue: " + e.getCause());
-                    }
-                    invoiceItemsResponseDTO.setLink(paymentResponseDTO.getUrl());
+                    }*/
+                    String transactionId = invoice.getAccountId().toString() + (new Timestamp(System.currentTimeMillis())).getNanos();
+                    String url = paymentUrl + Constants.TRANSACTION_IDENTIFIER_BASE_64 + "=" + Base64.getEncoder().encodeToString(transactionId.getBytes());
+                    invoiceItemsResponseDTO.setLink(url);
                     log.info("CC payment method");
                     // save payment
                     // PaymentDTO paymentDTO = PaymentDTO.builder().invoiceId(invoice.getAccountId()).build();
@@ -215,9 +223,8 @@ public class InvoiceService {
                     payment.setInvoice(invoice);
                     payment.setAmount(invoice.getAmount());
                     payment.setStatus(PaymentStatus.PENDING);
-                    if (paymentResponseDTO != null) {
-                        payment.setTransactionId(paymentResponseDTO.getTransactionId());
-                    }
+                    payment.setTransactionId(transactionId);
+
                     paymentRepository.save(payment);
 
                     break;

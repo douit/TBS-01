@@ -147,5 +147,6 @@ tbs:
     notification-client-secret: 'eC876200af3547129cbC03E7c29f1cDb'
     wahid-url: 'https://accounts.wahid.sa/auth/realms/wahid/protocol/openid-connect/token'
     wahid-secret: '076a2d1c-15c6-4abf-80a7-0b181f18d617'
+    url: 'https://platform.tamkeentech.sa/billing-system/requestPayment?'
   refund:
     sadad-url-refund: 'http://10.4.7.61:2020/Sender/api/Sadad/RefundLoadRq'

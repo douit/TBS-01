@@ -21,7 +21,7 @@ import java.io.Serializable;
 public class PaymentStatusResponseDTO implements Serializable {
 
     @JsonProperty("Code")
-    private Long code;
+    private String code;
 
     @JsonProperty("BillNumber")
     private String billNumber;
@@ -34,6 +34,11 @@ public class PaymentStatusResponseDTO implements Serializable {
 
     @JsonProperty("CardNumber")
     private String cardNumber;
+
+    // added for event logging
+    private String cardHolderName;
+    private String cardExpiryDate;
+    private String amount;
 
     @JsonProperty("PaymentInternalInfo")
     private PaymentInternalInfo paymentInternalInfo;

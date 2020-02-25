@@ -1,6 +1,5 @@
 package sa.tamkeentech.tbs.web.rest;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,18 +7,19 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.view.RedirectView;
+import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.Payment;
 import sa.tamkeentech.tbs.service.CreditCardPaymentService;
+import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.Enumeration;
+import java.util.Base64;
 import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * REST controller for managing {@link Payment}.
@@ -41,49 +41,44 @@ public class PaymentCreditCardResource {
 
 
     @GetMapping("/billing/payments/credit-card")
-    public String initCC(Model model) {
-        return creditCardPaymentService.initPayment(model);
+    public String initCC(Model model, @RequestParam Map<String,String> params) {
+        // use https://www.codepunker.com/tools/string-converter  --> base64 deccode
+        /*{
+         "base64": "dHJhbnNhY3Rpb25JZGVudGlmaWVy",
+         "url": "transactionIdentifier"
+        }*/
+        if (params.keySet() == null || !params.keySet().contains(Constants.TRANSACTION_IDENTIFIER_BASE_64)) {
+            throw new TbsRunTimeException("Missing parameters");
+        }
+        String transactionId = new String(Base64.getDecoder().decode(params.get(Constants.TRANSACTION_IDENTIFIER_BASE_64)));
+        return creditCardPaymentService.initPayment(model, transactionId);
     }
 
     @PostMapping("/billing/payments/credit-card/notification")
     @ResponseBody
-    public void updatePayment(HttpServletRequest request, HttpServletResponse httpServletResponse) throws IOException {
+    public RedirectView updatePayment(HttpServletRequest request, HttpServletResponse response) throws IOException {
         // get All Request Parameters
         log.info("-----got payment notification");
-
-        Enumeration<String> parameterNames = request.getParameterNames();
-        // store all response Parameters to generate Response Secure Hash
-        // and get Parameters to use it later in your Code
-        Map<String, String> responseParameters = new TreeMap<String, String>();
-        while (parameterNames.hasMoreElements()) {
-            String paramName = parameterNames.nextElement();
-            String paramValue = request.getParameter(paramName);
-            responseParameters.put(paramName, paramValue);
+        return creditCardPaymentService.processPaymentNotification(request, response);
     }
 
-        String responseOrderdString = creditCardPaymentService.getResponseOrderdString(responseParameters);
 
-        // Generate SecureHash with SHA256
-        // Using DigestUtils from appache.commons.codes.jar Library
-        String generatedsecureHash = new String(DigestUtils.sha256Hex(responseOrderdString.toString()).getBytes());
-        log.info("-->generatedsecureHash is: " + generatedsecureHash);
-
-        // get the received secure hash from result map
-        String receivedSecurehash = responseParameters.get("Response.SecureHash");
-        log.info("--> receivedSecurehash is: " + receivedSecurehash);
-
-        if (!receivedSecurehash.equals(generatedsecureHash)) {
-            // IF they are not equal then the response shall not be accepted
-            log.info("Received Secure Hash does not Equal Generated Secure hash");
-        } else {
-            // Complete the Action get other parameters from result map and do
-            // your processes
-            // Please refer to The Integration Manual to see the List of The
-            // Received Parameters
-            String status = responseParameters.get("Response.StatusCode");
-            log.info("Status is: " + status);
-            httpServletResponse.sendRedirect("http://10.60.75.90:8081/#/customer/test_cc?QBN=7000052830");
-        }
+    // testing
+    /*@GetMapping("/billing/payments/credit-card/notification")
+    @ResponseBody
+    public void redirectTest(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        // get All Request Parameters
+        log.info("-----");
+        *//*RedirectView redirectView = new RedirectView();
+        redirectView.setUrl("https://www.google.com");
+        return redirectView;*//*
+        test(response);
     }
+
+    private RedirectView test(HttpServletResponse response) {
+        RedirectView redirectView = new RedirectView();
+        redirectView.setUrl("https://www.google.com");
+        return redirectView;
+    }*/
 
 }

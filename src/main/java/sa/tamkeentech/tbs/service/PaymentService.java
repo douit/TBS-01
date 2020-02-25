@@ -177,9 +177,9 @@ public class PaymentService {
      * @return
      */
     @Transactional
-    public PaymentDTO updateCreditCardPaymentAndSendEvent(PaymentStatusResponseDTO paymentStatusResponseDTO) {
+    public PaymentDTO updateCreditCardPaymentAndSendEvent(PaymentStatusResponseDTO paymentStatusResponseDTO, Payment payment) {
         log.debug("Request to update status Payment : {}", paymentStatusResponseDTO);
-        Payment payment = paymentRepository.findByTransactionId(paymentStatusResponseDTO.getTransactionId());
+        // Payment payment = paymentRepository.findByTransactionId(paymentStatusResponseDTO.getTransactionId());
         Invoice invoice = payment.getInvoice();
 
         TBSEventReqDTO<PaymentStatusResponseDTO> reqNotification = TBSEventReqDTO.<PaymentStatusResponseDTO>builder().principalId(invoice.getCustomer().getIdentity())
