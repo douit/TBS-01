@@ -17,6 +17,7 @@ import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.Payment;
 import sa.tamkeentech.tbs.service.CreditCardPaymentService;
 import sa.tamkeentech.tbs.service.dto.PaymentDTO;
+import sa.tamkeentech.tbs.service.dto.PaymentStatusResponseDTO;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -86,7 +87,7 @@ public class PaymentCreditCardResource {
     }*/
 
     @GetMapping("/check-payment/{transactionID}")
-    public String checkPaymentStatus(@PathVariable String transactionID) throws IOException {
+    public PaymentStatusResponseDTO checkPaymentStatus(@PathVariable String transactionID) throws IOException {
         return creditCardPaymentService.checkPaymentStatus(transactionID);
     }
 }

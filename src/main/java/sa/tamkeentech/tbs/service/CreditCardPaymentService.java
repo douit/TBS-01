@@ -96,9 +96,7 @@ public class CreditCardPaymentService {
             model.addAttribute(entry.getKey(), entry.getValue());
         }
         model.addAttribute("SecureHash", secureHash);
-        model.addAttribute("RedirectURL", url);
-
-
+        model.addAttribute("RedirectURL", stsPostFormUrl);
         return "submitPayment";
     }
 
@@ -169,7 +167,7 @@ public class CreditCardPaymentService {
         parameters.put("MerchantID", "010000085"); parameters.put("Version", "1.0");
 
         //Create an ordered String of The Parameters Map with Secret Key
-        StringBuilder orderedString = new StringBuilder(); orderedString.append(SECRET_KEY);
+        StringBuilder orderedString = new StringBuilder(); orderedString.append(stsSecretKey);
         for (String treeMapKey : parameters.keySet()) {
             orderedString.append(parameters.get(treeMapKey));
         }
@@ -232,7 +230,7 @@ public class CreditCardPaymentService {
         }
 
         // Now that we have the map, order it to generate secure hash and compare it with the received one
-        StringBuilder responseOrderdString = new StringBuilder(); responseOrderdString.append(SECRET_KEY);
+        StringBuilder responseOrderdString = new StringBuilder(); responseOrderdString.append(stsSecretKey);
 
         for (String treeMapKey : result.keySet()) { responseOrderdString.append(result.get(treeMapKey));
         }
@@ -250,7 +248,7 @@ public class CreditCardPaymentService {
         }
         else{
             // Complete the Action get other parameters from result map and do your processes // Please refer to The Integration Manual to See The List of The Received Parameters String status=result.get("Response.Status");
-            PaymentStatusResponseDTO paymentStatusResponseDTO = CCPaymentStatusResponseDTO.builder()
+            PaymentStatusResponseDTO paymentStatusResponseDTO = PaymentStatusResponseDTO.builder()
                 .code(result.get("Response.Status"))
                 .cardNumber(result.get("Response.CardNumber"))
                 .transactionId(result.get("Response.TransactionID"))

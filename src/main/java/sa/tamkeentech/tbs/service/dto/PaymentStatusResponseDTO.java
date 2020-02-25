@@ -40,23 +40,5 @@ public class PaymentStatusResponseDTO implements Serializable {
     private String cardExpiryDate;
     private String amount;
 
-    @JsonProperty("PaymentInternalInfo")
-    private PaymentInternalInfo paymentInternalInfo;
-
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-
-    public static class PaymentInternalInfo {
-        @JsonProperty("StatusCode")
-        private Integer code;
-
-        @JsonProperty("Description")
-        private String description;
-
-        @JsonProperty("TransactionId")
-        private String transactionId;
-    }
-
 
 }
