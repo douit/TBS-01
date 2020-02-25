@@ -4,13 +4,16 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import sa.tamkeentech.tbs.domain.Payment;
 import sa.tamkeentech.tbs.service.CreditCardPaymentService;
+import sa.tamkeentech.tbs.service.dto.PaymentDTO;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -86,4 +89,8 @@ public class PaymentCreditCardResource {
         }
     }
 
+    @GetMapping("/check-payment/{transactionID}")
+    public String checkPaymentStatus(@PathVariable String transactionID) throws IOException {
+        return creditCardPaymentService.checkPaymentStatus(transactionID);
+    }
 }

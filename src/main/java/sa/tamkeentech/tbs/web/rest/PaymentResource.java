@@ -141,6 +141,7 @@ public class PaymentResource {
         }
         return paymentStatus.build();
     }
+
     /**
      * {@code PUT  /payments} : Updates an existing payment.
      *
