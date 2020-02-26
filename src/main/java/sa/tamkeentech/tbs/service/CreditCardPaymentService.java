@@ -100,7 +100,7 @@ public class CreditCardPaymentService {
         return "submitPayment";
     }
 
-    public RedirectView processPaymentNotification (HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void processPaymentNotification (HttpServletRequest request, HttpServletResponse response) throws IOException {
         Enumeration<String> parameterNames = request.getParameterNames();
         // store all response Parameters to generate Response Secure Hash
         // and get Parameters to use it later in your Code
@@ -144,12 +144,9 @@ public class CreditCardPaymentService {
             paymentService.updateCreditCardPaymentAndSendEvent(paymentStatusResp.build(), payment);
         }
         // ToDo replace by client redirectUrl
-        // response.sendRedirect("http://10.60.75.90:8081/#/customer/test_cc?QBN=7000052830");
-
-        RedirectView redirectView = new RedirectView();
-        redirectView.setUrl("https://www.google.com");
-        return redirectView;
-
+        String redirectUrl = invoice.getClient().getRedirectUrl() + "?transactionId=" + transactionId;
+        log.info("------Redirect after payment to: {}", redirectUrl);
+        response.addHeader("Location", redirectUrl);
     }
 
 

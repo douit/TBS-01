@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.YearMonth;
 import java.time.ZonedDateTime;
@@ -203,16 +204,8 @@ public class InvoiceService {
                     }
                     break;
                 case Constants.CREDIT_CARD:
-                    /*BigDecimal roundedAmount = invoice.getAmount().setScale(2, RoundingMode.HALF_UP);
-                    String appCode = invoice.getClient().getPaymentKeyApp();
-
-                    PaymentResponseDTO paymentResponseDTO = null;
-                    try {
-                        paymentResponseDTO = paymentService.sendEventAndCreditCardCall(Optional.of(invoice), appCode, roundedAmount.multiply(new BigDecimal("100")));
-                    } catch (JSONException | IOException e) {
-                        throw new PaymentGatewayException("Payment gateway issue: " + e.getCause());
-                    }*/
-                    String transactionId = invoice.getAccountId().toString() + (new Timestamp(System.currentTimeMillis())).getNanos();
+                    DateFormat df = new SimpleDateFormat("HHmmss");
+                    String transactionId = invoice.getAccountId().toString() + df.format(new Timestamp(System.currentTimeMillis()));
                     String url = paymentUrl + Constants.TRANSACTION_IDENTIFIER_BASE_64 + "=" + Base64.getEncoder().encodeToString(transactionId.getBytes());
                     invoiceItemsResponseDTO.setLink(url);
                     log.info("CC payment method");

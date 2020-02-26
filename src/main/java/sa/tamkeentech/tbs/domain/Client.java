@@ -72,4 +72,7 @@ public class Client implements Serializable {
     @Column(name = "initial_bill_id")
     private Long initialBillId;
 
+    @Column(name = "redirect_url")
+    private String redirectUrl;
+
 }

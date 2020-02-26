@@ -137,7 +137,8 @@ public class SecurityConfiguration {
                 .antMatchers("/billing/payments/status")
                 .antMatchers("/billing/payments/credit-card")
             ////////Test Mule
-                .antMatchers("/billing/payments/credit-card/notification");
+                .antMatchers("/billing/payments/credit-card/notification")
+                .antMatchers("/billing/payments/credit-card/notification2");
             ;
         }
 
