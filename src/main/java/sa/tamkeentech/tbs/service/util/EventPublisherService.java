@@ -127,7 +127,7 @@ public class EventPublisherService {
 
     // both CC and Sadad
     @TBSEventPub(eventName = Constants.EventType.INVOICE_REFUND_REQUEST)
-    public TBSEventRespDTO<RefundDTO> createNewRefund(TBSEventReqDTO<RefundDTO> eventReq, Invoice invoice, Optional<Payment> payment) {
+    public TBSEventRespDTO<RefundDTO> createNewRefund(TBSEventReqDTO<RefundDTO> eventReq, Invoice invoice, Optional<Payment> payment) throws IOException {
         RefundDTO result = refundService.createNewRefund(eventReq.getReq(), invoice, payment);
         TBSEventRespDTO<RefundDTO> eventResp = TBSEventRespDTO.<RefundDTO>builder().resp(result).build();
         return eventResp;

@@ -191,6 +191,7 @@ tbs:
     sts-merchant-id: '010000085'
     sts-response-back-url: 'https://platform.tamkeentech.sa/billing-system/STSResponse'
     sts-post-form-url: 'https://srstaging.stspayone.com/SmartRoutePaymentWeb/SRPayMsgHandler'
+    sts-refund-status: 'https://srstaging.stspayone.com/SmartRoutePaymentWeb/SRMsgHandler'
 
     url: 'http://localhost:8081/billing/payments/credit-card?'
 

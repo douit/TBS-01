@@ -51,6 +51,8 @@ public class CreditCardPaymentService {
     private String stsPostFormUrl;
     @Value("${tbs.payment.sts-response-back-url}")
     private String stsResponseBackUrl;
+    @Value("${tbs.payment.sts-refund-status}")
+    private String stsCheckStatusUrl;
 
     public String initPayment(Model model, String transactionId) {
         log.info("Request to initiate Payment : {}", transactionId);
@@ -160,11 +162,12 @@ public class CreditCardPaymentService {
         String transactionId=String.valueOf(System.currentTimeMillis());
 
         // fill required parameters
-        parameters.put("MessageID", "2"); parameters.put("OriginalTransactionID", "1440954863817");
+        parameters.put("MessageID", "2"); parameters.put("OriginalTransactionID", transactionID);
         parameters.put("MerchantID", "010000085"); parameters.put("Version", "1.0");
 
         //Create an ordered String of The Parameters Map with Secret Key
-        StringBuilder orderedString = new StringBuilder(); orderedString.append(stsSecretKey);
+        StringBuilder orderedString = new StringBuilder();
+        orderedString.append(stsSecretKey);
         for (String treeMapKey : parameters.keySet()) {
             orderedString.append(parameters.get(treeMapKey));
         }
@@ -172,19 +175,21 @@ public class CreditCardPaymentService {
 
         // Generate SecureHash with SHA256
         // Using DigestUtils from appache.commons.codes.jar Library
-        String secureHash = new String(DigestUtils.sha256Hex(orderedString.toString()).getBytes());
+        String secureHash = new String(DigestUtils.sha256Hex(orderedString.toString().getBytes()));
 
         StringBuffer requestQuery = new  StringBuffer ();
         requestQuery
             .append("OriginalTransactionID").append("=").append(transactionID)
             .append("&").append("MerchantID").append("=").append("010000085").append("&")
-            .append("MessageID").append("=").append("2").append("&") .append("Version")
-            .append("=").append("1.0").append("&") .append("SecureHash").append("=")
+            .append("MessageID").append("=").append("2").append("&")
+            .append("Version")
+            .append("=").append("1.0").append("&")
+            .append("SecureHash").append("=")
             .append(secureHash).append("&");
 
 
         //Send the request
-        URL url = new URL("https://srstaging.stspayone.com/SmartRoutePaymentWeb/SRMsgHandler");
+        URL url = new URL(stsCheckStatusUrl);
         URLConnection conn = url.openConnection();
         conn.setDoOutput(true);
         OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream(), "UTF-8");
@@ -225,17 +230,20 @@ public class CreditCardPaymentService {
             // put the pair in the result map
             result.put(name,value);
         }
-
         // Now that we have the map, order it to generate secure hash and compare it with the received one
         StringBuilder responseOrderdString = new StringBuilder(); responseOrderdString.append(stsSecretKey);
 
-        for (String treeMapKey : result.keySet()) { responseOrderdString.append(result.get(treeMapKey));
+        for (String treeMapKey : result.keySet()) {
+            if(result.get(treeMapKey)!=null){
+                responseOrderdString.append(result.get(treeMapKey));
+
+            }
         }
         System.out.println("Response Orderd String is " + responseOrderdString.toString());
 
         // Generate SecureHash with SHA256
         // Using DigestUtils from appache.commons.codes.jar Library
-        String generatedsecureHash = new String(DigestUtils.sha256Hex(responseOrderdString.toString()).getBytes());
+        String generatedsecureHash = new String(DigestUtils.sha256Hex(getResponseOrderdString(result)).getBytes());
 
         // get the received secure hash from result map
         String receivedSecurehash=result.get("Response.SecureHash");
@@ -250,15 +258,11 @@ public class CreditCardPaymentService {
                 .cardNumber(result.get("Response.CardNumber"))
                 .transactionId(result.get("Response.TransactionID"))
                 .build();
+            Payment payment = paymentRepository.findByTransactionId(result.get("Response.TransactionID"));
 
-            if(true){
-
-            }
+            paymentService.updateCreditCardPaymentAndSendEvent(paymentStatusResponseDTO,payment);
             return paymentStatusResponseDTO;
         }
-
-
-
 
     }
 
@@ -266,39 +270,43 @@ public class CreditCardPaymentService {
         // Now that we have the map, order it to generate secure hash and compare it with the received one
         StringBuilder responseOrderdString = new StringBuilder();
 
-        responseOrderdString.append(stsSecretKey);
+        responseOrderdString.append("OTJkZGM5YzRkZmI0NzU0OTNkNDU0MGNi");
         for (String treeMapKey : responseParameters.keySet()) {
-            log.info("--Param key--- {} : {}", treeMapKey, responseParameters.get(treeMapKey));
-            switch (treeMapKey) {
-                case "Response.SecureHash":
-                    log.info("ignoring Response.SecureHash");
-                    break;
-                case "Response.GatewayStatusDescription":
-                    log.info("***case Response.GatewayStatusDescription");
-                    String gatewayStatusDescription = URLEncoder.encode(responseParameters.get("Response.GatewayStatusDescription"), "UTF-8");
-                    log.info("-->After encoding: {}", gatewayStatusDescription);
-                    responseOrderdString.append(gatewayStatusDescription);
-                    break;
-                case "Response.StatusDescription" :
-                    log.info("***case Response.StatusDescription");
-                    String statusDescription = URLEncoder.encode(responseParameters.get("Response.StatusDescription"), "UTF-8");
-                    log.info("-->After encoding: {}", statusDescription);
-                    // ToDO add language to client DB
-                    if (true) {
-                        statusDescription = statusDescription.toUpperCase();
-                    }
-                    log.info("-->After Upper: {}", statusDescription);
-                    responseOrderdString.append(statusDescription);
-                    break;
-                default:
-                    responseOrderdString.append(responseParameters.get(treeMapKey));
-                    break;
+
+                log.info("--Param key--- {} : {}", treeMapKey, responseParameters.get(treeMapKey));
+            if(!responseParameters.get(treeMapKey).equals("null")){
+                switch (treeMapKey) {
+                    case "Response.SecureHash":
+                        log.info("ignoring Response.SecureHash");
+                        break;
+                    case "Response.GatewayStatusDescription":
+                        log.info("***case Response.GatewayStatusDescription");
+                        String gatewayStatusDescription = URLEncoder.encode(responseParameters.get("Response.GatewayStatusDescription"), "UTF-8");
+                        log.info("-->After encoding: {}", gatewayStatusDescription);
+                        responseOrderdString.append(gatewayStatusDescription);
+                        break;
+                    case "Response.StatusDescription":
+                        log.info("***case Response.StatusDescription");
+                        String statusDescription = URLEncoder.encode(responseParameters.get("Response.StatusDescription"), "UTF-8");
+                        log.info("-->After encoding: {}", statusDescription);
+                        // ToDO add language to client DB
+                        if (true) {
+                            statusDescription = statusDescription.toUpperCase();
+                        }
+                        log.info("-->After Upper: {}", statusDescription);
+                        responseOrderdString.append(statusDescription);
+                        break;
+                    default:
+                        responseOrderdString.append(responseParameters.get(treeMapKey));
+                        break;
+                }
             }
 
         }
         log.info("Response Ordered String is: " + responseOrderdString.toString());
         return responseOrderdString.toString();
     }
+
 
 
     public static void main(String[] args) throws UnsupportedEncodingException {
@@ -313,37 +321,53 @@ public class CreditCardPaymentService {
         }*/
 
         // simulte resp
-        Map<String, String> map = new TreeMap<>();
-        map.put("Response.Amount", "2000");
-        map.put("Response.ApprovalCode", "");
-        map.put("Response.CardExpiryDate", "2201");
-        map.put("Response.CardHolderName", "test");
-        map.put("Response.CardNumber", "401200******1112");
-        map.put("Response.CurrencyISOCode", "682");
-        map.put("Response.GatewayName", "ANBPaymentGateway");
-        map.put("Response.GatewayStatusCode", "0000");
-        map.put("Response.GatewayStatusDescription", "Payment processed successfully.");
-        map.put("Response.MerchantID", "010000085");
-        map.put("Response.MessageID", "1");
-        map.put("Response.RRN", "202002241052396110000000000");
-        map.put("Response.SecureHash", "b5bbac4706119610382ba5b5e5e630a3345898da31b41527bbbd79b17d238315");
-        map.put("Response.StatusCode", "00000");
-        map.put("Response.StatusDescription", "تمت الحركة بنجاح");
-        map.put("Response.TransactionID", "1582530735527");
+//        Map<String, String> map = new TreeMap<>();
+//        map.put("Response.Amount", "2000");
+//        map.put("Response.ApprovalCode", "");
+//        map.put("Response.CardExpiryDate", "2201");
+//        map.put("Response.CardHolderName", "test");
+//        map.put("Response.CardNumber", "401200******1112");
+//        map.put("Response.CurrencyISOCode", "682");
+//        map.put("Response.GatewayName", "ANBPaymentGateway");
+//        map.put("Response.GatewayStatusCode", "0000");
+//        map.put("Response.GatewayStatusDescription", "Payment processed successfully.");
+//        map.put("Response.MerchantID", "010000085");
+//        map.put("Response.MessageID", "1");
+//        map.put("Response.RRN", "202002241052396110000000000");
+//        map.put("Response.SecureHash", "b5bbac4706119610382ba5b5e5e630a3345898da31b41527bbbd79b17d238315");
+//        map.put("Response.StatusCode", "00000");
+//        map.put("Response.StatusDescription", "تمت الحركة بنجاح");
+//        map.put("Response.TransactionID", "1582530735527");
 
         CreditCardPaymentService paymentserv = new CreditCardPaymentService();
-        String resp = paymentserv.getResponseOrderdString(map);
+//        String resp = paymentserv.getResponseOrderdString(map);
 
 
-        String generatedsecureHash = new String(DigestUtils.sha256Hex(resp.toString()).getBytes());
+//        String generatedsecureHash = new String(DigestUtils.sha256Hex(resp.toString()).getBytes());
         //byte[] bytes = DigestUtils.sha256(responseOrderdString.toString().getBytes(StandardCharsets.UTF_8));
         //String generatedsecureHash = new String(bytes, StandardCharsets.UTF_8);
-        System.out.println("generatedsecureHash: "+ generatedsecureHash);
+//        System.out.println("generatedsecureHash: "+ generatedsecureHash);
         // must be ade8c0a20b1742c3a49e8583adb89de5e06ae4aac551822b40b9e5131a3d3c52
 
 
         System.out.println(java.net.URLEncoder.encode("Payment processed successfully.", "UTF-8"));
         System.out.println(URLEncoder.encode("Payment processed successfully.", "UTF-8"));
+
+        Map<String, String> parameter = new TreeMap<>();
+        parameter.put("Response.MessageID", "2");
+        parameter.put("Response.MerchantID", "010000085");
+        parameter.put("Response.OriginalTransactionID", "7000000236813000000");
+        parameter.put("Response.Version", "1.0");
+
+        CreditCardPaymentService checkPayment = new CreditCardPaymentService();
+        String respo = paymentserv.getResponseOrderdString(parameter);
+
+
+        String generatedSecureHash = new String(DigestUtils.sha256Hex(respo.toString()).getBytes());
+        //byte[] bytes = DigestUtils.sha256(responseOrderdString.toString().getBytes(StandardCharsets.UTF_8));
+        //String generatedSecureHash = new String(bytes, StandardCharsets.UTF_8);
+        System.out.println("generatedSecureHash: "+ generatedSecureHash);
+        // must be 6805ae9a41113d0c5b94eabae96fb3c35dfad7a10de5864025ea0d366629788c
 
     }
 
