@@ -49,8 +49,8 @@ public class PaymentResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    @Value("${tbs.payment.check-payment-url}")
-    private String checkPaymentUrl;
+    /*@Value("${tbs.payment.check-payment-url}")
+    private String checkPaymentUrl;*/
     private final ObjectMapper objectMapper;
     private final PaymentService paymentService;
     private final PaymentRepository paymentRepository;
@@ -70,7 +70,7 @@ public class PaymentResource {
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new paymentDTO, or with status {@code 400 (Bad Request)} if the payment has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PostMapping("/billing/payments/credit-card")
+   /* @PostMapping("/billing/payments/credit-card")
     public ResponseEntity<PaymentDTO> createPayment(@RequestBody PaymentDTO paymentDTO) throws URISyntaxException {
         log.debug("REST request to save Payment : {}", paymentDTO);
         if (paymentDTO.getId() != null) {
@@ -83,7 +83,7 @@ public class PaymentResource {
         return ResponseEntity.created(new URI("/api/payments/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
             .body(result);
-    }
+    }*/
 
 
     // Replaced By PaymentCreditCard
@@ -96,6 +96,38 @@ public class PaymentResource {
             .body(result);
     }*/
 
+
+
+    @GetMapping("/billing/check-payment/{transactionId}")
+    public PaymentDTO checkPaymentStatus(@PathVariable  String transactionId) throws JSONException, IOException {
+        Payment payment = paymentRepository.findByTransactionId(transactionId);
+        if (payment == null) {
+            throw new TbsRunTimeException("No payments found");
+        }
+        PaymentDTO result = null;
+
+        // ToDo include inquery here
+        /*for (Payment payment: payments) {
+            if (payment.getStatus() == PaymentStatus.PAID) {*/
+                result =paymentMapper.toDto(payment);
+/*            }
+        }*/
+
+        PaymentDTO.PaymentDTOBuilder paymentStatus = PaymentDTO.builder().billNumber(payment.getInvoice().getAccountId().toString()).status(PaymentStatus.UNPAID);
+        if (result != null) {
+            paymentStatus.transactionId(result.getTransactionId())
+                .status(result.getStatus())
+                .paymentMethod(result.getPaymentMethod())
+                .amount(result.getAmount());
+        }
+        return paymentStatus.build();
+    }
+
+
+
+
+    // Old method calling connector and getting accountId --> transactionId
+    /*
 
     @GetMapping("/billing/check-payment/{accountId}")
     public PaymentDTO checkPaymentStatus(@PathVariable  Long accountId) throws JSONException, IOException {
@@ -112,7 +144,8 @@ public class PaymentResource {
         }
 
         // check last payment
-        if (result == null) {
+        */
+/*if (result == null) {
             for (Payment payment: payments) {
                 if (payment.getPaymentMethod().getCode().equals(Constants.CREDIT_CARD)) {
                     JSONObject req = new JSONObject();
@@ -131,9 +164,10 @@ public class PaymentResource {
                     }
                 }
             }
-        }
+        }*//*
 
-        PaymentDTO.PaymentDTOBuilder paymentStatus = PaymentDTO.builder().status(PaymentStatus.UNPAID);
+
+        PaymentDTO.PaymentDTOBuilder paymentStatus = PaymentDTO.builder().billNumber(accountId.toString()).status(PaymentStatus.UNPAID);
         if (result != null) {
             paymentStatus.transactionId(result.getTransactionId())
                 .status(result.getStatus())
@@ -142,6 +176,7 @@ public class PaymentResource {
         }
         return paymentStatus.build();
     }
+*/
 
     /**
      * {@code PUT  /payments} : Updates an existing payment.

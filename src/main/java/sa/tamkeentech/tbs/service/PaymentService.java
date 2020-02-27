@@ -48,6 +48,8 @@ import javax.persistence.criteria.Predicate;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.sql.Timestamp;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -86,11 +88,14 @@ public class PaymentService {
     @Value("${tbs.payment.sadad-application-id}")
     private Long sadadApplicationId;
 
-    @Value("${tbs.payment.credit-card-url}")
-    private String creditCardUrl;
+    /*@Value("${tbs.payment.credit-card-url}")
+    private String creditCardUrl;*/
 
     @Value("${tbs.payment.credit-card-biller-code}")
     private String billerCode;
+
+    @Value("${tbs.payment.url}")
+    private String paymentUrl;
 
     @Autowired
     private Environment environment;
@@ -118,7 +123,7 @@ public class PaymentService {
      * @param paymentDTO the entity to save.
      * @return the persisted entity.
      */
-    @Transactional
+    /*@Transactional
     public PaymentDTO prepareCreditCardPayment(PaymentDTO paymentDTO) {
         log.debug("Request to save Payment : {}", paymentDTO);
         Optional<Invoice> invoice = invoiceRepository.findByAccountId(paymentDTO.getInvoiceId());
@@ -130,7 +135,7 @@ public class PaymentService {
             .referenceId(invoice.get().getAccountId().toString()).req(paymentDTO).build();
 
         return eventPublisherService.initiateCreditCardPaymentEvent(reqNotification, invoice).getResp();
-    }
+    }*/
 
     /**
      *
@@ -138,7 +143,7 @@ public class PaymentService {
      * @param invoice
      * @return
      */
-    @Transactional
+    /*@Transactional
     public PaymentDTO initiateCreditCardPayment(PaymentDTO req, Optional<Invoice> invoice) {
         // call payment gateway
         BigDecimal roundedAmount = invoice.get().getAmount().setScale(2, RoundingMode.HALF_UP);
@@ -168,7 +173,7 @@ public class PaymentService {
         PaymentDTO result = paymentMapper.toDto(payment);
         result.setRedirectUrl(paymentResponseDTO.getUrl());
         return result;
-    }
+    }*/
 
     /**
      *  Update Credit card payment status
@@ -301,7 +306,8 @@ public class PaymentService {
         return response.getStatusLine().getStatusCode();
     }
 
-    @Transactional
+
+    /*@Transactional
     public PaymentResponseDTO sendEventAndCreditCardCall(Optional<Invoice> invoice , String appCode, BigDecimal amount) throws JSONException, IOException {
 
         JSONObject billInfoContent = new JSONObject();
@@ -315,9 +321,9 @@ public class PaymentService {
         PaymentResponseDTO resp = eventPublisherService.callCreditCardInitiateEvent(req).getResp();
         return resp;
 
-    }
+    }*/
 
-    @Transactional
+    /*@Transactional
     public PaymentResponseDTO callCreditCard(String jsonStr) throws IOException {
         HttpClient client = HttpClientBuilder.create().build();
         HttpPost post = new HttpPost(creditCardUrl);
@@ -330,7 +336,7 @@ public class PaymentService {
 
         log.info("************** response from credit Card ************ : " + paymentResponseDTO);
         return paymentResponseDTO;
-    }
+    }*/
 
     // @Transactional
     public ResponseEntity<NotifiRespDTO> sendEventAndPaymentNotification(NotifiReqDTO req, String apiKey, String apiSecret) {
@@ -495,19 +501,25 @@ public class PaymentService {
         // ResponseEntity<NotifiRespDTO> response2= restTemplate.getForEntity(resourceUrl, NotifiRespDTO.class);
 
         //Mule Post query
-        PaymentNotifReqToClientDTO paymentNotifReqToClientDTO = PaymentNotifReqToClientDTO.builder()
+        /*PaymentNotifReqToClientDTO paymentNotifReqToClientDTO = PaymentNotifReqToClientDTO.builder()
             .billNumber(accountId.toString())
             .paymentDate(paymentDate)
             .status("paid")
             .paymentMethod(new PaymentNotifReqToClientDTO.PaymentInternalInfo("1", "SADAD"))
-            .build();
+            .build();*/
+        PaymentDTO paymentNotifReqToClientDTO = PaymentDTO.builder()
+            .billNumber(accountId.toString())
+            .transactionId(payment.getTransactionId().toString())
+            .status(PaymentStatus.PAID)
+            .paymentMethod(paymentMethodMapper.toDto(payment.getPaymentMethod()))
+            .amount(payment.getAmount()).build();
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer "+token);
         headers.set("Content-Type", "application/json");
         headers.set("client_id", environment.getProperty("tbs.payment.notification-client-id"));
         headers.set("client_secret", environment.getProperty("tbs.payment.notification-client-secret"));
 
-        HttpEntity<PaymentNotifReqToClientDTO> request = new HttpEntity<>(paymentNotifReqToClientDTO, headers);
+        HttpEntity<PaymentDTO> request = new HttpEntity<>(paymentNotifReqToClientDTO, headers);
         ResponseEntity<PaymentNotifResFromClientDTO> response2= null;
         try {
             response2 = restTemplate.exchange(resourceUrl, HttpMethod.POST, request, PaymentNotifResFromClientDTO.class);
@@ -573,12 +585,25 @@ public class PaymentService {
 
         } else {
             Optional<PaymentMethod> paymentMethod = paymentMethodService.findByCode(paymentMethodCode);
-            PaymentMethodDTO paymentMethodDTO = paymentMethodMapper.toDto(paymentMethod.get());
-            PaymentDTO paymentDTO = PaymentDTO.builder().invoiceId(invoice.get().getAccountId()).paymentMethod(paymentMethodDTO).build();
-            paymentDTO = prepareCreditCardPayment(paymentDTO);
-            invoiceResponseDTO.setLink(paymentDTO.getRedirectUrl());
+            invoiceResponseDTO.setLink(savePaymentAndGetPaymentUrl(invoice.get(), paymentMethod.get()));
         }
         return invoiceResponseDTO;
+    }
+
+    public String savePaymentAndGetPaymentUrl(Invoice invoice, PaymentMethod paymentMethod) {
+        DateFormat df = new SimpleDateFormat("HHmmss");
+        String transactionId = invoice.getAccountId().toString() + df.format(new Timestamp(System.currentTimeMillis()));
+
+        Payment payment = Payment.builder().build();//paymentMapper.toEntity(paymentDTO);
+        payment.setPaymentMethod(paymentMethod);
+        payment.setInvoice(invoice);
+        payment.setAmount(invoice.getAmount());
+        payment.setStatus(PaymentStatus.PENDING);
+        payment.setTransactionId(transactionId);
+
+        paymentRepository.save(payment);
+
+        return (paymentUrl + Constants.TRANSACTION_IDENTIFIER_BASE_64 + "=" + Base64.getEncoder().encodeToString(transactionId.getBytes()));
     }
 
     public DataTablesOutput<PaymentDTO> get(DataTablesInput input) {

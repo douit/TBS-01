@@ -104,19 +104,19 @@ public class EventPublisherService {
         return eventResp;
     }
 
-    @TBSEventPub(eventName = Constants.EventType.CREDIT_CARD_PAYMENT_REQUEST)
+    /*@TBSEventPub(eventName = Constants.EventType.CREDIT_CARD_PAYMENT_REQUEST)
     public TBSEventRespDTO<PaymentDTO> initiateCreditCardPaymentEvent(TBSEventReqDTO<PaymentDTO> reqNotification, Optional<Invoice> invoice) {
         PaymentDTO result = paymentService.initiateCreditCardPayment(reqNotification.getReq(), invoice);
         TBSEventRespDTO<PaymentDTO> eventResp = TBSEventRespDTO.<PaymentDTO>builder().resp(result).build();
         return eventResp;
-    }
+    }*/
 
-    @TBSEventPub(eventName = Constants.EventType.CREDIT_CARD_INITIATE)
+    /*@TBSEventPub(eventName = Constants.EventType.CREDIT_CARD_INITIATE)
     public TBSEventRespDTO<PaymentResponseDTO> callCreditCardInitiateEvent(TBSEventReqDTO<String> event) throws IOException {
         PaymentResponseDTO result = paymentService.callCreditCard(event.getReq());
         TBSEventRespDTO<PaymentResponseDTO> eventResp = TBSEventRespDTO.<PaymentResponseDTO>builder().resp(result).build();
         return eventResp;
-    }
+    }*/
 
     @TBSEventPub(eventName = Constants.EventType.CREDIT_CARD_NOTIFICATION)
     public TBSEventRespDTO<PaymentDTO> creditCardNotificationEvent(TBSEventReqDTO<PaymentStatusResponseDTO> reqNotification, Payment payment, Invoice invoice) {

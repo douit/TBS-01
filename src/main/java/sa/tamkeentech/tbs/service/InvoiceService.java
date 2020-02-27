@@ -82,9 +82,6 @@ public class InvoiceService {
     private final EntityManager entityManager;
     private final PaymentMethodMapper paymentMethodMapper;
 
-    @Value("${tbs.payment.url}")
-    private String paymentUrl;
-
     @Autowired
     private UserService userService;
 
@@ -204,22 +201,8 @@ public class InvoiceService {
                     }
                     break;
                 case Constants.CREDIT_CARD:
-                    DateFormat df = new SimpleDateFormat("HHmmss");
-                    String transactionId = invoice.getAccountId().toString() + df.format(new Timestamp(System.currentTimeMillis()));
-                    String url = paymentUrl + Constants.TRANSACTION_IDENTIFIER_BASE_64 + "=" + Base64.getEncoder().encodeToString(transactionId.getBytes());
-                    invoiceItemsResponseDTO.setLink(url);
-                    log.info("CC payment method");
-                    // save payment
-                    // PaymentDTO paymentDTO = PaymentDTO.builder().invoiceId(invoice.getAccountId()).build();
-                    Payment payment = Payment.builder().build();//paymentMapper.toEntity(paymentDTO);
-                    payment.setPaymentMethod(paymentMethod.get());
-                    payment.setInvoice(invoice);
-                    payment.setAmount(invoice.getAmount());
-                    payment.setStatus(PaymentStatus.PENDING);
-                    payment.setTransactionId(transactionId);
-
-                    paymentRepository.save(payment);
-
+                    invoiceItemsResponseDTO.setLink(paymentService.savePaymentAndGetPaymentUrl(invoice, paymentMethod.get()));
+                    log.debug("CC payment method");
                     break;
                 default:
                     log.info("Cash payment method");
@@ -460,16 +443,16 @@ public class InvoiceService {
                     }
                     break;
                 case Constants.CREDIT_CARD:
-                    log.info("CC payment method");
-                    BigDecimal roundedAmount = invoice.getAmount().setScale(2, RoundingMode.HALF_UP);
+                    log.debug("CC payment method");
+                    /*BigDecimal roundedAmount = invoice.getAmount().setScale(2, RoundingMode.HALF_UP);
                     String appCode = invoice.getClient().getPaymentKeyApp();
                     PaymentResponseDTO paymentResponseDTO = null;
                     try {
                         paymentResponseDTO = paymentService.sendEventAndCreditCardCall(Optional.of(invoice), appCode, roundedAmount.multiply(new BigDecimal("100")));
                     } catch (JSONException | IOException e) {
                         throw new PaymentGatewayException("Payment gateway issue: " + e.getCause());
-                    }
-                    oneItemInvoiceRespDTO.setLink(paymentResponseDTO.getUrl());
+                    }*/
+                    oneItemInvoiceRespDTO.setLink(paymentService.savePaymentAndGetPaymentUrl(invoice, paymentMethod.get()));
                     break;
                 default:
                     log.info("Cash payment method");
