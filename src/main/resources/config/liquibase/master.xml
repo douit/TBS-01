@@ -62,7 +62,8 @@
     <include file="config/liquibase/changelog/20200205085398_alter_invoiceItem.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20200206105213_alter_payment_method.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20200211105213_alter_client_add_initial_seq.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/2020160211030700_added_bank.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/2020160215030700_added_bin.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20200226090413_alter_entity_client.xml" relativeToChangelogFile="false"/>
-
 
 </databaseChangeLog>

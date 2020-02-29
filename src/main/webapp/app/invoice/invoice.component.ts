@@ -21,6 +21,7 @@ import {IClient} from 'app/shared/model/client.model';
 import * as moment from 'moment';
 import {IInvoiceSearchRequest} from 'app/shared/model/invoice-serach-request';
 import {ClientService} from 'app/client/client.service';
+import {IInvoiceItem} from "app/shared/model/invoice-item.model";
 
 @Component({
   selector: 'app-invoice',
@@ -35,6 +36,8 @@ export class InvoiceComponent implements OnInit {
   reverse: any;
   InvoiceStatus = InvoiceStatus;
   auditInvoice: any[];
+  invoiceItems:IInvoiceItem[];
+  invoiceView : IInvoice;
   selectedInvoice: IInvoice;
   PaymentStatus = PaymentStatus;
 
@@ -92,6 +95,7 @@ export class InvoiceComponent implements OnInit {
   customerId: string;
   paymentStatus: any;
   isSearchOpr : boolean = false;
+  taxRate:number = 0;
 
    invoiceSearch: IInvoiceSearchRequest = {
     fromDate : null,
@@ -207,6 +211,12 @@ export class InvoiceComponent implements OnInit {
 
   }
 
+  sumTaxRate(invoiceItems :IInvoiceItem[]){
+    this.taxRate=0;
+    for(let item of invoiceItems){
+      this.taxRate += item.taxRate;
+    }
+  }
   ngOnInit() {
     const paymentStatusMapping = [
       { value: PaymentStatus.PAID, type: 'PAID' },
@@ -385,6 +395,23 @@ export class InvoiceComponent implements OnInit {
     );
   }
 
+  viewInvoice(row: any) {
+    console.log('Invoice view: ' + row.id);
+    this.selectedInvoice = row;
+    // this.busy = true;
+    // const that = this;
+    // this.invoiceService.find(row.id).subscribe(
+    //   data => {
+    //     that.busy = false;
+        this.invoiceView = row;
+        this.invoiceItems =row.invoiceItems;
+    //   },
+    //   err => {
+    //     // that.notification.showNotification('danger', 'Trip audit could not be retrieved')
+    //   }
+    // );
+  }
+
   formatDate(date: NgbDate) {
     // NgbDates use 1 for Jan, Moement uses 0, must substract 1 month for proper date conversion
     const ngbObj = JSON.parse(JSON.stringify(date));
@@ -398,5 +425,6 @@ export class InvoiceComponent implements OnInit {
   humanizeEnumString(data: any) {
     return _tbs.humanizeEnumString(data);
   }
+
 
 }
