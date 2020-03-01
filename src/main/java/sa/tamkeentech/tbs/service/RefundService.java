@@ -335,8 +335,7 @@ public class RefundService {
             throw new TbsRunTimeException("Received Secure Hash does not Equal generated Secure hash");
         } else {
             // Complete the Action get other parameters from result map and do your processes // please refer to The Integration Manual to See The List of The Received Parameters
-            String status = result.get("Response.Status");
-            System.out.println("Status is :" + status);
+            String status = result.get("Response.StatusCode");
             if (Constants.CC_PAYMENT_SUCCESS_CODE.equals(status)) {
                 log.debug("Successful refund {}", invoice.getAccountId());
                 return 200;
