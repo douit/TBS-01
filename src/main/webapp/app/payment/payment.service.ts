@@ -22,7 +22,7 @@ type EntityArrayResponseType = HttpResponse<IPayment[]>;
 @Injectable({ providedIn: 'root' })
 export class PaymentService {
   public resourceUrl = SERVER_API_URL + 'api/payments';
-  public resourceUrlCreditCard = '/billing/payments/credit-card';
+  public resourceUrlCreditCard = '/billing/newPayment';
   public resourceUrlRefund = '/billing/refunds';
 
   constructor(protected http: HttpClient) {}
@@ -30,8 +30,8 @@ export class PaymentService {
   getList(datatableInput: DataTableInput): Observable<Pageable<IPayment>> {
     return this.http.get<Pageable<IPayment>>(`${this.resourceUrl}/datatable?${_tbs.serializeDataTableRequest(datatableInput)}`);
   }
-  getPaymentBySearch(paymentSearchRequest : PaymentSearchRequest): Observable<Pageable<IPayment>> {
-    return this.http.post<Pageable<IPayment>>(`${this.resourceUrl}/search`,paymentSearchRequest);
+  getPaymentBySearch(paymentSearchRequest: PaymentSearchRequest): Observable<Pageable<IPayment>> {
+    return this.http.post<Pageable<IPayment>>(`${this.resourceUrl}/search`, paymentSearchRequest);
   }
   create(payment: IPayment): Observable<EntityResponseType> {
     const copy = this.convertDateFromClient(payment);
@@ -40,10 +40,10 @@ export class PaymentService {
       .pipe(map((res: EntityResponseType) => this.convertDateFromServer(res)));
   }
 
-  createCcPayment(payment: IPayment): Observable<EntityResponseType> {
-    const copy = this.convertDateFromClient(payment);
+  createCcPayment(accountId): Observable<EntityResponseType> {
     return this.http
-      .post<IPayment>(this.resourceUrlCreditCard, copy, { observe: 'response' })
+      /*.post<IPayment>(this.resourceUrlCreditCard, copy, { observe: 'response' })*/
+      .get<IPayment>(this.resourceUrlCreditCard + '/' + accountId + '/CREDIT_CARD', { observe: 'response' })
       .pipe(map((res: EntityResponseType) => this.convertDateFromServer(res)));
   }
 

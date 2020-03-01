@@ -135,7 +135,10 @@ public class SecurityConfiguration {
                 .antMatchers("/h2-console/**")
                 .antMatchers("/sadad/paymentnotification**")
                 .antMatchers("/billing/payments/status")
+            // used to init payment from mule
                 .antMatchers("/billing/payments/credit-card")
+            // Test UI /newPayment
+                .antMatchers("/billing/newPayment/**")
             ////////Test Mule
                 .antMatchers("/billing/payments/credit-card/notification")
                 .antMatchers("/billing/payments/credit-card/notification2");

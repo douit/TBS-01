@@ -47,6 +47,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.SimpleDateFormat;
@@ -86,6 +88,8 @@ public class RefundService {
     private String stsPostFormUrl;
     @Value("${tbs.payment.sts-refund-status}")
     private String stsCheckStatusUrl;
+    @Value("${tbs.payment.sts-merchant-id}")
+    private String stsMerchantId;
     @Autowired
     @Lazy
     EventPublisherService eventPublisherService;
@@ -236,8 +240,10 @@ public class RefundService {
         parameters.put("MessageID", "4");
         parameters.put("TransactionID", refund.getId().toString());
         parameters.put("OriginalTransactionID", transactionId);
-        parameters.put("MerchantID", "010000085");
-        parameters.put("Amount",  "57750");
+        parameters.put("MerchantID", stsMerchantId);
+        BigDecimal roundedAmount = invoice.getAmount().setScale(2, RoundingMode.HALF_UP);
+        String formattedAmount = roundedAmount.multiply(new BigDecimal("100")).toBigInteger().toString();
+        parameters.put("Amount", formattedAmount);
 //        invoice.getAmount().toString()
         parameters.put("CurrencyISOCode", "682");
         parameters.put("Version", "1.0");
@@ -256,13 +262,13 @@ public class RefundService {
 
         StringBuffer requestQuery = new StringBuffer();
         requestQuery.append("TransactionID").append("=").append(refund.getId()).append("&").
-            append("MerchantID").append("=").append("010000085").append("&").
+            append("MerchantID").append("=").append(stsMerchantId).append("&").
             append("MessageID").append("=").append("4").append("&").
-            append("Amount").append("=").append(invoice.getAmount()).append("&")
-            .append("OriginalTransactionID").append("=")
-            .append(transactionId).append("&").append("CurrencyISOCode")
-            .append("=").append("682").append("&").append("SecureHash")
-            .append("=").append(secureHash).append("&").append("Version").append("=").append("1.0").append("&");
+            append("Amount").append("=").append(formattedAmount).append("&")
+            .append("OriginalTransactionID").append("=").append(transactionId).append("&")
+            .append("CurrencyISOCode").append("=").append("682").append("&")
+            .append("SecureHash").append("=").append(secureHash).append("&")
+            .append("Version").append("=").append("1.0").append("&");
 
         //Send the request
         URL url = new URL(stsCheckStatusUrl);
@@ -310,13 +316,18 @@ public class RefundService {
         StringBuilder responseOrderdString = new StringBuilder();
         responseOrderdString.append(stsSecretKey);
         for (String treeMapKey : result.keySet()) {
-            responseOrderdString.append(result.get(treeMapKey));
+            if (!treeMapKey.equals("Response.SecureHash")) {
+                responseOrderdString.append(result.get(treeMapKey));
+            }
         }
-        System.out.println("Response Orderd String is " + responseOrderdString.toString());
+
+        String formattedResponse = responseOrderdString.toString().replaceAll(" ", "+");
+        System.out.println("Response Orderd String is " + formattedResponse);
+
 
         // Generate SecureHash with SHA256
         // Using DigestUtils from appache.commons.codes.jar Library
-        String generatedsecureHash = new String(DigestUtils.sha256Hex(responseOrderdString.toString()).getBytes());
+        String generatedsecureHash = new String(DigestUtils.sha256Hex(formattedResponse).getBytes());
         // get the received secure hash from result map
         String receivedSecurehash = result.get("Response.SecureHash");
         if (!receivedSecurehash.equals(generatedsecureHash)) {
@@ -326,9 +337,8 @@ public class RefundService {
             // Complete the Action get other parameters from result map and do your processes // please refer to The Integration Manual to See The List of The Received Parameters
             String status = result.get("Response.Status");
             System.out.println("Status is :" + status);
+            return 200;
         }
-
-
         return 1;
 
 

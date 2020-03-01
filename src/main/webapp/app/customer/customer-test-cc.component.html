@@ -57,7 +57,7 @@
                                     <label class="form-control-label" jhiTranslate="tbsApp.payment.invoice" for="field_invoice">Invoice</label>
                                     <select class="form-control" id="field_invoice" name="invoice" formControlName="invoiceId" [(ngModel)]="invoiceSelected" (change)="onChangeInvoice($event.target.value, 'payment')">
                                         <option [ngValue]="null"></option>
-                                        <option [ngValue]="invoiceOption" *ngFor="let invoiceOption of invoices; trackBy: invoiceOption">{{invoiceOption.id}}</option>
+                                        <option [ngValue]="invoiceOption" *ngFor="let invoiceOption of invoices; trackBy: invoiceOption">{{invoiceOption.accountId}}</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
@@ -121,7 +121,7 @@
                                     <label class="form-control-label" jhiTranslate="tbsApp.payment.invoice" for="field_invoice">Invoice</label>
                                     <select class="form-control" id="invoiceIdRefund" name="invoice" formControlName="invoiceId" [(ngModel)]="invoiceRefundSelected" (change)="onChangeInvoice($event.target.value, 'refund')">
                                         <option [ngValue]="null"></option>
-                                        <option [ngValue]="invoiceOption" *ngFor="let invoiceOption of invoicesPaid; trackBy: invoiceOption">{{invoiceOption.id}}</option>
+                                        <option [ngValue]="invoiceOption" *ngFor="let invoiceOption of invoicesPaid; trackBy: invoiceOption">{{invoiceOption.accountId}}</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
