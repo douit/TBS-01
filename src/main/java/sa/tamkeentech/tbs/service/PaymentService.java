@@ -197,7 +197,7 @@ public class PaymentService {
     @Transactional
     public PaymentDTO updateCreditCardPayment(PaymentStatusResponseDTO paymentStatusResponseDTO, Payment payment, Invoice invoice) {
         log.debug("Request to update status Payment : {}", paymentStatusResponseDTO);
-        if (Constants.CC_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode().toString())) {
+        if (Constants.CC_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode()) && payment.getStatus() == PaymentStatus.PENDING) {
             payment.setStatus(PaymentStatus.PAID);
             invoice.setPaymentStatus(PaymentStatus.PAID);
         } else {
@@ -668,5 +668,10 @@ public class PaymentService {
             }
             return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
         }));
+    }
+
+
+    public void paymentCorrectionJob() {
+        // List<Payment> payments = paymentRepository.findByStatusAndAndCreatedDateBefore(PaymentStatus.PAYMENT_PAGE_RENDRED, ZonedDateTime.now().minusMinutes(30));
     }
 }

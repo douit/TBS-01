@@ -187,12 +187,12 @@ tbs:
     wahid-url: 'https://sso.tamkeen.land/auth/realms/tamkeen/protocol/openid-connect/token'
     wahid-secret: '06f4c17f-5c4a-492a-9a8e-a10eafec66c6'
 
-    sts-secret-key: 'OTJkZGM5YzRkZmI0NzU0OTNkNDU0MGNi'
     sts-merchant-id: '010000085'
-    sts-response-back-url: 'https://platform.tamkeentech.sa/billing-system/STSResponse'
+
+    sts-secret-key: 'OTJkZGM5YzRkZmI0NzU0OTNkNDU0MGNi'
+    sts-response-back-url: 'https://platform.tamkeentech.sa/billing-system-test/STSResponse'
     sts-post-form-url: 'https://srstaging.stspayone.com/SmartRoutePaymentWeb/SRPayMsgHandler'
     sts-refund-status: 'https://srstaging.stspayone.com/SmartRoutePaymentWeb/SRMsgHandler'
-
     url: 'http://localhost:8081/billing/payments/credit-card?'
 
   refund:

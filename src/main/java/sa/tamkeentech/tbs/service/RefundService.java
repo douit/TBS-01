@@ -322,8 +322,7 @@ public class RefundService {
         }
 
         String formattedResponse = responseOrderdString.toString().replaceAll(" ", "+");
-        System.out.println("Response Orderd String is " + formattedResponse);
-
+        log.debug("Response Orderd String is " + formattedResponse);
 
         // Generate SecureHash with SHA256
         // Using DigestUtils from appache.commons.codes.jar Library

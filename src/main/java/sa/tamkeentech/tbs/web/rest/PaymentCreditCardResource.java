@@ -109,7 +109,10 @@ public class PaymentCreditCardResource {
     }
     // end testing
 
-    @GetMapping("/check-payment/{transactionID}")
+
+    // ToDo Tmp check only called by Job
+    @GetMapping("/billing/check-payment-tmp/{transactionID}")
+    @ResponseBody
     public PaymentStatusResponseDTO checkPaymentStatus(@PathVariable String transactionID) throws IOException {
         return creditCardPaymentService.checkPaymentStatus(transactionID);
     }

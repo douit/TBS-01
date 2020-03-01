@@ -127,4 +127,4 @@ tbs:
     notification-client-secret: 'eC876200af3547129cbC03E7c29f1cDb'
 #    sadad-url: http://10.60.75.60:1001/sender/api/sadad/billloadrq
 #    sadad-application-id: '1'
-    url: 'http://10.60.75.90:8081/billing/payments/credit-card?'
+    url: 'https://platform.tamkeentech.sa/billing-system-test/billing/payments/credit-card?'

@@ -163,7 +163,7 @@ public class CreditCardPaymentService {
 
         // fill required parameters
         parameters.put("MessageID", "2"); parameters.put("OriginalTransactionID", transactionID);
-        parameters.put("MerchantID", "010000085"); parameters.put("Version", "1.0");
+        parameters.put("MerchantID", stsMerchantId); parameters.put("Version", "1.0");
 
         //Create an ordered String of The Parameters Map with Secret Key
         StringBuilder orderedString = new StringBuilder();
@@ -171,7 +171,7 @@ public class CreditCardPaymentService {
         for (String treeMapKey : parameters.keySet()) {
             orderedString.append(parameters.get(treeMapKey));
         }
-        System.out.println("orderdString "+orderedString);
+        log.debug("orderdString "+orderedString);
 
         // Generate SecureHash with SHA256
         // Using DigestUtils from appache.commons.codes.jar Library
@@ -180,7 +180,7 @@ public class CreditCardPaymentService {
         StringBuffer requestQuery = new  StringBuffer ();
         requestQuery
             .append("OriginalTransactionID").append("=").append(transactionID)
-            .append("&").append("MerchantID").append("=").append("010000085").append("&")
+            .append("&").append("MerchantID").append("=").append(stsMerchantId).append("&")
             .append("MessageID").append("=").append("2").append("&")
             .append("Version")
             .append("=").append("1.0").append("&")
@@ -234,29 +234,35 @@ public class CreditCardPaymentService {
         StringBuilder responseOrderdString = new StringBuilder(); responseOrderdString.append(stsSecretKey);
 
         for (String treeMapKey : result.keySet()) {
-            if(result.get(treeMapKey)!=null){
+            if(result.get(treeMapKey)!= null && !result.get(treeMapKey).equals("null") &&  !treeMapKey.equals("Response.SecureHash")){
                 responseOrderdString.append(result.get(treeMapKey));
-
             }
         }
-        System.out.println("Response Orderd String is " + responseOrderdString.toString());
+        log.debug("Response Orderd String is " + responseOrderdString.toString());
+        String formattedResponse = responseOrderdString.toString().replaceAll(" ", "+");
+
+        log.debug("Response Orderd String is " + formattedResponse);
 
         // Generate SecureHash with SHA256
         // Using DigestUtils from appache.commons.codes.jar Library
-        String generatedsecureHash = new String(DigestUtils.sha256Hex(getResponseOrderdString(result)).getBytes());
+        String generatedsecureHash = new String(DigestUtils.sha256Hex(formattedResponse).getBytes());
+        // String generatedsecureHash = new String(DigestUtils.sha256Hex(getResponseOrderdString(result)).getBytes());
 
         // get the received secure hash from result map
         String receivedSecurehash=result.get("Response.SecureHash");
         if(!receivedSecurehash.equals(generatedsecureHash)){
             //IF they are not equal then the response shall not be accepted
             throw new TbsRunTimeException("Received Secure Hash does not Equal generated Secure hash");
-        }
-        else{
+        }  else {
             // Complete the Action get other parameters from result map and do your processes // Please refer to The Integration Manual to See The List of The Received Parameters String status=result.get("Response.Status");
             PaymentStatusResponseDTO paymentStatusResponseDTO = PaymentStatusResponseDTO.builder()
-                .code(result.get("Response.Status"))
+                .code(result.get("Response.StatusCode"))
                 .cardNumber(result.get("Response.CardNumber"))
                 .transactionId(result.get("Response.TransactionID"))
+                .cardHolderName(result.get("Response.CardHolderName"))
+                //.billNumber(result.get())
+                .cardExpiryDate(result.get("Response.CardExpiryDate"))
+                .description(result.get("Response.StatusDescription"))
                 .build();
             Payment payment = paymentRepository.findByTransactionId(result.get("Response.TransactionID"));
 

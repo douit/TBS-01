@@ -147,6 +147,12 @@ tbs:
     notification-client-secret: 'eC876200af3547129cbC03E7c29f1cDb'
     wahid-url: 'https://accounts.wahid.sa/auth/realms/wahid/protocol/openid-connect/token'
     wahid-secret: '076a2d1c-15c6-4abf-80a7-0b181f18d617'
+
+    sts-secret-key: 'NzllYTk4MjU0ZTQ5M2JjZTJmMzg4NGRi'
+    sts-response-back-url: 'https://platform.tamkeentech.sa/billing-system/STSResponse'
+    sts-post-form-url: 'https://smartroute.stspayone.com/SmartRoutePaymentWeb/SRPayMsgHandler'
+    sts-refund-status: 'https://smartroute.stspayone.com/SmartRoutePaymentWeb/SRMsgHandler'
     url: 'https://platform.tamkeentech.sa/billing-system/requestPayment?'
+
   refund:
     sadad-url-refund: 'http://10.4.7.61:2020/Sender/api/Sadad/RefundLoadRq'
