@@ -26,6 +26,7 @@ export class LoadingOptions {
 
 export enum PaymentStatus {
   PENDING = 'PENDING',
+  CHECKOUT_PAGE = 'CHECKOUT_PAGE',
   PAID = 'PAID',
   UNPAID = 'UNPAID',
   REFUNDED = 'REFUNDED',

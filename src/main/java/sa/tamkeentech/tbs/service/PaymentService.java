@@ -2,6 +2,7 @@ package sa.tamkeentech.tbs.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.sentry.Sentry;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -102,6 +103,9 @@ public class PaymentService {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private CreditCardPaymentService creditCardPaymentService;
+
     public PaymentService(PaymentRepository paymentRepository, PaymentMapper paymentMapper, InvoiceRepository invoiceRepository, BankRepository bankRepository, BinRepository binRepository, PaymentMethodService paymentMethodService, ObjectMapper objectMapper, EventPublisherService eventPublisherService, ClientService clientService, ClientMapper clientMapper, PersistenceAuditEventRepository persistenceAuditEventRepository, PaymentMethodMapper paymentMethodMapper, ClientRepository clientRepository) {
         this.paymentRepository = paymentRepository;
         this.paymentMapper = paymentMapper;
@@ -197,15 +201,18 @@ public class PaymentService {
     @Transactional
     public PaymentDTO updateCreditCardPayment(PaymentStatusResponseDTO paymentStatusResponseDTO, Payment payment, Invoice invoice) {
         log.debug("Request to update status Payment : {}", paymentStatusResponseDTO);
-        if (Constants.CC_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode()) && payment.getStatus() == PaymentStatus.PENDING) {
+        if (Constants.CC_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode()) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
             payment.setStatus(PaymentStatus.PAID);
             invoice.setPaymentStatus(PaymentStatus.PAID);
-        } else {
+        } else if (Constants.CC_PAYMENT_FAILURE_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode()) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
             payment.setStatus(PaymentStatus.UNPAID);
             invoice.setPaymentStatus(PaymentStatus.UNPAID);
         }
-        payment.setBankId(findBankCode(paymentStatusResponseDTO.getCardNumber()));
+        if (StringUtils.isNotEmpty(paymentStatusResponseDTO.getCardNumber()) && paymentStatusResponseDTO.getCardNumber().length() > 5) {
+            payment.setBankId(findBankCode(paymentStatusResponseDTO.getCardNumber()));
+        }
         paymentRepository.save(payment);
+        invoiceRepository.save(invoice);
         PaymentDTO result = paymentMapper.toDto(payment);
         return result;
     }
@@ -429,12 +436,13 @@ public class PaymentService {
         return true;
     }
 
-    @Scheduled(cron = "0  5  *  *  * ?")
-    public void sendPaymentNotificationToClintJob(){
+
+    @Scheduled(cron = "${tbs.cron.payment-sadad-correction}")
+    public void sendPaymentNotificationToClientJob() {
 
         List<ClientDTO> clients =  clientService.findAll();
         for(ClientDTO clientDTO : clients){
-            List<Optional<Invoice>> invoices = invoiceRepository.findByStatusAndClient(InvoiceStatus.WAITING,clientMapper.toEntity(clientDTO));
+            List<Optional<Invoice>> invoices = invoiceRepository.findByStatusAndClient(InvoiceStatus.WAITING, clientMapper.toEntity(clientDTO));
             for (Optional<Invoice> invoice : invoices) {
                 Optional<Payment> payment = paymentRepository.findFirstByInvoiceAccountIdAndStatus(invoice.get().getAccountId(), PaymentStatus.PAID);
                 if (payment.isPresent()) {
@@ -520,7 +528,7 @@ public class PaymentService {
             .build();*/
         PaymentDTO paymentNotifReqToClientDTO = PaymentDTO.builder()
             .billNumber(accountId.toString())
-            .transactionId(payment.getTransactionId().toString())
+            .transactionId(payment.getTransactionId())
             .status(PaymentStatus.PAID)
             .paymentMethod(paymentMethodMapper.toDto(payment.getPaymentMethod()))
             .amount(payment.getAmount()).build();
@@ -538,19 +546,9 @@ public class PaymentService {
             log.error("Payment notif Response satatus:{}, Body: {}", e.getStatusCode(), e.getResponseBodyAsString());
             e.printStackTrace();
             Sentry.capture(e);
-            // in case parsing is needed
-            /*if (e.getStatusCode() == HttpStatus.BAD_REQUEST || e.getStatusCode() == HttpStatus.INTERNAL_SERVER_ERROR) {
-                String responseString = e.getResponseBodyAsString();
-                ObjectMapper mapper = new ObjectMapper();
-                try {
-                    PaymentNotifResFromClientDTO res = mapper.readValue(responseString, PaymentNotifResFromClientDTO.class);
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-            }*/
         }
 
-        if (response2 != null && response2.getBody()!= null && response2.getBody().getStatusId() == 1) {
+        if (response2 != null && response2.getStatusCode().is2xxSuccessful()/* response2.getBody()!= null && response2.getBody().getStatusId() == 1*/) {
             log.info("----Successful Client update: " + response2.getBody().getStatusId());
             Optional<Invoice> invoice = invoiceRepository.findByAccountId(accountId);
             invoice.get().setStatus(InvoiceStatus.CLIENT_NOTIFIED);
@@ -671,7 +669,21 @@ public class PaymentService {
     }
 
 
+    @Scheduled(cron = "${tbs.cron.payment-credit-card-correction}")
     public void paymentCorrectionJob() {
-        // List<Payment> payments = paymentRepository.findByStatusAndAndCreatedDateBefore(PaymentStatus.PAYMENT_PAGE_RENDRED, ZonedDateTime.now().minusMinutes(30));
+        List<Payment> payments = paymentRepository.findByStatusAndAndCreatedDateBetween(PaymentStatus.CHECKOUT_PAGE,
+            ZonedDateTime.now().minusMinutes(30), ZonedDateTime.now().minusMinutes(5));
+
+        if (CollectionUtils.isNotEmpty(payments)) {
+            for (Payment payment : payments) {
+                PaymentStatusResponseDTO response = creditCardPaymentService.checkPaymentStatus(payment.getTransactionId());
+                if (Constants.CC_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(response.getCode()) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
+                    // Notify Client app
+                    Invoice invoice = payment.getInvoice();
+                    sendPaymentNotificationToClient(clientMapper.toDto(invoice.getClient()), invoice.getAccountId(), payment);
+                }
+            }
+        }
     }
+
 }

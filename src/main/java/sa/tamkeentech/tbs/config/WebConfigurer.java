@@ -5,7 +5,9 @@ import io.github.jhipster.config.JHipsterProperties;
 import io.github.jhipster.web.filter.CachingHttpHeadersFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.web.server.*;
+import org.springframework.boot.web.server.MimeMappings;
+import org.springframework.boot.web.server.WebServerFactory;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
@@ -17,12 +19,15 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
-import javax.servlet.*;
+import javax.servlet.DispatcherType;
+import javax.servlet.FilterRegistration;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.EnumSet;
 
 import static java.net.URLDecoder.decode;
 
@@ -64,6 +69,26 @@ public class WebConfigurer implements ServletContextInitializer, WebServerFactor
         // When running in an IDE or with ./mvnw spring-boot:run, set location of the static web assets.
         setLocationForStaticAssets(server);
     }
+
+
+     /*@Bean
+     public WebServerFactoryCustomizer<TomcatServletWebServerFactory> containerCustomizer() {
+       return new WebServerFactoryCustomizer<TomcatServletWebServerFactory>() {
+            @Override
+            public void customize(TomcatServletWebServerFactory factory) {
+                factory.addConnectorCustomizers(new TomcatConnectorCustomizer() {
+                    @Override
+                    public void customize(Connector connector) {
+                        Arrays.stream(connector.getProtocolHandler().findUpgradeProtocols())
+                            .filter(upgradeProtocol -> upgradeProtocol instanceof Http2Protocol)
+                            .map(upgradeProtocol -> (Http2Protocol) upgradeProtocol)
+                            .forEach(http2Protocol -> http2Protocol.setMaxConcurrentStreamExecution(200));
+                    }
+                });
+            }
+        };
+    }*/
+
 
     private void setMimeMappings(WebServerFactory server) {
         if (server instanceof ConfigurableServletWebServerFactory) {

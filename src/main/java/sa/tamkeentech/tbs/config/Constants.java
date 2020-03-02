@@ -21,6 +21,7 @@ public final class Constants {
 
     // public static final String CC_PAYMENT_SUCCESS_CODE = "1007";
     public static final String CC_PAYMENT_SUCCESS_CODE = "00000";
+    public static final String CC_PAYMENT_FAILURE_CODE = "10001";
 
     public static Integer INVOICE_EXPIRY_DAYS = 1;
 

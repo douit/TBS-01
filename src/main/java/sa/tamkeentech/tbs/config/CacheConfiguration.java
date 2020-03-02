@@ -12,6 +12,8 @@ import org.springframework.boot.autoconfigure.cache.JCacheManagerCustomizer;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernatePropertiesCustomizer;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.*;
+import sa.tamkeentech.tbs.repository.PaymentRepository;
+import sa.tamkeentech.tbs.service.InvoiceService;
 
 @Configuration
 @EnableCaching
@@ -39,6 +41,8 @@ public class CacheConfiguration {
         return cm -> {
             createCache(cm, sa.tamkeentech.tbs.repository.UserRepository.USERS_BY_LOGIN_CACHE);
             createCache(cm, sa.tamkeentech.tbs.repository.UserRepository.USERS_BY_EMAIL_CACHE);
+            createCache(cm, PaymentRepository.PAYMENT_BY_TRANSACTION_ID);
+            createCache(cm, InvoiceService.INVOICE_BY_ACCOUNT_ID);
             createCache(cm, sa.tamkeentech.tbs.domain.User.class.getName());
             createCache(cm, sa.tamkeentech.tbs.domain.Authority.class.getName());
             createCache(cm, sa.tamkeentech.tbs.domain.User.class.getName() + ".authorities");

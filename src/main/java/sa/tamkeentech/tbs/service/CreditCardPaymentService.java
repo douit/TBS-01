@@ -8,6 +8,8 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
+import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
+import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 import org.springframework.web.servlet.view.RedirectView;
 import sa.tamkeentech.tbs.domain.Invoice;
@@ -41,6 +43,10 @@ public class CreditCardPaymentService {
     PaymentRepository paymentRepository;
 
     @Inject
+    @Lazy
+    InvoiceRepository invoiceRepository;
+
+    @Inject
     PaymentService paymentService;
 
     @Value("${tbs.payment.sts-secret-key}")
@@ -60,7 +66,11 @@ public class CreditCardPaymentService {
         if (payment == null) {
             throw new TbsRunTimeException("Payment not found");
         }
+        payment.setStatus(PaymentStatus.CHECKOUT_PAGE);
+        paymentRepository.save(payment);
         Invoice invoice = payment.getInvoice();
+        invoice.setPaymentStatus(PaymentStatus.CHECKOUT_PAGE);
+        invoiceRepository.save(invoice);
         // Step 1: Generate Secure Hash
         // put the parameters in a TreeMap to have the parameters to have them sorted alphabetically.
         Map<String,String> parameters = new TreeMap<>();
@@ -153,7 +163,7 @@ public class CreditCardPaymentService {
 
 
 
-    public PaymentStatusResponseDTO checkPaymentStatus(String transactionID) throws IOException {
+    public PaymentStatusResponseDTO checkPaymentStatus(String transactionID) {
 
         //Step 1: Generate Secure Hash
 
@@ -189,24 +199,28 @@ public class CreditCardPaymentService {
 
 
         //Send the request
-        URL url = new URL(stsCheckStatusUrl);
-        URLConnection conn = url.openConnection();
-        conn.setDoOutput(true);
-        OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream(), "UTF-8");
+        StringBuffer output =  new StringBuffer();
+        try {
+            URL url = new URL(stsCheckStatusUrl);
+            URLConnection conn = url.openConnection();
+            conn.setDoOutput(true);
+            OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream(), "UTF-8");
 
-        //write parameters
-        writer.write(requestQuery.toString());
-        writer.flush();
+            //write parameters
+            writer.write(requestQuery.toString());
+            writer.flush();
 
-        // Get the response
-        StringBuffer output = new StringBuffer();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
-        String line;
-        while ((line = reader.readLine()) != null) {
-            output.append(line);
+            // Get the response
+            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                output.append(line);
+            }
+            writer.close();
+            reader.close();
+        } catch (IOException e) {
+            throw new TbsRunTimeException("Cron payment correction enable to connect to STS", e);
         }
-        writer.close();
-        reader.close();
 
         //Output the response
         System.out.println(output.toString());
@@ -222,12 +236,10 @@ public class CreditCardPaymentService {
 
         // now we have separated the pairs from each other {"name1=value1","name2=value2",....}
         for(String pair:pairs){
-
             // now we have separated the pair to {"name","value"}
             String[] nameValue=pair.split("=");
-            String name=nameValue[0];//first element is the name
-            String value=nameValue[1];//second element is the value
-            // put the pair in the result map
+            String name=nameValue[0];
+            String value=nameValue[1];
             result.put(name,value);
         }
         // Now that we have the map, order it to generate secure hash and compare it with the received one

@@ -1,5 +1,6 @@
 package sa.tamkeentech.tbs.web.rest;
 
+import com.google.common.base.Stopwatch;
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -22,6 +23,7 @@ import javax.validation.Valid;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /**
  * REST controller for managing {@link sa.tamkeentech.tbs.domain.Invoice}.
@@ -118,7 +120,12 @@ public class InvoiceAppResource {
     public ResponseEntity<InvoiceDTO> getInvoice(@PathVariable Long id,
                                                  @RequestHeader(value = "accept-language", defaultValue = Constants.DEFAULT_HEADER_LANGUAGE) String language) {
         log.debug("REST request to get Invoice : {}", id);
+        Stopwatch stopwatch = Stopwatch.createStarted();
         Optional<InvoiceDTO> invoiceDTO = invoiceService.findByAccountId(id);
+        stopwatch.stop(); // optional
+        log.info("--InvoiceGet 1--Time elapsed: "+ stopwatch.elapsed(TimeUnit.MILLISECONDS));
+
+        Stopwatch stopwatch2 = Stopwatch.createStarted();
         if (invoiceDTO.isPresent()) {
             invoiceDTO.get().setClient(null);
             invoiceDTO.get().setVatNumber("300879111900003");
@@ -130,6 +137,8 @@ public class InvoiceAppResource {
             invoiceDTO.get().setCompanyName(languageUtil.getMessageByKey("company.name", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
 
         }
+        stopwatch2.stop(); // optional
+        log.info("--InvoiceGet 2--Time elapsed: "+ stopwatch2.elapsed(TimeUnit.MILLISECONDS));
         return ResponseUtil.wrapOrNotFound(invoiceDTO);
     }
 

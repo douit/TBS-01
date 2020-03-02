@@ -36,9 +36,12 @@ spring:
       indent-output: true
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:postgresql://localhost:5432/tbs_staging
-    username: postgres
-    password: postgres
+#    url: jdbc:postgresql://localhost:5432/tbs_staging
+#    username: postgres
+#    password: postgres
+    url: jdbc:postgresql://10.60.75.102:5432/billingdb
+    username: bill_stg
+    password: $0t!b19&
     hikari:
       poolName: Hikari
       auto-commit: false

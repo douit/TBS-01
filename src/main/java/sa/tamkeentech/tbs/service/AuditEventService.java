@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,12 +50,13 @@ public class AuditEventService {
     /**
     * Old audit events should be automatically deleted after 30 days.
     *
-    * This is scheduled to get fired at 12:00 (am).
+    * This is scheduled to get fired at 4:00 (am).
     */
-    @Scheduled(cron = "0 0 12 * * ?")
+    @Scheduled(cron = "${tbs.cron.audit-event-delete}")
     public void removeOldAuditEvents() {
         persistenceAuditEventRepository
-            .findByAuditEventDateBefore(Instant.now().minus(jHipsterProperties.getAuditEvents().getRetentionPeriod(), ChronoUnit.DAYS))
+            .findByAuditEventDateBeforeAndAuditEventTypeIn(Instant.now().minus(jHipsterProperties.getAuditEvents().getRetentionPeriod(), ChronoUnit.DAYS),
+                Arrays.asList("AUTHENTICATION_SUCCESS", "AUTHENTICATION_FAILURE"))
             .forEach(auditEvent -> {
                 log.debug("Deleting audit data {}", auditEvent.toString());
                 persistenceAuditEventRepository.delete(auditEvent);

@@ -65,5 +65,7 @@
     <include file="config/liquibase/changelog/2020160211030700_added_bank.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/2020160215030700_added_bin.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20200226090413_alter_entity_client.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20200302105213_add_seq_invoice_and_audit.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20200302115213_add_seq_payment.xml" relativeToChangelogFile="false"/>
 
 </databaseChangeLog>

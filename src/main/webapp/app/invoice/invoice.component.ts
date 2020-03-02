@@ -21,7 +21,7 @@ import {IClient} from 'app/shared/model/client.model';
 import * as moment from 'moment';
 import {IInvoiceSearchRequest} from 'app/shared/model/invoice-serach-request';
 import {ClientService} from 'app/client/client.service';
-import {IInvoiceItem} from "app/shared/model/invoice-item.model";
+import {IInvoiceItem} from 'app/shared/model/invoice-item.model';
 
 @Component({
   selector: 'app-invoice',
@@ -36,8 +36,8 @@ export class InvoiceComponent implements OnInit {
   reverse: any;
   InvoiceStatus = InvoiceStatus;
   auditInvoice: any[];
-  invoiceItems:IInvoiceItem[];
-  invoiceView : IInvoice;
+  invoiceItems: IInvoiceItem[];
+  invoiceView: IInvoice;
   selectedInvoice: IInvoice;
   PaymentStatus = PaymentStatus;
 

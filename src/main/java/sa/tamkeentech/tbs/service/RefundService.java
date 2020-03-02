@@ -454,8 +454,7 @@ public class RefundService {
      * <p>
      * This is scheduled to get fired every hour, at 01:00 - 02:00 ...
      */
-    @Scheduled(cron = "0 0 * * * ?")
-    // @Scheduled(cron = "0 * * * * ?")
+    @Scheduled(cron = "${tbs.cron.refund-sadad-sync}")
     public void syncSadadRefund() {
         log.info("----Start Sadad Refund Sync");
         boolean successful = true;

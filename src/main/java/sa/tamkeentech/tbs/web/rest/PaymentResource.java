@@ -1,23 +1,17 @@
 package sa.tamkeentech.tbs.web.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.HttpClientBuilder;
+import com.google.common.base.Stopwatch;
 import org.springframework.boot.configurationprocessor.json.JSONException;
-import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
 import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
-import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.Payment;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 import sa.tamkeentech.tbs.repository.PaymentRepository;
 import sa.tamkeentech.tbs.service.PaymentService;
 import sa.tamkeentech.tbs.service.dto.*;
 import sa.tamkeentech.tbs.service.mapper.PaymentMapper;
+import sa.tamkeentech.tbs.service.mapper.PaymentMethodMapper;
 import sa.tamkeentech.tbs.web.rest.errors.BadRequestAlertException;
 
 import io.github.jhipster.web.util.HeaderUtil;
@@ -30,11 +24,11 @@ import org.springframework.web.bind.annotation.*;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /**
  * REST controller for managing {@link sa.tamkeentech.tbs.domain.Payment}.
@@ -55,12 +49,14 @@ public class PaymentResource {
     private final PaymentService paymentService;
     private final PaymentRepository paymentRepository;
     private final PaymentMapper paymentMapper;
+    private final PaymentMethodMapper paymentMethodMapper;
 
-    public PaymentResource(ObjectMapper objectMapper, PaymentService paymentService, PaymentRepository paymentRepository, PaymentMapper paymentMapper) {
+    public PaymentResource(ObjectMapper objectMapper, PaymentService paymentService, PaymentRepository paymentRepository, PaymentMapper paymentMapper, PaymentMethodMapper paymentMethodMapper) {
         this.objectMapper = objectMapper;
         this.paymentService = paymentService;
         this.paymentRepository = paymentRepository;
         this.paymentMapper = paymentMapper;
+        this.paymentMethodMapper = paymentMethodMapper;
     }
 
     /**
@@ -100,26 +96,29 @@ public class PaymentResource {
 
     @GetMapping("/billing/check-payment/{transactionId}")
     public PaymentDTO checkPaymentStatus(@PathVariable  String transactionId) throws JSONException, IOException {
+        Stopwatch stopwatch = Stopwatch.createStarted();
         Payment payment = paymentRepository.findByTransactionId(transactionId);
         if (payment == null) {
             throw new TbsRunTimeException("No payments found");
         }
-        PaymentDTO result = null;
+        // PaymentDTO result = null;
 
         // ToDo include inquery here
         /*for (Payment payment: payments) {
             if (payment.getStatus() == PaymentStatus.PAID) {*/
-                result =paymentMapper.toDto(payment);
+                // result =paymentMapper.toDto(payment);
 /*            }
         }*/
 
         PaymentDTO.PaymentDTOBuilder paymentStatus = PaymentDTO.builder().billNumber(payment.getInvoice().getAccountId().toString()).status(PaymentStatus.UNPAID);
-        if (result != null) {
-            paymentStatus.transactionId(result.getTransactionId())
-                .status(result.getStatus())
-                .paymentMethod(result.getPaymentMethod())
-                .amount(result.getAmount());
-        }
+        // if (result != null) {
+            paymentStatus.transactionId(payment.getTransactionId())
+                .status(payment.getStatus())
+                .paymentMethod(paymentMethodMapper.toDto(payment.getPaymentMethod()))
+                .amount(payment.getAmount());
+        // }
+        stopwatch.stop(); // optional
+        log.info("--CheckPayment--Time elapsed: "+ stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return paymentStatus.build();
     }
 

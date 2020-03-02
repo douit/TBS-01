@@ -342,6 +342,7 @@
                                         <ng-template #paymentStatusRowTemplate let-row="row">
                                             <div class="badge" [ngClass]="{
                                                     'badge-warning': row.paymentStatus === PaymentStatus.REFUNDED,
+                                                    'badge-default': row.paymentStatus === PaymentStatus.CHECKOUT_PAGE,
                                                     'badge-success': row.paymentStatus === PaymentStatus.PAID,
                                                     'badge-info': row.paymentStatus === PaymentStatus.PENDING,
                                                     'badge-danger': row.paymentStatus === PaymentStatus.UNPAID

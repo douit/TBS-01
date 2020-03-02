@@ -26,7 +26,8 @@
         "UNPAID": "UNPAID",
         "PAID": "PAID",
         "PENDING": "PENDING",
-        "REFUNDED": "REFUNDED"
+        "REFUNDED": "REFUNDED",
+        "CHECKOUT_PAGE": "CHECKOUT PAGE"
       }
     }
   }

@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.configurationprocessor.json.JSONException;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -59,6 +60,8 @@ import java.util.*;
 public class InvoiceService {
 
     private final Logger log = LoggerFactory.getLogger(InvoiceService.class);
+
+    public final static String INVOICE_BY_ACCOUNT_ID = "invoiceByAccountId";
 
     private final InvoiceRepository invoiceRepository;
 
@@ -152,6 +155,7 @@ public class InvoiceService {
             .map(invoiceMapper::toDto);
     }
 
+    @Cacheable(value = INVOICE_BY_ACCOUNT_ID)
     public Optional<InvoiceDTO> findByAccountId(Long id) {
         log.debug("Request to get Invoice by findByAccountId : {}", id);
         return invoiceRepository.findByAccountId(id)
@@ -649,7 +653,8 @@ public class InvoiceService {
         return stats;
     }
 
-    @Scheduled(cron = "0 30 * * * ? ")
+
+    @Scheduled(cron = "${tbs.cron.invoice-expired}")
     public void checkExpiredInvoice(){
     List<Invoice> invoices = invoiceRepository.getExpiryInvoices(ZonedDateTime.now());
     for(Invoice invoice : invoices){
