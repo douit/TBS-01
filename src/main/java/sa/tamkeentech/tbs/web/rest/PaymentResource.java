@@ -96,7 +96,7 @@ public class PaymentResource {
 
     @GetMapping("/billing/check-payment/{transactionId}")
     public PaymentDTO checkPaymentStatus(@PathVariable  String transactionId) throws JSONException, IOException {
-        Stopwatch stopwatch = Stopwatch.createStarted();
+        // Stopwatch stopwatch = Stopwatch.createStarted();
         Payment payment = paymentRepository.findByTransactionId(transactionId);
         if (payment == null) {
             throw new TbsRunTimeException("No payments found");
@@ -117,8 +117,8 @@ public class PaymentResource {
                 .paymentMethod(paymentMethodMapper.toDto(payment.getPaymentMethod()))
                 .amount(payment.getAmount());
         // }
-        stopwatch.stop(); // optional
-        log.info("--CheckPayment--Time elapsed: "+ stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        // stopwatch.stop(); // optional
+        // log.info("--CheckPayment--Time elapsed: "+ stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return paymentStatus.build();
     }
 
