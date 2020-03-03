@@ -146,7 +146,7 @@ public class CreditCardPaymentService {
             .transactionId(transactionId).description(responseParameters.get("Response.GatewayStatusDescription"))
             .cardNumber(responseParameters.get("Response.CardNumber")).cardExpiryDate(responseParameters.get("Response.CardExpiryDate"))
             .amount(responseParameters.get("Response.Amount"));
-        if (!receivedSecurehash.equals(generatedsecureHash)) {
+        if (!generatedsecureHash.equals(receivedSecurehash)) {
             // IF they are not equal then the response shall not be accepted
             log.error("Received Secure Hash does not Equal Generated Secure hash");
         } else {
