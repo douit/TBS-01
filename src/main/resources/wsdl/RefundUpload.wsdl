@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:i0="http://www.BrightWare.com.sa/SADADWare/RefundUpload_v1" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://tempuri.org/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" targetNamespace="http://tempuri.org/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:import namespace="http://www.BrightWare.com.sa/SADADWare/RefundUpload_v1" location="http://10.4.7.60:7766/SADADWare/RefunUpload/Request/RefundUpload.asmx?wsdl=wsdl1" />
+  <wsdl:types>
+    <s:schema targetNamespace="http://tempuri.org/">
+      <s:import schemaLocation="http://10.4.7.60:7766/SADADWare/RefunUpload/Request/RefundUpload.asmx?schema=schema1" namespace="http://www.BrightWare.com.sa/SADADWare" />
+    </s:schema>
+  </wsdl:types>
+  <wsdl:service name="RefundUpload">
+    <wsdl:port name="RefundUpload_v1_SOAPBinding" binding="i0:RefundUpload_v1_SOAPBinding">
+      <soap:address location="http://10.4.7.60:7766/SADADWare/RefunUpload/Request/RefundUpload.asmx" />
+    </wsdl:port>
+    <wsdl:port name="RefundUpload_v1_SOAPBinding1" binding="i0:RefundUpload_v1_SOAPBinding1">
+      <soap12:address location="http://10.4.7.60:7766/SADADWare/RefunUpload/Request/RefundUpload.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

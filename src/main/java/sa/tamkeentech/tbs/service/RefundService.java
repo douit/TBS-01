@@ -32,17 +32,20 @@ import sa.tamkeentech.tbs.repository.FileSyncLogRepository;
 import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.repository.PaymentRepository;
 import sa.tamkeentech.tbs.repository.RefundRepository;
+import sa.tamkeentech.tbs.schemas.refund.*;
 import sa.tamkeentech.tbs.service.dto.RefundDTO;
 import sa.tamkeentech.tbs.service.dto.RefundDetailedDTO;
 import sa.tamkeentech.tbs.service.dto.RefundStatusCCResponseDTO;
 import sa.tamkeentech.tbs.service.dto.TBSEventReqDTO;
 import sa.tamkeentech.tbs.service.mapper.RefundMapper;
+import sa.tamkeentech.tbs.service.soapClient.SOAPConnector;
 import sa.tamkeentech.tbs.service.util.EventPublisherService;
 import sa.tamkeentech.tbs.web.rest.errors.ErrorConstants;
 import sa.tamkeentech.tbs.web.rest.errors.PaymentGatewayException;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
 import javax.persistence.criteria.Predicate;
+import javax.xml.bind.JAXBElement;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -51,6 +54,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URL;
 import java.net.URLConnection;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -96,6 +100,10 @@ public class RefundService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private SOAPConnector soapConnector;
+
 
     public RefundService(RefundRepository refundRepository, RefundMapper refundMapper, ObjectMapper objectMapper, PaymentRepository paymentRepository, InvoiceRepository invoiceResitory, FileSyncLogRepository fileSyncLogRepository) {
         this.refundRepository = refundRepository;
@@ -205,14 +213,34 @@ public class RefundService {
         refundInfo.put("bankId", refund.getPayment().getBankId());
         refundInfo.put("applicationId", sadadApplicationId);
 
-        TBSEventReqDTO<String> req = TBSEventReqDTO.<String>builder()
-            .principalId(customer.getIdentity()).referenceId(invoice.getAccountId().toString()).req(refundInfo.toString()).build();
+        // Sadad ware Soap call
+        RefundRqType refundReq = new RefundRqType();
+        refundReq.setRqUID(/*refund.getId().toString()*//*"1560000005"*/UUID.randomUUID().toString());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        refundReq.setTimestamp(sdf.format(new Timestamp(System.currentTimeMillis())));
+        RefundRecType refundRec = new RefundRecType();
+        CustomerIdType customerId = new CustomerIdType();
+        customerId.setOfficialId(/*customer.getIdentity()*/"2458083439");
+        customerId.setOfficialIdType(OfficialIdTypeType.valueOf((customer.getIdentityType() != null) ? customer.getIdentityType().name() : IdentityType.NAT.name()));
+        refundRec.setCustomerId(customerId);
+        refundRec.setAmount(/*refund.getPayment().getAmount()*/new BigDecimal(10));
+        // Try without ExpDt  <ExpDt>2020-03-31T11:00:28</ExpDt>
+        // refundRec.setExpDt();
+        refundRec.setPmtId(/*refund.getPayment().getTransactionId()*/"3222327763");
+        Calendar after3Months = Calendar.getInstance();
+        after3Months.add(Calendar.MONTH, 3);
+        refundRec.setExpDt(sdf.format(after3Months.getTime()));
+
+        refundReq.setRefundRec(refundRec);
+
+        TBSEventReqDTO<RefundRqType> req = TBSEventReqDTO.<RefundRqType>builder()
+            .principalId(customer.getIdentity()).referenceId(invoice.getAccountId().toString()).req(refundReq).build();
         return eventPublisherService.callSadadRefundEvent(req).getResp();
 
     }
 
-    public int callRefundBySdad(String req) throws IOException {
-        HttpClient client = HttpClientBuilder.create().build();
+    public int callRefundBySdad(RefundRqType req) throws IOException {
+        /*HttpClient client = HttpClientBuilder.create().build();
         HttpPost post = new HttpPost(sadadUrlRefund);
         post.setHeader("Content-Type", "application/json");
         post.setEntity(new StringEntity(req));
@@ -224,8 +252,25 @@ public class RefundService {
         if (response.getEntity() != null) {
             log.debug("----Sadad refund response content : {}", response.getEntity().getContent());
             log.debug("----Sadad refund response entity : {}", response.getEntity().toString());
+        }*/
+
+        //JAXBElement<RefundRqType> req2 = new ObjectFactory().createRefundRq(req);
+
+        try {
+            JAXBElement<RefundRsType> response = (JAXBElement<RefundRsType>) soapConnector.callWebService("http://10.4.7.60:7766/SADADWare/RefunUpload/Request/RefundUpload.asmx", req);
+            log.debug("---resp refund UID: {} --- status: {}", response.getValue().getRqUID(), response.getValue().getStatus().getCode());
+            if (response.getValue().getStatus().getCode() != null && response.getValue().getStatus().getCode().toString().equals("1")) {
+                return 200;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
         }
-        return response.getStatusLine().getStatusCode();
+
+        //JAXBElement<RefundRqType> response = new ObjectFactory().createRefundRq(req);
+
+        // return response.getStatusLine().getStatusCode();
+        return 0;
 
     }
 

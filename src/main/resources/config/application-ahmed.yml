@@ -18,6 +18,11 @@ logging:
     ROOT: DEBUG
     io.github.jhipster: DEBUG
     sa.tamkeentech.tbs: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.ws.client.MessageTracing.sent: DEBUG
+    org.springframework.ws.server.MessageTracing.sent: DEBUG
+    org.springframework.ws.client.MessageTracing.received: TRACE
+    org.springframework.ws.server.MessageTracing.received: TRACE
 
 spring:
   profiles:

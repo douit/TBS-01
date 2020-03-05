@@ -16,6 +16,7 @@ import sa.tamkeentech.tbs.domain.Invoice;
 import sa.tamkeentech.tbs.domain.Payment;
 import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.repository.PaymentRepository;
+import sa.tamkeentech.tbs.schemas.refund.RefundRqType;
 import sa.tamkeentech.tbs.service.*;
 import sa.tamkeentech.tbs.service.dto.*;
 import sa.tamkeentech.tbs.service.mapper.PaymentMapper;
@@ -143,9 +144,9 @@ public class EventPublisherService {
 
     @TBSEventPub(eventName = Constants.EventType.SADAD_REFUND_REQUEST)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public TBSEventRespDTO<Integer> callSadadRefundEvent(TBSEventReqDTO<String> eventReq) throws IOException {
+    public TBSEventRespDTO<Integer> callSadadRefundEvent(TBSEventReqDTO<RefundRqType> eventReq) throws IOException {
         Integer sadadResp;
-        if (CommonUtils.isProfile(environment, "prod")) {
+        if (CommonUtils.isProfile(environment, "prod") || CommonUtils.isProfile(environment, "ahmed")) {
             sadadResp = refundService.callRefundBySdad(eventReq.getReq());
         } else {
             log.debug("----Sadad refund request : {}", eventReq.getReq());
