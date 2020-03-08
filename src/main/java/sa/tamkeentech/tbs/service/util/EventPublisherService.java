@@ -144,16 +144,17 @@ public class EventPublisherService {
 
     @TBSEventPub(eventName = Constants.EventType.SADAD_REFUND_REQUEST)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public TBSEventRespDTO<Integer> callSadadRefundEvent(TBSEventReqDTO<RefundRqType> eventReq) throws IOException {
-        Integer sadadResp;
+    public TBSEventRespDTO<RefundStatusSadadResponseDTO> callSadadRefundEvent(TBSEventReqDTO<String> eventReq) throws IOException {
+        RefundStatusSadadResponseDTO sadadResp;
         if (CommonUtils.isProfile(environment, "prod") || CommonUtils.isProfile(environment, "ahmed")) {
             sadadResp = refundService.callRefundBySdad(eventReq.getReq());
         } else {
             log.debug("----Sadad refund request : {}", eventReq.getReq());
             log.info("----Sadad refund response status code : ***** Mocking *** eventReq.getReq()");
-            sadadResp = 200;
+            sadadResp = RefundStatusSadadResponseDTO.builder().refundResult(RefundStatusSadadResponseDTO.RefundResult.builder()
+                .status(RefundStatusSadadResponseDTO.Status.builder().code("0").description("Fake resp").build()).build()).build();
         }
-        TBSEventRespDTO<Integer> eventResp = TBSEventRespDTO.<Integer>builder().resp(sadadResp).build();
+        TBSEventRespDTO<RefundStatusSadadResponseDTO> eventResp = TBSEventRespDTO.<RefundStatusSadadResponseDTO>builder().resp(sadadResp).build();
         return eventResp;
     }
 

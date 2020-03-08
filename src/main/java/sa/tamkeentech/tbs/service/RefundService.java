@@ -33,10 +33,7 @@ import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.repository.PaymentRepository;
 import sa.tamkeentech.tbs.repository.RefundRepository;
 import sa.tamkeentech.tbs.schemas.refund.*;
-import sa.tamkeentech.tbs.service.dto.RefundDTO;
-import sa.tamkeentech.tbs.service.dto.RefundDetailedDTO;
-import sa.tamkeentech.tbs.service.dto.RefundStatusCCResponseDTO;
-import sa.tamkeentech.tbs.service.dto.TBSEventReqDTO;
+import sa.tamkeentech.tbs.service.dto.*;
 import sa.tamkeentech.tbs.service.mapper.RefundMapper;
 import sa.tamkeentech.tbs.service.soapClient.SOAPConnector;
 import sa.tamkeentech.tbs.service.util.EventPublisherService;
@@ -155,7 +152,7 @@ public class RefundService {
         refund.setPayment(payment.get());
         refund = refundRepository.save(refund);
         if (payment.get().getPaymentMethod().getCode().equalsIgnoreCase(Constants.SADAD)) {
-            int sadadResult;
+            RefundStatusSadadResponseDTO sadadResult;
             try {
                 sadadResult = sendEventAndCallRefundBySdad(refund, invoice);
             } catch (IOException | JSONException e) {
@@ -164,9 +161,10 @@ public class RefundService {
             }
             // ToDo add new exception 500 for sadad
             // invoice = invoiceRepository.getOne(invoice.getId());
-            if (sadadResult != 200) {
+            if (sadadResult == null || sadadResult.getRefundResult() == null || sadadResult.getRefundResult().getStatus()== null
+                || !"0".equals(sadadResult.getRefundResult().getStatus().getCode())) {
                 refund.setStatus(RequestStatus.FAILED);
-                throw new PaymentGatewayException("Sadad refund creation error");
+                // throw new PaymentGatewayException("Sadad refund creation failed");
             } else {
                 refund.setStatus(RequestStatus.PENDING);
                 payment.get().setStatus(PaymentStatus.REFUNDED);
@@ -196,7 +194,8 @@ public class RefundService {
     }
 
 
-    public int sendEventAndCallRefundBySdad(Refund refund, Invoice invoice) throws IOException, JSONException {
+    public RefundStatusSadadResponseDTO sendEventAndCallRefundBySdad(Refund refund, Invoice invoice) throws IOException, JSONException {
+        JSONObject reqWrapper = new JSONObject();
         JSONObject refundInfo = new JSONObject();
         // ToDo check if refundId must be unique per app ? other params ...
         Customer customer = invoice.getCustomer();
@@ -206,41 +205,43 @@ public class RefundService {
         refundInfo.put("amount", refund.getPayment().getAmount());
         refundInfo.put("paymetTransactionId", refund.getPayment().getTransactionId());
         Calendar c = Calendar.getInstance();
-        c.add(Calendar.DATE, 30);
+        c.add(Calendar.MONTH, 3);
         String expiryDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(c.getTime());
         // ExpiryDate of the invoice, not related to invoice
         refundInfo.put("expirydate", expiryDate);
         refundInfo.put("bankId", refund.getPayment().getBankId());
         refundInfo.put("applicationId", sadadApplicationId);
 
+        reqWrapper.put("RefundInfo", refundInfo);
+
         // Sadad ware Soap call
-        RefundRqType refundReq = new RefundRqType();
-        refundReq.setRqUID(/*refund.getId().toString()*//*"1560000005"*/UUID.randomUUID().toString());
+        /*RefundRqType refundReq = new RefundRqType();
+        refundReq.setRqUID(*//*refund.getId().toString()*//**//*"1560000005"*//*UUID.randomUUID().toString());
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
         refundReq.setTimestamp(sdf.format(new Timestamp(System.currentTimeMillis())));
         RefundRecType refundRec = new RefundRecType();
         CustomerIdType customerId = new CustomerIdType();
-        customerId.setOfficialId(/*customer.getIdentity()*/"2458083439");
+        customerId.setOfficialId(*//*customer.getIdentity()*//*"2458083439");
         customerId.setOfficialIdType(OfficialIdTypeType.valueOf((customer.getIdentityType() != null) ? customer.getIdentityType().name() : IdentityType.NAT.name()));
         refundRec.setCustomerId(customerId);
-        refundRec.setAmount(/*refund.getPayment().getAmount()*/new BigDecimal(10));
+        refundRec.setAmount(*//*refund.getPayment().getAmount()*//*new BigDecimal(10));
         // Try without ExpDt  <ExpDt>2020-03-31T11:00:28</ExpDt>
         // refundRec.setExpDt();
-        refundRec.setPmtId(/*refund.getPayment().getTransactionId()*/"3222327763");
+        refundRec.setPmtId(*//*refund.getPayment().getTransactionId()*//**//*"3222327763"*//*"3221682351");
         Calendar after3Months = Calendar.getInstance();
         after3Months.add(Calendar.MONTH, 3);
         refundRec.setExpDt(sdf.format(after3Months.getTime()));
 
-        refundReq.setRefundRec(refundRec);
+        refundReq.setRefundRec(refundRec);*/
 
-        TBSEventReqDTO<RefundRqType> req = TBSEventReqDTO.<RefundRqType>builder()
-            .principalId(customer.getIdentity()).referenceId(invoice.getAccountId().toString()).req(refundReq).build();
+        TBSEventReqDTO<String> req = TBSEventReqDTO.<String>builder()
+            .principalId(customer.getIdentity()).referenceId(invoice.getAccountId().toString()).req(reqWrapper.toString()).build();
         return eventPublisherService.callSadadRefundEvent(req).getResp();
 
     }
 
-    public int callRefundBySdad(RefundRqType req) throws IOException {
-        /*HttpClient client = HttpClientBuilder.create().build();
+    public RefundStatusSadadResponseDTO callRefundBySdad(String req) throws IOException {
+        HttpClient client = HttpClientBuilder.create().build();
         HttpPost post = new HttpPost(sadadUrlRefund);
         post.setHeader("Content-Type", "application/json");
         post.setEntity(new StringEntity(req));
@@ -252,26 +253,29 @@ public class RefundService {
         if (response.getEntity() != null) {
             log.debug("----Sadad refund response content : {}", response.getEntity().getContent());
             log.debug("----Sadad refund response entity : {}", response.getEntity().toString());
-        }*/
-
-        //JAXBElement<RefundRqType> req2 = new ObjectFactory().createRefundRq(req);
-
-        try {
-            JAXBElement<RefundRsType> response = (JAXBElement<RefundRsType>) soapConnector.callWebService("http://10.4.7.60:7766/SADADWare/RefunUpload/Request/RefundUpload.asmx", req);
-            log.debug("---resp refund UID: {} --- status: {}", response.getValue().getRqUID(), response.getValue().getStatus().getCode());
-            if (response.getValue().getStatus().getCode() != null && response.getValue().getStatus().getCode().toString().equals("1")) {
-                return 200;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return 0;
         }
 
-        //JAXBElement<RefundRqType> response = new ObjectFactory().createRefundRq(req);
+        RefundStatusSadadResponseDTO refundSadadResponseDTO = objectMapper.readValue(response.getEntity().getContent(), RefundStatusSadadResponseDTO.class);
+        log.info("************** response from Refund sadad ************ : " + refundSadadResponseDTO);
 
         // return response.getStatusLine().getStatusCode();
-        return 0;
+        return refundSadadResponseDTO;
 
+        /*try {
+            JAXBElement<RefundRsType> response = (JAXBElement<RefundRsType>) soapConnector.callWebService("http://10.4.7.60:7766/SADADWare/RefunUpload/Request/RefundUpload.asmx", req);
+            log.debug("---resp refund UID: {} --- status: {}", response.getValue().getRqUID(), response.getValue().getStatus().getCode());
+            if (response.getValue().getStatus().getCode() != null) {
+                if (response.getValue().getStatus().getCode().toString().equals("1")) {
+                    return 200;
+                } else {
+                    return Integer.parseInt(response.getValue().getStatus().getCode().toString());
+                }
+            }
+            return -2;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return -1;
+        }*/
     }
 
     int callRefundByCreditCardAndSendEvent(Refund refund, String transactionId, Invoice invoice) throws IOException {
