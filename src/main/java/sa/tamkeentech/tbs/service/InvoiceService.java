@@ -5,7 +5,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
@@ -23,32 +22,27 @@ import sa.tamkeentech.tbs.domain.enumeration.*;
 import sa.tamkeentech.tbs.repository.CustomerRepository;
 import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.repository.PaymentRepository;
+import sa.tamkeentech.tbs.repository.PersistenceAuditEventRepository;
 import sa.tamkeentech.tbs.security.SecurityUtils;
 import sa.tamkeentech.tbs.service.dto.*;
 import sa.tamkeentech.tbs.service.mapper.InvoiceMapper;
-import sa.tamkeentech.tbs.service.mapper.PaymentMapper;
 import sa.tamkeentech.tbs.service.mapper.PaymentMethodMapper;
 import sa.tamkeentech.tbs.service.util.EventPublisherService;
+import sa.tamkeentech.tbs.service.util.LanguageUtil;
 import sa.tamkeentech.tbs.service.util.SequenceUtil;
-import sa.tamkeentech.tbs.web.rest.errors.ErrorConstants;
 import sa.tamkeentech.tbs.web.rest.errors.PaymentGatewayException;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
 import javax.persistence.EntityManager;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.sql.Timestamp;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.YearMonth;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Service Implementation for managing {@link Invoice}.
@@ -85,6 +79,10 @@ public class InvoiceService {
     private final EntityManager entityManager;
     private final PaymentMethodMapper paymentMethodMapper;
 
+    private final PersistenceAuditEventRepository persistenceAuditEventRepository;
+
+    private final LanguageUtil languageUtil;
+
     @Autowired
     private UserService userService;
 
@@ -92,7 +90,7 @@ public class InvoiceService {
     @Lazy
     private PaymentRepository paymentRepository;
 
-    public InvoiceService(InvoiceRepository invoiceRepository, InvoiceMapper invoiceMapper, ClientService clientService, CustomerService customerService, PaymentMethodService paymentMethodService, ItemService itemService, PaymentService paymentService, SequenceUtil sequenceUtil, EventPublisherService eventPublisherService, CustomerRepository customerRepository, EntityManager entityManager, PaymentMethodMapper paymentMethodMapper) {
+    public InvoiceService(InvoiceRepository invoiceRepository, InvoiceMapper invoiceMapper, ClientService clientService, CustomerService customerService, PaymentMethodService paymentMethodService, ItemService itemService, PaymentService paymentService, SequenceUtil sequenceUtil, EventPublisherService eventPublisherService, CustomerRepository customerRepository, EntityManager entityManager, PaymentMethodMapper paymentMethodMapper, PersistenceAuditEventRepository persistenceAuditEventRepository, LanguageUtil languageUtil) {
         this.invoiceRepository = invoiceRepository;
         this.invoiceMapper = invoiceMapper;
         this.customerService = customerService;
@@ -106,6 +104,8 @@ public class InvoiceService {
         this.paymentMethodMapper = paymentMethodMapper;
         this.clientService = clientService;
 
+        this.persistenceAuditEventRepository = persistenceAuditEventRepository;
+        this.languageUtil = languageUtil;
     }
 
     /**
@@ -266,7 +266,6 @@ public class InvoiceService {
         BigDecimal avgTax = BigDecimal.ZERO;
         BigDecimal avgTaxNumerator = BigDecimal.ZERO;
         BigDecimal avgTaxDenominator = BigDecimal.ZERO;
-        boolean flexibleAmount = false ;
         for (InvoiceItemDTO invoiceItemDTO : invoiceDTO.getInvoiceItems()) {
             Optional<Item> item = itemService.findByCodeAndClient(invoiceItemDTO.getItemCode(), client.get().getId());
             if (!item.isPresent()) {
@@ -280,17 +279,16 @@ public class InvoiceService {
                 .invoice(invoice)
                 .build();
             if (item.get().isFlexiblePrice()) {
-                flexibleAmount = true;
                 if (StringUtils.isEmpty(invoiceItemDTO.getDetails()) || invoiceItemDTO.getAmount() == null || invoiceItemDTO.getAmount().equals(BigDecimal.ZERO)) {
                     throw new TbsRunTimeException("Item amount and details are mandatory");
                 } else {
                     invoiceItem.setAmount(invoiceItemDTO.getAmount());
-                    invoiceItem.setDetails(invoiceItemDTO.getDetails());
                 }
             } else {
                 invoiceItem.setAmount(item.get().getPrice());
-                invoiceItem.setDetails(invoiceItemDTO.getDetails());
             }
+            invoiceItem.setDetails(invoiceItemDTO.getDetails());
+            invoiceItem.setArguments(invoiceItemDTO.getArguments());
 
             BigDecimal totalInvoiceItem = invoiceItem.getAmount().multiply(new BigDecimal(invoiceItem.getQuantity()));
             // Add sub discount for each item invoice  :
@@ -655,12 +653,44 @@ public class InvoiceService {
 
 
     @Scheduled(cron = "${tbs.cron.invoice-expired}")
-    public void checkExpiredInvoice(){
+    public void checkExpiredInvoice() {
     List<Invoice> invoices = invoiceRepository.getExpiryInvoices(ZonedDateTime.now());
-    for(Invoice invoice : invoices){
-        invoice.setStatus(InvoiceStatus.EXPIRED);
-        save(invoiceMapper.toDto(invoice));
+        for(Invoice invoice : invoices){
+            invoice.setStatus(InvoiceStatus.EXPIRED);
+            save(invoiceMapper.toDto(invoice));
+        }
     }
+
+    public void addExtraPaymentInfo(Object invoice, String language) {
+        if (invoice instanceof InvoiceDTO) {
+            InvoiceDTO invoiceDTO = (InvoiceDTO)invoice;
+            invoiceDTO.setVatNumber("300879111900003");
+            Optional<PersistentAuditEvent> event = persistenceAuditEventRepository.findFirstByRefIdAndSuccessfulAndAuditEventTypeOrderByIdDesc(invoiceDTO.getAccountId(), true, Constants.EventType.SADAD_INITIATE.name());
+            if (event.isPresent()) {
+                invoiceDTO.setBillerId(156);
+            }
+            String lang = StringUtils.isNotEmpty(language)? language: Constants.LANGUAGE.ARABIC.getHeaderKey();
+            invoiceDTO.setCompanyName(languageUtil.getMessageByKey("company.name", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
+        } else if (invoice instanceof InvoiceResponseDTO) {
+            InvoiceResponseDTO invoiceResponseDTO = (InvoiceResponseDTO)invoice;
+            invoiceResponseDTO.setVatNumber("300879111900003");
+            Optional<PersistentAuditEvent> event = persistenceAuditEventRepository.findFirstByRefIdAndSuccessfulAndAuditEventTypeOrderByIdDesc(Long.parseLong(invoiceResponseDTO.getBillNumber()), true, Constants.EventType.SADAD_INITIATE.name());
+            if (event.isPresent()) {
+                invoiceResponseDTO.setBillerId(156);
+            }
+            String lang = StringUtils.isNotEmpty(language)? language: Constants.LANGUAGE.ARABIC.getHeaderKey();
+            invoiceResponseDTO.setCompanyName(languageUtil.getMessageByKey("company.name", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
+        }
+    }
+
+
+    public List<InvoiceDTO> findByCustomerId(String customerId, String language) {
+        return invoiceRepository.findTop1000ByCustomerIdentity(customerId).stream().map(invoice -> {
+            InvoiceDTO invoiceDTO = invoiceMapper.toDto(invoice);
+            invoiceDTO.setClient(null);
+            addExtraPaymentInfo(invoiceDTO, language);
+            return invoiceDTO;
+        }).collect(Collectors.toList());
     }
 
 }

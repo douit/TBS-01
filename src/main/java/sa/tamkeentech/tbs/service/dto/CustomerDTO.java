@@ -2,6 +2,7 @@ package sa.tamkeentech.tbs.service.dto;
 import java.io.Serializable;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
 import lombok.*;
 import sa.tamkeentech.tbs.domain.enumeration.IdentityType;
@@ -14,6 +15,7 @@ import sa.tamkeentech.tbs.domain.enumeration.IdentityType;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 @EqualsAndHashCode(of = {"id"})
 public class CustomerDTO implements Serializable {
 

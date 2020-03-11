@@ -14,6 +14,7 @@ import sa.tamkeentech.tbs.domain.Invoice;
 import sa.tamkeentech.tbs.domain.enumeration.InvoiceStatus;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 import sa.tamkeentech.tbs.service.dto.ClientDTO;
+import sa.tamkeentech.tbs.service.dto.InvoiceDTO;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -77,4 +78,6 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long>, DataTab
         "        AND invoice.client_id = ?3 "+
         "group by Month ORDER BY Month;", nativeQuery = true)
     List<Object[]> getExpiredInvoices(ZonedDateTime from, ZonedDateTime to, long clientId);
+
+    List<Invoice> findTop1000ByCustomerIdentity(String customerId);
 }

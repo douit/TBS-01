@@ -1,9 +1,11 @@
 package sa.tamkeentech.tbs.service.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
 import lombok.*;
 
 import javax.persistence.Column;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
@@ -16,6 +18,7 @@ import java.math.BigDecimal;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 @EqualsAndHashCode(of = {"id"})
 public class InvoiceItemDTO implements Serializable {
 
@@ -39,7 +42,10 @@ public class InvoiceItemDTO implements Serializable {
 
     private DiscountDTO discount;
 
+    @Size(max = 2000)
     private String details;
 
+    @Size(max = 2000)
+    private String arguments;
 
 }

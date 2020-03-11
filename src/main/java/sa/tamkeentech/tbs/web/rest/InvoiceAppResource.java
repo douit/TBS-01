@@ -1,6 +1,5 @@
 package sa.tamkeentech.tbs.web.rest;
 
-import com.google.common.base.Stopwatch;
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -11,19 +10,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sa.tamkeentech.tbs.config.Constants;
-import sa.tamkeentech.tbs.domain.PersistentAuditEvent;
-import sa.tamkeentech.tbs.repository.PersistenceAuditEventRepository;
 import sa.tamkeentech.tbs.service.InvoiceService;
 import sa.tamkeentech.tbs.service.PaymentService;
 import sa.tamkeentech.tbs.service.dto.*;
-import sa.tamkeentech.tbs.service.util.LanguageUtil;
 import sa.tamkeentech.tbs.web.rest.errors.BadRequestAlertException;
+import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
 import javax.validation.Valid;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 /**
  * REST controller for managing {@link sa.tamkeentech.tbs.domain.Invoice}.
@@ -43,16 +40,11 @@ public class InvoiceAppResource {
 
     private final PaymentService paymentService;
 
-    private final PersistenceAuditEventRepository persistenceAuditEventRepository;
-
-    private final LanguageUtil languageUtil;
 
 
-    public InvoiceAppResource(InvoiceService invoiceService, PaymentService paymentService, PersistenceAuditEventRepository persistenceAuditEventRepository, LanguageUtil languageUtil) {
+    public InvoiceAppResource(InvoiceService invoiceService, PaymentService paymentService) {
         this.invoiceService = invoiceService;
         this.paymentService = paymentService;
-        this.persistenceAuditEventRepository = persistenceAuditEventRepository;
-        this.languageUtil = languageUtil;
     }
 
     /**
@@ -84,12 +76,14 @@ public class InvoiceAppResource {
      */
 
     @PostMapping("/billing/invoice")
-    public ResponseEntity<InvoiceResponseDTO> creatInvoice(@Valid @RequestBody InvoiceDTO invoiceDTO) throws URISyntaxException {
+    public ResponseEntity<InvoiceResponseDTO> creatInvoice(@Valid @RequestBody InvoiceDTO invoiceDTO,
+             @RequestHeader(value = "accept-language", defaultValue = Constants.DEFAULT_HEADER_LANGUAGE) String language) throws URISyntaxException {
         log.debug("REST request to save Invoice Items : {}", invoiceDTO);
         if (invoiceDTO.getBillNumber() != null) {
             throw new BadRequestAlertException("A new invoice cannot already have an ID", ENTITY_NAME, "idexists");
         }
         InvoiceResponseDTO result = invoiceService.saveInvoiceAndSendEvent(invoiceDTO);
+        invoiceService.addExtraPaymentInfo(result, language);
         String id = (result.getBillNumber()!= null)? result.getBillNumber().toString(): "";
         return ResponseEntity.created(new URI("/api/invoices/" + result.getBillNumber()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, id))
@@ -128,18 +122,30 @@ public class InvoiceAppResource {
         // Stopwatch stopwatch2 = Stopwatch.createStarted();
         if (invoiceDTO.isPresent()) {
             invoiceDTO.get().setClient(null);
-            invoiceDTO.get().setVatNumber("300879111900003");
+            invoiceService.addExtraPaymentInfo(invoiceDTO.get(), language);
+            // moved to service
+            /*invoiceDTO.get().setVatNumber("300879111900003");
             Optional<PersistentAuditEvent> event = persistenceAuditEventRepository.findFirstByRefIdAndSuccessfulAndAuditEventTypeOrderByIdDesc(invoiceDTO.get().getAccountId(), true, Constants.EventType.SADAD_INITIATE.name());
             if (event.isPresent()) {
                 invoiceDTO.get().setBillerId(156);
             }
             String lang = StringUtils.isNotEmpty(language)? language: Constants.LANGUAGE.ARABIC.getHeaderKey();
-            invoiceDTO.get().setCompanyName(languageUtil.getMessageByKey("company.name", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
+            invoiceDTO.get().setCompanyName(languageUtil.getMessageByKey("company.name", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));*/
 
         }
         // stopwatch2.stop(); // optional
         // log.info("--InvoiceGet 2--Time elapsed: "+ stopwatch2.elapsed(TimeUnit.MILLISECONDS));
         return ResponseUtil.wrapOrNotFound(invoiceDTO);
+    }
+
+    @GetMapping("/billing/invoice/customer/{customerId}")
+    public List<InvoiceDTO> getInvoicesByCustomer(@PathVariable String customerId,
+                                                 @RequestHeader(value = "accept-language", defaultValue = Constants.DEFAULT_HEADER_LANGUAGE) String language) {
+        log.debug("REST request to get Invoices for customer : {}", customerId);
+        if (StringUtils.isEmpty(customerId)) {
+            throw new TbsRunTimeException("customerId is mandatory");
+        }
+        return invoiceService.findByCustomerId(customerId, language);
     }
 
 }

@@ -5,6 +5,8 @@ import io.github.jhipster.security.AjaxAuthenticationFailureHandler;
 import io.github.jhipster.security.AjaxAuthenticationSuccessHandler;
 import io.github.jhipster.security.AjaxLogoutSuccessHandler;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -93,6 +95,7 @@ public class SecurityConfiguration {
         private final DomainUserDetailsService domainUserDetailsService;
 
         private final Environment env;
+
 
         public WebSecurityConfiguration(JHipsterProperties jHipsterProperties, RememberMeServices rememberMeServices, CorsFilter corsFilter, SecurityProblemSupport problemSupport, DomainUserDetailsService domainUserDetailsService, Environment env) {
             this.jHipsterProperties = jHipsterProperties;
@@ -198,6 +201,7 @@ public class SecurityConfiguration {
                 .antMatchers("/management/prometheus").permitAll()
                 .antMatchers("/management/**").hasAuthority(AuthoritiesConstants.ADMIN);
             // @formatter:on
+
         }
 
         // LDAP

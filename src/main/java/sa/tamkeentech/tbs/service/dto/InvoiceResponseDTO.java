@@ -22,4 +22,9 @@ public class InvoiceResponseDTO {
     private String billNumber;
     private String link ;
     private Long paymentMethod ;
+
+    // extra prams to avoid get invoice after create
+    private String vatNumber;
+    private Integer billerId;
+    private String companyName;
 }

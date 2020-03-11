@@ -64,7 +64,7 @@ public class InvoiceItem extends AbstractAuditingEntity implements Serializable 
     @Column(name = "details")
     private String details;
 
-
-
+    @Column(name = "arguments")
+    private String arguments;
 
 }
