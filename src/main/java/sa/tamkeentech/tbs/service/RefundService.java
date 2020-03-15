@@ -151,71 +151,72 @@ public class RefundService {
         refund.setStatus(RequestStatus.CREATED);
         refund.setPayment(payment.get());
 
+        if (refundDTO.getRefundValue() != null) {
+            if (refundDTO.getIsPercentage()) {
+                //Check if the refund value less than 100
+                if(refundDTO.getRefundValue().compareTo(new BigDecimal("100")) > 0){
+                    throw new TbsRunTimeException("Wrong refund value");
+                }
+                //Calculate amount if it's percentage
+                BigDecimal percentage =  refundDTO.getRefundValue().divide(new BigDecimal("100"));
+                BigDecimal amount =  percentage.multiply(payment.get().getAmount());
+                refund.setRefundValue(amount);
 
-        if(refundDTO.isPercentage()){
-            //Check if the refund value less than 100
-            if(refundDTO.getRefundValue().compareTo(new BigDecimal("100")) >0){
-                throw new TbsRunTimeException("Wrong refund value");
+            } else {
+                //Check if the refund value less than total amount
+                if (refundDTO.getRefundValue().compareTo(payment.get().getAmount()) > 0) {
+                    throw new TbsRunTimeException("Wrong refund value");
+                }
+                refund.setRefundValue(refundDTO.getAmount());
             }
-            //Calculate amount if it's percentage
-            BigDecimal percentage =  refundDTO.getRefundValue().divide(new BigDecimal("100"));
-            BigDecimal amount =  payment.get().getAmount().subtract(percentage.multiply(payment.get().getAmount()));
-            refund.setRefundValue(amount);
-
-        }else{
-            //Check if the refund value less than total amount
-            if (refundDTO.getRefundValue().compareTo(payment.get().getAmount()) >0) {
-                throw new TbsRunTimeException("Wrong refund value");
-            }
-            refund.setRefundValue(refundDTO.getAmount());
+        } else {
+            refund.setRefundValue(payment.get().getAmount());
         }
 
         refund = refundRepository.save(refund);
 
-            if (payment.get().getPaymentMethod().getCode().equalsIgnoreCase(Constants.SADAD)) {
+        if(payment.get().getPaymentMethod().getCode().equalsIgnoreCase(Constants.SADAD)) {
 
-                RefundStatusSadadResponseDTO sadadResult;
-                try {
-                    sadadResult = sendEventAndCallRefundBySdad(refund, invoice);
-                } catch (IOException | JSONException e) {
-                    // ToDo add new exception 500 for sadad
-                    throw new PaymentGatewayException("Sadad issue");
-                }
+            RefundStatusSadadResponseDTO sadadResult;
+            try {
+                sadadResult = sendEventAndCallRefundBySdad(refund, invoice);
+            } catch (IOException | JSONException e) {
                 // ToDo add new exception 500 for sadad
-                // invoice = invoiceRepository.getOne(invoice.getId());
-                if (sadadResult == null || sadadResult.getRefundResult() == null || sadadResult.getRefundResult().getStatus()== null
-                    || !"0".equals(sadadResult.getRefundResult().getStatus().getCode())) {
-                    refund.setStatus(RequestStatus.FAILED);
-                    // throw new PaymentGatewayException("Sadad refund creation failed");
-                } else {
-                    refund.setStatus(RequestStatus.PENDING);
-                    payment.get().setStatus(PaymentStatus.REFUNDED);
-                    invoice.setPaymentStatus(PaymentStatus.REFUNDED);
-                    paymentRepository.save(payment.get());
-                    invoiceResitory.save(invoice);
-
-                }
-            } else {
-                // RefundStatusCCResponseDTO refundResponseDTO = callRefundByCreditCard(refundDTO, refund.getId(), invoice.getId(), invoice.getClient().getPaymentKeyApp());
-                int returnCode = callRefundByCreditCardAndSendEvent(refund, payment.get().getTransactionId(), invoice);
-                // if (refundResponseDTO != null && Constants.CC_REFUND_SUCCESS_CODE.equals(refundResponseDTO.getCode())) {
-                if (returnCode == 200) {
-                    refund.setStatus(RequestStatus.SUCCEEDED);
-                    payment.get().setStatus(PaymentStatus.REFUNDED);
-                    invoice.setPaymentStatus(PaymentStatus.REFUNDED);
-                    paymentRepository.save(payment.get());
-                    invoiceResitory.save(invoice);
-                } else {
-                    refund.setStatus(RequestStatus.FAILED);
-                }
+                throw new PaymentGatewayException("Sadad issue");
             }
+            // ToDo add new exception 500 for sadad
+            // invoice = invoiceRepository.getOne(invoice.getId());
+            if (sadadResult == null || sadadResult.getRefundResult() == null || sadadResult.getRefundResult().getStatus()== null
+                || !"0".equals(sadadResult.getRefundResult().getStatus().getCode())) {
+                refund.setStatus(RequestStatus.FAILED);
+                // throw new PaymentGatewayException("Sadad refund creation failed");
+            } else {
+                refund.setStatus(RequestStatus.PENDING);
+                payment.get().setStatus(PaymentStatus.REFUNDED);
+                invoice.setPaymentStatus(PaymentStatus.REFUNDED);
+                paymentRepository.save(payment.get());
+                invoiceResitory.save(invoice);
 
-            refund = refundRepository.save(refund);
+            }
+        } else {
+            // RefundStatusCCResponseDTO refundResponseDTO = callRefundByCreditCard(refundDTO, refund.getId(), invoice.getId(), invoice.getClient().getPaymentKeyApp());
+            int returnCode = callRefundByCreditCardAndSendEvent(refund, payment.get().getTransactionId(), invoice);
+            // if (refundResponseDTO != null && Constants.CC_REFUND_SUCCESS_CODE.equals(refundResponseDTO.getCode())) {
+            if (returnCode == 200) {
+                refund.setStatus(RequestStatus.SUCCEEDED);
+                payment.get().setStatus(PaymentStatus.REFUNDED);
+                invoice.setPaymentStatus(PaymentStatus.REFUNDED);
+                paymentRepository.save(payment.get());
+                invoiceResitory.save(invoice);
+            } else {
+                refund.setStatus(RequestStatus.FAILED);
+            }
+        }
 
-            RefundDTO result = refundMapper.toDto(refund);
-            return result;
+        refund = refundRepository.save(refund);
 
-
+        RefundDTO result = refundMapper.toDto(refund);
+        return result;
     }
 
 

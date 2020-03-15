@@ -81,6 +81,14 @@ public class CreditCardPaymentService {
         BigDecimal roundedAmount = invoice.getAmount().setScale(2, RoundingMode.HALF_UP);
         parameters.put("Amount", roundedAmount.multiply(new BigDecimal("100")).toBigInteger().toString());
         parameters.put("CurrencyISOCode", "682");
+
+        // desc to display in checkout page
+        boolean includeDesc = true;
+        if (invoice.getInvoiceItems() != null && invoice.getInvoiceItems().size() == 1) {
+            String itemDetail = invoice.getInvoiceItems().get(0).getDetails();
+            parameters.put("PaymentDescription", itemDetail);
+        }
+
         parameters.put("ItemID", "181");
         parameters.put("MessageID", "1");
         parameters.put("Quantity", "1");
@@ -95,7 +103,19 @@ public class CreditCardPaymentService {
         StringBuilder orderedString = new StringBuilder();
         orderedString.append(stsSecretKey);
         for (String treeMapKey : parameters.keySet()) {
-            orderedString.append(parameters.get(treeMapKey));
+            if (!treeMapKey.equalsIgnoreCase("PaymentDescription")) {
+                orderedString.append(parameters.get(treeMapKey));
+            } else {
+                // ok only for english
+                // orderedString.append(parameters.get(treeMapKey).replaceAll(" ", "+"));
+                try {
+                    String desc = URLEncoder.encode(parameters.get(treeMapKey), "UTF-8");
+                    orderedString.append(desc);
+                } catch (UnsupportedEncodingException e) {
+                    includeDesc = false;
+                    e.printStackTrace();
+                }
+            }
         }
 
         log.info("orderdString: " + orderedString);
@@ -105,7 +125,9 @@ public class CreditCardPaymentService {
 
         // Post form
         for (Map.Entry<String, String> entry: parameters.entrySet()) {
-            model.addAttribute(entry.getKey(), entry.getValue());
+            if (!entry.getKey().equalsIgnoreCase("PaymentDescription") || includeDesc) {
+                model.addAttribute(entry.getKey(), entry.getValue());
+            }
         }
         model.addAttribute("SecureHash", secureHash);
         model.addAttribute("RedirectURL", stsPostFormUrl);
