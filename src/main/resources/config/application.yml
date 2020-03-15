@@ -192,7 +192,7 @@ tbs:
     sts-secret-key: 'OTJkZGM5YzRkZmI0NzU0OTNkNDU0MGNi'
     sts-response-back-url: 'https://platform.tamkeentech.sa/billing-system-test/STSResponse'
     sts-post-form-url: 'https://srstaging.stspayone.com/SmartRoutePaymentWeb/SRPayMsgHandler'
-    sts-refund-and-inquiry: 'https://srstaging.stspayone.com/SmartRoutePaymentWeb/SRMsgHandler'
+    sts-refund-and-inquiry: 'https://platform.tamkeentech.sa/billing-system-test/STSInquiryAndRefund'
     url: 'http://localhost:8081/billing/payments/credit-card?'
 
   refund:

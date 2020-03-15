@@ -509,7 +509,7 @@ public class PaymentService {
         String resourceUrl = "";
         /*if(Arrays.stream(environment.getActiveProfiles()).anyMatch(
             env -> (env.equalsIgnoreCase("prod")) )) {*/
-        if (CommonUtils.isProfile(environment, "prod")) {
+        if (CommonUtils.isProfile(environment, "prod") || CommonUtils.isProfile(environment, "staging")) {
         // if (CommonUtils.isProdOrStaging(environment)) {
             resourceUrl += client.getNotificationUrl();
         } else {
@@ -595,8 +595,6 @@ public class PaymentService {
         } else {
             Optional<PaymentMethod> paymentMethod = paymentMethodService.findByCode(paymentMethodCode);
             invoiceResponseDTO.setLink(savePaymentAndGetPaymentUrl(invoice.get(), paymentMethod.get()));
-            // invoice lastUpdatedDate to run correction job
-            invoice.get().setLastModifiedDate(ZonedDateTime.now());
             invoiceRepository.save(invoice.get());
         }
         return invoiceResponseDTO;
@@ -674,9 +672,10 @@ public class PaymentService {
 
     @Scheduled(cron = "${tbs.cron.payment-credit-card-correction}")
     public void paymentCorrectionJob() {
-        log.debug("---- Run paymentCorrectionJob");
-        List<Payment> payments = paymentRepository.findByStatusAndAndLastModifiedDateBetween(PaymentStatus.CHECKOUT_PAGE,
-            ZonedDateTime.now().minusMinutes(30), ZonedDateTime.now().minusMinutes(5));
+        ZonedDateTime from = ZonedDateTime.now().minusMinutes(30);
+        ZonedDateTime to = ZonedDateTime.now().minusMinutes(5);
+        log.debug("---- Run paymentCorrectionJob with params {} --- {}", from, to);
+        List<Payment> payments = paymentRepository.findByStatusAndAndLastModifiedDateBetween(PaymentStatus.CHECKOUT_PAGE, from, to);
 
         log.debug("---- checking {} payments", payments.size());
         if (CollectionUtils.isNotEmpty(payments)) {

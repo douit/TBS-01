@@ -125,7 +125,7 @@ jhipster:
       # security key (this key should be unique for your application, and kept secret)
       key: 335bc1a4e014b0714dde2cfb47366375b63c2b80a90c3cde9a01456069f4f5d6e2b265ab505ed28c1e454a211b31ddcff723
   mail: # specific JHipster mail property, for standard properties see MailProperties
-    base-url: https://10.60.71.49:8081
+    base-url: https://billing.tamkeentech.sa
   metrics:
     logs: # Reports metrics in the logs
       enabled: false
@@ -168,7 +168,7 @@ tbs:
     sts-secret-key: 'NzllYTk4MjU0ZTQ5M2JjZTJmMzg4NGRi'
     sts-response-back-url: 'https://platform.tamkeentech.sa/billing-system/STSResponse'
     sts-post-form-url: 'https://smartroute.stspayone.com/SmartRoutePaymentWeb/SRPayMsgHandler'
-    sts-refund-and-inquiry: 'https://smartroute.stspayone.com/SmartRoutePaymentWeb/SRMsgHandler'
+    sts-refund-and-inquiry: 'https://platform.tamkeentech.sa/billing-system/STSInquiryAndRefund'
     url: 'https://platform.tamkeentech.sa/billing-system/requestPayment?'
 
   refund:
