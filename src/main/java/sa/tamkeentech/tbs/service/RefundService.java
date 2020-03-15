@@ -87,8 +87,8 @@ public class RefundService {
     private String stsSecretKey;
     @Value("${tbs.payment.sts-post-form-url}")
     private String stsPostFormUrl;
-    @Value("${tbs.payment.sts-refund-status}")
-    private String stsCheckStatusUrl;
+    @Value("${tbs.payment.sts-refund-and-inquiry}")
+    private String stsRefundUrl;
     @Value("${tbs.payment.sts-merchant-id}")
     private String stsMerchantId;
     @Autowired
@@ -320,7 +320,7 @@ public class RefundService {
             .append("Version").append("=").append("1.0").append("&");
 
         //Send the request
-        URL url = new URL(stsCheckStatusUrl);
+        URL url = new URL(stsRefundUrl);
         URLConnection conn = url.openConnection();
         conn.setDoOutput(true);
         OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream(), "UTF-8");

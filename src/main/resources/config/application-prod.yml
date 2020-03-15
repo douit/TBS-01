@@ -93,8 +93,9 @@ server:
     enabled: true
     mime-types: text/html,text/xml,text/plain,text/css, application/javascript, application/json
     min-response-size: 1024
-  #ssl:
-    key-store: tls/billing.tamkeentech.sa.jks
+  ssl:
+    #key-store: tls/billing.tamkeentech.sa.jks
+    key-store: classpath:config/tls/billing.tamkeentech.sa.jks
     key-store-password: tm1548pmHea92
     key-password: 12345
     key-store-type: jks
@@ -124,7 +125,7 @@ jhipster:
       # security key (this key should be unique for your application, and kept secret)
       key: 335bc1a4e014b0714dde2cfb47366375b63c2b80a90c3cde9a01456069f4f5d6e2b265ab505ed28c1e454a211b31ddcff723
   mail: # specific JHipster mail property, for standard properties see MailProperties
-    base-url: http://10.60.71.49:8081
+    base-url: https://10.60.71.49:8081
   metrics:
     logs: # Reports metrics in the logs
       enabled: false
@@ -157,6 +158,8 @@ tbs:
     credit-card-url: 'http://172.25.70.71:301/api/OnlinePayment'
     credit-card-refund-url: 'http://172.25.70.71:301/api/OnlinePayment/Refund'
     credit-card-biller-code: 'B1APP10092019'
+
+
     notification-client-id: '07a19e4224eb46ad988d6797fa7fff81'
     notification-client-secret: 'eC876200af3547129cbC03E7c29f1cDb'
     wahid-url: 'https://accounts.wahid.sa/auth/realms/wahid/protocol/openid-connect/token'
@@ -165,7 +168,7 @@ tbs:
     sts-secret-key: 'NzllYTk4MjU0ZTQ5M2JjZTJmMzg4NGRi'
     sts-response-back-url: 'https://platform.tamkeentech.sa/billing-system/STSResponse'
     sts-post-form-url: 'https://smartroute.stspayone.com/SmartRoutePaymentWeb/SRPayMsgHandler'
-    sts-refund-status: 'https://smartroute.stspayone.com/SmartRoutePaymentWeb/SRMsgHandler'
+    sts-refund-and-inquiry: 'https://smartroute.stspayone.com/SmartRoutePaymentWeb/SRMsgHandler'
     url: 'https://platform.tamkeentech.sa/billing-system/requestPayment?'
 
   refund:

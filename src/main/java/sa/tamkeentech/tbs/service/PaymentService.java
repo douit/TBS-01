@@ -595,6 +595,9 @@ public class PaymentService {
         } else {
             Optional<PaymentMethod> paymentMethod = paymentMethodService.findByCode(paymentMethodCode);
             invoiceResponseDTO.setLink(savePaymentAndGetPaymentUrl(invoice.get(), paymentMethod.get()));
+            // invoice lastUpdatedDate to run correction job
+            invoice.get().setLastModifiedDate(ZonedDateTime.now());
+            invoiceRepository.save(invoice.get());
         }
         return invoiceResponseDTO;
     }
@@ -671,9 +674,11 @@ public class PaymentService {
 
     @Scheduled(cron = "${tbs.cron.payment-credit-card-correction}")
     public void paymentCorrectionJob() {
-        List<Payment> payments = paymentRepository.findByStatusAndAndCreatedDateBetween(PaymentStatus.CHECKOUT_PAGE,
+        log.debug("---- Run paymentCorrectionJob");
+        List<Payment> payments = paymentRepository.findByStatusAndAndLastModifiedDateBetween(PaymentStatus.CHECKOUT_PAGE,
             ZonedDateTime.now().minusMinutes(30), ZonedDateTime.now().minusMinutes(5));
 
+        log.debug("---- checking {} payments", payments.size());
         if (CollectionUtils.isNotEmpty(payments)) {
             for (Payment payment : payments) {
                 PaymentStatusResponseDTO response = creditCardPaymentService.checkPaymentStatus(payment.getTransactionId());

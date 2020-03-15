@@ -57,7 +57,7 @@ public class CreditCardPaymentService {
     private String stsPostFormUrl;
     @Value("${tbs.payment.sts-response-back-url}")
     private String stsResponseBackUrl;
-    @Value("${tbs.payment.sts-refund-status}")
+    @Value("${tbs.payment.sts-refund-and-inquiry}")
     private String stsCheckStatusUrl;
 
     public String initPayment(Model model, String transactionId) {

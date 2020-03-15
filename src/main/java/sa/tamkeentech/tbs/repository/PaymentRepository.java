@@ -28,5 +28,5 @@ public interface PaymentRepository extends JpaRepository<Payment, Long>, DataTab
 
     List<Payment> findByInvoiceAccountIdOrderById(Long accountId);
 
-    List<Payment> findByStatusAndAndCreatedDateBetween(PaymentStatus checkoutPageRendered, ZonedDateTime zonedDateTime, ZonedDateTime zonedDateTime1);
+    List<Payment> findByStatusAndAndLastModifiedDateBetween(PaymentStatus checkoutPageRendered, ZonedDateTime zonedDateTime, ZonedDateTime zonedDateTime1);
 }
