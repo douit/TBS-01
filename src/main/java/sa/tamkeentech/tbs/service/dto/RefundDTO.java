@@ -29,4 +29,7 @@ public class RefundDTO implements Serializable {
     private String customerId;
     private BigDecimal amount;
     private RequestStatus status;
+    private boolean isPercentage;
+    private BigDecimal refundValue;
+
 }

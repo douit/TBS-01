@@ -59,4 +59,11 @@ public class Refund extends AbstractAuditingEntity implements Serializable {
     @JsonIgnoreProperties("refunds")
     private Payment payment;
 
+    @Column(name = "official_id")
+    private String officialId;
+
+    @Column(name = "refund_value")
+    private BigDecimal refundValue;
+
+
 }
