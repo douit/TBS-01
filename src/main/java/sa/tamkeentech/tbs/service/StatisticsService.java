@@ -175,10 +175,10 @@ public class StatisticsService {
         Query query = null;
 
         query = em.createNativeQuery(
-            "SELECT sum(grand_total) " +
-                " FROM invoice i " +
-                " INNER JOIN payment p ON  p.invoice_id=i.id " +
-                " INNER JOIN refund r ON r.payment_id = p.id " +
+            "SELECT sum(refund_value) " +
+                " FROM refund r " +
+                " INNER JOIN payment p ON  p.id = r.payment_id " +
+                " INNER JOIN invoice i ON i.id = p.invoice_id " +
                 ((StringUtils.isNotEmpty(whereClause)) ? " WHERE " + whereClause : ""));
 
         if (CollectionUtils.isNotEmpty(clientIds)) {
