@@ -13,6 +13,7 @@ import org.springframework.boot.web.embedded.undertow.UndertowServletWebServerFa
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.util.ResourceUtils;
 
 import javax.net.ssl.*;
@@ -23,6 +24,7 @@ import java.security.KeyStore;
 
 
 @Configuration
+@Profile("prod")
 public class ConnectorConfig {
 
     @Value("${server.ssl.key-store}")
