@@ -114,6 +114,6 @@ public class PaymentCreditCardResource {
     @GetMapping("/billing/check-payment-tmp/{transactionID}")
     @ResponseBody
     public PaymentStatusResponseDTO checkPaymentStatus(@PathVariable String transactionID) {
-        return creditCardPaymentService.checkPaymentStatus(transactionID);
+        return creditCardPaymentService.checkOffilnePaymentStatus(transactionID);
     }
 }

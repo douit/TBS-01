@@ -13,6 +13,7 @@ export class ErrorHandlerInterceptor implements HttpInterceptor {
       tap(
         (event: HttpEvent<any>) => {},
         (err: any) => {
+
           if (err instanceof HttpErrorResponse) {
             if (!(
                   (err.status === 401 || err.status === 503 || err.status === 504)
@@ -21,6 +22,13 @@ export class ErrorHandlerInterceptor implements HttpInterceptor {
               this.eventManager.broadcast({ name: 'tbsApp.httpError', content: err });
             }
           }
+
+          // fix new deploy issue as the generated file name will be different from the local cache
+          const chunkFailedMessage = /Loading chunk [\d]+ failed/;
+          if (chunkFailedMessage.test(err.message)) {
+            window.location.reload();
+          }
+
         }
       )
     );

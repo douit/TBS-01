@@ -680,7 +680,7 @@ public class PaymentService {
         log.debug("---- checking {} payments", payments.size());
         if (CollectionUtils.isNotEmpty(payments)) {
             for (Payment payment : payments) {
-                PaymentStatusResponseDTO response = creditCardPaymentService.checkPaymentStatus(payment.getTransactionId());
+                PaymentStatusResponseDTO response = creditCardPaymentService.checkOffilnePaymentStatus(payment.getTransactionId());
                 if (Constants.CC_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(response.getCode()) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
                     // Notify Client app
                     Invoice invoice = payment.getInvoice();

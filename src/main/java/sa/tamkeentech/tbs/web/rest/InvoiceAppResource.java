@@ -83,7 +83,8 @@ public class InvoiceAppResource {
             throw new BadRequestAlertException("A new invoice cannot already have an ID", ENTITY_NAME, "idexists");
         }
         InvoiceResponseDTO result = invoiceService.saveInvoiceAndSendEvent(invoiceDTO);
-        invoiceService.addExtraPaymentInfo(result, language);
+        boolean isSadadCreateCase = Constants.SADAD.equalsIgnoreCase(invoiceDTO.getPaymentMethod().getCode())? true: false;
+        invoiceService.addExtraPaymentInfo(result, language, isSadadCreateCase);
         String id = (result.getBillNumber()!= null)? result.getBillNumber().toString(): "";
         return ResponseEntity.created(new URI("/api/invoices/" + result.getBillNumber()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, id))
@@ -122,7 +123,7 @@ public class InvoiceAppResource {
         // Stopwatch stopwatch2 = Stopwatch.createStarted();
         if (invoiceDTO.isPresent()) {
             invoiceDTO.get().setClient(null);
-            invoiceService.addExtraPaymentInfo(invoiceDTO.get(), language);
+            invoiceService.addExtraPaymentInfo(invoiceDTO.get(), language, false);
             // moved to service
             /*invoiceDTO.get().setVatNumber("300879111900003");
             Optional<PersistentAuditEvent> event = persistenceAuditEventRepository.findFirstByRefIdAndSuccessfulAndAuditEventTypeOrderByIdDesc(invoiceDTO.get().getAccountId(), true, Constants.EventType.SADAD_INITIATE.name());

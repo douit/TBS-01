@@ -160,14 +160,16 @@ public class RefundService {
                 //Calculate amount if it's percentage
                 BigDecimal percentage =  refundDTO.getRefundValue().divide(new BigDecimal("100"));
                 BigDecimal amount =  percentage.multiply(payment.get().getAmount());
-                refund.setRefundValue(amount);
+                BigDecimal roundedAmount = amount.setScale(2, RoundingMode.HALF_UP);
+                refund.setRefundValue(roundedAmount);
 
             } else {
                 //Check if the refund value less than total amount
                 if (refundDTO.getRefundValue().compareTo(payment.get().getAmount()) > 0) {
                     throw new TbsRunTimeException("Wrong refund value");
                 }
-                refund.setRefundValue(refundDTO.getAmount());
+                BigDecimal roundedAmount = refundDTO.getAmount().setScale(2, RoundingMode.HALF_UP);
+                refund.setRefundValue(roundedAmount);
             }
         } else {
             refund.setRefundValue(payment.get().getAmount());

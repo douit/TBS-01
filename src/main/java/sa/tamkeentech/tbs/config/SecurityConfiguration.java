@@ -176,7 +176,11 @@ public class SecurityConfiguration {
                 .logoutSuccessHandler(ajaxLogoutSuccessHandler())
                 .permitAll()
             .and()
-                .headers()
+                .headers()/*.frameOptions().sameOrigin()*/
+                /*.httpStrictTransportSecurity()
+                .includeSubDomains(true)
+                .maxAgeInSeconds(31536000)
+            .and()*/
                 .contentSecurityPolicy("default-src 'self'; frame-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://storage.googleapis.com; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; img-src 'self' data:; font-src 'self' https://fonts.gstatic.com data:")
                 //.contentSecurityPolicy("default-src 'self'; frame-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://storage.googleapis.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:")
             .and()

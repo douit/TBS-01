@@ -661,7 +661,7 @@ public class InvoiceService {
         }
     }
 
-    public void addExtraPaymentInfo(Object invoice, String language) {
+    public void addExtraPaymentInfo(Object invoice, String language, boolean isSadadCreateCase) {
         if (invoice instanceof InvoiceDTO) {
             InvoiceDTO invoiceDTO = (InvoiceDTO)invoice;
             invoiceDTO.setVatNumber("300879111900003");
@@ -675,7 +675,7 @@ public class InvoiceService {
             InvoiceResponseDTO invoiceResponseDTO = (InvoiceResponseDTO)invoice;
             invoiceResponseDTO.setVatNumber("300879111900003");
             Optional<PersistentAuditEvent> event = persistenceAuditEventRepository.findFirstByRefIdAndSuccessfulAndAuditEventTypeOrderByIdDesc(Long.parseLong(invoiceResponseDTO.getBillNumber()), true, Constants.EventType.SADAD_INITIATE.name());
-            if (event.isPresent()) {
+            if (event.isPresent() || isSadadCreateCase) {
                 invoiceResponseDTO.setBillerId(156);
             }
             String lang = StringUtils.isNotEmpty(language)? language: Constants.LANGUAGE.ARABIC.getHeaderKey();
@@ -688,7 +688,7 @@ public class InvoiceService {
         return invoiceRepository.findTop1000ByCustomerIdentity(customerId).stream().map(invoice -> {
             InvoiceDTO invoiceDTO = invoiceMapper.toDto(invoice);
             invoiceDTO.setClient(null);
-            addExtraPaymentInfo(invoiceDTO, language);
+            addExtraPaymentInfo(invoiceDTO, language, false);
             return invoiceDTO;
         }).collect(Collectors.toList());
     }
