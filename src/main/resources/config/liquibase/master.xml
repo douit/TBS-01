@@ -69,5 +69,6 @@
     <include file="config/liquibase/changelog/20200302115213_add_seq_payment.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20200310105213_alter_entity_invoiceItem.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20200315110700_alter_refund.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20200318212812_added_entity_Item_audit.xml" relativeToChangelogFile="false"/>
 
 </databaseChangeLog>

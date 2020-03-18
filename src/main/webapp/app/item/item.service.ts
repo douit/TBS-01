@@ -44,4 +44,8 @@ export class ItemService {
   delete(id: number): Observable<HttpResponse<any>> {
     return this.http.delete<any>(`${this.resourceApiUrl}/${id}`, { observe: 'response' });
   }
+
+  getItemAudit(id: number) {
+    return this.http.get<any>(`${this.resourceApiUrl}/audit/${id}`);
+  }
 }

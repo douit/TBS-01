@@ -14,6 +14,7 @@ import sa.tamkeentech.tbs.repository.ItemRepository;
 import sa.tamkeentech.tbs.repository.TaxRepository;
 import sa.tamkeentech.tbs.service.ItemService;
 import sa.tamkeentech.tbs.service.dto.ItemDTO;
+import sa.tamkeentech.tbs.service.dto.ItemHistoryDTO;
 import sa.tamkeentech.tbs.service.mapper.TaxMapper;
 import sa.tamkeentech.tbs.web.rest.errors.BadRequestAlertException;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
@@ -133,5 +134,15 @@ public class ItemResource {
     @GetMapping("/items/datatable")
     public DataTablesOutput<ItemDTO> getAllItems(DataTablesInput input) {
         return itemService.get(input);
+    }
+
+    /**
+     *
+     * @param itemId
+     * @return
+     */
+    @GetMapping("/items/audit/{itemId}")
+    public List<ItemHistoryDTO> getAudit(@PathVariable Long itemId) {
+        return itemService.findItemHistory(itemId);
     }
 }

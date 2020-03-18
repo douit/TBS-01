@@ -8,27 +8,24 @@ import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
 import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import sa.tamkeentech.tbs.domain.Category;
-import sa.tamkeentech.tbs.domain.Client;
-import sa.tamkeentech.tbs.domain.Item;
-import sa.tamkeentech.tbs.domain.Tax;
+import sa.tamkeentech.tbs.domain.*;
 import sa.tamkeentech.tbs.repository.CategoryRepository;
+import sa.tamkeentech.tbs.repository.ItemHistoryRepository;
 import sa.tamkeentech.tbs.repository.ItemRepository;
 import sa.tamkeentech.tbs.repository.TaxRepository;
 import sa.tamkeentech.tbs.security.SecurityUtils;
 import sa.tamkeentech.tbs.service.dto.ItemDTO;
+import sa.tamkeentech.tbs.service.dto.ItemHistoryDTO;
 import sa.tamkeentech.tbs.service.dto.TaxDTO;
+import sa.tamkeentech.tbs.service.mapper.ItemHistoryMapper;
 import sa.tamkeentech.tbs.service.mapper.ItemMapper;
 import sa.tamkeentech.tbs.service.mapper.TaxMapper;
 import sa.tamkeentech.tbs.web.rest.errors.ItemAlreadyUsedException;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
-import javax.persistence.EntityManager;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -54,7 +51,10 @@ public class ItemService {
 
     private final UserService userService;
 
-    public ItemService(ItemRepository itemRepository, ItemMapper itemMapper, TaxRepository taxRepository, TaxMapper taxMapper, CategoryRepository categoryRepository,  ClientService clientService, UserService userService) {
+    private final ItemHistoryMapper itemHistoryMapper;
+    private final ItemHistoryRepository itemHistoryRepository;
+
+    public ItemService(ItemRepository itemRepository, ItemMapper itemMapper, TaxRepository taxRepository, TaxMapper taxMapper, CategoryRepository categoryRepository, ClientService clientService, UserService userService, ItemHistoryMapper itemHistoryMapper, ItemHistoryRepository itemHistoryRepository) {
         this.itemRepository = itemRepository;
         this.itemMapper = itemMapper;
         this.taxRepository = taxRepository;
@@ -62,6 +62,8 @@ public class ItemService {
         this.categoryRepository = categoryRepository;
         this.clientService = clientService;
         this.userService = userService;
+        this.itemHistoryMapper = itemHistoryMapper;
+        this.itemHistoryRepository = itemHistoryRepository;
     }
 
     /**
@@ -136,8 +138,9 @@ public class ItemService {
 
         item.setClient(client.get());
 
-        item = itemRepository.save(item);
-        ItemDTO itemResultDTO = itemMapper.toDto(item);
+        Item persistedItem = itemRepository.save(item);
+        saveAudit(persistedItem);
+        ItemDTO itemResultDTO = itemMapper.toDto(persistedItem);
         return itemResultDTO;
     }
 
@@ -193,9 +196,19 @@ public class ItemService {
         if (itemDTO.getDefaultQuantity() != null) {
             item.get().setDefaultQuantity(itemDTO.getDefaultQuantity());
         }
-        Item persitedItem = itemRepository.save(item.get());
-        ItemDTO itemResultDTO = itemMapper.toDto(persitedItem);
+        Item persistedItem = itemRepository.save(item.get());
+        saveAudit(persistedItem);
+        ItemDTO itemResultDTO = itemMapper.toDto(persistedItem);
         return itemResultDTO;
+    }
+
+    private void saveAudit(Item item) {
+        ItemHistory itemHistory = itemHistoryMapper.itemToEntity(item);
+        BigDecimal totalTaxes = item.getTaxes().stream().map(tax -> tax.getRate()).reduce(BigDecimal.ZERO, BigDecimal::add);
+        itemHistory.setTotalTaxes(totalTaxes);
+        itemHistory.setLastModifiedBy(SecurityUtils.getCurrentUserLogin().orElse(""));
+        itemHistory.setLastModifiedDate(ZonedDateTime.now());
+        itemHistoryRepository.save(itemHistory);
     }
 
 
@@ -273,5 +286,9 @@ public class ItemService {
             predicates.add(criteriaBuilder.and(root.get("client").get("id").in(clientIds)));
              return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
         }));
+    }
+
+    public List<ItemHistoryDTO> findItemHistory(Long itemId) {
+        return itemHistoryMapper.toDto(itemHistoryRepository.findByItemId(itemId));
     }
 }

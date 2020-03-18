@@ -94,8 +94,8 @@ export class InvoiceComponent implements OnInit {
   clients: IClient[];
   customerId: string;
   paymentStatus: any;
-  isSearchOpr : boolean = false;
-  taxRate:number = 0;
+  isSearchOpr = false;
+  taxRate = 0;
 
    invoiceSearch: IInvoiceSearchRequest = {
     fromDate : null,
@@ -211,9 +211,9 @@ export class InvoiceComponent implements OnInit {
 
   }
 
-  sumTaxRate(invoiceItems :IInvoiceItem[]){
-    this.taxRate=0;
-    for(let item of invoiceItems){
+  sumTaxRate(invoiceItems: IInvoiceItem[]) {
+    this.taxRate = 0;
+    for (const item of invoiceItems) {
       this.taxRate += item.taxRate;
     }
   }
@@ -235,7 +235,7 @@ export class InvoiceComponent implements OnInit {
         }
       );
     this.initDatatable();
-    this.onClickFilter()
+    this.onClickFilter();
 
     // this.activatedRoute.queryParams
     //   .subscribe((pageQueryParams: PageQueryParams) => {
@@ -345,7 +345,7 @@ export class InvoiceComponent implements OnInit {
     this.selectedClient = null;
     this.fromDate = null;
     this.toDate = null;
-    this.ngOnInit()
+    this.ngOnInit();
 
   }
 
@@ -382,7 +382,7 @@ export class InvoiceComponent implements OnInit {
     this.selectedInvoice = row;
     this.busy = true;
     const that = this;
-    this.invoiceService.getTripAudit(row.accountId).subscribe(
+    this.invoiceService.getInvoiceAudit(row.accountId).subscribe(
       data => {
         that.busy = false;
         data.forEach(log => {
@@ -404,7 +404,7 @@ export class InvoiceComponent implements OnInit {
     //   data => {
     //     that.busy = false;
         this.invoiceView = row;
-        this.invoiceItems =row.invoiceItems;
+        this.invoiceItems = row.invoiceItems;
     //   },
     //   err => {
     //     // that.notification.showNotification('danger', 'Trip audit could not be retrieved')

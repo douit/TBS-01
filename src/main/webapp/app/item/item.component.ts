@@ -26,6 +26,9 @@ export class ItemComponent implements OnInit {
   // new datatable
   busy = false;
   datatable = new Datatable<IItem>();
+
+  selectedItem: IItem;
+  auditItem: any[];
   // Datatable Reference
   @ViewChild('table', {static: true}) table: DatatableComponent;
 
@@ -162,5 +165,23 @@ export class ItemComponent implements OnInit {
 
   view(row: any) {
     this.router.navigate(['item/' + row.id + '/view']);
+  }
+
+  auditItemView(row: any) {
+    console.log('Audit item: ' + row.id);
+    this.selectedItem = row;
+    this.busy = true;
+    const that = this;
+    this.itemService.getItemAudit(row.id).subscribe(
+      data => {
+        that.busy = false;
+        data.forEach(log => {
+          this.auditItem = data;
+        });
+      },
+      err => {
+        // that.notification.showNotification('danger', 'Trip audit could not be retrieved')
+      }
+    );
   }
 }

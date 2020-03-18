@@ -30,7 +30,7 @@ export class InvoiceService {
     return this.http.post<Pageable<IInvoice>>(`${this.resourceUrl}/search`,invoiceSearchRequest);
   }
 
-  getTripAudit(id: number) {
+  getInvoiceAudit(id: number) {
     return this.http.get<any>(`${this.resourceUrl}/audit/${id}`);
   }
 
