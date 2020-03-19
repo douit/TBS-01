@@ -1,9 +1,9 @@
-import { Component, OnInit, ElementRef, OnDestroy, Renderer } from '@angular/core';
+import {Component, OnInit, ElementRef, OnDestroy, Renderer, ViewChild, AfterViewInit} from '@angular/core';
 import {StateStorageService} from '../core/auth/state-storage.service';
 import {JhiEventManager} from 'ng-jhipster';
 import {LoginService} from '../core/login/login.service';
 import {Router} from '@angular/router';
-import {FormBuilder} from '@angular/forms';
+import {FormBuilder, FormControl, Validators} from '@angular/forms';
 declare var $: any;
 
 @Component({
@@ -18,9 +18,10 @@ export class TbsLandingComponent implements OnInit, OnDestroy {
   private nativeElement: Node;
   authenticationError: boolean;
   loginForm = this.fb.group({
-    username: [''],
-    password: [''],
-    rememberMe: [false]
+    username: ['', [Validators.required]],
+    password: ['', [Validators.required]],
+    rememberMe: [false],
+    recaptchaReactive: new FormControl(null, Validators.required)
   });
 
   constructor(
@@ -48,6 +49,8 @@ export class TbsLandingComponent implements OnInit, OnDestroy {
       card.classList.remove('card-hidden');
     }, 700);
   }
+
+
   sidebarToggle() {
     const toggleButton = this.toggleButton;
     const body = document.getElementsByTagName('body')[0];
