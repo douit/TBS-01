@@ -7,15 +7,25 @@ import { TbsSharedModule } from '../shared/shared.module';
 
 import { TbsLandingComponent } from './tbs-landing.component';
 import { TbsLandingRoutes } from './tbs-landing.routing';
+import { RecaptchaModule, RECAPTCHA_SETTINGS, RecaptchaSettings } from 'ng-recaptcha';
+import { RecaptchaFormsModule } from 'ng-recaptcha/forms';
 
 @NgModule({
     imports: [
         TbsSharedModule,
         CommonModule,
         RouterModule.forChild(TbsLandingRoutes),
-        FormsModule
+        FormsModule,
+        RecaptchaModule,
+        RecaptchaFormsModule
     ],
-    declarations: [TbsLandingComponent]
+    declarations: [TbsLandingComponent],
+    providers: [{
+      provide: RECAPTCHA_SETTINGS,
+      useValue: {
+        siteKey: '6LeDUuIUAAAAAENY5IkCvpdOQ0KQgubF8DHbBzOp',
+      } as RecaptchaSettings,
+    }]
 })
 
 export class TbsLandingModule {}

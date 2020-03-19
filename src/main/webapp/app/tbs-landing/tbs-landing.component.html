@@ -1,11 +1,10 @@
-
 <div class="wrapper wrapper-full-page">
     <div class="page-header login-page header-filter" filter-color="black" style="background-image: url('./content/img/login.jpg'); background-size: cover; background-position: top center;">
         <!--   you can change the color of the filter page using: data-color="blue | purple | green | orange | red | rose " -->
         <div class="container">
             <div class="row">
                 <div class="col-lg-4 col-md-6 col-sm-6 ml-auto mr-auto">
-                    <form class="form" (ngSubmit)="login()" [formGroup]="loginForm">
+                    <form class="form" (ngSubmit)="login()" [formGroup]="loginForm" id="loginFormId">
                         <div class="card card-login card-hidden">
                             <div class="card-header card-header-warning text-center">
                                 <h4 class="card-title" jhiTranslate="login.title">Log in</h4>
@@ -17,17 +16,17 @@
                             </div>
                             <div class="card-body ">
                                 <span class="bmd-form-group">
-                  <div class="input-group">
-                    <div class="input-group-prepend">
-                      <span class="input-group-text">
-                        <i class="material-icons">person</i>
-                      </span>
-                    </div>
-                    <input type="text" class="form-control" placeholder="User Name..." name="username" id="username" formControlName="username">
-                  </div>
-                </span>
-
+                                      <div class="input-group">
+                                        <div class="input-group-prepend">
+                                          <span class="input-group-text">
+                                            <i class="material-icons">person</i>
+                                          </span>
+                                        </div>
+                                        <input type="text" class="form-control" placeholder="User Name..." name="username" id="username" formControlName="username">
+                                      </div>
+                                    </span>
                                 <span class="bmd-form-group">
+
                   <div class="input-group">
                     <div class="input-group-prepend">
                       <span class="input-group-text">
@@ -52,9 +51,21 @@
                                     </div>
                                 </div>
 
+
+                                <div class="bmd-form-group">
+                                    <label class="col-md-1"></label>
+                                    <div class="col-md-11">
+
+                                       <!-- <div #recaptchaDiv></div>-->
+                                        <re-captcha formControlName="recaptchaReactive"></re-captcha>
+
+                                    </div>
+                                </div>
+
+
                             </div>
                             <div class="card-footer justify-content-center">
-                                <button type="submit" class="btn btn-primary" jhiTranslate="login.form.button">Sign in</button>
+                                <button type="submit" id="save-entity" [disabled]="loginForm.invalid" class="btn btn-primary" jhiTranslate="login.form.button">Sign in</button>
                             </div>
                         </div>
                     </form>
