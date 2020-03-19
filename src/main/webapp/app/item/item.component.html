@@ -150,7 +150,8 @@
 <!--                                                <button class="btn btn-info  btn-link" matTooltip="{{ 'global.datatable.view' | translate }}" [matTooltipPosition]="'above'" (click)="view(row)">-->
 <!--                                                    <i class="material-icons">visibility</i>-->
 <!--                                                </button>-->
-                                                <button class="btn btn-primary  btn-link" matTooltip="{{ 'global.datatable.edit' | translate }}" [matTooltipPosition]="'above'" (click)="edit(row)">
+                                                <button class="btn btn-primary  btn-link" matTooltip="{{ 'global.datatable.edit' | translate }}"
+                                                        [matTooltipPosition]="'above'" (click)="edit(row)" *jhiHasAnyAuthority="'EDIT_ITEM'">
                                                     <i class="material-icons">edit</i>
                                                 </button>
 
