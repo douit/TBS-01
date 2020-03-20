@@ -72,44 +72,6 @@ public class PaymentCreditCardResource {
         creditCardPaymentService.processPaymentNotification(request, response);
     }
 
-
-    // testing
-    @PostMapping("/billing/payments/credit-card/notification2")
-    @ResponseBody
-    //public RedirectView redirectTest(HttpServletRequest request, HttpServletResponse response,
-    //) throws IOException {
-   public void redirectTest(HttpServletRequest request, HttpServletResponse response,
-                                       RedirectAttributes attributes) throws IOException {
-        // get All Request Parameters
-        log.info("-----");
-        /*RedirectView redirectView = new RedirectView();
-        redirectView.setUrl("https://www.google.com");
-        return redirectView;*/
-        //return test(response);
-        //log.warn("---Test redirect");
-        //return ResponseEntity.ok().build();//.body("https://www.yahoo.com");
-
-        response.addHeader("Location", "https://www.yahoo.com");
-        /*attributes.addFlashAttribute("flashAttribute", "redirectWithRedirectView");
-        attributes.addAttribute("attribute", "redirectWithRedirectView");
-        return new RedirectView("https://www.google.com");*/
-
-        //return "https://www.google.com";
-    }
-
-    //private RedirectView test(HttpServletResponse response) {
-    private ResponseEntity test(HttpServletResponse response) {
-        //RedirectView redirectView = new RedirectView();
-        //redirectView.setUrl("https://www.google.com");
-        //return redirectView;
-        response.setHeader("location", "https://www.google.com");
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add("location", "https://www.yahoo.com");
-        return ResponseEntity.status(HttpStatus.FOUND).headers(httpHeaders).build();
-    }
-    // end testing
-
-
     // ToDo Tmp check only called by Job
     @GetMapping("/billing/check-payment-tmp/{transactionID}")
     @ResponseBody

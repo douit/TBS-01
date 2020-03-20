@@ -28,16 +28,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.web.filter.CorsFilter;
 import org.zalando.problem.spring.web.advice.security.SecurityProblemSupport;
-import sa.tamkeentech.tbs.security.APIKeyAuthFilter;
-import sa.tamkeentech.tbs.security.AttributesLDAPUserDetailsContextMapper;
-import sa.tamkeentech.tbs.security.AuthoritiesConstants;
-import sa.tamkeentech.tbs.security.DomainUserDetailsService;
+import sa.tamkeentech.tbs.security.*;
 import sa.tamkeentech.tbs.service.ClientService;
 
 import javax.inject.Inject;
@@ -143,9 +141,7 @@ public class SecurityConfiguration {
             // Test UI /newPayment
                 .antMatchers("/billing/newPayment/**")
             ////////Test Mule
-                .antMatchers("/billing/payments/credit-card/notification")
-                .antMatchers("/billing/payments/credit-card/notification2");
-            ;
+                .antMatchers("/billing/payments/credit-card/notification");
         }
 
         @Override
@@ -154,7 +150,11 @@ public class SecurityConfiguration {
             http
                 .csrf()
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-            .and()
+
+            .and().addFilterBefore(new RequestRejectedExceptionFilter(),
+                ChannelProcessingFilter.class)
+
+            //.and()
                 .addFilterBefore(corsFilter, CsrfFilter.class)
                 .exceptionHandling()
                 .authenticationEntryPoint(problemSupport)
@@ -176,12 +176,8 @@ public class SecurityConfiguration {
                 .logoutSuccessHandler(ajaxLogoutSuccessHandler())
                 .permitAll()
             .and()
-                .headers()/*.frameOptions().sameOrigin()*/
-                /*.httpStrictTransportSecurity()
-                .includeSubDomains(true)
-                .maxAgeInSeconds(31536000)
-            .and()*/
-                .contentSecurityPolicy("default-src 'self'; frame-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://storage.googleapis.com; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; img-src 'self' data:; font-src 'self' https://fonts.gstatic.com data:")
+                .headers()
+                .contentSecurityPolicy("default-src 'self'; frame-src 'self' https://www.google.com data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://storage.googleapis.com https://www.google.com https://www.gstatic.com; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; img-src 'self' data:; font-src 'self' https://fonts.gstatic.com data:")
                 //.contentSecurityPolicy("default-src 'self'; frame-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://storage.googleapis.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:")
             .and()
                 .referrerPolicy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)
