@@ -219,7 +219,7 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
             .with(PATH_KEY, request.getNativeRequest(HttpServletRequest.class).getRequestURI())
             .build();
 
-        log.error("---PaymentGatewayException code: {}, title: {}, message: {}, stack: {}", code, problem.getTitle(), ErrorConstants.ERR_PAYMENT_GATEWAY, ex.getStackTrace());
+        log.error("---ItemAlreadyUsedException code: {}, title: {}, message: {}, stack: {}", code, problem.getTitle(), ErrorConstants.ERR_PAYMENT_GATEWAY, ex.getStackTrace());
         // Sentry.capture(ex);
         return ResponseEntity.badRequest().body(problem);
     }

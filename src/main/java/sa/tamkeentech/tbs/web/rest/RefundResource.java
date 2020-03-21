@@ -69,7 +69,7 @@ public class RefundResource {
      * or with status {@code 500 (Internal Server Error)} if the refundDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PutMapping("/api/refunds")
+    // @PutMapping("/api/refunds")
     public ResponseEntity<RefundDTO> updateRefund(@RequestBody RefundDTO refundDTO) throws URISyntaxException {
         log.debug("REST request to update Refund : {}", refundDTO);
         if (refundDTO.getId() == null) {
@@ -87,7 +87,7 @@ public class RefundResource {
 
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of refunds in body.
      */
-    @GetMapping("/api/refunds")
+    // @GetMapping("/api/refunds")
     public List<RefundDTO> getAllRefunds() {
         log.debug("REST request to get all Refunds");
         return refundService.findAll();
@@ -112,7 +112,7 @@ public class RefundResource {
      * @param id the id of the refundDTO to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
-    @DeleteMapping("/api/refunds/{id}")
+    // @DeleteMapping("/api/refunds/{id}")
     public ResponseEntity<Void> deleteRefund(@PathVariable Long id) {
         log.debug("REST request to delete Refund : {}", id);
         refundService.delete(id);

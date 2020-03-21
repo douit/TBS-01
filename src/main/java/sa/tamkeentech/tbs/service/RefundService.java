@@ -174,6 +174,14 @@ public class RefundService {
         } else {
             refund.setRefundValue(payment.get().getAmount());
         }
+        if (refundDTO.getRefundFees() != null) {
+            if ((refundDTO.getRefundFees().compareTo(refund.getRefundValue()) > 0)
+                || (refundDTO.getRefundFees().compareTo(BigDecimal.ZERO) < 0) ) {
+                throw new TbsRunTimeException("Wrong refund fees");
+            } else {
+                refund.setRefundValue(refund.getRefundValue().subtract(refundDTO.getRefundFees()));
+            }
+        }
 
         refund = refundRepository.save(refund);
 
@@ -183,15 +191,13 @@ public class RefundService {
             try {
                 sadadResult = sendEventAndCallRefundBySdad(refund, invoice);
             } catch (IOException | JSONException e) {
-                // ToDo add new exception 500 for sadad
+                // Exception 500 for sadad
                 throw new PaymentGatewayException("Sadad issue");
             }
-            // ToDo add new exception 500 for sadad
-            // invoice = invoiceRepository.getOne(invoice.getId());
+
             if (sadadResult == null || sadadResult.getRefundResult() == null || sadadResult.getRefundResult().getStatus()== null
                 || !"0".equals(sadadResult.getRefundResult().getStatus().getCode())) {
                 refund.setStatus(RequestStatus.FAILED);
-                // throw new PaymentGatewayException("Sadad refund creation failed");
             } else {
                 refund.setStatus(RequestStatus.PENDING);
                 payment.get().setStatus(PaymentStatus.REFUNDED);
@@ -201,9 +207,7 @@ public class RefundService {
 
             }
         } else {
-            // RefundStatusCCResponseDTO refundResponseDTO = callRefundByCreditCard(refundDTO, refund.getId(), invoice.getId(), invoice.getClient().getPaymentKeyApp());
             int returnCode = callRefundByCreditCardAndSendEvent(refund, payment.get().getTransactionId(), invoice);
-            // if (refundResponseDTO != null && Constants.CC_REFUND_SUCCESS_CODE.equals(refundResponseDTO.getCode())) {
             if (returnCode == 200) {
                 refund.setStatus(RequestStatus.SUCCEEDED);
                 payment.get().setStatus(PaymentStatus.REFUNDED);
@@ -331,7 +335,7 @@ public class RefundService {
         for (String treeMapKey : parameters.keySet()) {
             orderedString.append(parameters.get(treeMapKey));
         }
-        System.out.println("orderdString " + orderedString);
+        log.debug("orderdString " + orderedString);
 
         // Generate SecureHash with SHA256
         // Using DigestUtils from appache.commons.codes.jar Library
@@ -368,7 +372,7 @@ public class RefundService {
         reader.close();
 
         //Output the response
-        System.out.println(output.toString());
+        log.debug(output.toString());
 
         // this string is formatted as a "Query String" - name=value&name2=value2.......
         String outputString = output.toString();
@@ -408,10 +412,11 @@ public class RefundService {
         String receivedSecurehash = result.get("Response.SecureHash");
         if (!receivedSecurehash.equals(generatedsecureHash)) {
             //IF they are not equal then the response shall not be accepted
-            throw new TbsRunTimeException("Received Secure Hash does not Equal generated Secure hash");
+            throw new TbsRunTimeException("Received Secure Hash does not Equal generated Secure hash, refundId" + refund.getId());
         } else {
             // Complete the Action get other parameters from result map and do your processes // please refer to The Integration Manual to See The List of The Received Parameters
             String status = result.get("Response.StatusCode");
+            log.info("Refund request {} status {}", refund.getId(), status);
             if (Constants.CC_PAYMENT_SUCCESS_CODE.equals(status)) {
                 log.debug("Successful refund {}", invoice.getAccountId());
                 return 200;

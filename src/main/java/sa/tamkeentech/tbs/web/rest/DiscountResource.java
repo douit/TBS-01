@@ -109,7 +109,7 @@ public class DiscountResource {
      * @param id the id of the discountDTO to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
-    @DeleteMapping("/discounts/{id}")
+    // @DeleteMapping("/discounts/{id}")
     public ResponseEntity<Void> deleteDiscount(@PathVariable Long id) {
         log.debug("REST request to delete Discount : {}", id);
         discountService.delete(id);

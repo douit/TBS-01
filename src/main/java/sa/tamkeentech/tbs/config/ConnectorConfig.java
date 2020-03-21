@@ -48,10 +48,23 @@ public class ConnectorConfig {
                         .build();
 
                     builder.addHttpsListener(443, "0.0.0.0", sslContext);
+                    builder.addHttpListener(80, "0.0.0.0");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             });
+
+            // Redirect http to https
+            // undertowFactory.getDeploymentInfoCustomizers().add(deploymentInfo -> {
+            undertowFactory.addDeploymentInfoCustomizers(deploymentInfo -> {
+                deploymentInfo.addSecurityConstraint(
+                    new SecurityConstraint()
+                        .addWebResourceCollection(new WebResourceCollection().addUrlPattern("/*"))
+                        .setTransportGuaranteeType(TransportGuaranteeType.CONFIDENTIAL)
+                        .setEmptyRoleSemantic(SecurityInfo.EmptyRoleSemantic.PERMIT))
+                    .setConfidentialPortManager(exchange -> 443);
+            });
+
         };
     }
 

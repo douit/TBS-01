@@ -37,6 +37,7 @@ import org.springframework.web.filter.CorsFilter;
 import org.zalando.problem.spring.web.advice.security.SecurityProblemSupport;
 import sa.tamkeentech.tbs.security.*;
 import sa.tamkeentech.tbs.service.ClientService;
+import sa.tamkeentech.tbs.service.util.CommonUtils;
 
 import javax.inject.Inject;
 
@@ -200,8 +201,14 @@ public class SecurityConfiguration {
                 .antMatchers("/management/info").permitAll()
                 .antMatchers("/management/prometheus").permitAll()
                 .antMatchers("/management/**").hasAuthority(AuthoritiesConstants.ADMIN);
-            // @formatter:on
-
+            // redirect http to https
+            //.and()
+            /*if (CommonUtils.isProfile(env, "prod") || CommonUtils.isProfile(env, "ahmed")) {
+                // http.requiresChannel().anyRequest().requiresSecure();
+                http.requiresChannel()
+                    .requestMatchers(r -> r.getHeader("X-Forwarded-Proto") != null)
+                    .requiresSecure();
+            }*/
         }
 
         // LDAP

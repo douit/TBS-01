@@ -45,7 +45,7 @@ public class ClientResource {
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new clientDTO, or with status {@code 400 (Bad Request)} if the client has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PostMapping("/clients")
+    // @PostMapping("/clients")
     public ResponseEntity<ClientDTO> createClient(@RequestBody ClientDTO clientDTO) throws URISyntaxException {
         log.debug("REST request to save Client : {}", clientDTO);
         if (clientDTO.getId() != null) {
@@ -66,7 +66,7 @@ public class ClientResource {
      * or with status {@code 500 (Internal Server Error)} if the clientDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PutMapping("/clients")
+    // @PutMapping("/clients")
     public ResponseEntity<ClientDTO> updateClient(@RequestBody ClientDTO clientDTO) throws URISyntaxException {
         log.debug("REST request to update Client : {}", clientDTO);
         if (clientDTO.getId() == null) {
@@ -84,7 +84,7 @@ public class ClientResource {
 
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of clients in body.
      */
-    @GetMapping("/clients")
+    // @GetMapping("/clients")
     public List<ClientDTO> getAllClients() {
         log.debug("REST request to get all Clients");
         return clientService.findAll();
@@ -95,7 +95,7 @@ public class ClientResource {
 
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of clients in body.
      */
-    @GetMapping("/clients/role")
+    // @GetMapping("/clients/role")
     public List<ClientDTO> getClientsRole() {
         log.debug("REST request to get client based on role");
         return clientService.findByRole();
@@ -107,7 +107,7 @@ public class ClientResource {
      * @param id the id of the clientDTO to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the clientDTO, or with status {@code 404 (Not Found)}.
      */
-    @GetMapping("/clients/{id}")
+    // @GetMapping("/clients/{id}")
     public ResponseEntity<ClientDTO> getClient(@PathVariable Long id) {
         log.debug("REST request to get Client : {}", id);
         Optional<ClientDTO> clientDTO = clientService.findOne(id);
@@ -120,7 +120,7 @@ public class ClientResource {
      * @param id the id of the clientDTO to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
-    @DeleteMapping("/clients/{id}")
+    // @DeleteMapping("/clients/{id}")
     public ResponseEntity<Void> deleteClient(@PathVariable Long id) {
         log.debug("REST request to delete Client : {}", id);
         clientService.delete(id);

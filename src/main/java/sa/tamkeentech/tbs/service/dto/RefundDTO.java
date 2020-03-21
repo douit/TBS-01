@@ -31,5 +31,5 @@ public class RefundDTO implements Serializable {
     private RequestStatus status;
     private Boolean isPercentage;
     private BigDecimal refundValue;
-
+    private BigDecimal refundFees;
 }

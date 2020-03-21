@@ -109,7 +109,7 @@ public class PaymentMethodResource {
      * @param id the id of the paymentMethodDTO to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
-    @DeleteMapping("/payment-methods/{id}")
+    // @DeleteMapping("/payment-methods/{id}")
     public ResponseEntity<Void> deletePaymentMethod(@PathVariable Long id) {
         log.debug("REST request to delete PaymentMethod : {}", id);
         paymentMethodService.delete(id);
