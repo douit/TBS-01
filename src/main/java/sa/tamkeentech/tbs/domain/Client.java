@@ -60,8 +60,8 @@ public class Client implements Serializable {
     @Column(name = "client_token")
     private String clientToken;
 
-    @Column(name = "token_modified_date")
-    private ZonedDateTime tokenModifiedDate;
+    @Column(name = "token_expiry_date")
+    private ZonedDateTime tokenExpiryDate;
 
     @Column(name = "notification_url")
     private String notificationUrl;

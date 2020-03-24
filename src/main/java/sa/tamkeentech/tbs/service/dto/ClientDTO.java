@@ -40,7 +40,7 @@ public class ClientDTO implements Serializable {
     private String clientToken;
 
     @JsonIgnore
-    private ZonedDateTime tokenModifiedDate;
+    private ZonedDateTime tokenExpiryDate;
 
     private String notificationUrl;
 

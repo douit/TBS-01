@@ -140,19 +140,17 @@ jhipster:
 # application:
 tbs:
   payment:
-    sadad-application-id: 1
-    sadad-url: http://10.4.7.61:2020/sender/api/sadad/billloadrq
 #    sadad-url: http://10.60.75.60:1001/sender/api/sadad/billloadrq
 #    sadad-application-id: '1'
 #    sts-refund-and-inquiry: 'http://127.0.0.1:8082/STSInquiryAndRefund'
+    wahid-url: 'http://localhost:8082/SSOTokenRequest'
   refund:
-    sadad-url-refund: 'http://10.4.7.61:2020/Sender/api/Sadad/RefundLoadRq'
     sadad-shared-folder: 'C:\\sadad_share\\'
   report:
     reports-folder: 'C:\\reports_share\\'
   cron:
       payment-credit-card-correction: 0 2/2 * * * ?
-      payment-sadad-correction: 0  5  *  *  * ?
+      payment-sadad-correction: 0  5/2  *  *  * ?
       refund-sadad-sync: 0 0 * * * ?
       invoice-expired: 0 30 * * * ?
       audit-event-delete: 0 0 4 * * ?

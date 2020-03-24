@@ -48,6 +48,7 @@ public class PaymentDTO implements Serializable {
 
     // added for notif
     private String billNumber;
+    private String paymentDate;
 
     // reporting
     private String formattedModifiedDate;

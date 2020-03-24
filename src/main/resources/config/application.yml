@@ -184,7 +184,8 @@ tbs:
     check-payment-url: 'http://172.25.70.72:301/api/CHeckTransactionStatus'
     notification-client-id: '---'
     notification-client-secret: '---'
-    wahid-url: 'https://sso.tamkeen.land/auth/realms/tamkeen/protocol/openid-connect/token'
+    #wahid-url: 'https://sso.tamkeen.land/auth/realms/tamkeen/protocol/openid-connect/token'
+    wahid-url: 'https://platform.tamkeentech.sa/billing-system-test/SSOTokenRequest'
     wahid-secret: '06f4c17f-5c4a-492a-9a8e-a10eafec66c6'
 
     sts-merchant-id: '010000085'

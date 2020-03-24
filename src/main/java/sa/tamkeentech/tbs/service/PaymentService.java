@@ -51,6 +51,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -407,8 +408,10 @@ public class PaymentService {
             if (createSadadPaymentAndUpdateInvoice(reqNotification, invoice, payment)) {
                 try {
                     // call sso only in prod, Later limit this to Tahaquq to avoid timeout and Sentry issue
-                    if (CommonUtils.isProfile(environment, "prod")) {
+                    if (CommonUtils.isProfile(environment, "prod") || CommonUtils.isProfile(environment, "staging")) {
                         sendPaymentNotificationToClient(clientMapper.toDto(invoice.getClient()), invoice.getAccountId(), payment);
+                    } else {
+                        log.warn("----Not prod/staging env, client notif desabled, Invoice: {}"+ invoice.getAccountId());
                     }
                 } catch (Exception e) {
                     log.error("---Payment notification Failed");
@@ -447,10 +450,10 @@ public class PaymentService {
                 Optional<Payment> payment = paymentRepository.findFirstByInvoiceAccountIdAndStatus(invoice.get().getAccountId(), PaymentStatus.PAID);
                 if (payment.isPresent()) {
                     // call sso only in prod, Later limit this to Tahaquq to avoid timeout and Sentry issue
-                    if (CommonUtils.isProfile(environment, "prod")) {
+                    if (CommonUtils.isProfile(environment, "prod") || CommonUtils.isProfile(environment, "staging")) {
                         sendPaymentNotificationToClient(clientDTO, invoice.get().getAccountId(), payment.get());
                     } else {
-                        log.warn("----Not prod env, Invoice status is waiting and payment found, Invoice: {}"+ invoice.get().getAccountId());
+                        log.warn("----Not prod/staging env, Invoice status is waiting and payment found, Invoice: {}"+ invoice.get().getAccountId());
                     }
                 } else {
                     log.warn("----Invoice status is waiting but no payment found, Invoice: {}"+ invoice.get().getAccountId());
@@ -464,19 +467,16 @@ public class PaymentService {
     @Async
     public void sendPaymentNotificationToClient(ClientDTO client , Long accountId , Payment payment){
         Date currentDate = new Date();
+        // tokenModifiedDate means deadline, after that new token must be generated
         Date tokenModifiedDate = new Date();
-        if (client.getTokenModifiedDate() != null) {
-            tokenModifiedDate = Date.from(client.getTokenModifiedDate().toInstant());
-
+        if (client.getTokenExpiryDate() != null) {
+            tokenModifiedDate = Date.from(client.getTokenExpiryDate().toInstant());
         }
-        long diff = currentDate.getTime() - tokenModifiedDate.getTime();
-        long diffMinutes = diff / (60 * 1000) % 60;
-        long diffHours = diff / (60 * 60 * 1000) % 24;
-        long diffDays = diff / (24 * 60 * 60 * 1000);
-
-
+        //ChronoUnit.SECONDS.between(tokenModifiedDate.getTime(), currentDate.getTime());
+        long diffInMinutes = currentDate.toInstant().until(tokenModifiedDate.toInstant(), ChronoUnit.MINUTES);
+        log.info("---> sendPaymentNotificationToClient token expires after {} min", diffInMinutes);
         String token = null;
-        // if (diffDays >= 1 || diffHours >= 1 || diffMinutes > 4 || client.getClientToken() == null ) {
+        if (diffInMinutes <= 1 || client.getClientToken() == null ) {
             RestTemplate rt1 = new RestTemplate();
             HttpHeaders headers1 = new HttpHeaders();
             headers1.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -493,13 +493,14 @@ public class PaymentService {
 
             Optional<Client> clientEntity = clientRepository.findById(client.getId());
             clientEntity.get().setClientToken(token);
-            clientEntity.get().setTokenModifiedDate(currentDate.toInstant().atZone(ZoneId.systemDefault()));
+            ZonedDateTime expiryDate = currentDate.toInstant().atZone(ZoneId.systemDefault()).plusSeconds(response1.getBody().getExpires_in());
+            clientEntity.get().setTokenExpiryDate(expiryDate);
             clientRepository.save(clientEntity.get());
 
             // log.info("DVS Token" + token);
-        /*} else {
+        } else {
             token = client.getClientToken();
-        }*/
+        }
 
 
         RestTemplate restTemplate = new RestTemplate();
@@ -531,6 +532,7 @@ public class PaymentService {
             .transactionId(payment.getTransactionId())
             .status(PaymentStatus.PAID)
             .paymentMethod(paymentMethodMapper.toDto(payment.getPaymentMethod()))
+            .paymentDate(CommonUtils.getFormattedLocalDate(payment.getLastModifiedDate(), Constants.RIYADH_OFFSET))
             .amount(payment.getAmount()).build();
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer "+token);
@@ -550,6 +552,7 @@ public class PaymentService {
 
         if (response2 != null && response2.getStatusCode().is2xxSuccessful()/* response2.getBody()!= null && response2.getBody().getStatusId() == 1*/) {
             log.info("----Successful Client update: " + response2.getBody().getStatusId());
+            // abaan  ----Successful Client update: 1 can uncomment the above
             Optional<Invoice> invoice = invoiceRepository.findByAccountId(accountId);
             invoice.get().setStatus(InvoiceStatus.CLIENT_NOTIFIED);
             invoiceRepository.save(invoice.get());
@@ -684,7 +687,11 @@ public class PaymentService {
                 if (Constants.CC_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(response.getCode()) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
                     // Notify Client app
                     Invoice invoice = payment.getInvoice();
-                    sendPaymentNotificationToClient(clientMapper.toDto(invoice.getClient()), invoice.getAccountId(), payment);
+                    if (CommonUtils.isProfile(environment, "prod") || CommonUtils.isProfile(environment, "staging")) {
+                        sendPaymentNotificationToClient(clientMapper.toDto(invoice.getClient()), invoice.getAccountId(), payment);
+                    } else {
+                        log.warn("----Not prod/staging env, client notif desabled, Invoice: {}"+ invoice.getAccountId());
+                    }
                 }
             }
         }
