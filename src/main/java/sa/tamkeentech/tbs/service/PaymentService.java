@@ -467,7 +467,9 @@ public class PaymentService {
 
         List<ClientDTO> clients =  clientService.findAll();
         for(ClientDTO clientDTO : clients){
-            List<Optional<Invoice>> invoices = invoiceRepository.findByStatusAndClient(InvoiceStatus.WAITING, clientMapper.toEntity(clientDTO));
+            // Add lastModifiedDate before 1 min to avoid sending notif before check-payment
+            List<Optional<Invoice>> invoices = invoiceRepository.findByStatusAndClientIdAndLastModifiedDateBefore(InvoiceStatus.WAITING,
+                clientDTO.getId(), ZonedDateTime.now().minusMinutes(1));
             log.warn("----Payment notification correction, client {} total {}", clientDTO.getName(), invoices.size());
             for (Optional<Invoice> invoice : invoices) {
                 Optional<Payment> payment = paymentRepository.findFirstByInvoiceAccountIdAndStatus(invoice.get().getAccountId(), PaymentStatus.PAID);

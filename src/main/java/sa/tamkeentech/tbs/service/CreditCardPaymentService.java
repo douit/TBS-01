@@ -8,6 +8,10 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import sa.tamkeentech.tbs.domain.Invoice;
 import sa.tamkeentech.tbs.domain.Payment;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
@@ -20,16 +24,17 @@ import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.Enumeration;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 @Service
 @Transactional
@@ -458,9 +463,53 @@ public class CreditCardPaymentService {
         System.out.println("-----------------------");
         System.out.println("Test ZonedDateTime: " + ZonedDateTime.now());
 
+        File directory = new File("C:\\sadad_share\\");
+        File[] files = directory.listFiles((File dir, String name) -> {
+            // String lowercaseName = name.toLowerCase();
+            if ((name.startsWith("BLRCRQ-"))
+                && name.endsWith(".xml")) {
+                    return true;
+            }
+            return false;
+        });
+        if (files == null) {
+            return;
+        }
+        Set banks = new HashSet<String>();
+        int total = 0;
+        for (File file : files) {
+            Date lastMod = new Date(file.lastModified());
+            // ZonedDateTime lastModZoneDate = ZonedDateTime.ofInstant(lastMod.toInstant(), ZoneId.of("Asia/Riyadh"));
+            ZonedDateTime lastModZoneDate = ZonedDateTime.ofInstant(lastMod.toInstant(), ZoneId.systemDefault());
+            System.out.println("----Processing Sadad File: " + file.getName() + ", Date: " + lastModZoneDate);
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = null;
+            try {
+                builder = factory.newDocumentBuilder();
+                Document document = builder.parse(file);
+                NodeList nodeList = document.getDocumentElement().getElementsByTagName("PmtBankRec");
+                for (int i = 0; i < nodeList.getLength(); i++) {
+                    Node refundRecordNode = nodeList.item(i);
 
+                    // RefundStatus node
+                    Node refundStatusNode = ((Element) refundRecordNode).getElementsByTagName("BankId").item(0);
+                    // Get the value of RefundStatusCode.
+                    String status = refundStatusNode.getChildNodes().item(0).getNodeValue();
+                    if (!banks.contains(status)) {
+                        total ++;
+                        banks.add(status);
+                    }
+                }
 
+            } catch (Exception e) {
 
-    }
+            }
+            System.out.println("----total: " + total);
+            System.out.println("----banks: " + banks);
+        }
+        System.out.println("----All: " + total);
+        System.out.println("----All banks: " + banks);
+
+                    }
 
 }

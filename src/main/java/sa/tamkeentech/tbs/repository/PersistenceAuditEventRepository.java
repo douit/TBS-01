@@ -29,5 +29,5 @@ public interface PersistenceAuditEventRepository extends JpaRepository<Persisten
 
     Optional<PersistentAuditEvent> findFirstByRefIdAndSuccessfulAndAuditEventTypeOrderByIdDesc(long refId, boolean successful, String eventType);
 
-    List<PersistentAuditEvent> findByRefId(Long accountId);
+    List<PersistentAuditEvent> findByRefIdOOrderById(Long accountId);
 }

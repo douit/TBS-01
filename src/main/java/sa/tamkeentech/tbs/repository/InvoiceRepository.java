@@ -32,7 +32,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long>, DataTab
     Optional<Invoice> findByNumber(Long id);
     Optional<Invoice> findById(Long id);
     Optional<Invoice> findByAccountId(Long accountId);
-    List<Optional<Invoice>>  findByStatusAndClient(InvoiceStatus invoiceStatus , Client client );
+    List<Optional<Invoice>>  findByStatusAndClientIdAndLastModifiedDateBefore(InvoiceStatus invoiceStatus , Long clientId, ZonedDateTime modifiedDate );
 
     @Query(value = "SELECT date_trunc('day', invoice.created_date) As Day , count(*) As totalInvoice , \n" +
         "        sum(case when payment_status = 'PAID' then 1 else 0 end ) As PaidInvoice"+
@@ -59,7 +59,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long>, DataTab
 
     @Query(value = "SELECT * " +
         " FROM invoice WHERE invoice.expiry_date <= ?1 " +
-        "    AND invoice.payment_status in ('UNPAID', 'PENDING')  \n"+
+        "    AND invoice.payment_status in ('UNPAID', 'PENDING', 'CHECKOUT_PAGE')  \n"+
         "AND invoice.status != 'EXPIRED' \n"+
         "AND invoice.status != 'FAILED'", nativeQuery = true)
     List<Invoice> getExpiryInvoices(ZonedDateTime currentDate);
