@@ -205,6 +205,8 @@ public class PaymentService {
         if (Constants.CC_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode()) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
             payment.setStatus(PaymentStatus.PAID);
             invoice.setPaymentStatus(PaymentStatus.PAID);
+            // in case client does not call check-payment Job will send notification
+            invoice.setStatus(InvoiceStatus.WAITING);
         } else if (Constants.CC_PAYMENT_FAILURE_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode()) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
             payment.setStatus(PaymentStatus.UNPAID);
             invoice.setPaymentStatus(PaymentStatus.UNPAID);
@@ -216,6 +218,25 @@ public class PaymentService {
         invoiceRepository.save(invoice);
         PaymentDTO result = paymentMapper.toDto(payment);
         return result;
+    }
+
+    @Transactional
+    public PaymentDTO checkPaymentStatus(String transactionId) {
+        Payment payment = paymentRepository.findByTransactionId(transactionId);
+        if (payment == null) {
+            throw new TbsRunTimeException("No payments found");
+        }
+        // update invoice Status to CLIENT_NOTIFIED
+        Invoice invoice = payment.getInvoice();
+        invoice.setStatus(InvoiceStatus.CLIENT_NOTIFIED);
+        invoiceRepository.save(invoice);
+
+        return PaymentDTO.builder()
+            .billNumber(payment.getInvoice().getAccountId().toString())
+            .transactionId(payment.getTransactionId())
+            .status(payment.getStatus())
+            .paymentMethod(paymentMethodMapper.toDto(payment.getPaymentMethod()))
+            .amount(payment.getAmount()).build();
     }
 
     private String findBankCode(String cardNumber) {
@@ -372,7 +393,7 @@ public class PaymentService {
     }
 
     // @Transactional
-    public NotifiRespDTO sendPaymentNotification(NotifiReqDTO reqNotification, Invoice invoice) {
+    public NotifiRespDTO sendSadadPaymentNotification(NotifiReqDTO reqNotification, Invoice invoice) {
 
         if (invoice == null) {
             return NotifiRespDTO.builder()
@@ -408,7 +429,8 @@ public class PaymentService {
             if (createSadadPaymentAndUpdateInvoice(reqNotification, invoice, payment)) {
                 try {
                     // call sso only in prod, Later limit this to Tahaquq to avoid timeout and Sentry issue
-                    if (CommonUtils.isProfile(environment, "prod") || CommonUtils.isProfile(environment, "staging")) {
+                    if (CommonUtils.isProfile(environment, "prod") || CommonUtils.isProfile(environment, "staging")
+                        || CommonUtils.isProfile(environment, "ahmed")) {
                         sendPaymentNotificationToClient(clientMapper.toDto(invoice.getClient()), invoice.getAccountId(), payment);
                     } else {
                         log.warn("----Not prod/staging env, client notif desabled, Invoice: {}"+ invoice.getAccountId());
@@ -440,17 +462,18 @@ public class PaymentService {
     }
 
 
-    @Scheduled(cron = "${tbs.cron.payment-sadad-correction}")
+    @Scheduled(cron = "${tbs.cron.payment-notification-correction}")
     public void sendPaymentNotificationToClientJob() {
 
         List<ClientDTO> clients =  clientService.findAll();
         for(ClientDTO clientDTO : clients){
             List<Optional<Invoice>> invoices = invoiceRepository.findByStatusAndClient(InvoiceStatus.WAITING, clientMapper.toEntity(clientDTO));
+            log.warn("----Payment notification correction, client {} total {}", clientDTO.getName(), invoices.size());
             for (Optional<Invoice> invoice : invoices) {
                 Optional<Payment> payment = paymentRepository.findFirstByInvoiceAccountIdAndStatus(invoice.get().getAccountId(), PaymentStatus.PAID);
                 if (payment.isPresent()) {
-                    // call sso only in prod, Later limit this to Tahaquq to avoid timeout and Sentry issue
-                    if (CommonUtils.isProfile(environment, "prod") || CommonUtils.isProfile(environment, "staging")) {
+                    if (CommonUtils.isProfile(environment, "prod") || CommonUtils.isProfile(environment, "staging")
+                        || CommonUtils.isProfile(environment, "ahmed")) {
                         sendPaymentNotificationToClient(clientDTO, invoice.get().getAccountId(), payment.get());
                     } else {
                         log.warn("----Not prod/staging env, Invoice status is waiting and payment found, Invoice: {}"+ invoice.get().getAccountId());
@@ -680,14 +703,15 @@ public class PaymentService {
         log.debug("---- Run paymentCorrectionJob with params {} --- {}", from, to);
         List<Payment> payments = paymentRepository.findByStatusAndAndLastModifiedDateBetween(PaymentStatus.CHECKOUT_PAGE, from, to);
 
-        log.debug("---- checking {} payments", payments.size());
+        log.debug("---- checking {} payments with status checkout page", payments.size());
         if (CollectionUtils.isNotEmpty(payments)) {
             for (Payment payment : payments) {
                 PaymentStatusResponseDTO response = creditCardPaymentService.checkOffilnePaymentStatus(payment.getTransactionId());
                 if (Constants.CC_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(response.getCode()) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
                     // Notify Client app
                     Invoice invoice = payment.getInvoice();
-                    if (CommonUtils.isProfile(environment, "prod") || CommonUtils.isProfile(environment, "staging")) {
+                    if (CommonUtils.isProfile(environment, "prod") || CommonUtils.isProfile(environment, "staging")
+                        || CommonUtils.isProfile(environment, "ahmed")) {
                         sendPaymentNotificationToClient(clientMapper.toDto(invoice.getClient()), invoice.getAccountId(), payment);
                     } else {
                         log.warn("----Not prod/staging env, client notif desabled, Invoice: {}"+ invoice.getAccountId());

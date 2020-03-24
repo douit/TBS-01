@@ -100,7 +100,7 @@ public class EventPublisherService {
 
     @TBSEventPub(eventName = Constants.EventType.SADAD_NOTIFICATION)
     public TBSEventRespDTO<NotifiRespDTO> sendPaymentNotification(TBSEventReqDTO<NotifiReqDTO> reqNotification, Invoice invoice) {
-        NotifiRespDTO resp = paymentService.sendPaymentNotification(reqNotification.getReq(), invoice);
+        NotifiRespDTO resp = paymentService.sendSadadPaymentNotification(reqNotification.getReq(), invoice);
         TBSEventRespDTO<NotifiRespDTO> eventResp = TBSEventRespDTO.<NotifiRespDTO>builder().resp(resp).build();
         return eventResp;
     }

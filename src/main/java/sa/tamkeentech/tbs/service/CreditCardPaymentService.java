@@ -26,6 +26,7 @@ import java.math.RoundingMode;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.time.ZonedDateTime;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.TreeMap;
@@ -452,6 +453,12 @@ public class CreditCardPaymentService {
         }
 
         System.out.println("generatedsecureHash: " + generatedsecureHash);
+
+
+        System.out.println("-----------------------");
+        System.out.println("Test ZonedDateTime: " + ZonedDateTime.now());
+
+
 
 
     }

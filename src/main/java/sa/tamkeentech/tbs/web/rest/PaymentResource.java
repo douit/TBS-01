@@ -93,36 +93,10 @@ public class PaymentResource {
     }*/
 
 
-
     @GetMapping("/billing/check-payment/{transactionId}")
-    public PaymentDTO checkPaymentStatus(@PathVariable  String transactionId) throws JSONException, IOException {
-        // Stopwatch stopwatch = Stopwatch.createStarted();
-        Payment payment = paymentRepository.findByTransactionId(transactionId);
-        if (payment == null) {
-            throw new TbsRunTimeException("No payments found");
-        }
-        // PaymentDTO result = null;
-
-        // ToDo include inquery here
-        /*for (Payment payment: payments) {
-            if (payment.getStatus() == PaymentStatus.PAID) {*/
-                // result =paymentMapper.toDto(payment);
-/*            }
-        }*/
-
-        PaymentDTO.PaymentDTOBuilder paymentStatus = PaymentDTO.builder().billNumber(payment.getInvoice().getAccountId().toString()).status(PaymentStatus.UNPAID);
-        // if (result != null) {
-            paymentStatus.transactionId(payment.getTransactionId())
-                .status(payment.getStatus())
-                .paymentMethod(paymentMethodMapper.toDto(payment.getPaymentMethod()))
-                .amount(payment.getAmount());
-        // }
-        // stopwatch.stop(); // optional
-        // log.info("--CheckPayment--Time elapsed: "+ stopwatch.elapsed(TimeUnit.MILLISECONDS));
-        return paymentStatus.build();
+    public PaymentDTO checkPaymentStatus(@PathVariable  String transactionId) {
+        return paymentService.checkPaymentStatus(transactionId);
     }
-
-
 
 
     // Old method calling connector and getting accountId --> transactionId

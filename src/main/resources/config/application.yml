@@ -205,7 +205,7 @@ tbs:
 
   cron:
     payment-credit-card-correction: 0 2/5 * * * ?
-    payment-sadad-correction: 0  5  *  *  * ?
+    payment-notification-correction: 0  5/10  *  *  * ?
     refund-sadad-sync: 0 0 * * * ?
     invoice-expired: 0 30 * * * ?
     audit-event-delete: 0 0 4 * * ?
