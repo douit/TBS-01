@@ -120,7 +120,11 @@ jhipster:
 # ===================================================================
 
 # application:
-#tbs:
+tbs:
 #  payment:
 #    sadad-url: http://10.60.75.60:1001/sender/api/sadad/billloadrq
 #    sadad-application-id: '1'
+
+
+  report:
+     reports-folder: '/Users/a.alkathiri/Desktop/reports_share/'

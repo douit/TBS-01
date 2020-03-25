@@ -50,6 +50,10 @@ public class ReportResource {
     public ResponseEntity<ReportDTO> createRefundReport(@Valid @RequestBody ReportRequestDTO reportRequest){
         return ResponseEntity.ok(reportService.requestReport(reportRequest, ReportType.REFUND));
     }
+    @GetMapping("/invoice/{invoiceId}")
+    public ResponseEntity<ReportDTO> createInvoiceReceipt(@Valid @PathVariable Long invoiceId){
+        return ResponseEntity.ok(reportService.generateInvoiceReceipt(invoiceId));
+    }
 
     // @PreAuthorize("isAuthenticated()")
     @GetMapping("/refund/datatable")

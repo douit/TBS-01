@@ -14,6 +14,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sa.tamkeentech.tbs.domain.Client;
+import sa.tamkeentech.tbs.domain.Invoice;
 import sa.tamkeentech.tbs.domain.Report;
 import sa.tamkeentech.tbs.domain.User;
 import sa.tamkeentech.tbs.domain.enumeration.ReportStatus;
@@ -44,11 +45,14 @@ public class ReportService {
     private static final String FORMAT_XLSX = "xlsx";
     private static final String REPORT_KEY_FORMAT = "format";
     private static final String TEMPLATE_PAYMENT = "payment_report.jrxml";
+    private static final String TEMPLATE_INVOICE = "invoice_receipt.jrxml";
     private static final String TEMPLATE_REFUND = "refund_report.jrxml";
     private static final String ALL_FILTER = "All";
     private static final String PARAM_GENERATED_DATE = "generatedDate";
     private static final String PAYMENT_FILE_SUFFIX = "payment_report_";
+    private static final String INVOICE_FILE_SUFFIX = "invoice_receipt_";
     private static final String PAYMENT_FOLDER_NAME = "payments";
+    private static final String INVOICE_FOLDER_NAME = "invoice";
     private static final String REFUND_FILE_SUFFIX = "refund_report_";
     private static final String REFUND_FOLDER_NAME = "refunds";
 
@@ -64,6 +68,8 @@ public class ReportService {
     private FileWrapper fileWrapper;
     @Autowired
     private PaymentService paymentService;
+    @Autowired
+    private InvoiceService invoiceService;
     @Autowired
     private RefundService refundService;
 
@@ -121,6 +127,7 @@ public class ReportService {
                 reportFileName = PAYMENT_FILE_SUFFIX + reportId + ".xlsx";
                 template = TEMPLATE_PAYMENT;
                 break;
+
         }
 
         log.debug("report size ---> {}", dataList.size());
@@ -137,6 +144,39 @@ public class ReportService {
         }
     }
 
+    public ReportDTO generateInvoiceReceipt( Long invoiceId){
+        log.debug("generating invoice receipt ");
+
+        Optional<InvoiceDTO> invoiceDTO = invoiceService.findOne(invoiceId);
+
+        ReportDTO receipt = new ReportDTO();
+        receipt.setGeneratedDate(ZonedDateTime.now());
+        receipt.setType(ReportType.INVOICE_RECEIPT);
+        receipt.setClientName(invoiceDTO.get().getClient().getName());
+        receipt.setClientId(invoiceDTO.get().getClient().getId());
+
+        List<?> dataList;
+        Map<String, Object> extraParams = new HashMap<>();
+        String dirPath;
+        String reportFileName;
+        String template;
+
+        dataList = invoiceDTO.get().getInvoiceItems();
+
+        extraParams = invoiceReportExtraParams(receipt, (List<InvoiceItemDTO>) dataList);
+        dirPath = outputFolder + "/" + INVOICE_FOLDER_NAME + "/";
+        reportFileName = INVOICE_FILE_SUFFIX + invoiceId + ".xlsx";
+        template = TEMPLATE_INVOICE;
+
+        try {
+            generateReport(template, dirPath, reportFileName, dataList, extraParams);
+        } catch (IOException| JRException e) {
+            log.warn("Unable to generate receipt {}", e);
+
+        }
+
+        return receipt;
+    }
     private Map<String, Object> paymentReportExtraParams(Report report, List<PaymentDTO> dataList, String clientName) {
 
         Map<String, Object> extraParams = new HashMap<>();
@@ -172,6 +212,21 @@ public class ReportService {
         extraParams.put("totalRefundsAmount", totalPaymentsAmount);
         return extraParams;
     }
+    private Map<String, Object> invoiceReportExtraParams(ReportDTO receipt, List<InvoiceItemDTO> dataList) {
+        Map<String, Object> extraParams = new HashMap<>();
+        extraParams.put("client", receipt.getClientName());
+        extraParams.put("generatedDate", receipt.getGeneratedDate());
+//        // report summary
+//        BigDecimal totalInvoicesAmount = BigDecimal.ZERO;
+//        if (CollectionUtils.isNotEmpty(dataList) ) {
+//            totalInvoicesAmount = dataList.stream().map(PaymentDTO::getAmount)
+//                .filter(x -> x != null).reduce(BigDecimal.ZERO, BigDecimal::add);
+//        }
+//        extraParams.put("numberOfPayments", dataList.size());
+//        extraParams.put("totalPaymentsAmount", totalInvoicesAmount);
+
+        return extraParams;
+    }
 
 
     private String generateReport(String templateFile, String dirPath, String reportFileName, List<?> dataList, Map<String, Object> extraParams) throws IOException, JRException {
@@ -194,6 +249,7 @@ public class ReportService {
             predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("requestUser").get("id"), userService.getUser().get().getId())));
             predicates.add(criteriaBuilder.and(criteriaBuilder.or((criteriaBuilder.greaterThanOrEqualTo(root.get("expireDate"), ZonedDateTime.now())), criteriaBuilder.isNull(root.get("expireDate")))));
             return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
+
         }));
     }
 
