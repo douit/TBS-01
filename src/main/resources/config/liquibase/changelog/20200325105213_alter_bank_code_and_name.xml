@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+
+    <changeSet id="20200325105213-1" author="Ahmed B" context="faker">
+        <sql dbms="postgresql">
+            update bank set name='Al Rajhi Bank', code='RJHISARI' where id=1;
+            update bank set name='Emirates Bank International', code='EBILSARI' where id=2;
+
+            -- The Alawwal Bank  previously known as Saudi Hollandi Bank,
+            update bank set name='Alawwal Bank', code='AAALSARI' where id=3;
+
+            update bank set name='National Commercial Bank', code='NCBKSAJE' where id=4;
+            update bank set name='Bank Al Jazira', code='BJAZSAJE' where id=5;
+            update bank set name='Saudi British Bank', code='SABBSARI' where id=6;
+            update bank set name='Bank Al Bilad', code='ALBISARI' where id=7;
+            update bank set name='Samba Financial Group', code='SAMBSARI' where id=8;
+            update bank set name='Riyad Bank', code='RIBLSARI' where id=9;
+            update bank set name='Saudi Investment Bank', code='SIBCSARI' where id=10;
+            update bank set name='Banque Saudi Fransi', code='BSFRSARI' where id=11;
+            update bank set name='Arab National Bank', code='ARNBSARI' where id=12;
+            -- United Saudi Commercial Bank == SAMBA
+            -- Cairo Bank == SAMBA
+            -- source http://www.saudinf.com/main/e26.htm
+            update bin set id_bank=8 where id_bank in (13, 17);
+            delete from bank where id in (13, 17);
+
+            -- 14 is same 11
+            update bin set id_bank=11 where id_bank in (14);
+            delete from bank where id in (14);
+            -- 15 is same 8 (samba)
+            update bin set id_bank=8 where id_bank in (15);
+            delete from bank where id in (15);
+
+            INSERT INTO bank (id, name, code) VALUES
+            (20, 'BNP Paribas Kingdom of Saudi Arabia', 'BNPASARI'),
+            (13, 'Gulf International Bnak', 'GULFSARI'),
+            (17, 'Alinma Bank', 'INMASARI');
+            -- United Saudi Commercial Bank is different from National Commercial Bank
+            -- source https://www.the-saudi.net/directory/banks.htm
+
+            -- Delete Unkown
+            delete from bin where bin in (559322,422819,422818,420177,419593,428679,428678,428671,428672,428673,376556,376555);
+            -- alter SAMBA
+            update bin set id_bank=8 where bin in(428334,432326,432327,432328,443927,445521,445564,457840,457841,457842,457865,458263,462220,468541,468543,473828,489317,489318,489319,517532,521076,524205,524266,529499,541554,542373,546924,550002,552384,556676,588851,524236,537799,483011,468542,476815,439954,455708,446672,430262,436321,473825,428331,468540,529298,473826,457796,533172);
+            -- alter SAUDI HOLLANDI BANK == Alawwal Bank
+            update bin set id_bank=3 where bin in(539931);
+            -- alter SAUDI BRITISH BANK
+            update bin set id_bank=6 where bin in(427222);
+            -- alter NATIONAL COMMERCIAL BANK
+            update bin set id_bank=4 where bin in(430259,417487);
+            -- alter BANQUE SAUDI FRANSI
+            update bin set id_bank=11 where bin in(428274);
+            -- alter
+            update bin set id_bank=1 where bin in(486653,409246);
+        </sql>
+    </changeSet>
+
+
+</databaseChangeLog>

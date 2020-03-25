@@ -81,6 +81,6 @@ public class AuditEventService {
     }
 
     public List<PersistentAuditEvent> findInvoiceAudit(Long accountId) {
-        return persistenceAuditEventRepository.findByRefIdOOrderById(accountId);
+        return persistenceAuditEventRepository.findByRefIdOrderById(accountId);
     }
 }

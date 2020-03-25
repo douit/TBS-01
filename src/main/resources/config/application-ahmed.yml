@@ -143,7 +143,7 @@ tbs:
 #    sadad-url: http://10.60.75.60:1001/sender/api/sadad/billloadrq
 #    sadad-application-id: '1'
 #    sts-refund-and-inquiry: 'http://127.0.0.1:8082/STSInquiryAndRefund'
-    wahid-url: 'http://localhost:8082/SSOTokenRequest'
+#    wahid-url: 'http://localhost:8082/SSOTokenRequest'
   refund:
     sadad-shared-folder: 'C:\\sadad_share\\'
   report:
