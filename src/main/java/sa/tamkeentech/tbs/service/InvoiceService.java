@@ -184,7 +184,7 @@ public class InvoiceService {
 
         // Payment
         // Payment method
-        Optional<PaymentMethod> paymentMethod = paymentMethodService.findByCode(invoiceDTO.getPaymentMethod().getCode());
+        Optional<PaymentMethod> paymentMethod = paymentMethodService.findByCode(invoiceDTO.getPaymentMethod().getCode().toUpperCase());
 
         InvoiceResponseDTO invoiceItemsResponseDTO = InvoiceResponseDTO.builder()
             .paymentMethod(invoiceDTO.getPaymentMethod().getId()).build();
@@ -196,7 +196,13 @@ public class InvoiceService {
                 case Constants.SADAD:
                     int sadadResult;
                     try {
-                        sadadResult = paymentService.sendEventAndCallSadad(invoice.getNumber(), invoice.getAccountId().toString(), invoice.getAmount(), invoiceDTO.getCustomer().getIdentity());
+                        String principalId;
+                        if (invoiceDTO.getCustomer().getIdentity() != null) {
+                            principalId = invoiceDTO.getCustomer().getIdentity();
+                        } else {
+                            principalId = invoiceDTO.getCustomer().getPhone();
+                        }
+                        sadadResult = paymentService.sendEventAndCallSadad(invoice.getNumber(), invoice.getAccountId().toString(), invoice.getAmount(), principalId);
                     } catch (IOException | JSONException e) {
                         throw new PaymentGatewayException("Sadad issue");
                     }
@@ -231,12 +237,17 @@ public class InvoiceService {
         String appName = SecurityUtils.getCurrentUserLogin().orElse("");
         Optional<Client> client = clientService.getClientByClientId(appName);
 
-        // check if Customer Type not null
-        if (invoiceDTO.getCustomer().getIdentityType() == null) {
-            throw new TbsRunTimeException("Customer Type is mandatory");
+        // check if Customer identifier or phone is present
+        if (invoiceDTO.getCustomer().getIdentity() == null && invoiceDTO.getCustomer().getPhone() == null) {
+            throw new TbsRunTimeException("Customer identity or phone is mandatory");
         }
         // Customer check if exists else create new
-        Optional<Customer> customer = customerService.findByIdentifier(invoiceDTO.getCustomer().getIdentity());
+        Optional<Customer> customer;
+        if (invoiceDTO.getCustomer().getIdentity() != null) {
+            customer = customerService.findByIdentifier(invoiceDTO.getCustomer().getIdentity());
+        } else {
+            customer = customerService.findByPhone(invoiceDTO.getCustomer().getPhone());
+        }
         if (!customer.isPresent()) {
             customer = Optional.of(Customer.builder()
                 .identity(invoiceDTO.getCustomer().getIdentity())
@@ -662,15 +673,36 @@ public class InvoiceService {
     }
 
     public void addExtraPaymentInfo(Object invoice, String language, boolean isSadadCreateCase) {
+        // get invoice
         if (invoice instanceof InvoiceDTO) {
             InvoiceDTO invoiceDTO = (InvoiceDTO)invoice;
             invoiceDTO.setVatNumber("300879111900003");
-            Optional<PersistentAuditEvent> event = persistenceAuditEventRepository.findFirstByRefIdAndSuccessfulAndAuditEventTypeOrderByIdDesc(invoiceDTO.getAccountId(), true, Constants.EventType.SADAD_INITIATE.name());
-            if (event.isPresent()) {
-                invoiceDTO.setBillerId(156);
-            }
             String lang = StringUtils.isNotEmpty(language)? language: Constants.LANGUAGE.ARABIC.getHeaderKey();
             invoiceDTO.setCompanyName(languageUtil.getMessageByKey("company.name", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
+
+            // set payment method and billerId
+            String paymentMethod = Constants.SADAD;
+            if (invoiceDTO.getPaymentStatus() == PaymentStatus.PAID) {
+                Optional<Payment> payment = paymentRepository.findFirstByInvoiceAccountIdAndStatus(invoiceDTO.getAccountId(), PaymentStatus.PAID);
+                if (payment.isPresent()) {
+                    paymentMethod = payment.get().getPaymentMethod().getCode();
+                }
+            } else {
+                // invoice not paid
+                Optional<PersistentAuditEvent> event = persistenceAuditEventRepository.findFirstByRefIdAndSuccessfulAndAuditEventTypeOrderByIdDesc(invoiceDTO.getAccountId(), true, Constants.EventType.SADAD_INITIATE.name());
+                Optional<Payment> payment = paymentRepository.findTopByInvoiceAccountIdAndPaymentMethodCodeOrderByIdDesc(invoiceDTO.getAccountId(), Constants.CREDIT_CARD);
+                if (!event.isPresent() || (payment.isPresent() && payment.get().getCreatedDate().isAfter(event.get().getAuditEventDate()))) {
+                    paymentMethod = Constants.CREDIT_CARD;
+                }
+            }
+
+            if (paymentMethod.equals(Constants.SADAD)) {
+                invoiceDTO.setBillerId(156);
+            }
+            PaymentMethod paymentMethodDTO = PaymentMethod.builder().code(paymentMethod).build();
+            invoiceDTO.setPaymentMethod(paymentMethodDTO);
+
+        // create invoice
         } else if (invoice instanceof InvoiceResponseDTO) {
             InvoiceResponseDTO invoiceResponseDTO = (InvoiceResponseDTO)invoice;
             invoiceResponseDTO.setVatNumber("300879111900003");

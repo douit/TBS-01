@@ -90,12 +90,12 @@ public class ClientResource {
         return clientService.findAll();
     }
     /**
+     *  Used in UI
      * {@code GET  /clients/role} : get client based on role.
      *
-
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of clients in body.
      */
-    // @GetMapping("/clients/role")
+    @GetMapping("/clients/role")
     public List<ClientDTO> getClientsRole() {
         log.debug("REST request to get client based on role");
         return clientService.findByRole();

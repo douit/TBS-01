@@ -107,6 +107,9 @@ public class InvoiceAppResource {
     @GetMapping("/billing/newPayment/{referenceId}/{paymentMethodCode}")
     public ResponseEntity<InvoiceResponseDTO> getPayment(@PathVariable String referenceId, @PathVariable String paymentMethodCode) {
         log.debug("REST request to change payment method Payment to : {}", paymentMethodCode);
+        if (!Constants.SADAD.equals(paymentMethodCode) && !Constants.CREDIT_CARD.equals(paymentMethodCode)) {
+            throw new TbsRunTimeException("Unkown payment method");
+        }
         InvoiceResponseDTO resp = paymentService.requestNewPayment(referenceId, paymentMethodCode);
         return new ResponseEntity<InvoiceResponseDTO>(resp,  HttpStatus.OK);
     }

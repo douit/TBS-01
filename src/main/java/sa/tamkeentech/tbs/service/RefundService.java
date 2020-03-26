@@ -232,8 +232,11 @@ public class RefundService {
         // ToDo check if refundId must be unique per app ? other params ...
         Customer customer = invoice.getCustomer();
         refundInfo.put("refundId", refund.getId());
-        refundInfo.put("customerId", customer.getIdentity());
-        refundInfo.put("customerIdType", (customer.getIdentityType() != null) ? customer.getIdentityType().name() : IdentityType.NAT.name());
+        /*refundInfo.put("customerId", customer.getIdentity());
+        refundInfo.put("customerIdType", (customer.getIdentityType() != null) ? customer.getIdentityType().name() : IdentityType.NAT.name());*/
+        // Abaan requirement, no customer info
+        refundInfo.put("customerId", "");
+        refundInfo.put("customerIdType", "");
         refundInfo.put("amount", refund.getRefundValue());
         refundInfo.put("paymetTransactionId", refund.getPayment().getTransactionId());
         Calendar c = Calendar.getInstance();

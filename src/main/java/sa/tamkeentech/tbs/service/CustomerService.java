@@ -84,6 +84,10 @@ public class CustomerService {
     }
 
     public Optional<Customer> findByIdentifier(String identifier) {
-        return customerRepository.getCustomerByIdentity(identifier);
+        return customerRepository.getFirstCustomerByIdentity(identifier);
+    }
+
+    public Optional<Customer> findByPhone(String phone) {
+        return customerRepository.getFirstCustomerByContactPhone(phone);
     }
 }

@@ -21,6 +21,8 @@ import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 @Table(name = "payment")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

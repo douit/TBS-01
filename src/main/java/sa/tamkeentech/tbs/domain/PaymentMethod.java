@@ -1,4 +1,6 @@
 package sa.tamkeentech.tbs.domain;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.*;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -12,6 +14,12 @@ import java.io.Serializable;
 @Entity
 @Table(name = "payment_method")
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class PaymentMethod implements Serializable {
 
     private static final long serialVersionUID = 1L;

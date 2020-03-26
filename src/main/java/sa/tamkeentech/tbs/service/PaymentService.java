@@ -557,7 +557,8 @@ public class PaymentService {
             .transactionId(payment.getTransactionId())
             .status(PaymentStatus.PAID)
             .paymentMethod(paymentMethodMapper.toDto(payment.getPaymentMethod()))
-            .paymentDate(CommonUtils.getFormattedLocalDate(payment.getLastModifiedDate(), Constants.RIYADH_OFFSET))
+            // .paymentDate(CommonUtils.getFormattedLocalDate(payment.getLastModifiedDate(), Constants.RIYADH_OFFSET))
+            .paymentDate(payment.getLastModifiedDate())
             .amount(payment.getAmount()).build();
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer "+token);
@@ -589,9 +590,6 @@ public class PaymentService {
     @Transactional
     public InvoiceResponseDTO requestNewPayment(String referenceId, String paymentMethodCode) {
 
-        if (!Constants.SADAD.equals(paymentMethodCode) && !Constants.CREDIT_CARD.equals(paymentMethodCode)) {
-            throw new TbsRunTimeException("Unkown payment method");
-        }
         Optional<Invoice> invoice = invoiceRepository.findByAccountId(Long.parseLong(referenceId));
         if (!invoice.isPresent()) {
             throw new TbsRunTimeException("Invoice does not exist");
@@ -611,7 +609,13 @@ public class PaymentService {
                 int sadadResult;
 
                 try {
-                    sadadResult = sendEventAndCallSadad(invoice.get().getNumber(), invoice.get().getAccountId().toString(), invoice.get().getAmount(), invoice.get().getCustomer().getIdentity());
+                    String principalId;
+                    if (invoice.get().getCustomer().getIdentity() != null) {
+                        principalId = invoice.get().getCustomer().getIdentity();
+                    } else {
+                        principalId = invoice.get().getCustomer().getContact().getPhone();
+                    }
+                    sadadResult = sendEventAndCallSadad(invoice.get().getNumber(), invoice.get().getAccountId().toString(), invoice.get().getAmount(), principalId);
                 } catch (IOException | JSONException e) {
                     throw new PaymentGatewayException("Sadad issue");
                 }
