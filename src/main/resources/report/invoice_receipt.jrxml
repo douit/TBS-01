@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.12.0.final using JasperReports Library version 6.12.1-ac0eebdb29e4c0985457bab279a6db744d661530  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="invoice_receipt" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="20b4d4c8-208d-4e56-ae18-9cf8cc3650ae">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<subDataset name="invoiceItems" uuid="aebd5307-57dc-4ecd-af04-88f6cacd5b18">
+		<queryString>
+			<![CDATA[]]>
+		</queryString>
+	</subDataset>
+	<field name="invoiceItem" class="sa.tamkeentech.tbs.service.dto"/>
+	<pageHeader>
+		<band height="202" splitType="Stretch">
+			<staticText>
+				<reportElement key="staticText-6" x="518" y="188" width="54" height="14" uuid="6165aad0-fc1b-4ced-a6ee-db9417dc6707"/>
+				<textElement textAlignment="Center">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[RM Amount]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-7" x="462" y="188" width="56" height="14" uuid="38f23bee-cb14-46fd-b5e7-f1bfada8d5c0"/>
+				<textElement textAlignment="Center">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Unit Price]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-8" x="426" y="188" width="36" height="14" uuid="edb34e14-5c73-4b8a-bf37-342ae13a5555"/>
+				<textElement textAlignment="Center">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[QTY]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-9" x="45" y="188" width="381" height="14" uuid="87a9da0d-f696-48e7-8f0b-54450e2fd859"/>
+				<textElement textAlignment="Center">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Description]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-31" x="28" y="188" width="17" height="14" uuid="4ec324ad-2e1e-4cb8-a77a-b4be9198d75c"/>
+				<textElement textAlignment="Center">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[No]]></text>
+			</staticText>
+			<line>
+				<reportElement key="line-7" x="27" y="201" width="545" height="1" uuid="1b981f33-e68c-472f-aeaa-6c61015503bc"/>
+			</line>
+			<line>
+				<reportElement key="line-8" x="27" y="201" width="545" height="1" uuid="a17819aa-d770-4eaa-a3f3-8684daa6a67b"/>
+			</line>
+			<staticText>
+				<reportElement x="160" y="80" width="236" height="66" uuid="25d047a6-ed2d-4c53-befd-a11c16cc077c"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial Black" size="20"/>
+				</textElement>
+				<text><![CDATA[Invoice Receipt]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="62">
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-5" x="28" y="-1" width="17" height="16" uuid="a97534f0-de85-43b0-96f8-31e826447b7b"/>
+				<box leftPadding="3"/>
+				<textElement textAlignment="Right" verticalAlignment="Top"/>
+				<textFieldExpression><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField pattern="##0.00" isBlankWhenNull="false">
+				<reportElement key="textField-2" x="518" y="-1" width="54" height="16" uuid="2cbb4675-7429-4bbf-be97-709cd6e09ac3"/>
+				<box leftPadding="3"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{invoiceItem}.getAmount().multiply($F{invoiceItem}.getQuantity())]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-11" x="462" y="14" width="56" height="14" uuid="145476da-c1de-45e0-b1d1-1acb561e56b0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Total]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="45" y="-1" width="375" height="15" uuid="b60cc67b-a038-4901-acff-4129ce91b9c0">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$F{invoiceItem}.getDetails()]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="426" y="-1" width="35" height="16" uuid="f7226a77-cca9-43a2-950a-c783b2b23450"/>
+				<textFieldExpression><![CDATA[$F{invoiceItem}.getQuantity()]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="462" y="-1" width="55" height="14" uuid="4ccc2ce4-5d62-4770-b025-529dd263c672"/>
+				<textFieldExpression><![CDATA[$F{invoiceItem}.getAmount()]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="71" splitType="Stretch"/>
+	</pageFooter>
+</jasperReport>

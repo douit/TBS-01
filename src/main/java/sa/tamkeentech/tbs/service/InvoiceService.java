@@ -725,4 +725,10 @@ public class InvoiceService {
         }).collect(Collectors.toList());
     }
 
+    // Invoice report data
+    List<InvoiceItem> getItemInvoice( Long invoiceId) {
+        Optional<Invoice> invoice = invoiceRepository.findById(invoiceId);
+        return invoice.get().getInvoiceItems();
+    }
+
 }

@@ -142,7 +142,11 @@ public class SecurityConfiguration {
             // Test UI /newPayment
                 .antMatchers("/billing/newPayment/**")
             ////////Test Mule
-                .antMatchers("/billing/payments/credit-card/notification");
+                .antMatchers("/billing/payments/credit-card/notification")
+                .antMatchers("/billing/payments/credit-card/notification")
+                //ToDo you must delete this line after finish testing
+                .antMatchers("/api/report/**");
+            ;
         }
 
         @Override
@@ -201,14 +205,8 @@ public class SecurityConfiguration {
                 .antMatchers("/management/info").permitAll()
                 .antMatchers("/management/prometheus").permitAll()
                 .antMatchers("/management/**").hasAuthority(AuthoritiesConstants.ADMIN);
-            // redirect http to https
-            //.and()
-            /*if (CommonUtils.isProfile(env, "prod") || CommonUtils.isProfile(env, "ahmed")) {
-                // http.requiresChannel().anyRequest().requiresSecure();
-                http.requiresChannel()
-                    .requestMatchers(r -> r.getHeader("X-Forwarded-Proto") != null)
-                    .requiresSecure();
-            }*/
+            // @formatter:on
+
         }
 
         // LDAP
