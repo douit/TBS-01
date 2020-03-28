@@ -2,6 +2,7 @@ package sa.tamkeentech.tbs.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -14,7 +15,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,24 +25,20 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.*;
-import sa.tamkeentech.tbs.domain.enumeration.IdentityType;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 import sa.tamkeentech.tbs.domain.enumeration.RequestStatus;
 import sa.tamkeentech.tbs.repository.FileSyncLogRepository;
 import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.repository.PaymentRepository;
 import sa.tamkeentech.tbs.repository.RefundRepository;
-import sa.tamkeentech.tbs.schemas.refund.*;
 import sa.tamkeentech.tbs.service.dto.*;
 import sa.tamkeentech.tbs.service.mapper.RefundMapper;
 import sa.tamkeentech.tbs.service.soapClient.SOAPConnector;
 import sa.tamkeentech.tbs.service.util.EventPublisherService;
-import sa.tamkeentech.tbs.web.rest.errors.ErrorConstants;
 import sa.tamkeentech.tbs.web.rest.errors.PaymentGatewayException;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
 import javax.persistence.criteria.Predicate;
-import javax.xml.bind.JAXBElement;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -51,7 +47,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URL;
 import java.net.URLConnection;
-import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -96,6 +91,10 @@ public class RefundService {
     EventPublisherService eventPublisherService;
 
     @Autowired
+    @Lazy
+    private PaymentService paymentService;
+
+    @Autowired
     private UserService userService;
 
     @Autowired
@@ -136,9 +135,9 @@ public class RefundService {
         }
         Invoice invoice = payment.get().getInvoice();
 
-
+        String customerId = paymentService.getCustomerId(invoice.getCustomer());
         TBSEventReqDTO<RefundDTO> reqNotification = TBSEventReqDTO.<RefundDTO>builder()
-            .principalId(invoice.getCustomer().getIdentity()).referenceId(invoice.getAccountId().toString())
+            .principalId(customerId).referenceId(invoice.getAccountId().toString())
             .req(refundDTO).build();
         RefundDTO resp = eventPublisherService.createNewRefund(reqNotification, invoice, payment).getResp();
         return resp;
@@ -152,7 +151,7 @@ public class RefundService {
         refund.setPayment(payment.get());
 
         if (refundDTO.getRefundValue() != null) {
-            if (refundDTO.getIsPercentage()) {
+            if (refundDTO.getIsPercentage()!= null  && refundDTO.getIsPercentage()) {
                 //Check if the refund value less than 100
                 if(refundDTO.getRefundValue().compareTo(new BigDecimal("100")) > 0){
                     throw new TbsRunTimeException("Wrong refund value");
@@ -268,9 +267,9 @@ public class RefundService {
         refundRec.setExpDt(sdf.format(after3Months.getTime()));
 
         refundReq.setRefundRec(refundRec);*/
-
+        String principalId = paymentService.getCustomerId(invoice.getCustomer());
         TBSEventReqDTO<String> req = TBSEventReqDTO.<String>builder()
-            .principalId(customer.getIdentity()).referenceId(invoice.getAccountId().toString()).req(reqWrapper.toString()).build();
+            .principalId(principalId).referenceId(invoice.getAccountId().toString()).req(reqWrapper.toString()).build();
         return eventPublisherService.callSadadRefundEvent(req).getResp();
 
     }
@@ -595,6 +594,10 @@ public class RefundService {
                         Optional<Refund> refund = refundRepository.findById(Long.parseLong(refundId));
                         if (refund.isPresent() && refund.get().getStatus() == RequestStatus.PENDING) {
                             RefundDTO refundDTO = refundMapper.toDto(refund.get());
+                            if (StringUtils.isNotEmpty(refundDTO.getCustomerId())) {
+                                String customerId = paymentService.getCustomerId(refund.get().getPayment().getInvoice().getCustomer());
+                                refundDTO.setCustomerId(customerId);
+                            }
                             updateSadadRefundAndSendEvent(refundDTO);
                             log.info("++++++ Refund {} is reconciled and updated", refundId);
                             totalRefund++;

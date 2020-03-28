@@ -383,9 +383,10 @@ public class PaymentService {
         log.debug("----Sadad Notification : {}", req);
         Invoice invoice = invoiceRepository.findByAccountId(Long.parseLong(req.getBillAccount())).orElse(null);
 
+        String principalId = getCustomerId(invoice.getCustomer());
         TBSEventReqDTO<NotifiReqDTO> reqNotification = TBSEventReqDTO.<NotifiReqDTO>builder()
-            .principalId((invoice != null)? invoice.getCustomer().getIdentity(): null)
-            .referenceId((invoice != null)?invoice.getAccountId().toString():null)
+            .principalId(principalId)
+            .referenceId(invoice.getAccountId().toString())
             .req(req).build();
         NotifiRespDTO resp = eventPublisherService.sendPaymentNotification(reqNotification, invoice).getResp();
 
@@ -609,12 +610,7 @@ public class PaymentService {
                 int sadadResult;
 
                 try {
-                    String principalId;
-                    if (invoice.get().getCustomer().getIdentity() != null) {
-                        principalId = invoice.get().getCustomer().getIdentity();
-                    } else {
-                        principalId = invoice.get().getCustomer().getContact().getPhone();
-                    }
+                    String principalId = getCustomerId(invoice.get().getCustomer());
                     sadadResult = sendEventAndCallSadad(invoice.get().getNumber(), invoice.get().getAccountId().toString(), invoice.get().getAmount(), principalId);
                 } catch (IOException | JSONException e) {
                     throw new PaymentGatewayException("Sadad issue");
@@ -724,6 +720,14 @@ public class PaymentService {
                     }
                 }
             }
+        }
+    }
+
+    public String getCustomerId(Customer customer) {
+        if (customer.getIdentity() != null) {
+            return customer.getIdentity();
+        } else {
+            return customer.getContact().getPhone();
         }
     }
 

@@ -196,12 +196,7 @@ public class InvoiceService {
                 case Constants.SADAD:
                     int sadadResult;
                     try {
-                        String principalId;
-                        if (invoiceDTO.getCustomer().getIdentity() != null) {
-                            principalId = invoiceDTO.getCustomer().getIdentity();
-                        } else {
-                            principalId = invoiceDTO.getCustomer().getPhone();
-                        }
+                        String principalId = paymentService.getCustomerId(invoice.getCustomer());
                         sadadResult = paymentService.sendEventAndCallSadad(invoice.getNumber(), invoice.getAccountId().toString(), invoice.getAmount(), principalId);
                     } catch (IOException | JSONException e) {
                         throw new PaymentGatewayException("Sadad issue");
