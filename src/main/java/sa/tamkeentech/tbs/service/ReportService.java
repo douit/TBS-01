@@ -43,6 +43,7 @@ import java.util.*;
 public class ReportService {
 
     private static final String FORMAT_XLSX = "xlsx";
+    private static final String FORMAT_PDF = "pdf";
     private static final String REPORT_KEY_FORMAT = "format";
     private static final String TEMPLATE_PAYMENT = "payment_report.jrxml";
     private static final String TEMPLATE_INVOICE = "invoice_receipt.jrxml";
@@ -132,7 +133,7 @@ public class ReportService {
 
         log.debug("report size ---> {}", dataList.size());
         try {
-            generateReport(template, dirPath, reportFileName, dataList, extraParams);
+            generateReport(template, dirPath, reportFileName, dataList, extraParams, FORMAT_XLSX);
             reportEntity.setStatus(ReportStatus.READY);
             reportEntity.setGeneratedDate(ZonedDateTime.now());
             reportEntity.setExpireDate(getExpireDate(reportEntity.getType()));
@@ -165,11 +166,11 @@ public class ReportService {
 
         extraParams = invoiceReportExtraParams(receipt, (List<InvoiceItemDTO>) dataList);
         dirPath = outputFolder + "/" + INVOICE_FOLDER_NAME + "/";
-        reportFileName = INVOICE_FILE_SUFFIX + invoiceId + ".xlsx";
+        reportFileName = INVOICE_FILE_SUFFIX + invoiceId + ".pdf";
         template = TEMPLATE_INVOICE;
 
         try {
-            generateReport(template, dirPath, reportFileName, dataList, extraParams);
+            generateReport(template, dirPath, reportFileName, dataList, extraParams, FORMAT_PDF);
         } catch (IOException| JRException e) {
             log.warn("Unable to generate receipt {}", e);
 
@@ -229,16 +230,22 @@ public class ReportService {
     }
 
 
-    private String generateReport(String templateFile, String dirPath, String reportFileName, List<?> dataList, Map<String, Object> extraParams) throws IOException, JRException {
+    private String generateReport(String templateFile, String dirPath, String reportFileName, List<?> dataList
+        , Map<String, Object> extraParams, String format) throws IOException, JRException {
 
         Map<String, Object> parameterMap = new HashMap<>();
         if (extraParams != null) {
             parameterMap.putAll(extraParams);
         }
-        parameterMap.put(REPORT_KEY_FORMAT, FORMAT_XLSX);
+        parameterMap.put(REPORT_KEY_FORMAT, format);
         parameterMap.put(PARAM_GENERATED_DATE, new Date());
 
-        byte[] report = JasperReportExporter.getInstance().generateXlsReport(dataList, parameterMap, templateFile);
+        byte[] report;
+        if (format.equals(FORMAT_XLSX)) {
+            report = JasperReportExporter.getInstance().generateXlsReport(dataList, parameterMap, templateFile);
+        } else {
+            report = JasperReportExporter.getInstance().generatePdfReport(dataList, parameterMap, templateFile, true);
+        }
         return fileWrapper.saveBytesToFile(dirPath, reportFileName, report);
     }
 

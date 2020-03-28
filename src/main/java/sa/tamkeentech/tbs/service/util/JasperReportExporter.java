@@ -102,7 +102,7 @@ public class JasperReportExporter<E> {
 
 	}
 
-	public byte[] generatePdfReport(List<?> dataBean, Map<String, Object> parameters, String jrxmltemplateName, String reportName, boolean isOnePage) throws JRException {
+	public byte[] generatePdfReport(List<?> dataBean, Map<String, Object> parameters, String jrxmltemplateName, boolean isOnePage) throws JRException {
 		try {
 			StringBuilder builder = new StringBuilder();
 			builder.append("report/");
