@@ -412,7 +412,7 @@ export class InvoiceComponent implements OnInit {
     // );
   }
 
-  exportInvoice(id : number){
+  exportInvoice(id: number) {
     this.invoiceService.exportInvoice(id).subscribe(
       data => {
       },
