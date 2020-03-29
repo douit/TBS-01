@@ -412,6 +412,16 @@ export class InvoiceComponent implements OnInit {
     // );
   }
 
+  exportInvoice(id : number){
+    this.invoiceService.exportInvoice(id).subscribe(
+      data => {
+      },
+      err => {
+        console.log('An error has occurred when get clientByRole');
+      }
+    );
+  }
+
   formatDate(date: NgbDate) {
     // NgbDates use 1 for Jan, Moement uses 0, must substract 1 month for proper date conversion
     const ngbObj = JSON.parse(JSON.stringify(date));

@@ -369,17 +369,16 @@
                                                 </button>-->
 
                                                 <button class="btn btn-primary btn-link" matTooltip=""
-                                                        title="show audit" data-toggle="modal"
-                                                        data-target="#auditModal"
-                                                        (click)="auditInvoiceView(row)">
-                                                    <i class="material-icons">info</i>
-                                                </button>
-
-                                                <button class="btn btn-primary btn-link" matTooltip=""
                                                         title="show invoice" data-toggle="modal"
                                                         data-target="#viewModal"
                                                         (click)="viewInvoice(row);sumTaxRate(row.invoiceItems)">
                                                     <i class="material-icons">visibility</i>
+                                                </button>
+                                                <button class="btn btn-primary btn-link" matTooltip=""
+                                                        title="show invoice" data-toggle="modal"
+                                                        data-target="#viewModal"
+                                                        (click)="exportInvoice(row.id)">
+                                                    <i class="material-icons">save_alt</i>
                                                 </button>
                                             </div>
                                         </ng-template>
