@@ -13,6 +13,7 @@ import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.Client;
 import sa.tamkeentech.tbs.domain.Invoice;
 import sa.tamkeentech.tbs.domain.Report;
@@ -216,7 +217,7 @@ public class ReportService {
     private Map<String, Object> invoiceReportExtraParams(ReportDTO receipt, InvoiceDTO invoiceDTO) {
         Map<String, Object> extraParams = new HashMap<>();
         extraParams.put("invoice", invoiceDTO);
-        extraParams.put("generatedDate", CommonUtils.getFormattedLocalDate(receipt.getGeneratedDate(), receipt.getGeneratedDate().getOffset().toString()));
+        extraParams.put("generatedDate", CommonUtils.getFormattedLocalDate(receipt.getGeneratedDate(), Constants.RIYADH_OFFSET));
 
 
 //        // report summary
