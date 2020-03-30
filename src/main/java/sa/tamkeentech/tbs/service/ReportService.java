@@ -217,7 +217,7 @@ public class ReportService {
     private Map<String, Object> invoiceReportExtraParams(ReportDTO receipt, InvoiceDTO invoiceDTO) {
         Map<String, Object> extraParams = new HashMap<>();
         extraParams.put("invoice", invoiceDTO);
-        extraParams.put("generatedDate", CommonUtils.getFormattedLocalDate(receipt.getGeneratedDate(), Constants.RIYADH_OFFSET));
+        // extraParams.put("generatedDate", CommonUtils.getFormattedLocalDate(receipt.getGeneratedDate(), Constants.RIYADH_OFFSET));
 
 
 //        // report summary
