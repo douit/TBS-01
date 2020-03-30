@@ -164,7 +164,7 @@ public class ReportService {
 
         dataList = invoiceDTO.get().getInvoiceItems();
 
-        extraParams = invoiceReportExtraParams(receipt, (List<InvoiceItemDTO>) dataList);
+        extraParams = invoiceReportExtraParams(receipt, invoiceDTO.get());
         dirPath = outputFolder + "/" + INVOICE_FOLDER_NAME + "/";
         reportFileName = INVOICE_FILE_SUFFIX + invoiceId + ".pdf";
         template = TEMPLATE_INVOICE;
@@ -213,10 +213,12 @@ public class ReportService {
         extraParams.put("totalRefundsAmount", totalPaymentsAmount);
         return extraParams;
     }
-    private Map<String, Object> invoiceReportExtraParams(ReportDTO receipt, List<InvoiceItemDTO> dataList) {
+    private Map<String, Object> invoiceReportExtraParams(ReportDTO receipt, InvoiceDTO invoiceDTO) {
         Map<String, Object> extraParams = new HashMap<>();
-        extraParams.put("client", receipt.getClientName());
-        extraParams.put("generatedDate", receipt.getGeneratedDate());
+        extraParams.put("invoice", invoiceDTO);
+        extraParams.put("generatedDate", CommonUtils.getFormattedLocalDate(receipt.getGeneratedDate(), receipt.getGeneratedDate().getOffset().toString()));
+
+
 //        // report summary
 //        BigDecimal totalInvoicesAmount = BigDecimal.ZERO;
 //        if (CollectionUtils.isNotEmpty(dataList) ) {
