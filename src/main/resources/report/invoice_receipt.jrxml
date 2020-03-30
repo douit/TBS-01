@@ -2,6 +2,7 @@
 <!-- Created with Jaspersoft Studio version 6.11.0.final using JasperReports Library version 6.11.0-0c4056ccaa4d25a5a8c45672d2f764ea3498bebb  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="invoice_receipt" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="20b4d4c8-208d-4e56-ae18-9cf8cc3650ae">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<property name="com.jaspersoft.studio.report.description" value=""/>
 	<subDataset name="invoiceItems" uuid="aebd5307-57dc-4ecd-af04-88f6cacd5b18">
 		<queryString>
 			<![CDATA[]]>
@@ -126,6 +127,9 @@
 				<reportElement x="40" y="0" width="381" height="15" uuid="b60cc67b-a038-4901-acff-4129ce91b9c0">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
+				<textElement>
+					<font fontName="DejaVu Sans"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$F{details}]]></textFieldExpression>
 			</textField>
 			<textField>
