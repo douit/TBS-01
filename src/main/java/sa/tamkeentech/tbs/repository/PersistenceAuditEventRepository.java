@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import sa.tamkeentech.tbs.domain.PersistentAuditEvent;
 
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,7 +25,7 @@ public interface PersistenceAuditEventRepository extends JpaRepository<Persisten
 
     Page<PersistentAuditEvent> findAllByAuditEventDateBetween(Instant fromDate, Instant toDate, Pageable pageable);
 
-    List<PersistentAuditEvent> findByAuditEventDateBeforeAndAuditEventTypeIn(Instant before, List<String> auditEventTypes);
+    List<PersistentAuditEvent> findByAuditEventDateBeforeAndAuditEventTypeIn(ZonedDateTime before, List<String> auditEventTypes);
     Optional<PersistentAuditEvent> findFirstByRefIdOrderByIdDesc(long refId);
 
     Optional<PersistentAuditEvent> findFirstByRefIdAndSuccessfulAndAuditEventTypeOrderByIdDesc(long refId, boolean successful, String eventType);
