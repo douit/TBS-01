@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.11.0.final using JasperReports Library version 6.11.0-0c4056ccaa4d25a5a8c45672d2f764ea3498bebb  -->
+<!-- Created with Jaspersoft Studio version 6.12.0.final using JasperReports Library version 6.12.1-ac0eebdb29e4c0985457bab279a6db744d661530  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="invoice_receipt" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="20b4d4c8-208d-4e56-ae18-9cf8cc3650ae">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
-	<property name="com.jaspersoft.studio.report.description" value=""/>
 	<subDataset name="invoiceItems" uuid="aebd5307-57dc-4ecd-af04-88f6cacd5b18">
 		<queryString>
 			<![CDATA[]]>
 		</queryString>
 	</subDataset>
 	<parameter name="invoice" class="sa.tamkeentech.tbs.service.dto.InvoiceDTO"/>
-	<parameter name="generatedDate" class="java.util.Date"/>
+	<parameter name="generatedDate" class="java.lang.String"/>
 	<field name="amount" class="java.math.BigDecimal"/>
 	<field name="quantity" class="java.lang.Integer"/>
 	<field name="details" class="java.lang.String"/>
@@ -73,7 +72,7 @@
 				<text><![CDATA[Client :]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText-11" x="23" y="56" width="67" height="14" uuid="9d9b3a20-77ff-42e4-9919-017ccbda0d07"/>
+				<reportElement key="staticText-11" x="21" y="56" width="67" height="14" uuid="9d9b3a20-77ff-42e4-9919-017ccbda0d07"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle"/>
 				<text><![CDATA[Account Id :]]></text>
 			</staticText>
@@ -82,7 +81,7 @@
 				<textFieldExpression><![CDATA[$P{invoice}.getAccountId()]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-11" x="22" y="84" width="62" height="14" uuid="363cc9b3-9362-4721-a3db-7ed0717da6df"/>
+				<reportElement key="staticText-11" x="19" y="84" width="62" height="14" uuid="363cc9b3-9362-4721-a3db-7ed0717da6df"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle"/>
 				<text><![CDATA[Customer :]]></text>
 			</staticText>
@@ -97,7 +96,7 @@
 			</staticText>
 			<textField>
 				<reportElement x="440" y="56" width="102" height="14" uuid="0fbc924a-8da2-4bfb-877f-23e5a7026c2f"/>
-				<textFieldExpression><![CDATA[$P{generatedDate}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
@@ -105,7 +104,7 @@
 		<band splitType="Stretch"/>
 	</columnHeader>
 	<detail>
-		<band height="110">
+		<band height="15">
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-5" x="23" y="-1" width="17" height="16" uuid="a97534f0-de85-43b0-96f8-31e826447b7b"/>
 				<box leftPadding="3"/>
@@ -118,18 +117,10 @@
 				<textElement textAlignment="Right" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[$F{amount}.multiply(new BigDecimal($F{quantity}))]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement key="staticText-11" x="455" y="95" width="56" height="14" uuid="145476da-c1de-45e0-b1d1-1acb561e56b0"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle"/>
-				<text><![CDATA[Total]]></text>
-			</staticText>
 			<textField>
-				<reportElement x="40" y="0" width="381" height="15" uuid="b60cc67b-a038-4901-acff-4129ce91b9c0">
+				<reportElement x="81" y="0" width="340" height="15" uuid="b60cc67b-a038-4901-acff-4129ce91b9c0">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
-				<textElement>
-					<font fontName="DejaVu Sans"/>
-				</textElement>
 				<textFieldExpression><![CDATA[$F{details}]]></textFieldExpression>
 			</textField>
 			<textField>
@@ -140,58 +131,67 @@
 				<reportElement x="456" y="0" width="55" height="15" uuid="4ccc2ce4-5d62-4770-b025-529dd263c672"/>
 				<textFieldExpression><![CDATA[$F{amount}]]></textFieldExpression>
 			</textField>
-			<line>
-				<reportElement key="line-9" x="456" y="52" width="111" height="1" uuid="62efca0d-4430-493d-9dcf-3ae7db657d1a"/>
-			</line>
-			<line>
-				<reportElement key="line-10" x="455" y="66" width="111" height="1" uuid="93250179-b301-4b11-8c1e-8097caa780f9"/>
-			</line>
-			<textField>
-				<reportElement x="511" y="95" width="57" height="14" uuid="04ef2632-bb58-4998-a41b-627f73309f2c"/>
-				<textFieldExpression><![CDATA[$P{invoice}.getAmount()]]></textFieldExpression>
-			</textField>
-			<line>
-				<reportElement key="line-10" x="457" y="80" width="111" height="1" uuid="f3a5e31a-1e93-46fa-8c0d-ec0c84986b76"/>
-			</line>
-			<line>
-				<reportElement key="line-10" x="456" y="94" width="111" height="1" uuid="52f05771-406b-4610-ae3d-5bc5ade22349"/>
-			</line>
-			<line>
-				<reportElement key="line-10" x="457" y="109" width="111" height="1" uuid="73c907bc-46af-460d-8d05-076932e5da64"/>
-			</line>
-			<staticText>
-				<reportElement key="staticText-11" x="455" y="53" width="56" height="14" uuid="41040fb8-60d6-4fc1-b385-3efce9383276"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle"/>
-				<text><![CDATA[Sub Total]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="staticText-11" x="455" y="66" width="56" height="14" uuid="04e38fe7-e20a-45a2-8e47-b8a683dd72f4"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle"/>
-				<text><![CDATA[Tax]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="staticText-11" x="455" y="80" width="56" height="14" uuid="fbc9f7f1-0f4c-424d-a1ae-8b865d61e0c4"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle"/>
-				<text><![CDATA[Discount]]></text>
-			</staticText>
-			<textField>
-				<reportElement x="511" y="80" width="57" height="14" uuid="0e8ff686-2a6b-4cdc-ac23-287dd2376b25"/>
-				<textFieldExpression><![CDATA[$P{invoice}.getDiscount().getIsPercentage()  == true ? $P{invoice}.getDiscount().getValue()+"%" :  $P{invoice}.getDiscount().getValue()]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="511" y="67" width="57" height="14" uuid="aba503f6-d916-44b9-83eb-db87540979ed"/>
-				<textFieldExpression><![CDATA[$P{invoice}.getTaxFees()]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="510" y="53" width="58" height="14" uuid="ac04a114-d072-4c31-a48b-c0b66ebea4a6"/>
-				<textFieldExpression><![CDATA[$P{invoice}.getSubtotal()]]></textFieldExpression>
-			</textField>
-			<line>
-				<reportElement key="line-9" x="23" y="52" width="544" height="1" uuid="1313f828-9656-45a7-ad52-3f598fcae08a"/>
-			</line>
 		</band>
 	</detail>
 	<pageFooter>
-		<band height="82" splitType="Stretch"/>
+		<band height="88" splitType="Stretch">
+			<staticText>
+				<reportElement key="staticText-11" x="452" y="53" width="56" height="14" uuid="145476da-c1de-45e0-b1d1-1acb561e56b0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Total :]]></text>
+			</staticText>
+			<line>
+				<reportElement key="line-9" x="453" y="10" width="111" height="1" uuid="62efca0d-4430-493d-9dcf-3ae7db657d1a"/>
+			</line>
+			<line>
+				<reportElement key="line-10" x="452" y="24" width="111" height="1" uuid="93250179-b301-4b11-8c1e-8097caa780f9"/>
+			</line>
+			<textField>
+				<reportElement x="508" y="53" width="57" height="14" uuid="04ef2632-bb58-4998-a41b-627f73309f2c"/>
+				<textFieldExpression><![CDATA[$P{invoice}.getAmount()
+]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement key="line-10" x="454" y="38" width="111" height="1" uuid="f3a5e31a-1e93-46fa-8c0d-ec0c84986b76"/>
+			</line>
+			<line>
+				<reportElement key="line-10" x="453" y="52" width="111" height="1" uuid="52f05771-406b-4610-ae3d-5bc5ade22349"/>
+			</line>
+			<line>
+				<reportElement key="line-10" x="454" y="67" width="111" height="1" uuid="73c907bc-46af-460d-8d05-076932e5da64"/>
+			</line>
+			<staticText>
+				<reportElement key="staticText-11" x="452" y="11" width="56" height="14" uuid="41040fb8-60d6-4fc1-b385-3efce9383276"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Sub Total :]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-11" x="452" y="24" width="56" height="14" uuid="04e38fe7-e20a-45a2-8e47-b8a683dd72f4"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Tax :]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-11" x="452" y="38" width="56" height="14" uuid="fbc9f7f1-0f4c-424d-a1ae-8b865d61e0c4"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Discount :]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="508" y="38" width="57" height="14" uuid="0e8ff686-2a6b-4cdc-ac23-287dd2376b25"/>
+				<textFieldExpression><![CDATA[$P{invoice}.getDiscount().getIsPercentage()  == true ? $P{invoice}.getDiscount().getValue()+"%" :  $P{invoice}.getDiscount().getValue() == null ? 0 : $P{invoice}.getDiscount().getValue()]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="508" y="25" width="57" height="14" uuid="aba503f6-d916-44b9-83eb-db87540979ed"/>
+				<textFieldExpression><![CDATA[$P{invoice}.getTaxFees()
+]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="507" y="11" width="58" height="14" uuid="ac04a114-d072-4c31-a48b-c0b66ebea4a6"/>
+				<textFieldExpression><![CDATA[$P{invoice}.getSubtotal()
+]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement key="line-9" x="20" y="10" width="544" height="1" uuid="1313f828-9656-45a7-ad52-3f598fcae08a"/>
+			</line>
+		</band>
 	</pageFooter>
 </jasperReport>
