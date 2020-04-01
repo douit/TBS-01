@@ -20,7 +20,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.Payment;
-import sa.tamkeentech.tbs.service.CreditCardPaymentService;
+import sa.tamkeentech.tbs.service.STSPaymentService;
 import sa.tamkeentech.tbs.service.dto.PaymentDTO;
 import sa.tamkeentech.tbs.service.dto.PaymentStatusResponseDTO;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
@@ -43,10 +43,10 @@ public class PaymentCreditCardResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    private final CreditCardPaymentService creditCardPaymentService;
+    private final STSPaymentService sTSPaymentService;
 
-    public PaymentCreditCardResource(CreditCardPaymentService creditCardPaymentService) {
-        this.creditCardPaymentService = creditCardPaymentService;
+    public PaymentCreditCardResource(STSPaymentService sTSPaymentService) {
+        this.sTSPaymentService = sTSPaymentService;
     }
 
 
@@ -61,7 +61,7 @@ public class PaymentCreditCardResource {
             throw new TbsRunTimeException("Missing parameters");
         }
         String transactionId = new String(Base64.getDecoder().decode(params.get(Constants.TRANSACTION_IDENTIFIER_BASE_64)));
-        return creditCardPaymentService.initPayment(model, transactionId);
+        return sTSPaymentService.initPayment(model, transactionId);
     }
 
     @PostMapping("/billing/payments/credit-card/notification")
@@ -69,13 +69,13 @@ public class PaymentCreditCardResource {
     public void updatePayment(HttpServletRequest request, HttpServletResponse response) throws IOException {
         // get All Request Parameters
         log.info("-----got payment notification");
-        creditCardPaymentService.processPaymentNotification(request, response);
+        sTSPaymentService.processPaymentNotification(request, response);
     }
 
     // ToDo Tmp check only called by Job
     @GetMapping("/billing/check-payment-tmp/{transactionID}")
     @ResponseBody
     public PaymentStatusResponseDTO checkPaymentStatus(@PathVariable String transactionID) {
-        return creditCardPaymentService.checkOffilnePaymentStatus(transactionID);
+        return sTSPaymentService.checkOffilnePaymentStatus(transactionID);
     }
 }

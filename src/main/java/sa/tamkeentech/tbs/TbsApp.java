@@ -1,7 +1,10 @@
 package sa.tamkeentech.tbs;
 
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.datatables.repository.DataTablesRepositoryFactoryBean;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.web.client.RestTemplate;
 import sa.tamkeentech.tbs.config.ApplicationProperties;
 import sa.tamkeentech.tbs.config.DefaultProfileUtil;
 
@@ -33,6 +36,13 @@ public class TbsApp implements InitializingBean {
 
     public TbsApp(Environment env) {
         this.env = env;
+    }
+
+    @Bean
+    public RestTemplate restTemplate(RestTemplateBuilder builder) {
+        RestTemplate restTemplate = builder.build();
+        // restTemplate.setErrorHandler(new CustomResponseErrorHandler());
+        return restTemplate;
     }
 
     /**

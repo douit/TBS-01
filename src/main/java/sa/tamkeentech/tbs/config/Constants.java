@@ -96,6 +96,30 @@ public final class Constants {
     public static String RIYADH_OFFSET = "+03:00";
     public static ZoneId UTC_ZONE_ID = ZoneId.of("UTC");
 
+    // PayFort
+    public enum ShaType {
+        SHA_256,
+        SHA_512
+    }
+
+    public enum PaymentOperation {
+        TOKENIZATION,
+        PURCHASE
+    }
+
+    public enum PayfortResponseStatus {
+        TOKEN_SUCCESS("200");
+
+        PayfortResponseStatus (String status) {
+            this.Status = status;
+        }
+        String Status;
+
+        public String getStatus() {
+            return Status;
+        }
+    }
+
     private Constants() {
     }
 }

@@ -38,9 +38,9 @@ import java.util.*;
 
 @Service
 @Transactional
-public class CreditCardPaymentService {
+public class STSPaymentService {
 
-    private final Logger log = LoggerFactory.getLogger(CreditCardPaymentService.class);
+    private final Logger log = LoggerFactory.getLogger(STSPaymentService.class);
 
     @Inject
     @Lazy
@@ -292,19 +292,18 @@ public class CreditCardPaymentService {
         String generatedsecureHash = new String(DigestUtils.sha256Hex(formattedResponse).getBytes());
         // String generatedsecureHash = new String(DigestUtils.sha256Hex(getResponseOrderdString(result)).getBytes());*/
 
-        // Ahmed unify impl
-        String generatedsecureHash = null;
+        String generatedSecureHash = null;
         try {
-            generatedsecureHash = new String(DigestUtils.sha256Hex(getResponseOrderdString(result, stsSecretKey, false)).getBytes());
+            generatedSecureHash = new String(DigestUtils.sha256Hex(getResponseOrderdString(result, stsSecretKey, false)).getBytes());
         } catch (UnsupportedEncodingException e) {
             throw new TbsRunTimeException("--<<>>--Async: not able to generate Secure hash, {}", e);
         }
 
         // get the received secure hash from result map
         String receivedSecurehash = result.get("Response.SecureHash");
-        log.debug("----> generatedsecureHash: {}", generatedsecureHash);
+        log.debug("----> generatedsecureHash: {}", generatedSecureHash);
         log.debug("----> receivedSecurehash : {}", receivedSecurehash);
-        if(!receivedSecurehash.equals(generatedsecureHash)){
+        if(!receivedSecurehash.equals(generatedSecureHash)){
             //IF they are not equal then the response shall not be accepted
             throw new TbsRunTimeException("--<<>>--Async: Received Secure Hash does not Equal generated Secure hash");
         }  else {
@@ -451,7 +450,7 @@ public class CreditCardPaymentService {
         // Ahmed unify impl
         String generatedsecureHash = null;
         try {
-            CreditCardPaymentService paymentserv = new CreditCardPaymentService();
+            STSPaymentService paymentserv = new STSPaymentService();
             generatedsecureHash = new String(DigestUtils.sha256Hex(paymentserv.getResponseOrderdString(map, key, false)).getBytes());
         } catch (UnsupportedEncodingException e) {
             throw new TbsRunTimeException("--<<>>--Async: not able to generate Secure hash, {}", e);

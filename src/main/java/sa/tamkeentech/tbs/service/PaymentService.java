@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
 import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
@@ -105,7 +106,11 @@ public class PaymentService {
     private UserService userService;
 
     @Autowired
-    private CreditCardPaymentService creditCardPaymentService;
+    @Lazy
+    private STSPaymentService sTSPaymentService;
+
+    @Autowired
+    private RestTemplate restTemplate;
 
     public PaymentService(PaymentRepository paymentRepository, PaymentMapper paymentMapper, InvoiceRepository invoiceRepository, BankRepository bankRepository, BinRepository binRepository, PaymentMethodService paymentMethodService, ObjectMapper objectMapper, EventPublisherService eventPublisherService, ClientService clientService, ClientMapper clientMapper, PersistenceAuditEventRepository persistenceAuditEventRepository, PaymentMethodMapper paymentMethodMapper, ClientRepository clientRepository) {
         this.paymentRepository = paymentRepository;
@@ -503,7 +508,6 @@ public class PaymentService {
         log.info("---> sendPaymentNotificationToClient token expires after {} min", diffInMinutes);
         String token = null;
         if (diffInMinutes <= 1 || client.getClientToken() == null ) {
-            RestTemplate rt1 = new RestTemplate();
             HttpHeaders headers1 = new HttpHeaders();
             headers1.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
             MultiValueMap<String, String> map1 = new LinkedMultiValueMap<String, String>();
@@ -514,7 +518,7 @@ public class PaymentService {
             org.springframework.http.HttpEntity<MultiValueMap<String, String>> request1 = new org.springframework.http.HttpEntity<MultiValueMap<String, String>>(map1, headers1);
             //  String uri = "https://sso.tamkeen.land/auth/realms/tamkeen/protocol/openid-connect/token"; // staging
             String uri =  environment.getProperty("tbs.payment.wahid-url"); // production
-            ResponseEntity<TokenResponseDTO> response1 = rt1.postForEntity(uri, request1, TokenResponseDTO.class);
+            ResponseEntity<TokenResponseDTO> response1 = restTemplate.postForEntity(uri, request1, TokenResponseDTO.class);
             token = response1.getBody().getAccess_token();
 
             Optional<Client> clientEntity = clientRepository.findById(client.getId());
@@ -528,8 +532,6 @@ public class PaymentService {
             token = client.getClientToken();
         }
 
-
-        RestTemplate restTemplate = new RestTemplate();
         String pattern = " dd/MM/yyyy hh:mm:ss a";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
         String paymentDate = simpleDateFormat.format(Date.from(payment.getCreatedDate().toInstant()));
@@ -544,15 +546,7 @@ public class PaymentService {
         }
         // resourceUrl += ("?billnumber=" + accountId.toString() + "&paymentdate=" +  paymentDate + "&token=" + token);
         log.info("----calling Client update: "+ resourceUrl);
-        // ResponseEntity<NotifiRespDTO> response2= restTemplate.getForEntity(resourceUrl, NotifiRespDTO.class);
 
-        //Mule Post query
-        /*PaymentNotifReqToClientDTO paymentNotifReqToClientDTO = PaymentNotifReqToClientDTO.builder()
-            .billNumber(accountId.toString())
-            .paymentDate(paymentDate)
-            .status("paid")
-            .paymentMethod(new PaymentNotifReqToClientDTO.PaymentInternalInfo("1", "SADAD"))
-            .build();*/
         PaymentDTO paymentNotifReqToClientDTO = PaymentDTO.builder()
             .billNumber(accountId.toString())
             .transactionId(payment.getTransactionId())
@@ -708,7 +702,7 @@ public class PaymentService {
         log.debug("---- checking {} payments with status checkout page", payments.size());
         if (CollectionUtils.isNotEmpty(payments)) {
             for (Payment payment : payments) {
-                PaymentStatusResponseDTO response = creditCardPaymentService.checkOffilnePaymentStatus(payment.getTransactionId());
+                PaymentStatusResponseDTO response = sTSPaymentService.checkOffilnePaymentStatus(payment.getTransactionId());
                 if (Constants.CC_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(response.getCode()) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
                     // Notify Client app
                     Invoice invoice = payment.getInvoice();

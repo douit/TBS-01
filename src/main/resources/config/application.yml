@@ -196,6 +196,16 @@ tbs:
     sts-refund-and-inquiry: 'https://platform.tamkeentech.sa/billing-system-test/STSInquiryAndRefund'
     url: 'http://localhost:8081/billing/payments/credit-card?'
 
+    payfort-sha-type: 'SHA_256'
+    payfort-sha-request-phrase: '$2y$10$b2XJU7zWg'
+    payfort-sha-response-phrase: '$2y$10$MnMjJ0SM6'
+    payfort-access-code: 'D3KyGokx8hLlQmOVszty'
+    payfort-merchant-identifier: 'e93bbe3b'
+    payfort-language: 'en'
+    payfort-url-json: 'https://sbpaymentservices.payfort.com/FortAPI/paymentApi'
+    payfort-url-form: 'https://sbcheckout.PayFort.com/FortAPI/paymentPage'
+
+
   refund:
     sadad-url-refund: 'http://10.60.75.60:1001/Sender/api/Sadad/RefundLoadRq/test'
     sadad-shared-folder: '/sadad_share/'
@@ -209,4 +219,5 @@ tbs:
     refund-sadad-sync: 0 0 * * * ?
     invoice-expired: 0 30 * * * ?
     audit-event-delete: 0 0 4 * * ?
+
 
