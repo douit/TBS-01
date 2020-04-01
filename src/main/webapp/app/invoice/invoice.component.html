@@ -24,10 +24,13 @@
                     </div>-->
 
                     <br/>
+                    <div class="data-table-alert">
+                        <jhi-alert></jhi-alert>
+                    </div>
 
                     <div class="card-content">
 
-                        <jhi-alert></jhi-alert>
+                        <!--<jhi-alert></jhi-alert>-->
                         <br/><br/>
 
                         <div class="datatable-wrapper">
@@ -381,6 +384,13 @@
                                                         (click)="viewInvoice(row);sumTaxRate(row.invoiceItems)">
                                                     <i class="material-icons">visibility</i>
                                                 </button>
+
+                                                <button class="btn btn-primary btn-link" matTooltip=""
+                                                        title="download invoice"
+                                                        (click)="exportInvoice(row.id)">
+                                                    <i class="material-icons">save_alt</i>
+                                                </button>
+
                                             </div>
                                         </ng-template>
 

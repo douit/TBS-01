@@ -412,6 +412,60 @@ export class InvoiceComponent implements OnInit {
     // );
   }
 
+  exportInvoice(id: number) {
+    this.busy = true;
+    this.invoiceService.exportInvoice(id).subscribe(
+      response => {
+        this.busy = false;
+        if (response.bytes != null) {
+          const file = new Blob([ response.bytes ]);
+          const array = new Uint8Array(response.bytes.length);
+          for (let i = 0; i < response.bytes.length; i++) {
+            array[i] = response.bytes.charCodeAt(i);
+          }
+          const blob = this.b64toBlob(response.bytes, 'application/octet-stream', 512);
+          this.downloadAction(window.URL.createObjectURL(blob), response.name);
+        } else {
+           this.jhiAlertService.error('report.error.reportDownload', null, null);
+        }
+      },
+      err => {
+        console.log('An error has occurred when get clientByRole');
+      }
+    );
+  }
+
+  downloadAction(href, fileName) {
+    const a = document.createElement('a');
+    a.href = href;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+  }
+
+  b64toBlob(b64Data, contentType, sliceSize) {
+    contentType = contentType || '';
+    sliceSize = sliceSize || 512;
+
+    const byteCharacters = atob(b64Data);
+    const byteArrays = [];
+
+    for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+      const slice = byteCharacters.slice(offset, offset	+ sliceSize);
+      const byteNumbers = new Array(slice.length);
+      for (let i = 0; i < slice.length; i++) {
+        byteNumbers[i] = slice.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      byteArrays.push(byteArray);
+    }
+
+    const blob = new Blob(byteArrays, {
+      type : contentType
+    });
+    return blob;
+  }
+
   formatDate(date: NgbDate) {
     // NgbDates use 1 for Jan, Moement uses 0, must substract 1 month for proper date conversion
     const ngbObj = JSON.parse(JSON.stringify(date));

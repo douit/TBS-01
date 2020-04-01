@@ -13,6 +13,7 @@ import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.Client;
 import sa.tamkeentech.tbs.domain.Invoice;
 import sa.tamkeentech.tbs.domain.Report;
@@ -145,7 +146,7 @@ public class ReportService {
         }
     }
 
-    public ReportDTO generateInvoiceReceipt( Long invoiceId){
+    public FileDTO generateInvoiceReceipt( Long invoiceId){
         log.debug("generating invoice receipt ");
 
         Optional<InvoiceDTO> invoiceDTO = invoiceService.findOne(invoiceId);
@@ -164,19 +165,20 @@ public class ReportService {
 
         dataList = invoiceDTO.get().getInvoiceItems();
 
-        extraParams = invoiceReportExtraParams(receipt, (List<InvoiceItemDTO>) dataList);
+        extraParams = invoiceReportExtraParams(receipt, invoiceDTO.get());
         dirPath = outputFolder + "/" + INVOICE_FOLDER_NAME + "/";
         reportFileName = INVOICE_FILE_SUFFIX + invoiceId + ".pdf";
         template = TEMPLATE_INVOICE;
 
+        byte[] report = null;
         try {
-            generateReport(template, dirPath, reportFileName, dataList, extraParams, FORMAT_PDF);
+            report = generateReport(template, dirPath, reportFileName, dataList, extraParams, FORMAT_PDF);
         } catch (IOException| JRException e) {
             log.warn("Unable to generate receipt {}", e);
 
         }
 
-        return receipt;
+        return FileDTO.builder().name(reportFileName).bytes(report).build();
     }
     private Map<String, Object> paymentReportExtraParams(Report report, List<PaymentDTO> dataList, String clientName) {
 
@@ -213,10 +215,12 @@ public class ReportService {
         extraParams.put("totalRefundsAmount", totalPaymentsAmount);
         return extraParams;
     }
-    private Map<String, Object> invoiceReportExtraParams(ReportDTO receipt, List<InvoiceItemDTO> dataList) {
+    private Map<String, Object> invoiceReportExtraParams(ReportDTO receipt, InvoiceDTO invoiceDTO) {
         Map<String, Object> extraParams = new HashMap<>();
-        extraParams.put("client", receipt.getClientName());
-        extraParams.put("generatedDate", receipt.getGeneratedDate());
+        extraParams.put("invoice", invoiceDTO);
+        // extraParams.put("generatedDate", CommonUtils.getFormattedLocalDate(receipt.getGeneratedDate(), Constants.RIYADH_OFFSET));
+
+
 //        // report summary
 //        BigDecimal totalInvoicesAmount = BigDecimal.ZERO;
 //        if (CollectionUtils.isNotEmpty(dataList) ) {
@@ -230,7 +234,7 @@ public class ReportService {
     }
 
 
-    private String generateReport(String templateFile, String dirPath, String reportFileName, List<?> dataList
+    private byte[] generateReport(String templateFile, String dirPath, String reportFileName, List<?> dataList
         , Map<String, Object> extraParams, String format) throws IOException, JRException {
 
         Map<String, Object> parameterMap = new HashMap<>();
@@ -246,7 +250,8 @@ public class ReportService {
         } else {
             report = JasperReportExporter.getInstance().generatePdfReport(dataList, parameterMap, templateFile, true);
         }
-        return fileWrapper.saveBytesToFile(dirPath, reportFileName, report);
+        fileWrapper.saveBytesToFile(dirPath, reportFileName, report);
+        return report;
     }
 
     public DataTablesOutput<ReportDTO> getReports(DataTablesInput input, ReportType reportType) {

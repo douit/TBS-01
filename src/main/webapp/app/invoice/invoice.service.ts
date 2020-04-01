@@ -19,6 +19,8 @@ type EntityArrayResponseType = HttpResponse<IInvoice[]>;
 @Injectable({ providedIn: 'root' })
 export class InvoiceService {
   public resourceUrl = SERVER_API_URL + 'api/invoices';
+  public reportResourceURL = SERVER_API_URL + 'api/report/invoice';
+
 
   constructor(protected http: HttpClient) {}
 
@@ -32,6 +34,10 @@ export class InvoiceService {
 
   getInvoiceAudit(id: number) {
     return this.http.get<any>(`${this.resourceUrl}/audit/${id}`);
+  }
+
+  exportInvoice(id: number) {
+    return this.http.get<any>(`${this.reportResourceURL}/${id}`);
   }
 
   create(invoice: IInvoice): Observable<EntityResponseType> {
