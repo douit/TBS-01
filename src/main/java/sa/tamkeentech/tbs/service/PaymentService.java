@@ -207,12 +207,14 @@ public class PaymentService {
     @Transactional
     public PaymentDTO updateCreditCardPayment(PaymentStatusResponseDTO paymentStatusResponseDTO, Payment payment, Invoice invoice) {
         log.debug("Request to update status Payment : {}", paymentStatusResponseDTO);
-        if (Constants.CC_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode()) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
+        if ((Constants.STS_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode())
+        || Constants.PAYFORT_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode())) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
             payment.setStatus(PaymentStatus.PAID);
             invoice.setPaymentStatus(PaymentStatus.PAID);
             // in case client does not call check-payment Job will send notification
             invoice.setStatus(InvoiceStatus.WAITING);
-        } else if (Constants.CC_PAYMENT_FAILURE_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode()) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
+        } else if ((Constants.STS_PAYMENT_FAILURE_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode())
+            || Constants.PAYFORT_PAYMENT_FAILURE_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode())) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
             payment.setStatus(PaymentStatus.UNPAID);
             invoice.setPaymentStatus(PaymentStatus.UNPAID);
         }
@@ -703,7 +705,7 @@ public class PaymentService {
         if (CollectionUtils.isNotEmpty(payments)) {
             for (Payment payment : payments) {
                 PaymentStatusResponseDTO response = sTSPaymentService.checkOffilnePaymentStatus(payment.getTransactionId());
-                if (Constants.CC_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(response.getCode()) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
+                if (Constants.STS_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(response.getCode()) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
                     // Notify Client app
                     Invoice invoice = payment.getInvoice();
                     if (CommonUtils.isProfile(environment, "prod") || CommonUtils.isProfile(environment, "staging")

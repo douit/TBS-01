@@ -79,6 +79,7 @@ public class PaymentCreditCardResource {
         return sTSPaymentService.checkOffilnePaymentStatus(transactionID);
     }
 
+    /* Payfort integration */
     @GetMapping("/api/payments/payfort-initiate/{invoiceNumber}")
     // @GetMapping("/billing/payfort-signature/{invoiceNumber}")
     @ResponseBody
@@ -88,7 +89,17 @@ public class PaymentCreditCardResource {
 
     @GetMapping("/api/payments/payfort-processing")
     @ResponseBody
-    public ResponseEntity<PayFortOperationDTO> processPayment(Model model, @RequestParam Map<String,String> params) {
-        return payFortPaymentService.processPayment(params);
+    public ResponseEntity<PayFortOperationDTO> processPayment(Model model
+        , @RequestParam Map<String,String> params, HttpServletRequest request) {
+        return payFortPaymentService.proceedPaymentOperation(params, request);
+    }
+
+    @GetMapping("/billing/payments/payfort/notification")
+    @ResponseBody
+    public void updatePayment(HttpServletRequest request, HttpServletResponse response,
+                              @RequestParam Map<String, String> params) throws IOException {
+        // get All Request Parameters
+        log.info("-----got payment notification");
+        payFortPaymentService.processPaymentNotification(request, response, params);
     }
 }

@@ -143,9 +143,8 @@ public class SecurityConfiguration {
                 .antMatchers("/billing/newPayment/**")
             ////////Test Mule
                 .antMatchers("/billing/payments/credit-card/notification")
-                .antMatchers("/billing/payments/credit-card/notification")
-                //ToDo you must delete this line after finish testing
-                .antMatchers("/api/report/**");
+            // Payfort payment notification -> Mule
+                .antMatchers("/billing/payments/payfort/notification");
             ;
         }
 

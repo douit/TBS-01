@@ -19,9 +19,13 @@ public final class Constants {
     public static final String CREDIT_CARD = "CREDIT_CARD";
     public static final String CASH = "CASH";
 
-    // public static final String CC_PAYMENT_SUCCESS_CODE = "1007";
-    public static final String CC_PAYMENT_SUCCESS_CODE = "00000";
-    public static final String CC_PAYMENT_FAILURE_CODE = "10001";
+    // STS Payment codes
+    public static final String STS_PAYMENT_SUCCESS_CODE = "00000";
+    public static final String STS_PAYMENT_FAILURE_CODE = "10001";
+
+    // Payfort Payment codes
+    public static final String PAYFORT_PAYMENT_SUCCESS_CODE = "14";
+    public static final String PAYFORT_PAYMENT_FAILURE_CODE = "13";
 
     public static Integer INVOICE_EXPIRY_DAYS = 1;
 

@@ -91,6 +91,10 @@ public class PayFortOperationDTO {
     // 45	3ds failed.
     private String status;
 
+    // Response descrip example: Signature mismatch
+    @JsonProperty("response_message")
+    private String responseMessage;
+
     @JsonProperty("fort_id")
     private String fortId;
 

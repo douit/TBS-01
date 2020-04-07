@@ -123,8 +123,8 @@ export class CustomerTestPayfortComponent implements OnInit {
     this.isSaving = false;
     // window.location.href = res.body.link;
     console.log('----Purchase response:' + JSON.stringify(resp));
-    if (resp.url3ds != null) {
-      window.location.href = resp.url3ds;
+    if (resp['3ds_url'] != null) {
+      window.location.href = resp['3ds_url'];
       return;
     } else if (resp.satatus  === '14') {
       this.operationStatus = true;
@@ -163,6 +163,7 @@ export class CustomerTestPayfortComponent implements OnInit {
             this.busy = false;
         }
         , (res: HttpErrorResponse) => {
+            this.busy = false;
             console.log('----Initiate resp error :' + res.message);
           });
       // this.editForm.patchValue({'amount' : (this.invoiceSelected != null) ? this.invoiceSelected.amount : 0});

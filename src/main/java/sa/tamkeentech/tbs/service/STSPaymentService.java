@@ -186,7 +186,6 @@ public class STSPaymentService {
             log.info("Status is: {}", responseParameters.get("Response.StatusCode"));
             paymentService.updateCreditCardPaymentAndSendEvent(paymentStatusResp.build(), payment);
         }
-        // ToDo replace by client redirectUrl
         String redirectUrl = invoice.getClient().getRedirectUrl() + "?transactionId=" + transactionId;
         log.info("------Redirect after payment to: {}", redirectUrl);
         response.addHeader("Location", redirectUrl);

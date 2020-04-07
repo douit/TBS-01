@@ -419,7 +419,7 @@ public class RefundService {
             // Complete the Action get other parameters from result map and do your processes // please refer to The Integration Manual to See The List of The Received Parameters
             String status = result.get("Response.StatusCode");
             log.info("Refund request {} status {}", refund.getId(), status);
-            if (Constants.CC_PAYMENT_SUCCESS_CODE.equals(status)) {
+            if (Constants.STS_PAYMENT_SUCCESS_CODE.equals(status)) {
                 log.debug("Successful refund {}", invoice.getAccountId());
                 return 200;
             }
