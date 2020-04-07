@@ -1,7 +1,5 @@
 package sa.tamkeentech.tbs.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,21 +7,22 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.repository.PaymentRepository;
-import sa.tamkeentech.tbs.service.dto.PayFortOperationRequestDTO;
-import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
+import sa.tamkeentech.tbs.service.dto.PayFortOperationDTO;
 
 import javax.inject.Inject;
 import java.io.UnsupportedEncodingException;
-import java.util.UUID;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Map;
+import java.util.TreeMap;
 
 @Service
 @Transactional
@@ -38,9 +37,6 @@ public class PayFortPaymentService {
     @Inject
     @Lazy
     InvoiceRepository invoiceRepository;
-
-    /*@Inject
-    PaymentService paymentService;*/
 
     @Inject
     private RestTemplate restTemplate;
@@ -61,67 +57,108 @@ public class PayFortPaymentService {
     private String urlForm;
     @Value("${tbs.payment.payfort-url-json}")
     private String urlJson;
+    @Value("${tbs.payment.payfort-process-payment}")
+    private String checkoutPage;
 
 
-    public String initPayment(String transactionId, String expiryDate, String cardNumber, String cardSecurityCode,
-                              String cardHolderName) throws JSONException, JsonProcessingException {
-        log.info("Request to initiate Payment : {}", transactionId);
-        PayFortOperationRequestDTO payfortOperationRequest = PayFortOperationRequestDTO.builder()
+    public PayFortOperationDTO initPayment(Long invoiceNumber) throws UnsupportedEncodingException {
+        log.info("Request to initiate Payment : {}", invoiceNumber);
+        DateFormat df = new SimpleDateFormat("HHmmss");
+        String transactionId = invoiceNumber.toString() + df.format(new Timestamp(System.currentTimeMillis()));
+
+        // put the parameters in a TreeMap to have the parameters to have them sorted alphabetically.
+        Map<String, String> map = new TreeMap();
+        map.put("service_command",Constants.PaymentOperation.TOKENIZATION.name());
+        map.put("access_code",accessCode);
+        map.put("merchant_identifier",merchantIdentifier);
+        map.put("merchant_reference",transactionId);
+        map.put("language",language);
+        map.put("return_url",checkoutPage);
+
+        PayFortOperationDTO payfortOperationRequest = PayFortOperationDTO.builder()
             .serviceCommand(Constants.PaymentOperation.TOKENIZATION.name())
             .accessCode(accessCode)
             .merchantIdentifier(merchantIdentifier)
             .merchantReference(transactionId)
             .language(language)
-            .expiryDate(expiryDate)
-            .cardNumber(cardNumber)
-            .cardSecurityCode(cardSecurityCode)
-            .cardHolderName(cardHolderName)
-            // .returnUrl("https://www.google.com")
-            // .tokenName() The Token received from the Tokenization process. ???
+            .returnUrl(checkoutPage)
             .build();
-        payfortOperationRequest.setSignature(calculatePayfortRequestSignatureForTokenization(payfortOperationRequest));
-        String jsonRequest = new ObjectMapper().writeValueAsString(payfortOperationRequest);
-        log.info("+++++++++Payfort Tokenization command is ready now and will be sent to the server++++++++++");
-        // jsonRequest = jsonRequest.replace("query_command", "service_command");
-        log.info(jsonRequest);
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Cache-Control", "no-cache");
-        headers.add("Content-Type", "application/json");
-        HttpEntity<String> requestEntity = new HttpEntity<>(jsonRequest, headers);
-        String result = restTemplate.postForObject(urlJson, requestEntity, String.class);
-        log.info("+++++++++Payfort Tokenization command has been sent the server, the result is as follows +++++++++");
-        log.info(result);
-        JSONObject resultAsJsonObject = new JSONObject(result);
-        if (resultAsJsonObject.has("status") && resultAsJsonObject.getString("status").equals(Constants.PayfortResponseStatus.TOKEN_SUCCESS.getStatus())) {
-            log.info("Tokenization command has been done successfully");
-            boolean isValidSignature = validateTokenizationSignature(resultAsJsonObject);
-            log.info("===> Validating Tokenization command payfort signature response, is valid = {}", isValidSignature);
-            if (!isValidSignature) {
-                throw new TbsRunTimeException("Invalid payfort server sinature found");
-            }
-            return resultAsJsonObject.getString("token_name");
-        } else {
-            log.info("Tokenization command failed");
-            return null;
-        }
+        payfortOperationRequest.setSignature(calculatePayfortRequestSignatureForTokenization(map));
+
+        return payfortOperationRequest;
     }
 
-    private String calculatePayfortRequestSignatureForTokenization(PayFortOperationRequestDTO payfortOperationRequest) {
-        StringBuilder signatureBuilder = new StringBuilder(requestPhrase);
-        signatureBuilder
-            .append("access_code=").append(accessCode)
-            .append("language=").append(language)
-            .append("merchant_identifier=").append(merchantIdentifier)
-            .append("merchant_reference=").append(payfortOperationRequest.getMerchantReference())
-            //.append("return_url=").append(payfortOperationRequest.getReturnUrl())
-            .append("service_command=TOKENIZATION");
+    public ResponseEntity<PayFortOperationDTO> processPayment(Map<String, String> params) {
+        // PayFort resp:
+        // response_code=18000&card_number=400555******0001&card_holder_name=Ahmed+B
+        // &signature=07793d77079cc89a769281ed55d3237b71583c76172c6350cfe3ed1f24304621
+        // &merchant_identifier=e93bbe3b&expiry_date=2105&access_code=D3KyGokx8hLlQmOVszty
+        // &language=en&service_command=TOKENIZATION
+        // &response_message=Success&merchant_reference=7000000360021648
+        // &token_name=94c729e0864d413687035ac2fe4add31 &return_url=http%3A%2F%2Flocalhost%3A9000%2Fapi%2Fpayments%2Fpayfort-processing
+        //&card_bin=400555&status=18
+        log.debug("------Payfort payment processing tokenizaion code: {}, message: {}", params.get("status"),  params.get("response_message"));
+        PayFortOperationDTO payfortOperationRequest = PayFortOperationDTO.builder()
+            .command(Constants.PaymentOperation.PURCHASE.name())
+            .accessCode(accessCode)
+            .merchantIdentifier(merchantIdentifier)
+            .merchantReference(params.get("merchant_reference"))
+            .amount(10000l)// 100 SAR
+            .currency("SAR")
+            .language(language)
+            .customerEmail("a.bouzaien.@tamkeentech.sa")
+            .customerIp("192.178.1.10") // detect public ip
+            .tokenName(params.get("token_name"))
+            // .signature() set below
+            // .paymentOption("VISA") // pass list? MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+            // .eci("ECOMMERCE")
+            .orderDescription("Test integration")
+            .customerName("Ahmed B")
+            .settlementReference(params.get("merchant_reference"))
+            .returnUrl("http://localhost:9000/#/customer/test-payfort")
+            .build();
+        Map<String, String> map = new TreeMap();
+        map.put("service_command", Constants.PaymentOperation.PURCHASE.name());
+        map.put("access_code", accessCode);
+        map.put("merchant_identifier", merchantIdentifier);
+        map.put("merchant_reference", payfortOperationRequest.getMerchantReference());
+        map.put("amount", payfortOperationRequest.getAmount().toString());
+        map.put("currency", payfortOperationRequest.getCurrency());
+        map.put("language", language);
+        map.put("customer_email", payfortOperationRequest.getCustomerEmail());
+        map.put("customer_ip", payfortOperationRequest.getCustomerIp());
+        map.put("token_name", payfortOperationRequest.getTokenName());
+        // both optional
+        /*map.put("payment_option", payfortOperationRequest.getPaymentOption());
+        map.put("eci", payfortOperationRequest.getEci());*/
+        map.put("order_description", payfortOperationRequest.getOrderDescription());
+        map.put("customer_name", payfortOperationRequest.getCustomerName());
+        map.put("settlement_reference", payfortOperationRequest.getSettlementReference());
+        map.put("return_url", payfortOperationRequest.getReturnUrl());
+        payfortOperationRequest.setSignature(calculatePayfortRequestSignatureForTokenization(map));
+        log.debug("Purchase request: {}", payfortOperationRequest);
+        ResponseEntity<PayFortOperationDTO> result = restTemplate.postForEntity(urlJson, payfortOperationRequest, PayFortOperationDTO.class);
+        return result;
+    }
 
+    /**
+     * Method calculates the signature needed in checkout page
+     * @param requestMap
+     * @param requestMap
+     * @return signature
+     */
+    private String calculatePayfortRequestSignatureForTokenization(Map<String, String> requestMap) {
+        StringBuilder signatureBuilder = new StringBuilder(requestPhrase);
+        for(Map.Entry<String, String> entry: requestMap.entrySet()) {
+            signatureBuilder.append(entry.getKey()).append("=").append(entry.getValue());
+        }
         signatureBuilder.append(requestPhrase);
-        log.info("The tokenization signature builder's value before applying sha encryption : {}", signatureBuilder.toString());
+        log.info("The tokenization of transaction {}, signature builder's value before applying sha encryption : {}", requestMap.get("merchant_reference"), signatureBuilder.toString());
         String signature = getEncryptedSignature(signatureBuilder.toString());
-        log.info("The tokenization signature builder's value after applying sha encryption : {}", signature);
+        log.info("The tokenization of transaction {}, signature builder's value after applying sha encryption : {}", requestMap.get("merchant_reference"), signature);
         return signature;
     }
+
 
     private boolean validateTokenizationSignature(JSONObject resultAsJsonObject) throws JSONException {
         StringBuilder signatureBuilder = new StringBuilder(responsePhrase);
@@ -161,14 +198,14 @@ public class PayFortPaymentService {
     }
 
 
-    public static void main(String[] args) throws UnsupportedEncodingException {
+    /*public static void main(String[] args) throws UnsupportedEncodingException {
         System.out.println("generatedsecureHash: " + 111);
         System.out.println("-----------------------");
-    }
+    }*/
 
-    @Scheduled(initialDelay = 1000 * 10, fixedDelay=Long.MAX_VALUE)
+    /*@Scheduled(initialDelay = 1000 * 10, fixedDelay=Long.MAX_VALUE)
     public void testTokenization() throws JSONException, JsonProcessingException {
         initPayment(UUID.randomUUID().toString(), "2105", "4005550000000001", "123", "Ahmed Bouzaien");
-    }
+    }*/
 
 }

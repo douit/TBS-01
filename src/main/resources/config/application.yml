@@ -204,6 +204,7 @@ tbs:
     payfort-language: 'en'
     payfort-url-json: 'https://sbpaymentservices.payfort.com/FortAPI/paymentApi'
     payfort-url-form: 'https://sbcheckout.PayFort.com/FortAPI/paymentPage'
+    payfort-process-payment: 'http://localhost:9000/api/payments/payfort-processing'
 
 
   refund:

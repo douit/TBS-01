@@ -1,0 +1,455 @@
+//@import 'https://testfort.payfort.com/assets/87b65329/paymentPageTemplates/147/css/ccStyle.css';
+/***********************
+        BASE STYLE
+************************/
+*, *:after, *:before {box-sizing: border-box; -moz-box-sizing: border-box; }
+input::-ms-clear {display: none;}
+html{height: 100%;}
+body {
+  color: #404d5b;
+  font-weight: 500;
+  font-size: 1em;
+  min-height: 100%;
+  margin:0;
+  padding:0;
+  /*line-height: 1*/
+}
+
+.b-r{border-right: 1px solid #e8edf9;}
+.br-top{border-radius: 5px 5px 0 0}
+.br-bottom{border-radius: 0 0 5px 5px}
+.br{border-radius: 5px;}
+i{cursor: pointer;}
+.noPadding{padding: 0 !important;}
+.back.center{text-align: center;}
+
+/***********************
+        Wrapper Style
+************************/
+
+.wrapper {
+  background: #E8EDF9;
+  width:100%;
+  font-family:sans-serif;
+  padding: 1%;;
+}
+.container {
+  width: 400px;
+  height:100%;
+  border-radius: 5px;
+  background: #fff;
+  border:1px solid #D3DAEB;
+  padding: 2em;
+  margin: 2em auto;
+}
+/***********************
+        inputs
+************************/
+.input {
+  background: #fff;
+  padding: 0px 0 1px;
+  border:1px solid rgb(233, 237, 246);
+  position: relative;
+  display: inline-block;
+  margin: 3px 0;
+  width: 100%;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.input.visible{
+  overflow: visible;
+}
+
+
+.input.visible .input-label{
+  overflow: visible;
+}
+
+.input-field {
+  position: relative;
+  display: block;
+  float: right;
+  padding: 0.8em;
+  border: none;
+  font-weight: 400;
+  -webkit-appearance: none; /* for box shadows to show on iOS */
+  appearance: none;
+  font-size: 14px;
+  background: transparent;
+  width: 100%;
+  color: #404d5b;
+  padding:19px 1.25em 7px 3em;
+  background-image: none !important;
+  font-weight: bold;
+}
+.input-field:focus {
+  outline: none;
+}
+.input-label {
+  display: inline-block;
+  float: right;
+  padding: 1px 1em;
+  padding-left: 3.3em;
+  color: #D3DAEB;
+  font-weight: bold;
+  font-size: 80%;
+  position: absolute;
+  width: 100%;
+  text-align: left;
+  overflow: hidden;
+  pointer-events: none;
+  /*-webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;*/
+  -webkit-font-smoothing: antialiased;
+
+}
+.input-label-content {
+  position: relative;
+  font-size:90%;
+  width: 100%;
+  padding: 1.1em 0;
+  display: inline-block;
+  -webkit-transform-origin: 0 0;
+  transform-origin: 0 0;
+}
+.input-label-content span {
+  display: inline-block;
+}
+
+.error .input-label-content{
+  color: rgb(211, 61, 61);
+  font-weight: lighter;
+  opacity: 0.9;
+}
+
+.icon {
+  width: 2em;
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: .9em 0 0 .7em;
+  font-size: 120%;
+  color:#D3DAEB;
+}
+
+.icon.icon-right{
+  left: initial;
+  right:1em;
+}
+
+/* Individual styles */
+.name{
+  text-transform: capitalize;
+}
+.input.br-bottom{
+  overflow: hidden;
+}
+
+/***********************
+inputs Animations - span
+************************/
+.input-field:focus + .input-label .input-label-content,
+.input-filled .input-label-content {
+  -webkit-animation: input-span 0.3s forwards ;
+  animation: input-span 0.3s forwards;
+  padding: 1.70em 0;
+}
+
+@-webkit-keyframes input-span {
+  50% {
+    -webkit-transform: translate3d(0, 3em, 0);
+    transform: translate3d(0, 3em, 0);
+  }
+  51% {
+    -webkit-transform: translate3d(0, -3em, 0) scale3d(0.85, 0.85, 1);
+    transform: translate3d(0, -3em, 0) scale3d(0.85, 0.85, 1);
+  }
+  100% {
+    color: #D3DAEB;
+    -webkit-transform: translate3d(0, -1.1em, 0) scale3d(0.85, 0.85, 1);
+    transform: translate3d(0, -1.1em, 0) scale3d(0.85, 0.85, 1);
+  }
+}
+
+@keyframes input-span {
+  50% {
+    -webkit-transform: translate3d(0, 3em, 0);
+    transform: translate3d(0, 3em, 0);
+  }
+  51% {
+    -webkit-transform: translate3d(0, -3em, 0) scale3d(0.85, 0.85, 1);
+    transform: translate3d(0, -3em, 0) scale3d(0.85, 0.85, 1);
+  }
+  100% {
+    color: #D3DAEB;
+    -webkit-transform: translate3d(0, -1.1em, 0) scale3d(0.85, 0.85, 1);
+    transform: translate3d(0, -1.1em, 0) scale3d(0.85, 0.85, 1);
+  }
+}
+/***********************
+    Animation spinner
+************************/
+
+.animate-spin {
+  -webkit-animation: spin 2s infinite linear;
+  animation: spin 2s infinite linear;
+  display: inline-block;
+}
+@-webkit-keyframes spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(359deg);
+    transform: rotate(359deg);
+  }
+}
+@keyframes spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(359deg);
+    transform: rotate(359deg);
+  }
+}
+.animated {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 16px;
+  opacity: 0;
+  display: none;
+}
+.error {
+  font-size: 11px;
+  padding: 7px 4px 1px 4px;
+  color: #CA0202;
+  display: none;
+}
+
+.pay span {
+  line-height: 200%;
+}
+.loading .animated {
+  display: block;
+  opacity: 1;
+}
+.loading span {
+  display: none;
+}
+
+
+/***********************
+    End of Animations
+************************/
+
+.pay{
+  width: 100%;
+  height: 50px;
+  font-size: 1.2em;
+  background-color: #17ab79;
+  cursor: pointer;
+  -webkit-appearance: none;
+  border: none;
+  outline: 0;
+  color: #fff;
+  margin: .4em 0;
+}
+
+.pay:hover{
+  opacity: .95
+}
+
+.pay:active{
+  opacity: 1;
+}
+
+/***********Remember me************/
+
+.remember-me{
+  width: 100%;
+  display: inline-block;
+  margin: 1em 0;
+  padding: 1em;
+  border-radius: 4px;
+  font-size: .7em;
+  font-weight: bold;
+  color: #404d5b;
+  border: 1px solid #E9EDF6;
+  background: none;
+  padding-right: 0;
+}
+
+.remember-me .remember-me-label{
+  color: #404d5b;
+  line-height: 1.2;
+  padding-left: .8em;
+}
+
+/***********PopOver************/
+
+.popover{
+  background: rgba(255, 0, 0, 0.06);
+  border-radius: 4px;
+  padding: .6em;
+  font-size: 12px;
+  display: block;
+  margin: .3em 0 .6em 0;
+  border: 1px solid #DAC1C1;
+  clear: both;
+  display: none;
+
+}
+
+.popover.block{
+  display: block !important;
+}
+
+
+.popover .content{
+  font-size:11px;
+  font-family: 'Gotham-Light', sans-serif;
+}
+
+.content em{
+  font-style: normal;
+}
+
+/***********************
+        Visa
+************************/
+i.visa{
+  width: 1.7em;
+  position: absolute;
+  top: 8px;
+  right: 6px;
+  color: #17ab79;
+  font-size: 170%;
+}
+
+i.mastercard{
+  width: 1.7em;
+  position: absolute;
+  top: 8px;
+  right: 6px;
+  color: #17ab79;
+  font-size: 170%;
+}
+
+.btm{
+  padding: .8em;
+  margin: 1em;
+  display: inline-block;
+  background: none;
+  border-color:#17ab79;
+  border:1px solid;
+  color: #17ab79;
+  font-size: 14px;
+  text-decoration:none;
+  transition:background-color .2s ease;
+
+}
+.btm:hover{
+  cursor: pointer;
+  background: #17ab79;
+  border: 1px solid #17ab79;
+  color: #fff;
+}
+
+.tooltip{
+  position: absolute !important;
+  top: 1em;
+  padding: 8px;
+  left: initial;
+  right:1em;
+  pointer-events: all;
+  outline: 0;
+}
+
+@media screen and (max-width: 420px) {
+  .container{
+    width:100%;
+    padding: 1em;
+  }
+}
+
+
+.half-containter{
+  width: 50%;
+  float: left;
+}
+
+.half-containter .popover{
+  width:96%;
+  margin:2%;
+}
+
+.half1{
+  width: 100%;
+}
+
+.half2{
+  width: 98%;
+  margin-left:2%;
+}
+
+iframe{width:100%;}
+.wrapper{
+  background: none;
+}
+.container{
+  width: 100%;
+  margin: 0;
+  margin-top: 1em;
+  background: #FAFAFA;
+}
+
+/**$$$payfortStyleZone$$$**/
+/*primary*/
+.pay {
+  background-color: #ba0c2f;
+}
+.btm{
+  border-color: #ba0c2f;
+  color: #ba0c2f;
+}
+.btm:hover{
+  background-color: #ba0c2f;
+  border-color: #ba0c2f;
+}
+i.visa,i.mastercard, i.amex, i.mada, i.nps{
+  color: #ba0c2f;
+}
+/*secondary*/
+.container{
+  background-color: #fafafa;
+}
+/*background*/
+body{
+  background-color: #ffffff;
+}
+.wrapper{
+  background: #ffffff;
+}
+/**$$$endPayfortStyleZone$$$**/
+
+
+/**** Limit card width*****/
+.card-container {
+  width: 400px;
+  height: 100%;
+  border-radius: 5px;
+  background: #fff;
+  border: 1px solid #D3DAEB;
+  padding: 2em;
+  margin: 2em auto;
+}

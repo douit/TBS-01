@@ -1,3 +1,4 @@
 export const environment = {
-  production: true
+  production: true,
+  payFortPaymentPage: 'https://checkout.PayFort.com/FortAPI/paymentPage'
 };
