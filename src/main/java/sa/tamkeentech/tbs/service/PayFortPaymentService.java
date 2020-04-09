@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -128,17 +129,6 @@ public class PayFortPaymentService {
         return payfortOperationRequest;
     }
 
-   /* public ResponseEntity<PayFortOperationDTO> doPaymentOperation(Map<String, String> params, HttpServletRequest request) {
-
-        if (params != null && Constants.PaymentOperation.TOKENIZATION.name().equals(params.get("service_command"))) {
-            return proceedPaymentOperation(params, request);
-        } else if (params != null && Constants.PaymentOperation.PURCHASE.name().equals(params.get("command"))) {
-            return checkPaymentResult(params);
-        } else {
-            throw new TbsRunTimeException("Unknown or unsupported payment operation");
-        }
-    }*/
-
     // PayFort resp: after Tokenization
     // response_code=18000&card_number=400555******0001&card_holder_name=Ahmed+B
     // &signature=07793d77079cc89a769281ed55d3237b71583c76172c6350cfe3ed1f24304621
@@ -152,6 +142,18 @@ public class PayFortPaymentService {
             throw new TbsRunTimeException("Unknown or unsupported payment operation");
         }
         log.debug("------Payfort payment processing tokenizaion code: {}, message: {}", params.get("status"),  params.get("response_message"));
+        // Must change status to checkout page
+        Payment payment = paymentRepository.findByTransactionId(params.get("merchant_reference"));
+        if (payment != null) {
+            payment.setStatus(PaymentStatus.CHECKOUT_PAGE);
+            paymentRepository.save(payment);
+
+            Invoice invoice = payment.getInvoice();
+            invoice.setPaymentStatus(PaymentStatus.CHECKOUT_PAGE);
+            invoiceRepository.save(invoice);
+        } else {
+            throw new PaymentGatewayException("Payfort prchase, Payment not found, transactionId=" + params.get("merchant_reference"));
+        }
         PayFortOperationDTO payfortOperationRequest = PayFortOperationDTO.builder()
             .command(Constants.PaymentOperation.PURCHASE.name())
             .accessCode(accessCode)
@@ -195,8 +197,6 @@ public class PayFortPaymentService {
         ResponseEntity<PayFortOperationDTO> result = restTemplate.postForEntity(urlJson, payfortOperationRequest, PayFortOperationDTO.class);
         log.debug("Purchase request status: {}, description ", result.getBody().getStatus(), result.getBody().getResponseMessage());
 
-        // Must change status to checkout page
-
         return result;
     }
 
@@ -238,6 +238,7 @@ public class PayFortPaymentService {
         String redirectUrl = invoice.getClient().getRedirectUrl() + "?transactionId=" + transactionId;
         log.info("------Redirect after payment to: {}", redirectUrl);
         response.addHeader("Location", redirectUrl);
+        response.setStatus(HttpStatus.FOUND.value());
     }
 
 
