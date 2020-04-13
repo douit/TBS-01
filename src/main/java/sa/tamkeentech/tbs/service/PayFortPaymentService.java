@@ -1,5 +1,6 @@
 package sa.tamkeentech.tbs.service;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.ui.Model;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.Invoice;
@@ -29,6 +32,9 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.net.URLEncoder;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -137,32 +143,34 @@ public class PayFortPaymentService {
     // &response_message=Success&merchant_reference=7000000360021648
     // &token_name=94c729e0864d413687035ac2fe4add31 &return_url=http%3A%2F%2Flocalhost%3A9000%2Fapi%2Fpayments%2Fpayfort-processing
     //&card_bin=400555&status=18
-    public ResponseEntity<PayFortOperationDTO> proceedPaymentOperation(Map<String, String> params, HttpServletRequest request) {
+    public void proceedPaymentOperation(Map<String, String> params, HttpServletRequest request, HttpServletResponse response) {
         if (params == null || !Constants.PaymentOperation.TOKENIZATION.name().equals(params.get("service_command"))) {
             throw new TbsRunTimeException("Unknown or unsupported payment operation");
         }
         log.debug("------Payfort payment processing tokenizaion code: {}, message: {}", params.get("status"),  params.get("response_message"));
         // Must change status to checkout page
         Payment payment = paymentRepository.findByTransactionId(params.get("merchant_reference"));
+        Invoice invoice = null;
         if (payment != null) {
             payment.setStatus(PaymentStatus.CHECKOUT_PAGE);
             paymentRepository.save(payment);
 
-            Invoice invoice = payment.getInvoice();
+            invoice = payment.getInvoice();
             invoice.setPaymentStatus(PaymentStatus.CHECKOUT_PAGE);
             invoiceRepository.save(invoice);
         } else {
             throw new PaymentGatewayException("Payfort prchase, Payment not found, transactionId=" + params.get("merchant_reference"));
         }
+        BigDecimal roundedAmount = invoice.getAmount().setScale(2, RoundingMode.HALF_UP);
         PayFortOperationDTO payfortOperationRequest = PayFortOperationDTO.builder()
             .command(Constants.PaymentOperation.PURCHASE.name())
             .accessCode(accessCode)
             .merchantIdentifier(merchantIdentifier)
             .merchantReference(params.get("merchant_reference"))
-            .amount(10000l)// 100 SAR
+            .amount(roundedAmount.multiply(new BigDecimal("100")).longValue())// 100 SAR
             .currency("SAR")
             .language(language)
-            .customerEmail("a.bouzaien.@tamkeentech.sa")
+            .customerEmail(invoice.getCustomer().getContact().getEmail())
             // .customerIp("192.178.1.10") // detect public ip
             .customerIp(request.getRemoteAddr())
             .tokenName(params.get("token_name"))
@@ -170,7 +178,7 @@ public class PayFortPaymentService {
             // .paymentOption("VISA") // pass list? MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
             // .eci("ECOMMERCE")
             .orderDescription("Test integration")
-            .customerName("Ahmed B")
+            .customerName(invoice.getCustomer().getName())
             .settlementReference(params.get("merchant_reference"))
             .returnUrl(paymentNotificationUrl)
             .build();
@@ -194,10 +202,27 @@ public class PayFortPaymentService {
         map.put("return_url", payfortOperationRequest.getReturnUrl());
         payfortOperationRequest.setSignature(calculatePayfortRequestSignatureForTokenization(map));
         log.debug("Purchase request: {}", payfortOperationRequest);
-        ResponseEntity<PayFortOperationDTO> result = restTemplate.postForEntity(urlJson, payfortOperationRequest, PayFortOperationDTO.class);
-        log.debug("Purchase request status: {}, description ", result.getBody().getStatus(), result.getBody().getResponseMessage());
 
-        return result;
+
+        ResponseEntity<PayFortOperationDTO> result = null;
+        String redirectUrl = invoice.getClient().getRedirectUrl() + "?transactionId=" + params.get("merchant_reference");
+
+        try {
+            result = restTemplate.postForEntity(urlJson, payfortOperationRequest, PayFortOperationDTO.class);
+            log.debug("Purchase request status: {}, description ", result.getBody().getStatus(), result.getBody().getResponseMessage());
+            if (StringUtils.isNotEmpty(result.getBody().getUrl3ds())) {
+                response.addHeader("Location", result.getBody().getUrl3ds());
+            } else {
+                redirectUrl += "&status=" + result.getBody().getStatus();
+                log.info("------ Processing ended without 3ds to: {}", redirectUrl);
+                response.addHeader("Location", redirectUrl);
+            }
+        } catch (RestClientException e) {
+            log.info("------ Processing issue Redirect after before payment to: {}", redirectUrl);
+            response.addHeader("Location", redirectUrl);
+            e.printStackTrace();
+        }
+        response.setStatus(HttpStatus.FOUND.value());
     }
 
 
@@ -235,7 +260,7 @@ public class PayFortPaymentService {
             log.info("Status is: {}", params.get("status"));
             paymentService.updateCreditCardPaymentAndSendEvent(paymentStatusResp.build(), payment);
         }
-        String redirectUrl = invoice.getClient().getRedirectUrl() + "?transactionId=" + transactionId;
+        String redirectUrl = invoice.getClient().getRedirectUrl() + "?transactionId=" + transactionId + "&status=" + params.get("status");
         log.info("------Redirect after payment to: {}", redirectUrl);
         response.addHeader("Location", redirectUrl);
         response.setStatus(HttpStatus.FOUND.value());
@@ -309,5 +334,22 @@ public class PayFortPaymentService {
     public void testTokenization() throws JSONException, JsonProcessingException {
         initPayment(UUID.randomUUID().toString(), "2105", "4005550000000001", "123", "Ahmed Bouzaien");
     }*/
+
+    public String initIframe(Model model, Long invoiceNumber) throws UnsupportedEncodingException {
+        log.info("Request to initiate Payment : ");
+        PayFortOperationDTO payment = initPayment(invoiceNumber);
+        model.addAttribute("service_command", payment.getServiceCommand());
+        model.addAttribute("access_code", payment.getAccessCode());
+        model.addAttribute("merchant_identifier", payment.getMerchantIdentifier());
+        model.addAttribute("merchant_reference", payment.getMerchantReference());
+        model.addAttribute("language", payment.getLanguage());
+        model.addAttribute("signature", payment.getSignature());
+        model.addAttribute("return_url", payment.getReturnUrl());
+
+        model.addAttribute("actionUrl", "https://sbcheckout.PayFort.com/FortAPI/paymentPage");
+
+
+        return "paymentIframePayfort";
+    }
 
 }

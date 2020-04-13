@@ -137,7 +137,7 @@ public class InvoiceService {
     @Transactional(readOnly = true)
     public Page<InvoiceDTO> findByPaymentStatus(PaymentStatus status, Pageable pageable) {
         log.debug("Request to get all Invoices");
-        return invoiceRepository.findByPaymentStatusOrderByIdDesc(status, pageable)
+        return invoiceRepository.findByPaymentStatusAndStatusNotOrderByIdDesc(status, InvoiceStatus.EXPIRED, pageable)
             .map(invoiceMapper::toDto);
     }
 

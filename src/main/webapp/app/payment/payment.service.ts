@@ -11,10 +11,10 @@ import {IPayment} from 'app/shared/model/payment.model';
 import {DataTableInput} from 'app/shared/model/datatable/datatable-input';
 import {_tbs} from 'app/shared/util/tbs-utility';
 import {Pageable} from 'app/shared/model/pageable';
-import {IRefund} from "app/shared/model/refund.model";
-import {IInvoiceSearchRequest} from "app/shared/model/invoice-serach-request";
-import {IInvoice} from "app/shared/model/invoice.model";
-import {PaymentSearchRequest} from "app/shared/model/payment-serach-request";
+import {IRefund} from 'app/shared/model/refund.model';
+import {IInvoiceSearchRequest} from 'app/shared/model/invoice-serach-request';
+import {IInvoice} from 'app/shared/model/invoice.model';
+import {PaymentSearchRequest} from 'app/shared/model/payment-serach-request';
 import {environment} from '../../environments/environment';
 
 type EntityResponseType = HttpResponse<IPayment>;

@@ -144,8 +144,11 @@ public class SecurityConfiguration {
             ////////Test Mule
                 .antMatchers("/billing/payments/credit-card/notification")
             // Payfort payment notification -> Mule
-                .antMatchers("/billing/payments/payfort/notification");
-            ;
+                .antMatchers("/billing/payments/payfort/notification")
+            // processing
+                .antMatchers("/billing/payments/payfort-processing")
+            // iframe
+                .antMatchers("/billing/payments/iframe/**");
         }
 
         @Override

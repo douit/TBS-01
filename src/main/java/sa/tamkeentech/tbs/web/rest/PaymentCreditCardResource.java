@@ -87,11 +87,11 @@ public class PaymentCreditCardResource {
         return payFortPaymentService.initPayment(invoiceNumber);
     }
 
-    @GetMapping("/api/payments/payfort-processing")
+    @GetMapping("/billing/payments/payfort-processing")
     @ResponseBody
-    public ResponseEntity<PayFortOperationDTO> processPayment(Model model
-        , @RequestParam Map<String,String> params, HttpServletRequest request) {
-        return payFortPaymentService.proceedPaymentOperation(params, request);
+    public void processPayment(Model model
+        , @RequestParam Map<String,String> params, HttpServletRequest request, HttpServletResponse response) {
+        payFortPaymentService.proceedPaymentOperation(params, request, response);
     }
 
     @GetMapping("/billing/payments/payfort/notification")
@@ -101,5 +101,15 @@ public class PaymentCreditCardResource {
         // get All Request Parameters
         log.info("-----got payment notification");
         payFortPaymentService.processPaymentNotification(request, response, params);
+    }
+
+    /*Payfort iframe*/
+    @GetMapping("/billing/payments/iframe/{invoiceNumber}")
+    public String initPayfortIframe(@PathVariable Long invoiceNumber, Model model, @RequestParam Map<String,String> params) throws UnsupportedEncodingException {
+        /*if (params.keySet() == null || !params.keySet().contains(Constants.TRANSACTION_IDENTIFIER_BASE_64)) {
+            throw new TbsRunTimeException("Missing parameters");
+        }
+        String transactionId = new String(Base64.getDecoder().decode(params.get(Constants.TRANSACTION_IDENTIFIER_BASE_64)));*/
+        return payFortPaymentService.initIframe(model, invoiceNumber);
     }
 }

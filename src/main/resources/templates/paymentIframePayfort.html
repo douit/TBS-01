@@ -1,0 +1,626 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title>Tamkeen Billing System</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <link rel="stylesheet" href="https://cdn.payfort.com/merchant_page/css/fontello.css">
+        <link rel="stylesheet" href="https://cdn.payfort.com/merchant_page/css/tooltip.css">
+        <style>
+            /***********************
+                    BASE STYLE
+            ************************/
+            *, *:after, *:before {box-sizing: border-box; -moz-box-sizing: border-box; }
+            input::-ms-clear {display: none;}
+            html{height: 100%;}
+            body {
+                color: #404d5b;
+                font-weight: 500;
+                font-size: 1em;
+                min-height: 100%;
+                margin:0;
+                padding:0;
+                /*line-height: 1*/
+            }
+
+            .b-r{border-right: 1px solid #e8edf9;}
+            .br-top{border-radius: 5px 5px 0 0}
+            .br-bottom{border-radius: 0 0 5px 5px}
+            .br{border-radius: 5px;}
+            i{cursor: pointer;}
+            .noPadding{padding: 0 !important;}
+            .back.center{text-align: center;}
+
+            /***********************
+                    Wrapper Style
+            ************************/
+
+            .wrapper {
+                background: #E8EDF9;
+                width:100%;
+                font-family:sans-serif;
+                padding: 1%;;
+            }
+            .container {
+                width: 400px;
+                height:100%;
+                border-radius: 5px;
+                background: #fff;
+                border:1px solid #D3DAEB;
+                padding: 2em;
+                margin: 2em auto;
+            }
+            /***********************
+                    inputs
+            ************************/
+            .input {
+                background: #fff;
+                padding: 0px 0 1px;
+                border:1px solid rgb(233, 237, 246);
+                position: relative;
+                display: inline-block;
+                margin: 3px 0;
+                width: 100%;
+                border-radius: 4px;
+                overflow: hidden;
+            }
+
+            .input.visible{
+                overflow: visible;
+            }
+
+
+            .input.visible .input-label{
+                overflow: visible;
+            }
+
+            .input-field {
+                position: relative;
+                display: block;
+                float: right;
+                padding: 0.8em;
+                border: none;
+                font-weight: 400;
+                -webkit-appearance: none; /* for box shadows to show on iOS */
+                appearance: none;
+                font-size: 14px;
+                background: transparent;
+                width: 100%;
+                color: #404d5b;
+                padding:19px 1.25em 7px 3em;
+                background-image: none !important;
+                font-weight: bold;
+            }
+            .input-field:focus {
+                outline: none;
+            }
+            .input-label {
+                display: inline-block;
+                float: right;
+                padding: 1px 1em;
+                padding-left: 3.3em;
+                color: #D3DAEB;
+                font-weight: bold;
+                font-size: 80%;
+                position: absolute;
+                width: 100%;
+                text-align: left;
+                overflow: hidden;
+                pointer-events: none;
+                /*-webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                -khtml-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;*/
+                -webkit-font-smoothing: antialiased;
+
+            }
+            .input-label-content {
+                position: relative;
+                font-size:90%;
+                width: 100%;
+                padding: 4px 0;
+                display: inline-block;
+                -webkit-transform-origin: 0 0;
+                transform-origin: 0 0;
+            }
+            .input-label-content span {
+                display: inline-block;
+            }
+
+            .error .input-label-content{
+                color: rgb(211, 61, 61);
+                font-weight: lighter;
+                opacity: 0.9;
+            }
+
+            .icon {
+                width: 2em;
+                position: absolute;
+                top: 0;
+                left: 0;
+                padding: .4em 0 0 .7em;
+                font-size: 120%;
+                color:#D3DAEB;
+            }
+
+            .icon.icon-right{
+                left: initial;
+                right:1em;
+            }
+
+            /* Individual styles */
+            .name{
+                text-transform: capitalize;
+            }
+            .input.br-bottom{
+                overflow: hidden;
+            }
+
+            /***********************
+            inputs Animations - span
+            ************************/
+            .input-field:focus + .input-label .input-label-content,
+            .input-filled .input-label-content {
+                -webkit-animation: input-span 0.3s forwards ;
+                animation: input-span 0.3s forwards;
+                padding: 1.70em 0;
+            }
+
+            @-webkit-keyframes input-span {
+                50% {
+                    -webkit-transform: translate3d(0, 3em, 0);
+                    transform: translate3d(0, 3em, 0);
+                }
+                51% {
+                    -webkit-transform: translate3d(0, -3em, 0) scale3d(0.85, 0.85, 1);
+                    transform: translate3d(0, -3em, 0) scale3d(0.85, 0.85, 1);
+                }
+                100% {
+                    color: #D3DAEB;
+                    -webkit-transform: translate3d(0, -1.1em, 0) scale3d(0.85, 0.85, 1);
+                    transform: translate3d(0, -1.1em, 0) scale3d(0.85, 0.85, 1);
+                }
+            }
+
+            @keyframes input-span {
+                50% {
+                    -webkit-transform: translate3d(0, 3em, 0);
+                    transform: translate3d(0, 3em, 0);
+                }
+                51% {
+                    -webkit-transform: translate3d(0, -3em, 0) scale3d(0.85, 0.85, 1);
+                    transform: translate3d(0, -3em, 0) scale3d(0.85, 0.85, 1);
+                }
+                100% {
+                    color: #D3DAEB;
+                    -webkit-transform: translate3d(0, -1.1em, 0) scale3d(0.85, 0.85, 1);
+                    transform: translate3d(0, -1.1em, 0) scale3d(0.85, 0.85, 1);
+                }
+            }
+            /***********************
+                Animation spinner
+            ************************/
+
+            .animate-spin {
+                -webkit-animation: spin 2s infinite linear;
+                animation: spin 2s infinite linear;
+                display: inline-block;
+            }
+            @-webkit-keyframes spin {
+                0% {
+                    -webkit-transform: rotate(0deg);
+                    transform: rotate(0deg);
+                }
+                100% {
+                    -webkit-transform: rotate(359deg);
+                    transform: rotate(359deg);
+                }
+            }
+            @keyframes spin {
+                0% {
+                    -webkit-transform: rotate(0deg);
+                    transform: rotate(0deg);
+                }
+                100% {
+                    -webkit-transform: rotate(359deg);
+                    transform: rotate(359deg);
+                }
+            }
+            .animated {
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+                font-size: 16px;
+                opacity: 0;
+                display: none;
+            }
+            .error {
+                font-size: 11px;
+                padding: 7px 4px 1px 4px;
+                color: #CA0202;
+                display: none;
+            }
+
+            .pay span {
+                line-height: 200%;
+            }
+            .loading .animated {
+                display: block;
+                opacity: 1;
+            }
+            .loading span {
+                display: none;
+            }
+
+
+            /***********************
+                End of Animations
+            ************************/
+
+            .pay{
+                width: 100%;
+                height: 50px;
+                font-size: 1.2em;
+                background-color: #17ab79;
+                cursor: pointer;
+                -webkit-appearance: none;
+                border: none;
+                outline: 0;
+                color: #fff;
+                margin: .4em 0;
+            }
+
+            .pay:hover{
+                opacity: .95
+            }
+
+            .pay:active{
+                opacity: 1;
+            }
+
+            /***********Remember me************/
+
+            .remember-me{
+                width: 100%;
+                display: inline-block;
+                margin: 1em 0;
+                padding: 1em;
+                border-radius: 4px;
+                font-size: .7em;
+                font-weight: bold;
+                color: #404d5b;
+                border: 1px solid #E9EDF6;
+                background: none;
+                padding-right: 0;
+            }
+
+            .remember-me .remember-me-label{
+                color: #404d5b;
+                line-height: 1.2;
+                padding-left: .8em;
+            }
+
+            /***********PopOver************/
+
+            .popover{
+                background: rgba(255, 0, 0, 0.06);
+                border-radius: 4px;
+                padding: .6em;
+                font-size: 12px;
+                display: block;
+                margin: .3em 0 .6em 0;
+                border: 1px solid #DAC1C1;
+                clear: both;
+                display: none;
+
+            }
+
+            .popover.block{
+                display: block !important;
+            }
+
+
+            .popover .content{
+                font-size:11px;
+                font-family: 'Gotham-Light', sans-serif;
+            }
+
+            .content em{
+                font-style: normal;
+            }
+
+            /***********************
+                    Visa
+            ************************/
+            i.visa{
+                width: 1.7em;
+                position: absolute;
+                top: 8px;
+                right: 6px;
+                color: #17ab79;
+                font-size: 170%;
+            }
+
+            i.mastercard{
+                width: 1.7em;
+                position: absolute;
+                top: 8px;
+                right: 6px;
+                color: #17ab79;
+                font-size: 170%;
+            }
+
+            .btm{
+                padding: .8em;
+                margin: 1em;
+                display: inline-block;
+                background: none;
+                border-color:#17ab79;
+                border:1px solid;
+                color: #17ab79;
+                font-size: 14px;
+                text-decoration:none;
+                transition:background-color .2s ease;
+
+            }
+            .btm:hover{
+                cursor: pointer;
+                background: #17ab79;
+                border: 1px solid #17ab79;
+                color: #fff;
+            }
+
+            .tooltip{
+                position: absolute !important;
+                top: 1em;
+                padding: 8px;
+                left: initial;
+                right:1em;
+                pointer-events: all;
+                outline: 0;
+            }
+
+            @media screen and (max-width: 420px) {
+                .container{
+                    width:100%;
+                    padding: 1em;
+                }
+            }
+
+
+            .half-containter{
+                width: 50%;
+                float: left;
+            }
+
+            .half-containter .popover{
+                width:96%;
+                margin:2%;
+            }
+
+            .half1{
+                width: 100%;
+            }
+
+            .half2{
+                width: 98%;
+                margin-left:2%;
+            }
+
+            iframe{width:100%;}
+            .wrapper{
+                background: none;
+            }
+            .container{
+                width: 100%;
+                margin: 0;
+                margin-top: 1em;
+                background: #FAFAFA;
+            }
+
+            /**$$$payfortStyleZone$$$**/
+            /*primary*/
+            .pay {
+                background-color: #ba0c2f;
+            }
+            .btm{
+                border-color: #ba0c2f;
+                color: #ba0c2f;
+            }
+            .btm:hover{
+                background-color: #ba0c2f;
+                border-color: #ba0c2f;
+            }
+            i.visa,i.mastercard, i.amex, i.mada, i.nps{
+                color: #ba0c2f;
+            }
+            /*secondary*/
+            .container{
+                background-color: #fafafa;
+            }
+            /*background*/
+            body{
+                background-color: #ffffff;
+            }
+            .wrapper{
+                background: #ffffff;
+            }
+            /**$$$endPayfortStyleZone$$$**/
+
+
+            /**** Limit card width*****/
+            .card-container {
+                width: 400px;
+                height: 100%;
+                border-radius: 5px;
+                background: #fff;
+                border: 1px solid #D3DAEB;
+                padding: 2em;
+                margin: 2em auto;
+            }
+
+            /***cards mada visa, master ******/
+            .icon-mada-visa-master{
+                background-size: contain;
+                background-image: url("data:image/png;base64,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");
+                background-repeat: no-repeat;
+                width: 90px !important;
+                height: 14px !important;
+            }
+
+
+        </style>
+        <script>
+            function payOnClick() {
+                var date = document.getElementById('expiry_date_formatted').value;
+                if (date.length != 5) {
+                    return false;
+                }
+                document.getElementById('expiry_date').value = date.substring(3) + date.substring(0,2);
+            }
+
+            function isNumber(evt) {
+                var code = evt.keyCode || evt.which;
+                var regex = new RegExp("^\\d+$");
+                if(evt.key.match(regex) || code == '9' || code == '8'){
+                    return true;
+                }
+                return false;
+            }
+
+            function formatExpiryDate(e, b) {
+                // var date = $("input[id=expiry_date_formatted]").val();
+                var date = document.getElementById('expiry_date_formatted').value;
+                if (date != '' && b == false) {
+                    date = date.replace(/[^0-9\.\/]/g, '');
+                    date = date.replace('\/\/', '');
+                    date = date.replace(new RegExp("[\/]$"), "");
+                    if (date.length == 2 && e.keyCode != 8) {
+                        date = String(date) + "/";
+                    }
+                    if (date.length == 1) {
+                        if (date.substring(0, 1) > 1) {
+                            date = "0" + String(date) + "/";
+                        }
+                    }
+                    if(date.length == 4 && date.indexOf("/") == -1){
+                        date = date.substring(0,2)+"/"+date.substring(2);
+                    }
+                }
+                else{
+                    if (date.length == 2 && e.keyCode != 8) {
+                        date = String(date) + "/";
+                    }
+                }
+                // $("input[id=expiry_date_formatted]").val(date);
+                document.getElementById('expiry_date_formatted').value = date;
+            }
+        </script>
+    </head>
+    <body>
+        <!--<form th:action="${RedirectURL}" method="post" name="redirectForm">
+            <input name="MerchantID" type="hidden" th:value="${MerchantID}"/>
+            <input name="Amount" type="hidden" th:value="${Amount}"/>
+            <input name="CurrencyISOCode" type="hidden" th:value="${CurrencyISOCode}"/>
+            <input name="ItemID" type="hidden" th:value="${ItemID}" >
+            <input name="Language" type="hidden" th:value="${Language}"/>
+            <input name="MessageID" type="hidden" th:value="${MessageID}"/>
+            <input name="PaymentDescription" type="hidden"  th:value="${PaymentDescription}" >
+            <input name="TransactionID" type="hidden" th:value="${TransactionID}"/>
+            <input name="ThemeID" type="hidden" th:value="${ThemeID}"/>
+            <input name="ResponseBackURL" type="hidden" th:value="${ResponseBackURL}"/>
+            <input name="Quantity" type="hidden" th:value="${Quantity}"/>
+            <input name="Channel" type="hidden" th:value="${Channel}"/>
+            <input name="Version" type="hidden" th:value="${Version}"/>
+            <input name="SecureHash" type="hidden" th:value="${SecureHash}"/>
+        </form>-->
+        <form  th:action="${actionUrl}" method="post" name="redirectForm" target="_top">
+            <input type="hidden" name="service_command" th:value="${service_command}">
+            <input type="hidden" name="access_code" th:value="${access_code}">
+            <input type="hidden" name="merchant_identifier" th:value="${merchant_identifier}">
+            <input type="hidden" name="merchant_reference" th:value="${merchant_reference}">
+            <input type="hidden" name="language" th:value="${language}">
+            <input type="hidden" name="signature" th:value="${signature}">
+            <input type="hidden" name="return_url" th:value="${return_url}">
+
+            <div class="row">
+                <div class="card-container">
+                                <span class="input">
+                                    <input class="input-field " type="tel" name="card_number" pattern="[0-9]*" maxlength="19"
+                                           onkeypress="javascript: return isNumber(event)"
+                                           ondrag="return false" ondrop="return false" autocomplete="off">
+                                    <label class="input-label" for="">
+                                        <i class="icon-credit-card icon"></i>
+                                        <i class="icon-mada-visa-master visa"></i>
+                                        <span class="input-label-content">Card Number</span>
+                                    </label>
+                                </span>
+                    <span class="popover wrong-cn">
+                                    <span class="content">
+                                        Card number is
+                                        <em>invalid.</em>
+                                    </span>
+                                </span>
+                    <div class="half-containter">
+                                <span class="input half1">
+                                    <input class="input-field" type="tel" id="expiry_date_formatted"
+                                           ondrag="return false" ondrop="return false" autocomplete="off" maxlength="5"
+                                           onkeypress="javascript: return isNumber(event)"
+                                           onkeyup="formatExpiryDate(event,false)" onkeydown="formatExpiryDate(event,true)"
+                                           pattern="[0-9/]*">
+                                    <label class="input-label" for="">
+                                        <i class="icon-calendar-empty icon"></i>
+                                        <span class="input-label-content">MM/YY</span>
+                                        <!--<span class="input-label-content">YY/MM</span>-->
+                                    </label>
+                                </span>
+                        <span class="popover wrong-exc">
+                                    <span class="content">
+                                        The expiry date entered for the credit card is in the
+                                        <em>Past !</em>
+                                    </span>
+                                </span>
+                    </div>
+
+                    <div class="half-containter">
+                                <span class="input visible half2">
+                                    <input class="input-field" type="tel" name="card_security_code" pattern="[0-9]*" maxlength="3"
+                                           onkeypress="javascript: return isNumber(event)"
+                                           ondrag="return false" ondrop="return false" autocomplete="off">
+                                    <label class="input-label" for="">
+                                        <i class="icon-lock icon"></i>
+                                        <span class="input-label-content">CVV</span>
+                                        <i class="icon-attention-circled icon-right icon"></i>
+                                        <i class="tooltip" data-tooltip="Your Credit Card Security Number"> </i>
+
+                                    </label>
+                                </span>
+                        <span class="popover empty-fields">
+                                    <span class="content">
+                                        Fields marked in
+                                        <em>red</em> are mandatory to proceed.
+                                    </span>
+                                </span>
+                    </div>
+
+                    <span class="input">
+                                <input class="input-field name" type="text" name="card_holder_name" maxlength="50"
+                                       ondrag="return false" ondrop="return false" autocomplete="off">
+                                <label class="input-label" for="">
+                                    <i class="icon-user icon"></i>
+                                    <span class="input-label-content" id="showServices">Cardholder Name</span>
+                                </label>
+                                </span>
+                    <input class="input-field" type="hidden" id="expiry_date" name="expiry_date" maxlength="4">
+                    <button type="submit" id="save-entity" class="pay br " data-text="Pay" onclick="javascript: return payOnClick();">
+                        <!--<button type="submit" id="save-entity"  class="pay br " data-text="Pay">-->
+                        <i class="animated icon-spin4 animate-spin"></i>
+                        <span>Pay</span>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </body>
+</html>

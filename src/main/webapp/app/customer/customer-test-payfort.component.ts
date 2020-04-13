@@ -18,6 +18,8 @@ import { PaymentMethodService } from 'app/payment-method/payment-method.service'
 import {IRefund, Refund} from 'app/shared/model/refund.model';
 import {RequestStatus} from 'app/shared/model/enumerations/request-status.model';
 import {Content} from '@angular/compiler/src/render3/r3_ast';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import {environment} from '../../environments/environment';
 
 @Component({
   selector: 'app-payment-test-payfort',
@@ -40,6 +42,10 @@ export class CustomerTestPayfortComponent implements OnInit {
   operationStatus: boolean;
 
   busy = false;
+
+  postUrl = environment.payFortPaymentPage;
+
+  urlIframe: SafeResourceUrl;
 
   editForm = this.fb.group({
     service_command: ['', [Validators.required]],
@@ -65,12 +71,13 @@ export class CustomerTestPayfortComponent implements OnInit {
     protected invoiceService: InvoiceService,
     protected paymentMethodService: PaymentMethodService,
     protected activatedRoute: ActivatedRoute,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private sanitizer: DomSanitizer
   ) {
     const that = this;
     this.activatedRoute.queryParams.subscribe(params => {
-      if (params['QSC']) {
-        if (params['QSC'] === '1007') {
+      if (params['status']) {
+        if (params['status'] === '14') {
           that.operationStatus = true;
         } else {
           that.operationStatus = false;
@@ -147,8 +154,12 @@ export class CustomerTestPayfortComponent implements OnInit {
     if (type === 'payment') {
       // console.log(JSON.stringify(this.invoiceSelected));
       // get signature
-      this.busy = true;
-      this.paymentService.initPayfortPayment(this.invoiceSelected.accountId)
+      // this.busy = true;
+
+      const url = '/billing/payments/iframe/' + this.invoiceSelected.accountId;
+      this.urlIframe = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+
+      /*this.paymentService.initPayfortPayment(this.invoiceSelected.accountId)
         .subscribe((res: any) => {
           console.log('----Initiate resp:' + JSON.stringify(res));
             this.editForm.patchValue({
@@ -165,7 +176,7 @@ export class CustomerTestPayfortComponent implements OnInit {
         , (res: HttpErrorResponse) => {
             this.busy = false;
             console.log('----Initiate resp error :' + res.message);
-          });
+          });*/
       // this.editForm.patchValue({'amount' : (this.invoiceSelected != null) ? this.invoiceSelected.amount : 0});
       const amountField = document.getElementById('field_amount');
       amountField.setAttribute('value', this.invoiceSelected != null ? this.invoiceSelected.amount : 0);

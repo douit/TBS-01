@@ -131,3 +131,7 @@ tbs:
 #    sadad-url: http://10.60.75.60:1001/sender/api/sadad/billloadrq
 #    sadad-application-id: '1'
     url: 'https://platform.tamkeentech.sa/billing-system-test/requestPayment?'
+
+    payfort-url-json: 'https://platform.tamkeentech.sa/billing-system-test/PayfortPaymentApi'
+    payfort-process-payment: 'http://10.60.75.90:8081/billing/payments/payfort-processing'
+    payfort-payment-notification: 'http://10.60.75.90:8081/billing/payments/payfort/notification'

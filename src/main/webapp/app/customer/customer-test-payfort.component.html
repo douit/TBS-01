@@ -59,8 +59,8 @@
                             </div>
 
                             <!-- Start credit card -->
+                        <!--
                         <form  name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
-                        <!--<form action="https://sbcheckout.PayFort.com/FortAPI/paymentPage" method="post" name="editForm" [formGroup]="editForm">-->
                             <input type="hidden" formControlName="service_command">
                             <input type="hidden" formControlName="access_code">
                             <input type="hidden" formControlName="merchant_identifier">
@@ -90,7 +90,6 @@
                                     <input class="input-field" type="tel" formControlName="expiry_date" pattern="[0-9]*" maxlength="4" placeholder="">
                                     <label class="input-label" for="">
                                         <i class="icon-calendar-empty icon"></i>
-                                        <!--<span class="input-label-content">MM/YY</span>-->
                                         <span class="input-label-content">YY/MM</span>
                                     </label>
                                 </span>
@@ -129,23 +128,24 @@
                                 </label>
                                 </span>
                                     <button type="submit" id="save-entity" class="pay br " data-text="Pay" [disabled]="editForm.invalid || isSaving">
-                                    <!--<button type="submit" id="save-entity"  class="pay br " data-text="Pay">-->
                                         <i class="animated icon-spin4 animate-spin"></i>
                                         <span>Pay</span>
                                     </button>
                                 </div>
                             </div>
-                            <!-- End credit card -->
-
-                            <!--<div>
-                                <button type="button" id="cancel-save" class="btn btn-secondary"  (click)="previousState()">
-                                    <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
-                                </button>
-                                <button type="submit" id="save-entity" [disabled]="editForm.invalid || isSaving" class="btn btn-primary">
-                                    <fa-icon [icon]="'save'"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Save</span>
-                                </button>
-                            </div>-->
                         </form>
+                        -->
+
+
+                        <!-- Iframe -->
+                        <div class="row">
+                            <div class="col-sm-12" *ngIf="invoiceSelected">
+                                <iframe  class="app-iframe" name="payment_frame"
+                                    style="height: 700px; width: 100%" frameborder="0" scrolling="no" allowtransparency="true"
+                                         [src]="urlIframe">
+                                </iframe>
+                            </div>
+                        </div>
 
 
                     </div>
