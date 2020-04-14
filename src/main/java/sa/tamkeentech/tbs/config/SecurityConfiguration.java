@@ -143,8 +143,10 @@ public class SecurityConfiguration {
                 .antMatchers("/billing/newPayment/**")
             ////////Test Mule
                 .antMatchers("/billing/payments/credit-card/notification")
-            // Payfort payment notification -> Mule
-                .antMatchers("/billing/payments/payfort/notification")
+            // Payfort payment notification --customer get -> Mule
+            //    .antMatchers("/billing/payments/payfort/notification")
+            // Payfort payment notification --server correction post -> Mule
+                .antMatchers("/billing/payments/payfort/correction")
             // processing
                 .antMatchers("/billing/payments/payfort-processing")
             // iframe

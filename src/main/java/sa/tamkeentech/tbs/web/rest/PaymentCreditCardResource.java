@@ -3,14 +3,12 @@ package sa.tamkeentech.tbs.web.rest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.*;
 import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.Payment;
 import sa.tamkeentech.tbs.service.PayFortPaymentService;
@@ -27,6 +25,7 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -80,27 +79,39 @@ public class PaymentCreditCardResource {
     }
 
     /* Payfort integration */
-    @GetMapping("/api/payments/payfort-initiate/{invoiceNumber}")
+    /*@GetMapping("/api/payments/payfort-initiate/{invoiceNumber}")
     // @GetMapping("/billing/payfort-signature/{invoiceNumber}")
     @ResponseBody
     public PayFortOperationDTO initPayfortPayment(@PathVariable Long invoiceNumber) throws UnsupportedEncodingException {
         return payFortPaymentService.initPayment(invoiceNumber);
-    }
+    }*/
 
     @GetMapping("/billing/payments/payfort-processing")
     @ResponseBody
     public void processPayment(Model model
-        , @RequestParam Map<String,String> params, HttpServletRequest request, HttpServletResponse response) {
+        , @RequestParam Map<String,Object> params, HttpServletRequest request, HttpServletResponse response) {
         payFortPaymentService.proceedPaymentOperation(params, request, response);
     }
 
-    @GetMapping("/billing/payments/payfort/notification")
+    // THIS IS NOTIFICATION AFTER REDIRECTION TO CUSTOMER
+    /*@GetMapping("/billing/payments/payfort/notification")
     @ResponseBody
     public void updatePayment(HttpServletRequest request, HttpServletResponse response,
-                              @RequestParam Map<String, String> params) throws IOException {
+                              @RequestParam Map<String, Object> params) throws IOException {
         // get All Request Parameters
-        log.info("-----got payment notification");
+        log.info("-----got payfort payment notification");
         payFortPaymentService.processPaymentNotification(request, response, params);
+    }*/
+
+    // This is post notification in case of connexion issue from payfort directly
+    @PostMapping(value= "/billing/payments/payfort/correction", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public void paymentCorrectionFromPayfort(HttpServletRequest request, HttpServletResponse response,
+                                             @RequestParam  Map<String, Object> formData){
+        log.info("-----got payment correction {}", formData);
+        for (Map.Entry<String, Object> entry: formData.entrySet()) {
+            log.info("key {} val {}", entry.getKey(), entry.getValue());
+        }
+        payFortPaymentService.processPaymentNotification(request, response, formData);
     }
 
     /*Payfort iframe*/
@@ -112,4 +123,5 @@ public class PaymentCreditCardResource {
         String transactionId = new String(Base64.getDecoder().decode(params.get(Constants.TRANSACTION_IDENTIFIER_BASE_64)));*/
         return payFortPaymentService.initIframe(model, invoiceNumber);
     }
+
 }

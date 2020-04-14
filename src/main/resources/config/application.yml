@@ -205,7 +205,6 @@ tbs:
     payfort-url-json: 'https://sbpaymentservices.payfort.com/FortAPI/paymentApi'
     payfort-url-form: 'https://sbcheckout.PayFort.com/FortAPI/paymentPage'
     payfort-process-payment: 'http://localhost:8081/billing/payments/payfort-processing'
-    payfort-payment-notification: 'http://localhost:8081/billing/payments/payfort/notification'
 
 
 
