@@ -494,15 +494,67 @@
                 height: 14px !important;
             }
 
+            /**** Loading *****/
+            .animated {
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+                font-size: 16px;
+                opacity: 1;
+            }
+            .animate-spin {
+                -webkit-animation: spin 2s infinite linear;
+                animation: spin 2s infinite linear;
+                display: inline-block;
+            }
+
+            .icon-spin5 {
+                content: '\e80f';
+            }
+
 
         </style>
         <script>
             function payOnClick() {
                 var date = document.getElementById('expiry_date_formatted').value;
-                if (date.length != 5) {
+                var cardNumberInput = document.getElementById('card_number').value;
+                var cvvInput = document.getElementById('card_security_code').value;
+                var chNameInput = document.getElementById('card_holder_name').value;
+                console.log('validation date ' + date.length);
+                console.log('validation cardNumberInput ' + cardNumberInput.length);
+                console.log('validation cvvInput ' + cvvInput.length);
+                console.log('validation chNameInput ' + date.length);
+                if (date.length != 5 || cardNumberInput.length < 13 || cvvInput.length != 3 || chNameInput.length == 0) {
+                    console.log('validation failed');
                     return false;
                 }
+                console.log('validation pass');
                 document.getElementById('expiry_date').value = date.substring(3) + date.substring(0,2);
+                startLoading();
+                document.redirectForm.submit();
+            }
+            function startLoading() {
+                disbaleElements();
+                // $("#btnHint").html("");
+                // $("#loadingI").show();
+                var loadIcon = document.getElementById("loadingI");
+                loadIcon.style.visibility = "visible";
+
+                //$("#submitBtn").addClass("loading");
+                //$("#submitBtn").attr("disabled", true);
+                var submitButton = document.getElementById("submitBtn");
+                //submitButton.classList.add("loading");
+                submitButton.disabled = true;
+            }
+
+            function disbaleElements() {
+                var cardNumberInput = document.getElementById('card_number');
+                var expDateInput = document.getElementById('expiry_date_formatted');
+                var cvvInput = document.getElementById('card_security_code');
+                var chNameInput = document.getElementById('card_holder_name');
+                cardNumberInput.readOnly = true;
+                expDateInput.readOnly = true;
+                cvvInput.readOnly = true;
+                chNameInput.readOnly = true;
             }
 
             function isNumber(evt) {
@@ -654,7 +706,7 @@
 
                     <div class="half-containter">
                                 <span class="input visible half2">
-                                    <input class="input-field" type="tel" name="card_security_code" pattern="[0-9]*" maxlength="3"
+                                    <input class="input-field" type="tel" name="card_security_code" id="card_security_code" pattern="[0-9]*" maxlength="3"
                                            onkeypress="javascript: return isNumber(event)"
                                            ondrag="return false" ondrop="return false" autocomplete="off">
                                     <label class="input-label" for="">
@@ -674,7 +726,7 @@
                     </div>
 
                     <span class="input">
-                                <input class="input-field name" type="text" name="card_holder_name" maxlength="50"
+                                <input class="input-field name" type="text" name="card_holder_name" id="card_holder_name" maxlength="50"
                                        ondrag="return false" ondrop="return false" autocomplete="off">
                                 <label class="input-label" for="">
                                     <i class="icon-user icon"></i>
@@ -682,9 +734,9 @@
                                 </label>
                                 </span>
                     <input class="input-field" type="hidden" id="expiry_date" name="expiry_date" maxlength="4">
-                    <button type="submit" id="save-entity" class="pay br " data-text="Pay" onclick="javascript: return payOnClick();">
+                    <button type="submit" id="submitBtn" class="pay br " data-text="Pay" onclick="javascript: return payOnClick();">
                         <!--<button type="submit" id="save-entity"  class="pay br " data-text="Pay">-->
-                        <i class="animated icon-spin4 animate-spin"></i>
+                        <i class="animated icon-spin4 animate-spin" id="loadingI" style="visibility: hidden;"></i>
                         <span>Pay</span>
                     </button>
                 </div>

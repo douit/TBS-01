@@ -43,7 +43,9 @@ public class PayFortOperationDTO {
     private String cardHolderName;
 
     @JsonProperty("remember_me")
-    private String rememberMe = "NO";
+    private String rememberMe;
+    // this cause an issue with sig as it is not sent
+    //private String rememberMe = "NO";
 
     @JsonProperty("return_url")
     private String returnUrl;
@@ -74,7 +76,7 @@ public class PayFortOperationDTO {
     private String customerName;
 
     @JsonProperty("merchant_extra")
-    private String merchant_extra;
+    private String merchantExtra;
 
     @JsonProperty("phone_number")
     private String phoneNumber;
@@ -95,10 +97,18 @@ public class PayFortOperationDTO {
     @JsonProperty("response_message")
     private String responseMessage;
 
+    @JsonProperty("response_code")
+    private String responseCode;
+
     @JsonProperty("fort_id")
     private String fortId;
 
     @JsonProperty("3ds_url")
     private String url3ds;
+
+    ///////Test Mada
+
+    @JsonProperty("authorization_code")
+    private String authorizationCode;
 
 }

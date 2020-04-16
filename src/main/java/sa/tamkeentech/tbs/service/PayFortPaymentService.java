@@ -163,6 +163,7 @@ public class PayFortPaymentService {
             try {
                 result = restTemplate.postForEntity(urlJson, payfortOperationRequest, PayFortOperationDTO.class);
                 log.debug("Purchase request status: {}, description ", result.getBody().getStatus(), result.getBody().getResponseMessage());
+                log.debug("-------Purchase result: {}", result);
                 if (StringUtils.isNotEmpty(result.getBody().getUrl3ds())) {
                     response.addHeader("Location", result.getBody().getUrl3ds());
                 } else {
@@ -259,29 +260,6 @@ public class PayFortPaymentService {
         return signature;
     }
 
-
-    private boolean validateTokenizationSignature(JSONObject resultAsJsonObject) throws JSONException {
-        StringBuilder signatureBuilder = new StringBuilder(responsePhrase);
-        signatureBuilder
-            .append("access_code=" + resultAsJsonObject.getString("access_code"))
-            .append("language=" + resultAsJsonObject.getString("language"))
-            .append("merchant_identifier=" + resultAsJsonObject.getString("merchant_identifier"))
-            .append("response_code=" + resultAsJsonObject.getString("response_code"))
-            .append("response_message=" + resultAsJsonObject.getString("response_message"))
-            .append("return_url=" + resultAsJsonObject.getString("return_url"))
-            .append("service_command=" + resultAsJsonObject.getString("service_command"))
-            .append("status=" + resultAsJsonObject.getString("status"))
-            .append("token_name=" + resultAsJsonObject.getString("token_name"))
-            .append(responsePhrase);
-        String signature = getEncryptedSignature(signatureBuilder.toString());
-
-        if (signature.equals(resultAsJsonObject.getString("signature"))) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     private String getEncryptedSignature(String signature) {
         String encryptedSignature;
         switch (shaType) {
@@ -299,7 +277,36 @@ public class PayFortPaymentService {
 
 
     /*public static void main(String[] args) throws UnsupportedEncodingException {
-        System.out.println("generatedsecureHash: " + 111);
+
+        Map<String, Object> map = new TreeMap();
+        map.put("access_code", "D3KyGokx8hLlQmOVszty");
+        map.put("merchant_identifier", "e93bbe3b");
+        map.put("merchant_reference", "7000096483152443");
+        map.put("language", "en");
+        map.put("expiry_date", "2105");
+        map.put("card_number", "529741******5689");
+        map.put("signature", "791885fd8ac4ddd9e900caa34835d8d3f88f63128cb11dd46d85079718459ade");
+        map.put("token_name", "1111b072cd77440aa984d0409cbbbc0e");
+        map.put("card_holder_name", "Test");
+        map.put("remember_me", "NO");
+        map.put("command", "PURCHASE");
+        map.put("amount", 10000);
+        map.put("currency", "SAR");
+        map.put("customer_email", "a.bouzaien@tamkeentech.sa");
+        map.put("customer_ip", "172.25.70.102");
+        map.put("eci", "ECOMMERCE");
+        map.put("payment_option", "MADA");
+        map.put("order_description", "Test integration");
+        map.put("customer_name", "Ahmed Bouzaien");
+        map.put("settlement_reference", "7000096483152443");
+        map.put("status", "14");
+        map.put("response_message", "Success");
+        map.put("fort_id", "158703993200038041");
+
+        PayFortPaymentService ser = new PayFortPaymentService();
+        String sig = ser.calculatePayfortRequestSignature2(map);
+
+        System.out.println("generatedsecureHash: " + sig);
         System.out.println("-----------------------");
     }*/
 
