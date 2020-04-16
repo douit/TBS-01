@@ -44,7 +44,7 @@ export class PaymentService {
   createCcPayment(accountId): Observable<EntityResponseType> {
     return this.http
       /*.post<IPayment>(this.resourceUrlCreditCard, copy, { observe: 'response' })*/
-      .get<IPayment>(this.resourceUrlCreditCard + '/' + accountId + '/CREDIT_CARD', { observe: 'response' })
+      .get<any>(this.resourceUrlCreditCard + '/' + accountId + '/CREDIT_CARD', { observe: 'response' })
       .pipe(map((res: EntityResponseType) => this.convertDateFromServer(res)));
   }
 

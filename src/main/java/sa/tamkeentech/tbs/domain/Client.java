@@ -10,6 +10,7 @@ import java.io.Serializable;
 import java.time.ZonedDateTime;
 
 import sa.tamkeentech.tbs.domain.enumeration.DateUnit;
+import sa.tamkeentech.tbs.domain.enumeration.PaymentProvider;
 
 /**
  * A Client.
@@ -74,5 +75,9 @@ public class Client implements Serializable {
 
     @Column(name = "redirect_url")
     private String redirectUrl;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_provider")
+    private PaymentProvider paymentProvider;
 
 }

@@ -144,7 +144,7 @@ tbs:
 #    sadad-application-id: '1'
 #    sts-refund-and-inquiry: 'http://127.0.0.1:8082/STSInquiryAndRefund'
 #    wahid-url: 'http://localhost:8082/SSOTokenRequest'
-    payfort-process-payment: 'http://localhost:8082/PayfortPaymentProcessing'
+#    payfort-process-payment: 'http://localhost:8082/PayfortPaymentProcessing'
   refund:
     sadad-shared-folder: 'C:\\sadad_share\\'
   report:

@@ -153,7 +153,7 @@ public class PayFortPaymentService {
             map.put("customer_name", payfortOperationRequest.getCustomerName());
             map.put("settlement_reference", payfortOperationRequest.getSettlementReference());
             map.put("return_url", payfortOperationRequest.getReturnUrl());
-            payfortOperationRequest.setSignature(calculatePayfortRequestSignature(map));
+            payfortOperationRequest.setSignature(calculatePayfortRequestSignature(map, true));
             log.debug("Purchase request: {}", payfortOperationRequest);
 
 
@@ -217,13 +217,13 @@ public class PayFortPaymentService {
         for(Map.Entry<String, Object> entry: params.entrySet()) {
             map.put(entry.getKey(), entry.getValue());
         }
-        String generatedSecureHash = calculatePayfortRequestSignature(map);
+        String generatedSecureHash = calculatePayfortRequestSignature(map, false);
         String receivedSecureHash = (params.get("signature") != null)? params.get("signature").toString(): "";
-        /*if (!generatedSecureHash.equals(receivedSecureHash)) {
+        if (!generatedSecureHash.equals(receivedSecureHash)) {
             // IF they are not equal then the response shall not be accepted
             paymentStatusResp.setCode("00"); // Invalid Request.
-            log.error("--<<>>-- processPaymentNotification: Received Secure Hash does not Equal Generated Secure hash");
-        } else*/ {
+            log.error("--<<>>-- processPaymentNotification: Received Secure Hash {} does not Equal Generated Secure hash {}", receivedSecureHash, generatedSecureHash);
+        } else {
             // Complete the Action get other parameters from result map and do your processes
             // Please refer to The Integration Manual to see the List of The Received Parameters
             log.info("Status is: {}", params.get("status"));
@@ -243,16 +243,16 @@ public class PayFortPaymentService {
      * @param requestMap
      * @return signature
      */
-    private String calculatePayfortRequestSignature(Map<String, Object> requestMap) {
+    private String calculatePayfortRequestSignature(Map<String, Object> requestMap, boolean isRequest) {
 
-        StringBuilder signatureBuilder = new StringBuilder(requestPhrase);
+        String key = (isRequest)?requestPhrase : responsePhrase;
+        StringBuilder signatureBuilder = new StringBuilder(key);
         for(Map.Entry<String, Object> entry: requestMap.entrySet()) {
-            /*if (!entry.getKey().equals("signature") && !entry.getKey().equals("card_number") && !entry.getKey().equals("card_security_code")
-                && !entry.getKey().equals("card_holder_name") && !entry.getKey().equals("expiry_date")) {*/
+            if (!entry.getKey().equals("signature")) {
                 signatureBuilder.append(entry.getKey()).append("=").append(entry.getValue());
-            //}
+            }
         }
-        signatureBuilder.append(requestPhrase);
+        signatureBuilder.append(key);
         log.info("The tokenization of transaction {}, signature builder's value before applying sha encryption : {}", requestMap.get("merchant_reference"), signatureBuilder.toString());
         String signature = getEncryptedSignature(signatureBuilder.toString());
         log.info("The tokenization of transaction {}, signature builder's value after applying sha encryption : {}", requestMap.get("merchant_reference"), signature);
@@ -308,24 +308,42 @@ public class PayFortPaymentService {
         initPayment(UUID.randomUUID().toString(), "2105", "4005550000000001", "123", "Ahmed Bouzaien");
     }*/
 
-    public String initIframe(Model model, Long invoiceNumber) throws UnsupportedEncodingException {
-        log.info("Request to initiate Payment : ");
-        PayFortOperationDTO payment = initPayment(invoiceNumber);
-        model.addAttribute("service_command", payment.getServiceCommand());
-        model.addAttribute("access_code", payment.getAccessCode());
-        model.addAttribute("merchant_identifier", payment.getMerchantIdentifier());
-        model.addAttribute("merchant_reference", payment.getMerchantReference());
-        model.addAttribute("language", payment.getLanguage());
-        model.addAttribute("signature", payment.getSignature());
-        model.addAttribute("return_url", payment.getReturnUrl());
+    public String initPayment(Model model, Payment payment) {
+        log.info("Request to initiate Payment : {}", payment.getTransactionId());
+        Map<String, Object> map = new TreeMap();
+        map.put("service_command",Constants.PaymentOperation.TOKENIZATION.name());
+        map.put("access_code",accessCode);
+        map.put("merchant_identifier",merchantIdentifier);
+        map.put("merchant_reference",payment.getTransactionId());
+        map.put("language",language);
+        map.put("return_url",processPaymentUrl);
 
-        model.addAttribute("actionUrl", "https://sbcheckout.PayFort.com/FortAPI/paymentPage");
+        PayFortOperationDTO payfortOperationRequest = PayFortOperationDTO.builder()
+            .serviceCommand(Constants.PaymentOperation.TOKENIZATION.name())
+            .accessCode(accessCode)
+            .merchantIdentifier(merchantIdentifier)
+            .merchantReference(payment.getTransactionId())
+            .language(language)
+            .returnUrl(processPaymentUrl)
+            .build();
+        payfortOperationRequest.setSignature(calculatePayfortRequestSignature(map, true));
+
+
+        model.addAttribute("service_command", payfortOperationRequest.getServiceCommand());
+        model.addAttribute("access_code", payfortOperationRequest.getAccessCode());
+        model.addAttribute("merchant_identifier", payfortOperationRequest.getMerchantIdentifier());
+        model.addAttribute("merchant_reference", payfortOperationRequest.getMerchantReference());
+        model.addAttribute("language", payfortOperationRequest.getLanguage());
+        model.addAttribute("signature", payfortOperationRequest.getSignature());
+        model.addAttribute("return_url", payfortOperationRequest.getReturnUrl());
+
+        model.addAttribute("actionUrl", urlForm);
 
 
         return "paymentIframePayfort";
     }
 
-    private PayFortOperationDTO initPayment(Long invoiceNumber) throws UnsupportedEncodingException {
+    /*private PayFortOperationDTO initPayment() throws UnsupportedEncodingException {
         log.info("Request to initiate Payment : {}", invoiceNumber);
         DateFormat df = new SimpleDateFormat("HHmmss");
         String transactionId = invoiceNumber.toString() + df.format(new Timestamp(System.currentTimeMillis()));
@@ -368,10 +386,10 @@ public class PayFortPaymentService {
             .language(language)
             .returnUrl(processPaymentUrl)
             .build();
-        payfortOperationRequest.setSignature(calculatePayfortRequestSignature(map));
+        payfortOperationRequest.setSignature(calculatePayfortRequestSignature(map, true));
 
         return payfortOperationRequest;
-    }
+    }*/
 
 
 }

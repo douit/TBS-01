@@ -64,12 +64,9 @@ public class STSPaymentService {
     @Value("${tbs.payment.sts-refund-and-inquiry}")
     private String stsCheckStatusUrl;
 
-    public String initPayment(Model model, String transactionId) {
-        log.info("Request to initiate Payment : {}", transactionId);
-        Payment payment = paymentRepository.findByTransactionId(transactionId);
-        if (payment == null) {
-            throw new TbsRunTimeException("Payment not found");
-        }
+    public String initPayment(Model model, Payment payment) {
+        log.info("Request to initiate Payment : {}", payment.getTransactionId());
+
         Invoice invoice = payment.getInvoice();
         if (invoice.getPaymentStatus() == PaymentStatus.PAID) {
             throw new TbsRunTimeException("Invoice already paid");
@@ -85,7 +82,7 @@ public class STSPaymentService {
         Map<String,String> parameters = new TreeMap<>();
         // String transactionId = String.valueOf(System.currentTimeMillis());
         // fill required parameters
-        parameters.put("TransactionID", transactionId);
+        parameters.put("TransactionID", payment.getTransactionId());
         parameters.put("MerchantID", stsMerchantId);
         BigDecimal roundedAmount = invoice.getAmount().setScale(2, RoundingMode.HALF_UP);
         parameters.put("Amount", roundedAmount.multiply(new BigDecimal("100")).toBigInteger().toString());

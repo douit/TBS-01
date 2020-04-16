@@ -3,6 +3,7 @@ package sa.tamkeentech.tbs.web.rest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -12,11 +13,13 @@ import org.springframework.web.bind.annotation.*;
 import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.Payment;
 import sa.tamkeentech.tbs.service.PayFortPaymentService;
+import sa.tamkeentech.tbs.service.PaymentService;
 import sa.tamkeentech.tbs.service.STSPaymentService;
 import sa.tamkeentech.tbs.service.dto.PayFortOperationDTO;
 import sa.tamkeentech.tbs.service.dto.PaymentStatusResponseDTO;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -42,6 +45,9 @@ public class PaymentCreditCardResource {
 
     private final STSPaymentService sTSPaymentService;
     private final PayFortPaymentService payFortPaymentService;
+    @Inject
+    @Lazy
+    private PaymentService paymentService;
 
     public PaymentCreditCardResource(STSPaymentService sTSPaymentService, PayFortPaymentService payFortPaymentService) {
         this.sTSPaymentService = sTSPaymentService;
@@ -49,6 +55,12 @@ public class PaymentCreditCardResource {
     }
 
 
+    /**
+     * Load payment form for STS / Payfort
+     * @param model
+     * @param params
+     * @return
+     */
     @GetMapping("/billing/payments/credit-card")
     public String initCC(Model model, @RequestParam Map<String,String> params) {
         // use https://www.codepunker.com/tools/string-converter  --> base64 deccode
@@ -57,17 +69,19 @@ public class PaymentCreditCardResource {
          "url": "transactionIdentifier"
         }*/
         if (params.keySet() == null || !params.keySet().contains(Constants.TRANSACTION_IDENTIFIER_BASE_64)) {
+            // ToDo change to error page
             throw new TbsRunTimeException("Missing parameters");
         }
         String transactionId = new String(Base64.getDecoder().decode(params.get(Constants.TRANSACTION_IDENTIFIER_BASE_64)));
-        return sTSPaymentService.initPayment(model, transactionId);
+        return paymentService.initPayment(model, transactionId);
     }
+
 
     @PostMapping("/billing/payments/credit-card/notification")
     @ResponseBody
     public void updatePayment(HttpServletRequest request, HttpServletResponse response) throws IOException {
         // get All Request Parameters
-        log.info("-----got payment notification");
+        log.info("-----got STS payment notification");
         sTSPaymentService.processPaymentNotification(request, response);
     }
 
@@ -107,21 +121,18 @@ public class PaymentCreditCardResource {
     @PostMapping(value= "/billing/payments/payfort/correction", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public void paymentCorrectionFromPayfort(HttpServletRequest request, HttpServletResponse response,
                                              @RequestParam  Map<String, Object> formData){
-        log.info("-----got payment correction {}", formData);
-        for (Map.Entry<String, Object> entry: formData.entrySet()) {
-            log.info("key {} val {}", entry.getKey(), entry.getValue());
-        }
+        log.info("-----got payfort payment correction {}", formData);
         payFortPaymentService.processPaymentNotification(request, response, formData);
     }
 
-    /*Payfort iframe*/
-    @GetMapping("/billing/payments/iframe/{invoiceNumber}")
+    // Payfort iframe -->  /billing/newPayment/
+    /* @GetMapping("/billing/payments/iframe/{invoiceNumber}")
     public String initPayfortIframe(@PathVariable Long invoiceNumber, Model model, @RequestParam Map<String,String> params) throws UnsupportedEncodingException {
-        /*if (params.keySet() == null || !params.keySet().contains(Constants.TRANSACTION_IDENTIFIER_BASE_64)) {
+        *//*if (params.keySet() == null || !params.keySet().contains(Constants.TRANSACTION_IDENTIFIER_BASE_64)) {
             throw new TbsRunTimeException("Missing parameters");
         }
-        String transactionId = new String(Base64.getDecoder().decode(params.get(Constants.TRANSACTION_IDENTIFIER_BASE_64)));*/
+        String transactionId = new String(Base64.getDecoder().decode(params.get(Constants.TRANSACTION_IDENTIFIER_BASE_64)));*//*
         return payFortPaymentService.initIframe(model, invoiceNumber);
-    }
+    }*/
 
 }

@@ -72,5 +72,6 @@
     <include file="config/liquibase/changelog/20200318212812_added_entity_Item_audit.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20200322105213_alter_entity_client_expiry_token.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20200325105213_alter_bank_code_and_name.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20200415090413_alter_entity_client_and_payment.xml" relativeToChangelogFile="false"/>
 
 </databaseChangeLog>

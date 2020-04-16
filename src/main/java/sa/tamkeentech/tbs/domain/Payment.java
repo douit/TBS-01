@@ -12,6 +12,7 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 
+import sa.tamkeentech.tbs.domain.enumeration.PaymentProvider;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 
 /**
@@ -64,5 +65,9 @@ public class Payment extends AbstractAuditingEntity implements Serializable {
     @OneToMany(mappedBy = "payment")
     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     private Set<Refund> refunds = new HashSet<>();
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_provider")
+    private PaymentProvider paymentProvider;
 
 }

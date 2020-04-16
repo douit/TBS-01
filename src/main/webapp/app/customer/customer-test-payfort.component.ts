@@ -155,9 +155,15 @@ export class CustomerTestPayfortComponent implements OnInit {
       // console.log(JSON.stringify(this.invoiceSelected));
       // get signature
       // this.busy = true;
+      this.subscribeToCreateCcPayment(this.paymentService.createCcPayment(this.invoiceSelected.accountId));
 
-      const url = '/billing/payments/iframe/' + this.invoiceSelected.accountId;
-      this.urlIframe = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+      /*this.paymentService.createCcPayment(this.editForm.get(['invoiceId']).value.accountId)
+        .subscribe((res) => {
+            // const url = '/billing/payments/iframe/' + this.invoiceSelected.accountId;
+            this.urlIframe = this.sanitizer.bypassSecurityTrustResourceUrl(res.body.link);
+          }
+          , (err) => {this.onSaveError(err); }
+      );*/
 
       /*this.paymentService.initPayfortPayment(this.invoiceSelected.accountId)
         .subscribe((res: any) => {
@@ -181,5 +187,11 @@ export class CustomerTestPayfortComponent implements OnInit {
       const amountField = document.getElementById('field_amount');
       amountField.setAttribute('value', this.invoiceSelected != null ? this.invoiceSelected.amount : 0);
     }
+  }
+
+  protected subscribeToCreateCcPayment(result: Observable<HttpResponse<any>>) {
+    result.subscribe((res) => {
+      this.urlIframe = this.sanitizer.bypassSecurityTrustResourceUrl(res.body.link);
+    }, (err) => this.onSaveError(err));
   }
 }

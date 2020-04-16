@@ -25,6 +25,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.ui.Model;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpServerErrorException;
@@ -32,6 +33,7 @@ import org.springframework.web.client.RestTemplate;
 import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.*;
 import sa.tamkeentech.tbs.domain.enumeration.InvoiceStatus;
+import sa.tamkeentech.tbs.domain.enumeration.PaymentProvider;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 import sa.tamkeentech.tbs.repository.*;
 import sa.tamkeentech.tbs.service.dto.*;
@@ -110,6 +112,10 @@ public class PaymentService {
     private STSPaymentService sTSPaymentService;
 
     @Autowired
+    @Lazy
+    private PayFortPaymentService payFortPaymentService;
+
+    @Autowired
     private RestTemplate restTemplate;
 
     public PaymentService(PaymentRepository paymentRepository, PaymentMapper paymentMapper, InvoiceRepository invoiceRepository, BankRepository bankRepository, BinRepository binRepository, PaymentMethodService paymentMethodService, ObjectMapper objectMapper, EventPublisherService eventPublisherService, ClientService clientService, ClientMapper clientMapper, PersistenceAuditEventRepository persistenceAuditEventRepository, PaymentMethodMapper paymentMethodMapper, ClientRepository clientRepository) {
@@ -126,6 +132,28 @@ public class PaymentService {
         this.persistenceAuditEventRepository = persistenceAuditEventRepository;
         this.paymentMethodMapper = paymentMethodMapper;
         this.clientRepository = clientRepository;
+    }
+
+
+    /**
+     * Load form payment according to the provider
+     * @param model
+     * @param transactionId
+     * @return
+     */
+    @Transactional
+    public String initPayment(Model model, String transactionId) {
+        log.info("Request to initiate Payment : {}", transactionId);
+        Payment payment = paymentRepository.findByTransactionId(transactionId);
+        if (payment == null) {
+            // ToDo change to error page
+            throw new TbsRunTimeException("Payment not found");
+        }
+        if (payment.getPaymentProvider() == PaymentProvider.PAYFORT) {
+            return payFortPaymentService.initPayment(model, payment);
+        } else {
+            return sTSPaymentService.initPayment(model, payment);
+        }
     }
 
     /**
@@ -634,6 +662,7 @@ public class PaymentService {
         payment.setAmount(invoice.getAmount());
         payment.setStatus(PaymentStatus.PENDING);
         payment.setTransactionId(transactionId);
+        payment.setPaymentProvider(invoice.getClient().getPaymentProvider());
 
         paymentRepository.save(payment);
 
