@@ -12,6 +12,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.Invoice;
 import sa.tamkeentech.tbs.domain.Payment;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
@@ -64,7 +65,7 @@ public class STSPaymentService {
     @Value("${tbs.payment.sts-refund-and-inquiry}")
     private String stsCheckStatusUrl;
 
-    public String initPayment(Model model, Payment payment) {
+    public String initPayment(Model model, Payment payment, String lang) {
         log.info("Request to initiate Payment : {}", payment.getTransactionId());
 
         Invoice invoice = payment.getInvoice();
@@ -100,7 +101,7 @@ public class STSPaymentService {
         parameters.put("Quantity", "1");
         parameters.put("Channel", "0");
         // fill some optional parameters
-        parameters.put("Language", "Ar");
+        parameters.put("Language", lang.equalsIgnoreCase(Constants.DEFAULT_HEADER_LANGUAGE)? "ar": "en");
         parameters.put("ThemeID", "theme1");
         // if this url is configured for the merchant it's not required
         parameters.put("ResponseBackURL", stsResponseBackUrl);
@@ -299,7 +300,7 @@ public class STSPaymentService {
         String receivedSecurehash = result.get("Response.SecureHash");
         log.debug("----> generatedsecureHash: {}", generatedSecureHash);
         log.debug("----> receivedSecurehash : {}", receivedSecurehash);
-        if(!receivedSecurehash.equals(generatedSecureHash)){
+        if (!receivedSecurehash.equals(generatedSecureHash)){
             //IF they are not equal then the response shall not be accepted
             throw new TbsRunTimeException("--<<>>--Async: Received Secure Hash does not Equal generated Secure hash");
         }  else {
@@ -347,11 +348,13 @@ public class STSPaymentService {
                         String statusDescription = URLEncoder.encode(responseParameters.get("Response.StatusDescription"), "UTF-8");
                         log.info("-->After encoding: {}", statusDescription);
                         // ToDO add language to client DB
-                        if (isArabicStatusDesc) {
+                        /*if (isArabicStatusDesc) {
                             statusDescription = statusDescription.toUpperCase();
-                        }
-                        log.info("-->After Upper: {}", statusDescription);
+                        }*/
+                        // log.info("-->After Upper: {}", statusDescription);
                         responseOrderdString.append(statusDescription);
+                        // check if it works for both languages
+                        // responseOrderdString.append(URLEncoder.encode(statusDescription, "UTF-8"));
                         break;
                     default:
                         responseOrderdString.append(responseParameters.get(treeMapKey));
@@ -444,7 +447,7 @@ public class STSPaymentService {
         String generatedsecureHash = new String(DigestUtils.sha256Hex(responseOrderdString.toString()).getBytes());*/
 
         // Ahmed unify impl
-        String generatedsecureHash = null;
+        /*String generatedsecureHash = null;
         try {
             STSPaymentService paymentserv = new STSPaymentService();
             generatedsecureHash = new String(DigestUtils.sha256Hex(paymentserv.getResponseOrderdString(map, key, false)).getBytes());
@@ -456,9 +459,9 @@ public class STSPaymentService {
 
 
         System.out.println("-----------------------");
-        System.out.println("Test ZonedDateTime: " + ZonedDateTime.now());
+        System.out.println("Test ZonedDateTime: " + ZonedDateTime.now());*/
 
-        File directory = new File("C:\\sadad_share\\");
+        /*File directory = new File("C:\\sadad_share\\");
         File[] files = directory.listFiles((File dir, String name) -> {
             // String lowercaseName = name.toLowerCase();
             if ((name.startsWith("BLRCRQ-"))
@@ -503,8 +506,19 @@ public class STSPaymentService {
             System.out.println("----banks: " + banks);
         }
         System.out.println("----All: " + total);
-        System.out.println("----All banks: " + banks);
+        System.out.println("----All banks: " + banks);*/
 
-                    }
+        //
+        String statusDescription = "تمت الحركة بنجاح" ;
+        /*if (isArabicStatusDesc) {
+                            statusDescription = statusDescription.toUpperCase();
+                        }*/
+        // check if it works for both languages
+        //log.info("-->After Upper: {}", statusDescription);
+        System.out.println("----M1: " + statusDescription.toUpperCase());
+
+        System.out.println("----M2: " + URLEncoder.encode(statusDescription, "UTF-8"));
+        System.out.println("----M2: " + URLEncoder.encode(statusDescription, "UTF-8").toUpperCase());
+    }
 
 }

@@ -1,13 +1,10 @@
 package sa.tamkeentech.tbs.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.configurationprocessor.json.JSONException;
-import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,31 +16,21 @@ import org.springframework.web.client.RestTemplate;
 import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.Invoice;
 import sa.tamkeentech.tbs.domain.Payment;
-import sa.tamkeentech.tbs.domain.PaymentMethod;
-import sa.tamkeentech.tbs.domain.enumeration.InvoiceStatus;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.repository.PaymentRepository;
 import sa.tamkeentech.tbs.service.dto.PayFortOperationDTO;
 import sa.tamkeentech.tbs.service.dto.PaymentStatusResponseDTO;
+import sa.tamkeentech.tbs.service.util.LanguageUtil;
 import sa.tamkeentech.tbs.web.rest.errors.PaymentGatewayException;
-import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.net.URLEncoder;
-import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -71,6 +58,9 @@ public class PayFortPaymentService {
     @Inject
     ObjectMapper objectMapper;
 
+    @Inject
+    private LanguageUtil languageUtil;
+
     @Value("${tbs.payment.payfort-sha-type}")
     private Constants.ShaType shaType;
     @Value("${tbs.payment.payfort-sha-request-phrase}")
@@ -90,6 +80,57 @@ public class PayFortPaymentService {
     @Value("${tbs.payment.payfort-process-payment}")
     private String processPaymentUrl;
 
+
+    /**
+     * Return the credit card form
+     * @param model
+     * @param payment
+     * @param lang
+     * @return
+     */
+    public String initPayment(Model model, Payment payment, String lang) {
+        log.info("Request to initiate Payment : {}", payment.getTransactionId());
+        Map<String, Object> map = new TreeMap();
+        map.put("service_command",Constants.PaymentOperation.TOKENIZATION.name());
+        map.put("access_code",accessCode);
+        map.put("merchant_identifier",merchantIdentifier);
+        map.put("merchant_reference",payment.getTransactionId());
+        map.put("language",language);
+        map.put("return_url",processPaymentUrl);
+
+        PayFortOperationDTO payfortOperationRequest = PayFortOperationDTO.builder()
+            .serviceCommand(Constants.PaymentOperation.TOKENIZATION.name())
+            .accessCode(accessCode)
+            .merchantIdentifier(merchantIdentifier)
+            .merchantReference(payment.getTransactionId())
+            .language(language)
+            .returnUrl(processPaymentUrl)
+            .build();
+        payfortOperationRequest.setSignature(calculatePayfortRequestSignature(map, true));
+
+
+        model.addAttribute("service_command", payfortOperationRequest.getServiceCommand());
+        model.addAttribute("access_code", payfortOperationRequest.getAccessCode());
+        model.addAttribute("merchant_identifier", payfortOperationRequest.getMerchantIdentifier());
+        model.addAttribute("merchant_reference", payfortOperationRequest.getMerchantReference());
+        model.addAttribute("language", payfortOperationRequest.getLanguage());
+        model.addAttribute("signature", payfortOperationRequest.getSignature());
+        model.addAttribute("return_url", payfortOperationRequest.getReturnUrl());
+        model.addAttribute("actionUrl", urlForm);
+
+        // Adding language tokens
+        model.addAttribute("cardTitle", languageUtil.getMessageByKey("payment.card.title", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
+        model.addAttribute("cardNumber", languageUtil.getMessageByKey("payment.card.number", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
+        model.addAttribute("cardCvv", languageUtil.getMessageByKey("payment.card.cvv", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
+        model.addAttribute("cardHolder", languageUtil.getMessageByKey("payment.card.holder", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
+        model.addAttribute("cardPay", languageUtil.getMessageByKey("payment.card.pay", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
+        model.addAttribute("cardCvvTooltip", languageUtil.getMessageByKey("payment.card.cvv.tooltip", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
+        model.addAttribute("cardInvalid", languageUtil.getMessageByKey("payment.card.invalid", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
+        model.addAttribute("currentLang", lang);
+
+        return "paymentIframePayfort";
+    }
+
     // PayFort resp: after Tokenization
     // response_code=18000&card_number=400555******0001&card_holder_name=Ahmed+B
     // &signature=07793d77079cc89a769281ed55d3237b71583c76172c6350cfe3ed1f24304621
@@ -98,6 +139,13 @@ public class PayFortPaymentService {
     // &response_message=Success&merchant_reference=7000000360021648
     // &token_name=94c729e0864d413687035ac2fe4add31 &return_url=http%3A%2F%2Flocalhost%3A9000%2Fapi%2Fpayments%2Fpayfort-processing
     //&card_bin=400555&status=18
+
+    /**
+     * Processing Tokenization and Purchase
+     * @param params
+     * @param request
+     * @param response
+     */
     public void proceedPaymentOperation(Map<String, Object> params, HttpServletRequest request, HttpServletResponse response) {
 
         if (params != null && Constants.PaymentOperation.PURCHASE.name().equals(params.get("command"))) {
@@ -127,17 +175,17 @@ public class PayFortPaymentService {
                 .currency("SAR")
                 .language(language)
                 .customerEmail(invoice.getCustomer().getContact().getEmail())
-                // .customerIp("192.178.1.10") // detect public ip
                 .customerIp(request.getRemoteAddr())
-                .tokenName(params.get("token_name").toString())
-                // .signature() set below
-                // .paymentOption("VISA") // pass list? MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-                // .eci("ECOMMERCE")
-                .orderDescription("Test integration")
+                // case wrong cc token null
+                .tokenName(params.get("token_name") != null? params.get("token_name").toString(): "")
+                //.orderDescription("Test integration")
                 .customerName(invoice.getCustomer().getName())
                 .settlementReference(params.get("merchant_reference").toString())
                 .returnUrl(processPaymentUrl)
                 .build();
+            if (invoice.getInvoiceItems() != null && invoice.getInvoiceItems().size() == 1) {
+                payfortOperationRequest.setOrderDescription(invoice.getInvoiceItems().get(0).getDetails());
+            }
             Map<String, Object> map = new TreeMap();
             map.put("command", Constants.PaymentOperation.PURCHASE.name());
             map.put("access_code", accessCode);
@@ -149,7 +197,9 @@ public class PayFortPaymentService {
             map.put("customer_email", payfortOperationRequest.getCustomerEmail());
             map.put("customer_ip", payfortOperationRequest.getCustomerIp());
             map.put("token_name", payfortOperationRequest.getTokenName());
-            map.put("order_description", payfortOperationRequest.getOrderDescription());
+            if (payfortOperationRequest.getOrderDescription() != null) {
+                map.put("order_description", payfortOperationRequest.getOrderDescription());
+            }
             map.put("customer_name", payfortOperationRequest.getCustomerName());
             map.put("settlement_reference", payfortOperationRequest.getSettlementReference());
             map.put("return_url", payfortOperationRequest.getReturnUrl());
@@ -185,6 +235,12 @@ public class PayFortPaymentService {
     }
 
 
+    /**
+     * Check Payment status
+     * @param request
+     * @param response
+     * @param params
+     */
     public void processPaymentNotification(HttpServletRequest request, HttpServletResponse response, Map<String, Object> params) {
         // PayFort resp: after Purchase
         // response_code=14000&card_holder_name=Ahmed%20B&signature=21b2314fc360366fdcceeab354391c7d311c35e02aef4641af874e28e74cf1e7
@@ -260,6 +316,11 @@ public class PayFortPaymentService {
         return signature;
     }
 
+    /**
+     *
+     * @param signature
+     * @return
+     */
     private String getEncryptedSignature(String signature) {
         String encryptedSignature;
         switch (shaType) {
@@ -274,129 +335,5 @@ public class PayFortPaymentService {
         }
         return encryptedSignature;
     }
-
-
-    /*public static void main(String[] args) throws UnsupportedEncodingException {
-
-        Map<String, Object> map = new TreeMap();
-        map.put("access_code", "D3KyGokx8hLlQmOVszty");
-        map.put("merchant_identifier", "e93bbe3b");
-        map.put("merchant_reference", "7000096483152443");
-        map.put("language", "en");
-        map.put("expiry_date", "2105");
-        map.put("card_number", "529741******5689");
-        map.put("signature", "791885fd8ac4ddd9e900caa34835d8d3f88f63128cb11dd46d85079718459ade");
-        map.put("token_name", "1111b072cd77440aa984d0409cbbbc0e");
-        map.put("card_holder_name", "Test");
-        map.put("remember_me", "NO");
-        map.put("command", "PURCHASE");
-        map.put("amount", 10000);
-        map.put("currency", "SAR");
-        map.put("customer_email", "a.bouzaien@tamkeentech.sa");
-        map.put("customer_ip", "172.25.70.102");
-        map.put("eci", "ECOMMERCE");
-        map.put("payment_option", "MADA");
-        map.put("order_description", "Test integration");
-        map.put("customer_name", "Ahmed Bouzaien");
-        map.put("settlement_reference", "7000096483152443");
-        map.put("status", "14");
-        map.put("response_message", "Success");
-        map.put("fort_id", "158703993200038041");
-
-        PayFortPaymentService ser = new PayFortPaymentService();
-        String sig = ser.calculatePayfortRequestSignature2(map);
-
-        System.out.println("generatedsecureHash: " + sig);
-        System.out.println("-----------------------");
-    }*/
-
-    /*@Scheduled(initialDelay = 1000 * 10, fixedDelay=Long.MAX_VALUE)
-    public void testTokenization() throws JSONException, JsonProcessingException {
-        initPayment(UUID.randomUUID().toString(), "2105", "4005550000000001", "123", "Ahmed Bouzaien");
-    }*/
-
-    public String initPayment(Model model, Payment payment) {
-        log.info("Request to initiate Payment : {}", payment.getTransactionId());
-        Map<String, Object> map = new TreeMap();
-        map.put("service_command",Constants.PaymentOperation.TOKENIZATION.name());
-        map.put("access_code",accessCode);
-        map.put("merchant_identifier",merchantIdentifier);
-        map.put("merchant_reference",payment.getTransactionId());
-        map.put("language",language);
-        map.put("return_url",processPaymentUrl);
-
-        PayFortOperationDTO payfortOperationRequest = PayFortOperationDTO.builder()
-            .serviceCommand(Constants.PaymentOperation.TOKENIZATION.name())
-            .accessCode(accessCode)
-            .merchantIdentifier(merchantIdentifier)
-            .merchantReference(payment.getTransactionId())
-            .language(language)
-            .returnUrl(processPaymentUrl)
-            .build();
-        payfortOperationRequest.setSignature(calculatePayfortRequestSignature(map, true));
-
-
-        model.addAttribute("service_command", payfortOperationRequest.getServiceCommand());
-        model.addAttribute("access_code", payfortOperationRequest.getAccessCode());
-        model.addAttribute("merchant_identifier", payfortOperationRequest.getMerchantIdentifier());
-        model.addAttribute("merchant_reference", payfortOperationRequest.getMerchantReference());
-        model.addAttribute("language", payfortOperationRequest.getLanguage());
-        model.addAttribute("signature", payfortOperationRequest.getSignature());
-        model.addAttribute("return_url", payfortOperationRequest.getReturnUrl());
-
-        model.addAttribute("actionUrl", urlForm);
-
-
-        return "paymentIframePayfort";
-    }
-
-    /*private PayFortOperationDTO initPayment() throws UnsupportedEncodingException {
-        log.info("Request to initiate Payment : {}", invoiceNumber);
-        DateFormat df = new SimpleDateFormat("HHmmss");
-        String transactionId = invoiceNumber.toString() + df.format(new Timestamp(System.currentTimeMillis()));
-
-        Optional<Invoice> invoice = invoiceRepository.findByAccountId(invoiceNumber);
-        if (!invoice.isPresent()) {
-            throw new TbsRunTimeException("Invoice does not exist");
-        } else if (invoice.get().getPaymentStatus() == PaymentStatus.PAID) {
-            throw new TbsRunTimeException("Invoice already paid");
-        } else if (invoice.get().getPaymentStatus() == PaymentStatus.REFUNDED) {
-            throw new TbsRunTimeException("Invoice already refunded");
-        } else if (invoice.get().getStatus() == InvoiceStatus.EXPIRED) {
-            throw new TbsRunTimeException("Invoice already expired");
-        }
-
-        Payment payment = Payment.builder().build();//paymentMapper.toEntity(paymentDTO);
-        Optional<PaymentMethod> paymentMethod = paymentMethodService.findByCode(Constants.CREDIT_CARD);
-        payment.setPaymentMethod(paymentMethod.get());
-        payment.setInvoice(invoice.get());
-        payment.setAmount(invoice.get().getAmount());
-        payment.setStatus(PaymentStatus.PENDING);
-        payment.setTransactionId(transactionId);
-
-        paymentRepository.save(payment);
-
-        // put the parameters in a TreeMap to have the parameters to have them sorted alphabetically.
-        Map<String, Object> map = new TreeMap();
-        map.put("service_command",Constants.PaymentOperation.TOKENIZATION.name());
-        map.put("access_code",accessCode);
-        map.put("merchant_identifier",merchantIdentifier);
-        map.put("merchant_reference",transactionId);
-        map.put("language",language);
-        map.put("return_url",processPaymentUrl);
-
-        PayFortOperationDTO payfortOperationRequest = PayFortOperationDTO.builder()
-            .serviceCommand(Constants.PaymentOperation.TOKENIZATION.name())
-            .accessCode(accessCode)
-            .merchantIdentifier(merchantIdentifier)
-            .merchantReference(transactionId)
-            .language(language)
-            .returnUrl(processPaymentUrl)
-            .build();
-        payfortOperationRequest.setSignature(calculatePayfortRequestSignature(map, true));
-
-        return payfortOperationRequest;
-    }*/
-
 
 }

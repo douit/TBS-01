@@ -156,33 +156,6 @@ export class CustomerTestPayfortComponent implements OnInit {
       // get signature
       // this.busy = true;
       this.subscribeToCreateCcPayment(this.paymentService.createCcPayment(this.invoiceSelected.accountId));
-
-      /*this.paymentService.createCcPayment(this.editForm.get(['invoiceId']).value.accountId)
-        .subscribe((res) => {
-            // const url = '/billing/payments/iframe/' + this.invoiceSelected.accountId;
-            this.urlIframe = this.sanitizer.bypassSecurityTrustResourceUrl(res.body.link);
-          }
-          , (err) => {this.onSaveError(err); }
-      );*/
-
-      /*this.paymentService.initPayfortPayment(this.invoiceSelected.accountId)
-        .subscribe((res: any) => {
-          console.log('----Initiate resp:' + JSON.stringify(res));
-            this.editForm.patchValue({
-              service_command: res.body.service_command,
-              access_code: res.body.access_code,
-              merchant_identifier: res.body.merchant_identifier,
-              merchant_reference: res.body.merchant_reference,
-              language: res.body.language,
-              signature: res.body.signature,
-              return_url: res.body.return_url
-            });
-            this.busy = false;
-        }
-        , (res: HttpErrorResponse) => {
-            this.busy = false;
-            console.log('----Initiate resp error :' + res.message);
-          });*/
       // this.editForm.patchValue({'amount' : (this.invoiceSelected != null) ? this.invoiceSelected.amount : 0});
       const amountField = document.getElementById('field_amount');
       amountField.setAttribute('value', this.invoiceSelected != null ? this.invoiceSelected.amount : 0);
@@ -191,6 +164,7 @@ export class CustomerTestPayfortComponent implements OnInit {
 
   protected subscribeToCreateCcPayment(result: Observable<HttpResponse<any>>) {
     result.subscribe((res) => {
+      // this.urlIframe = this.sanitizer.bypassSecurityTrustResourceUrl(res.body.link + '&lang=en');
       this.urlIframe = this.sanitizer.bypassSecurityTrustResourceUrl(res.body.link);
     }, (err) => this.onSaveError(err));
   }

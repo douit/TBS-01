@@ -5,17 +5,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.Payment;
 import sa.tamkeentech.tbs.service.PayFortPaymentService;
 import sa.tamkeentech.tbs.service.PaymentService;
 import sa.tamkeentech.tbs.service.STSPaymentService;
-import sa.tamkeentech.tbs.service.dto.PayFortOperationDTO;
 import sa.tamkeentech.tbs.service.dto.PaymentStatusResponseDTO;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
@@ -23,12 +20,7 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Base64;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -73,7 +65,9 @@ public class PaymentCreditCardResource {
             throw new TbsRunTimeException("Missing parameters");
         }
         String transactionId = new String(Base64.getDecoder().decode(params.get(Constants.TRANSACTION_IDENTIFIER_BASE_64)));
-        return paymentService.initPayment(model, transactionId);
+        String lang = (params.get(Constants.REQUEST_PARAM_LANGUAGE) != null)
+            ? params.get(Constants.REQUEST_PARAM_LANGUAGE) : Constants.DEFAULT_HEADER_LANGUAGE;
+        return paymentService.initPayment(model, transactionId, lang);
     }
 
 
