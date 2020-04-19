@@ -25,6 +25,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.*;
+import sa.tamkeentech.tbs.domain.enumeration.PaymentProvider;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 import sa.tamkeentech.tbs.domain.enumeration.RequestStatus;
 import sa.tamkeentech.tbs.repository.FileSyncLogRepository;
@@ -66,7 +67,9 @@ public class RefundService {
     private final ObjectMapper objectMapper;
     private final PaymentRepository paymentRepository;
     private final InvoiceRepository invoiceResitory;
+    private final STSPaymentService stsPaymentService;
     private final RefundMapper refundMapper;
+    private final PayFortPaymentService payFortPaymentService;
     private final FileSyncLogRepository fileSyncLogRepository;
     @Value("${tbs.refund.sadad-url-refund}")
     private String sadadUrlRefund;
@@ -101,13 +104,15 @@ public class RefundService {
     private SOAPConnector soapConnector;
 
 
-    public RefundService(RefundRepository refundRepository, RefundMapper refundMapper, ObjectMapper objectMapper, PaymentRepository paymentRepository, InvoiceRepository invoiceResitory, FileSyncLogRepository fileSyncLogRepository) {
+    public RefundService(RefundRepository refundRepository, RefundMapper refundMapper, ObjectMapper objectMapper, PaymentRepository paymentRepository, InvoiceRepository invoiceResitory, FileSyncLogRepository fileSyncLogRepository, STSPaymentService stsPaymentService, PayFortPaymentService payFortPaymentService) {
         this.refundRepository = refundRepository;
         this.refundMapper = refundMapper;
         this.objectMapper = objectMapper;
         this.paymentRepository = paymentRepository;
         this.invoiceResitory = invoiceResitory;
         this.fileSyncLogRepository = fileSyncLogRepository;
+        this.stsPaymentService = stsPaymentService;
+        this.payFortPaymentService = payFortPaymentService;
     }
 
     /**
@@ -149,16 +154,15 @@ public class RefundService {
         Refund refund = refundMapper.toEntity(refundDTO);
         refund.setStatus(RequestStatus.CREATED);
         refund.setPayment(payment.get());
-
         if (refundDTO.getRefundValue() != null) {
-            if (refundDTO.getIsPercentage()!= null  && refundDTO.getIsPercentage()) {
+            if (refundDTO.getIsPercentage() != null && refundDTO.getIsPercentage()) {
                 //Check if the refund value less than 100
-                if(refundDTO.getRefundValue().compareTo(new BigDecimal("100")) > 0){
+                if (refundDTO.getRefundValue().compareTo(new BigDecimal("100")) > 0) {
                     throw new TbsRunTimeException("Wrong refund value");
                 }
                 //Calculate amount if it's percentage
-                BigDecimal percentage =  refundDTO.getRefundValue().divide(new BigDecimal("100"));
-                BigDecimal amount =  percentage.multiply(payment.get().getAmount());
+                BigDecimal percentage = refundDTO.getRefundValue().divide(new BigDecimal("100"));
+                BigDecimal amount = percentage.multiply(payment.get().getAmount());
                 BigDecimal roundedAmount = amount.setScale(2, RoundingMode.HALF_UP);
                 refund.setRefundValue(roundedAmount);
 
@@ -175,16 +179,14 @@ public class RefundService {
         }
         if (refundDTO.getRefundFees() != null) {
             if ((refundDTO.getRefundFees().compareTo(refund.getRefundValue()) > 0)
-                || (refundDTO.getRefundFees().compareTo(BigDecimal.ZERO) < 0) ) {
+                || (refundDTO.getRefundFees().compareTo(BigDecimal.ZERO) < 0)) {
                 throw new TbsRunTimeException("Wrong refund fees");
             } else {
                 refund.setRefundValue(refund.getRefundValue().subtract(refundDTO.getRefundFees()));
             }
         }
-
         refund = refundRepository.save(refund);
-
-        if(payment.get().getPaymentMethod().getCode().equalsIgnoreCase(Constants.SADAD)) {
+        if (payment.get().getPaymentMethod().getCode().equalsIgnoreCase(Constants.SADAD)) {
 
             RefundStatusSadadResponseDTO sadadResult;
             try {
@@ -194,7 +196,7 @@ public class RefundService {
                 throw new PaymentGatewayException("Sadad issue");
             }
 
-            if (sadadResult == null || sadadResult.getRefundResult() == null || sadadResult.getRefundResult().getStatus()== null
+            if (sadadResult == null || sadadResult.getRefundResult() == null || sadadResult.getRefundResult().getStatus() == null
                 || !"0".equals(sadadResult.getRefundResult().getStatus().getCode())) {
                 refund.setStatus(RequestStatus.FAILED);
             } else {
@@ -205,17 +207,10 @@ public class RefundService {
                 invoiceResitory.save(invoice);
 
             }
-        } else {
-            int returnCode = callRefundByCreditCardAndSendEvent(refund, payment.get().getTransactionId(), invoice);
-            if (returnCode == 200) {
-                refund.setStatus(RequestStatus.SUCCEEDED);
-                payment.get().setStatus(PaymentStatus.REFUNDED);
-                invoice.setPaymentStatus(PaymentStatus.REFUNDED);
-                paymentRepository.save(payment.get());
-                invoiceResitory.save(invoice);
-            } else {
-                refund.setStatus(RequestStatus.FAILED);
-            }
+        } else if (payment.get().getPaymentProvider() == PaymentProvider.STS) {
+            stsPaymentService.proceedRefundOperation(refund, invoice, payment);
+        } else if (payment.get().getPaymentProvider() == PaymentProvider.PAYFORT) {
+            payFortPaymentService.proceedRefundOperation(refund, invoice, payment);
         }
 
         refund = refundRepository.save(refund);
@@ -314,7 +309,7 @@ public class RefundService {
 
     int callRefundByCreditCardAndSendEvent(Refund refund, String transactionId, Invoice invoice) throws IOException {
         //Step 1: Generate Secure Hash
-      //  String SECRET_KEY = "Y2FkMTdlOWZiMzJjMzY4ZGFkMzhkMWIz"; // Use Yours, Please Store Your Secret Key in safe Place(e.g. database)
+        //  String SECRET_KEY = "Y2FkMTdlOWZiMzJjMzY4ZGFkMzhkMWIz"; // Use Yours, Please Store Your Secret Key in safe Place(e.g. database)
 
         // put the parameters in a TreeMap to have the parameters to have them sorted alphabetically.
         Map<String, String> parameters = new TreeMap<String, String>();

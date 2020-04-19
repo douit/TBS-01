@@ -20,12 +20,17 @@ import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.Invoice;
 import sa.tamkeentech.tbs.domain.Payment;
 import sa.tamkeentech.tbs.domain.PaymentMethod;
+import sa.tamkeentech.tbs.domain.Refund;
 import sa.tamkeentech.tbs.domain.enumeration.InvoiceStatus;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
+import sa.tamkeentech.tbs.domain.enumeration.RequestStatus;
 import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.repository.PaymentRepository;
+import sa.tamkeentech.tbs.repository.RefundRepository;
 import sa.tamkeentech.tbs.service.dto.PayFortOperationDTO;
 import sa.tamkeentech.tbs.service.dto.PaymentStatusResponseDTO;
+import sa.tamkeentech.tbs.service.dto.RefundDTO;
+import sa.tamkeentech.tbs.service.mapper.RefundMapper;
 import sa.tamkeentech.tbs.web.rest.errors.PaymentGatewayException;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
@@ -50,6 +55,19 @@ import java.util.stream.Collectors;
 public class PayFortPaymentService {
 
     private final Logger log = LoggerFactory.getLogger(PayFortPaymentService.class);
+
+
+    @Inject
+    @Lazy
+    RefundMapper refundMapper;
+
+    @Inject
+    @Lazy
+    RefundRepository refundRepository;
+
+    @Inject
+    @Lazy
+    RefundService refundService;
 
     @Inject
     @Lazy
@@ -87,6 +105,8 @@ public class PayFortPaymentService {
     private String urlForm;
     @Value("${tbs.payment.payfort-url-json}")
     private String urlJson;
+    @Value("${tbs.payment.payfort-refund-url}")
+    private String refundURL;
     @Value("${tbs.payment.payfort-process-payment}")
     private String processPaymentUrl;
 
@@ -98,6 +118,11 @@ public class PayFortPaymentService {
     // &response_message=Success&merchant_reference=7000000360021648
     // &token_name=94c729e0864d413687035ac2fe4add31 &return_url=http%3A%2F%2Flocalhost%3A9000%2Fapi%2Fpayments%2Fpayfort-processing
     //&card_bin=400555&status=18
+//    public PayFortPaymentService(RefundMapper refundMapper, RefundRepository refundRepository, RefundService refundService){
+//        this.refundMapper = refundMapper;
+//        this.refundService = refundService;
+//        this.refundRepository = refundRepository;
+//    }
     public void proceedPaymentOperation(Map<String, Object> params, HttpServletRequest request, HttpServletResponse response) {
 
         if (params != null && Constants.PaymentOperation.PURCHASE.name().equals(params.get("command"))) {
@@ -343,6 +368,52 @@ public class PayFortPaymentService {
         return "paymentIframePayfort";
     }
 
+
+    public Refund proceedRefundOperation(Refund refund, Invoice invoice, Optional<Payment> payment){
+        log.info("Request to initiate Refund : {}", refund.getId());
+
+        BigDecimal roundedAmount = refund.getRefundValue().setScale(2, RoundingMode.HALF_UP);
+        PayFortOperationDTO payfortOperationRequest = PayFortOperationDTO.builder()
+            .command(Constants.PaymentOperation.REFUND.name())
+            .accessCode(accessCode)
+            .merchantIdentifier(merchantIdentifier)
+            .merchantReference(payment.get().getTransactionId())
+            .amount(roundedAmount.multiply(new BigDecimal("100")).longValue())// 100 SAR
+            .currency("SAR")
+            .build();
+
+        Map<String, Object> map = new TreeMap();
+        map.put("service_command",Constants.PaymentOperation.REFUND.name());
+        map.put("access_code",accessCode);
+        map.put("merchant_identifier",merchantIdentifier);
+        map.put("merchant_reference",payment.get().getTransactionId());
+        map.put("amount",refund.getRefundValue());
+        map.put("currency",refund.getRefundValue());
+        map.put("language",language);
+
+        payfortOperationRequest.setSignature(calculatePayfortRequestSignature(map, true));
+
+        ResponseEntity<PayFortOperationDTO> result = null;
+        try {
+            result = restTemplate.postForEntity(refundURL, payfortOperationRequest, PayFortOperationDTO.class);
+            log.debug("Refund request status: {}, description ", result.getBody().getStatus(), result.getBody().getResponseMessage());
+            if (result.getBody().getStatus().equals(06)) {
+                refund.setStatus(RequestStatus.SUCCEEDED);
+                payment.get().setStatus(PaymentStatus.REFUNDED);
+                invoice.setPaymentStatus(PaymentStatus.REFUNDED);
+                paymentRepository.save(payment.get());
+                invoiceRepository.save(invoice);
+
+            } else {
+                refund.setStatus(RequestStatus.FAILED);
+            }
+        } catch (RestClientException e) {
+            log.info("------ Refund Processing Exception: {}");
+        }
+
+        return refund;
+
+    }
     /*private PayFortOperationDTO initPayment() throws UnsupportedEncodingException {
         log.info("Request to initiate Payment : {}", invoiceNumber);
         DateFormat df = new SimpleDateFormat("HHmmss");
