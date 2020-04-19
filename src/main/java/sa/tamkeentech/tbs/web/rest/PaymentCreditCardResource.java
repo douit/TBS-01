@@ -1,5 +1,6 @@
 package sa.tamkeentech.tbs.web.rest;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -65,7 +66,7 @@ public class PaymentCreditCardResource {
             throw new TbsRunTimeException("Missing parameters");
         }
         String transactionId = new String(Base64.getDecoder().decode(params.get(Constants.TRANSACTION_IDENTIFIER_BASE_64)));
-        String lang = (params.get(Constants.REQUEST_PARAM_LANGUAGE) != null)
+        String lang = (StringUtils.isNotEmpty(params.get(Constants.REQUEST_PARAM_LANGUAGE)))
             ? params.get(Constants.REQUEST_PARAM_LANGUAGE) : Constants.DEFAULT_HEADER_LANGUAGE;
         return paymentService.initPayment(model, transactionId, lang);
     }
