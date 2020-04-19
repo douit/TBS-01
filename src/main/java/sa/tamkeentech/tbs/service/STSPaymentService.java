@@ -1,6 +1,7 @@
 package sa.tamkeentech.tbs.service;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -131,13 +132,18 @@ public class STSPaymentService {
             } else {
                 // ok only for english
                 // orderedString.append(parameters.get(treeMapKey).replaceAll(" ", "+"));
-                try {
-                    String desc = URLEncoder.encode(parameters.get(treeMapKey), "UTF-8");
-                    orderedString.append(desc);
-                } catch (UnsupportedEncodingException e) {
+                if (StringUtils.isNotEmpty(parameters.get(treeMapKey))) {
+                    try {
+                        String desc = URLEncoder.encode(parameters.get(treeMapKey), "UTF-8");
+                        orderedString.append(desc);
+                    } catch (UnsupportedEncodingException e) {
+                        includeDesc = false;
+                        e.printStackTrace();
+                    }
+                } else {
                     includeDesc = false;
-                    e.printStackTrace();
                 }
+
             }
         }
 

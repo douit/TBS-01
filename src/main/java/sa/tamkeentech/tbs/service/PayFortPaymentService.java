@@ -37,6 +37,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
 
 @Service
@@ -206,9 +207,8 @@ public class PayFortPaymentService {
                 .settlementReference(params.get("merchant_reference").toString())
                 .returnUrl(processPaymentUrl)
                 .build();
-            if (invoice.getInvoiceItems() != null && invoice.getInvoiceItems().size() == 1) {
-                payfortOperationRequest.setOrderDescription(invoice.getInvoiceItems().get(0).getDetails());
-            }
+            // arabic desc causes signature mismatch --> use client name
+            payfortOperationRequest.setOrderDescription(invoice.getClient().getName() + " Payment");
             Map<String, Object> map = new TreeMap();
             map.put("command", Constants.PaymentOperation.PURCHASE.name());
             map.put("access_code", accessCode);
@@ -220,9 +220,8 @@ public class PayFortPaymentService {
             map.put("customer_email", payfortOperationRequest.getCustomerEmail());
             map.put("customer_ip", payfortOperationRequest.getCustomerIp());
             map.put("token_name", payfortOperationRequest.getTokenName());
-            if (payfortOperationRequest.getOrderDescription() != null) {
-                map.put("order_description", payfortOperationRequest.getOrderDescription());
-            }
+            map.put("order_description", payfortOperationRequest.getOrderDescription());
+
             map.put("customer_name", payfortOperationRequest.getCustomerName());
             map.put("settlement_reference", payfortOperationRequest.getSettlementReference());
             map.put("return_url", payfortOperationRequest.getReturnUrl());
@@ -323,7 +322,8 @@ public class PayFortPaymentService {
      * @param requestMap
      * @return signature
      */
-    private String calculatePayfortRequestSignature(Map<String, Object> requestMap, boolean isRequest) {
+    private String
+    calculatePayfortRequestSignature(Map<String, Object> requestMap, boolean isRequest) {
 
         String key = (isRequest)?requestPhrase : responsePhrase;
         StringBuilder signatureBuilder = new StringBuilder(key);
