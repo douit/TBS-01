@@ -81,7 +81,7 @@ public class STSPaymentService {
     private String stsRefundUrl;
 
 
-    public String initPayment(Model model, Payment payment) {
+    public String initPayment(Model model, Payment payment, String lang) {
         log.info("Request to initiate Payment : {}", payment.getTransactionId());
 
         Invoice invoice = payment.getInvoice();
@@ -96,7 +96,7 @@ public class STSPaymentService {
         invoiceRepository.save(invoice);
         // Step 1: Generate Secure Hash
         // put the parameters in a TreeMap to have the parameters to have them sorted alphabetically.
-        Map<String, String> parameters = new TreeMap<>();
+        Map<String,String> parameters = new TreeMap<>();
         // String transactionId = String.valueOf(System.currentTimeMillis());
         // fill required parameters
         parameters.put("TransactionID", payment.getTransactionId());
@@ -117,7 +117,7 @@ public class STSPaymentService {
         parameters.put("Quantity", "1");
         parameters.put("Channel", "0");
         // fill some optional parameters
-        parameters.put("Language", "Ar");
+        parameters.put("Language", lang.equalsIgnoreCase(Constants.DEFAULT_HEADER_LANGUAGE)? "ar": "en");
         parameters.put("ThemeID", "theme1");
         // if this url is configured for the merchant it's not required
         parameters.put("ResponseBackURL", stsResponseBackUrl);
@@ -147,7 +147,7 @@ public class STSPaymentService {
         String secureHash = new String(DigestUtils.sha256Hex(orderedString.toString()).getBytes());
 
         // Post form
-        for (Map.Entry<String, String> entry : parameters.entrySet()) {
+        for (Map.Entry<String, String> entry: parameters.entrySet()) {
             if (!entry.getKey().equalsIgnoreCase("PaymentDescription") || includeDesc) {
                 model.addAttribute(entry.getKey(), entry.getValue());
             }
@@ -206,19 +206,18 @@ public class STSPaymentService {
     }
 
 
+
     public PaymentStatusResponseDTO checkOffilnePaymentStatus(String transactionID) {
 
         //Step 1: Generate Secure Hash
 
         // put the parameters in a TreeMap to have the parameters to have them sorted alphabetically.
-        Map<String, String> parameters = new TreeMap<String, String>();
+        Map <String,String> parameters = new TreeMap<String,String> ();
 
 
         // fill required parameters
-        parameters.put("MessageID", "2");
-        parameters.put("OriginalTransactionID", transactionID);
-        parameters.put("MerchantID", stsMerchantId);
-        parameters.put("Version", "1.0");
+        parameters.put("MessageID", "2"); parameters.put("OriginalTransactionID", transactionID);
+        parameters.put("MerchantID", stsMerchantId); parameters.put("Version", "1.0");
 
         //Create an ordered String of The Parameters Map with Secret Key
         StringBuilder orderedString = new StringBuilder();
@@ -226,13 +225,13 @@ public class STSPaymentService {
         for (String treeMapKey : parameters.keySet()) {
             orderedString.append(parameters.get(treeMapKey));
         }
-        log.debug("orderdString " + orderedString);
+        log.debug("orderdString "+orderedString);
 
         // Generate SecureHash with SHA256
         // Using DigestUtils from appache.commons.codes.jar Library
         String secureHash = new String(DigestUtils.sha256Hex(orderedString.toString().getBytes()));
 
-        StringBuffer requestQuery = new StringBuffer();
+        StringBuffer requestQuery = new  StringBuffer ();
         requestQuery
             .append("OriginalTransactionID").append("=").append(transactionID)
             .append("&").append("MerchantID").append("=").append(stsMerchantId).append("&")
@@ -244,7 +243,7 @@ public class STSPaymentService {
 
 
         //Send the request
-        StringBuffer output = new StringBuffer();
+        StringBuffer output =  new StringBuffer();
         try {
             URL url = new URL(stsCheckStatusUrl);
             URLConnection conn = url.openConnection();
@@ -271,21 +270,21 @@ public class STSPaymentService {
         System.out.println(output.toString());
 
         // this string is formatted as a "Query String" - name=value&name2=value2.......
-        String outputString = output.toString();
+        String outputString=output.toString();
 
         // To read the output string you might want to split it
         // on '&' to get pairs then on '=' to get name and value
         // and for a better and ease on verifying secure hash you should put them in a TreeMap String [] pairs=outputString.split("&");
-        String[] pairs = outputString.split("&");
-        Map<String, String> result = new TreeMap<String, String>();
+        String [] pairs=outputString.split("&");
+        Map<String,String> result=new TreeMap<String,String>();
 
         // now we have separated the pairs from each other {"name1=value1","name2=value2",....}
-        for (String pair : pairs) {
+        for(String pair:pairs){
             // now we have separated the pair to {"name","value"}
-            String[] nameValue = pair.split("=");
-            String name = nameValue[0];
-            String value = nameValue[1];
-            result.put(name, value);
+            String[] nameValue=pair.split("=");
+            String name=nameValue[0];
+            String value=nameValue[1];
+            result.put(name,value);
         }
         // Now that we have the map, order it to generate secure hash and compare it with the received one
         /*StringBuilder responseOrderdString = new StringBuilder(); responseOrderdString.append(stsSecretKey);
@@ -317,10 +316,10 @@ public class STSPaymentService {
         String receivedSecurehash = result.get("Response.SecureHash");
         log.debug("----> generatedsecureHash: {}", generatedSecureHash);
         log.debug("----> receivedSecurehash : {}", receivedSecurehash);
-        if (!receivedSecurehash.equals(generatedSecureHash)) {
+        if(!receivedSecurehash.equals(generatedSecureHash)){
             //IF they are not equal then the response shall not be accepted
             throw new TbsRunTimeException("--<<>>--Async: Received Secure Hash does not Equal generated Secure hash");
-        } else {
+        }  else {
             // Complete the Action get other parameters from result map and do your processes // Please refer to The Integration Manual to See The List of The Received Parameters String status=result.get("Response.Status");
             PaymentStatusResponseDTO paymentStatusResponseDTO = PaymentStatusResponseDTO.builder()
                 .code(result.get("Response.StatusCode"))
@@ -346,15 +345,15 @@ public class STSPaymentService {
         responseOrderdString.append(key);
         for (String treeMapKey : responseParameters.keySet()) {
 
-            log.info("--Param key--- {} : {}", treeMapKey, responseParameters.get(treeMapKey));
-            if (!responseParameters.get(treeMapKey).equals("null")) {
+                log.info("--Param key--- {} : {}", treeMapKey, responseParameters.get(treeMapKey));
+            if(!responseParameters.get(treeMapKey).equals("null")){
                 switch (treeMapKey) {
                     case "Response.SecureHash":
                         log.info("ignoring Response.SecureHash");
                         break;
                     case "Response.GatewayStatusDescription":
-                        // case "Response.GatewayName":
-                        //case "Response.CardHolderName":
+                    // case "Response.GatewayName":
+                    //case "Response.CardHolderName":
                         log.info("***case Response.GatewayStatusDescription");
                         String field = URLEncoder.encode(responseParameters.get(treeMapKey), "UTF-8");
                         log.info("-->After encoding: {}", field);
@@ -370,6 +369,8 @@ public class STSPaymentService {
                         }
                         log.info("-->After Upper: {}", statusDescription);
                         responseOrderdString.append(statusDescription);
+                        // check if it works for both languages
+                        // responseOrderdString.append(URLEncoder.encode(statusDescription, "UTF-8"));
                         break;
                     default:
                         responseOrderdString.append(responseParameters.get(treeMapKey));
@@ -535,6 +536,7 @@ public class STSPaymentService {
         System.out.println("-->receivedSecurehash is: " + "44f02cb84acc1296048bfb4f31ecc2bc4aea6ebd57c37a9e660f8443ab97f469");*/
 
 
+
         // offline check
         // simulte resp
         Map<String, String> map = new TreeMap<>();
@@ -601,7 +603,7 @@ public class STSPaymentService {
             // String lowercaseName = name.toLowerCase();
             if ((name.startsWith("BLRCRQ-"))
                 && name.endsWith(".xml")) {
-                return true;
+                    return true;
             }
             return false;
         });
@@ -629,7 +631,7 @@ public class STSPaymentService {
                     // Get the value of RefundStatusCode.
                     String status = refundStatusNode.getChildNodes().item(0).getNodeValue();
                     if (!banks.contains(status)) {
-                        total++;
+                        total ++;
                         banks.add(status);
                     }
                 }
@@ -643,6 +645,6 @@ public class STSPaymentService {
         System.out.println("----All: " + total);
         System.out.println("----All banks: " + banks);
 
-    }
+                    }
 
 }

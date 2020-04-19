@@ -65,7 +65,9 @@ public class PaymentCreditCardResource {
             throw new TbsRunTimeException("Missing parameters");
         }
         String transactionId = new String(Base64.getDecoder().decode(params.get(Constants.TRANSACTION_IDENTIFIER_BASE_64)));
-        return paymentService.initPayment(model, transactionId);
+        String lang = (params.get(Constants.REQUEST_PARAM_LANGUAGE) != null)
+            ? params.get(Constants.REQUEST_PARAM_LANGUAGE) : Constants.DEFAULT_HEADER_LANGUAGE;
+        return paymentService.initPayment(model, transactionId, lang);
     }
 
 

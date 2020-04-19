@@ -172,13 +172,14 @@ public class InvoiceService {
         invoiceRepository.deleteById(id);
     }
 
-    public InvoiceResponseDTO saveInvoiceAndSendEvent(InvoiceDTO invoiceDTO) {
+    public InvoiceResponseDTO saveInvoiceAndSendEvent(InvoiceDTO invoiceDTO, String language) {
         TBSEventReqDTO<InvoiceDTO> reqNotification = TBSEventReqDTO.<InvoiceDTO>builder().principalId(invoiceDTO.getCustomer().getIdentity())
+            .language(language)
             .req(invoiceDTO).build();
         return eventPublisherService.saveInvoiceEvent(reqNotification).getResp();
     }
 
-    public InvoiceResponseDTO saveInvoice(InvoiceDTO invoiceDTO) {
+    public InvoiceResponseDTO saveInvoice(InvoiceDTO invoiceDTO, String language) {
 
         Invoice invoice = createNewInvoice(invoiceDTO);
 
@@ -206,7 +207,7 @@ public class InvoiceService {
                     }
                     break;
                 case Constants.CREDIT_CARD:
-                    invoiceItemsResponseDTO.setLink(paymentService.savePaymentAndGetPaymentUrl(invoice, paymentMethod.get()));
+                    invoiceItemsResponseDTO.setLink(paymentService.savePaymentAndGetPaymentUrl(invoice, paymentMethod.get(), language));
                     log.debug("CC payment method");
                     break;
                 default:
@@ -322,20 +323,6 @@ public class InvoiceService {
                     totalInvoiceItem = totalInvoiceItem.subtract(totalInvoiceItem.multiply(discountRate));
                 }
             }
-            //Add total discount
-            /*if(invoiceDTO.getDiscount().getValue().compareTo(BigDecimal.ZERO) >0) {
-                if (invoiceDTO.getDiscount().getIsPercentage() == false) {
-                    Discount discount = Discount.builder().isPercentage(false).type(DiscountType.ITEM).value(invoiceDTO.getDiscount().getValue()).build();
-                    invoice.setDiscount(discount);
-                    totalInvoiceItem = totalInvoiceItem.subtract(invoice.getDiscount().getValue().multiply(new BigDecimal(invoiceItemDTO.getQuantity())));
-                } else {
-                    Discount discount = Discount.builder().isPercentage(true).type(DiscountType.ITEM).value(invoiceDTO.getDiscount().getValue()).build();
-                    invoice.setDiscount(discount);
-                    BigDecimal discountRate = invoice.getDiscount().getValue().divide(new BigDecimal("100"));
-                    discountValue =totalInvoiceItem.multiply(discountRate);
-                    totalInvoiceItem = totalInvoiceItem.subtract(discountValue);
-                }
-            }*/
             avgTaxDenominator = avgTaxDenominator.add(totalInvoiceItem);
             BigDecimal totalTaxes = BigDecimal.ZERO;
             // Adding vat
@@ -411,13 +398,14 @@ public class InvoiceService {
     }
 
 
-    public InvoiceResponseDTO saveOneItemInvoiceAndSendEvent(OneItemInvoiceDTO oneItemInvoiceDTO) {
+    public InvoiceResponseDTO saveOneItemInvoiceAndSendEvent(OneItemInvoiceDTO oneItemInvoiceDTO, String language) {
         TBSEventReqDTO<OneItemInvoiceDTO> reqNotification = TBSEventReqDTO.<OneItemInvoiceDTO>builder().principalId(oneItemInvoiceDTO.getCustomerId())
+            .language(language)
             .req(oneItemInvoiceDTO).build();
         return eventPublisherService.saveOneItemInvoiceEvent(reqNotification).getResp();
     }
 
-    public InvoiceResponseDTO saveOneItemInvoice(OneItemInvoiceDTO oneItemInvoiceDTO) {
+    public InvoiceResponseDTO saveOneItemInvoice(OneItemInvoiceDTO oneItemInvoiceDTO, String language) {
 
         Invoice invoice = addNewOneItemInvoice(oneItemInvoiceDTO);
         // Payment
@@ -460,7 +448,7 @@ public class InvoiceService {
                     } catch (JSONException | IOException e) {
                         throw new PaymentGatewayException("Payment gateway issue: " + e.getCause());
                     }*/
-                    oneItemInvoiceRespDTO.setLink(paymentService.savePaymentAndGetPaymentUrl(invoice, paymentMethod.get()));
+                    oneItemInvoiceRespDTO.setLink(paymentService.savePaymentAndGetPaymentUrl(invoice, paymentMethod.get(), language));
                     break;
                 default:
                     log.info("Cash payment method");

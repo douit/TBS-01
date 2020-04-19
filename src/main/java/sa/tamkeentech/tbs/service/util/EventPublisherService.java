@@ -78,14 +78,14 @@ public class EventPublisherService {
 
     @TBSEventPub(eventName = Constants.EventType.INVOICE_CREATE)
     public TBSEventRespDTO<InvoiceResponseDTO> saveOneItemInvoiceEvent(TBSEventReqDTO<OneItemInvoiceDTO> eventReq) {
-        InvoiceResponseDTO resp = invoiceService.saveOneItemInvoice(eventReq.getReq());
+        InvoiceResponseDTO resp = invoiceService.saveOneItemInvoice(eventReq.getReq(), eventReq.getLanguage());
         TBSEventRespDTO<InvoiceResponseDTO> eventResp = TBSEventRespDTO.<InvoiceResponseDTO>builder().referenceId(resp.getBillNumber()).resp(resp).build();
         return eventResp;
     }
 
     @TBSEventPub(eventName = Constants.EventType.INVOICE_CREATE)
     public TBSEventRespDTO<InvoiceResponseDTO> saveInvoiceEvent(TBSEventReqDTO<InvoiceDTO> eventReq) {
-        InvoiceResponseDTO resp = invoiceService.saveInvoice(eventReq.getReq());
+        InvoiceResponseDTO resp = invoiceService.saveInvoice(eventReq.getReq(), eventReq.getLanguage());
         TBSEventRespDTO<InvoiceResponseDTO> eventResp = TBSEventRespDTO.<InvoiceResponseDTO>builder().referenceId(resp.getBillNumber()).resp(resp).build();
         return eventResp;
     }

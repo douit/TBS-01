@@ -1,5 +1,7 @@
 package sa.tamkeentech.tbs.config;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.time.ZoneId;
 
 /**
@@ -33,6 +35,7 @@ public final class Constants {
 
     // Default language
     public static final String DEFAULT_HEADER_LANGUAGE = "ar";
+    public static final String REQUEST_PARAM_LANGUAGE = "lang";
 
     /**
      * Language enumeration
@@ -46,7 +49,10 @@ public final class Constants {
         }
 
         public static String getLanguageByHeaderKey(String headerKey) {
-            switch (headerKey){
+            if (StringUtils.isEmpty(headerKey)) {
+                return ARABIC.getLanguageKey();
+            }
+            switch (headerKey.toLowerCase()){
                 case "en": return ENGLISH.getLanguageKey();
                 default: return ARABIC.getLanguageKey();
             }

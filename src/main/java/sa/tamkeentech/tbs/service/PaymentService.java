@@ -139,20 +139,21 @@ public class PaymentService {
      * Load form payment according to the provider
      * @param model
      * @param transactionId
+     * @param lang
      * @return
      */
     @Transactional
-    public String initPayment(Model model, String transactionId) {
-        log.info("Request to initiate Payment : {}", transactionId);
+    public String initPayment(Model model, String transactionId, String lang) {
+        log.info("Request to initiate Payment : {}, language {}", transactionId, lang);
         Payment payment = paymentRepository.findByTransactionId(transactionId);
         if (payment == null) {
             // ToDo change to error page
             throw new TbsRunTimeException("Payment not found");
         }
         if (payment.getPaymentProvider() == PaymentProvider.PAYFORT) {
-            return payFortPaymentService.initPayment(model, payment);
+            return payFortPaymentService.initPayment(model, payment, lang);
         } else {
-            return sTSPaymentService.initPayment(model, payment);
+            return sTSPaymentService.initPayment(model, payment, lang);
         }
     }
 
@@ -613,7 +614,7 @@ public class PaymentService {
     }
 
     @Transactional
-    public InvoiceResponseDTO requestNewPayment(String referenceId, String paymentMethodCode) {
+    public InvoiceResponseDTO requestNewPayment(String referenceId, String paymentMethodCode, String language) {
 
         Optional<Invoice> invoice = invoiceRepository.findByAccountId(Long.parseLong(referenceId));
         if (!invoice.isPresent()) {
@@ -646,13 +647,13 @@ public class PaymentService {
 
         } else {
             Optional<PaymentMethod> paymentMethod = paymentMethodService.findByCode(paymentMethodCode);
-            invoiceResponseDTO.setLink(savePaymentAndGetPaymentUrl(invoice.get(), paymentMethod.get()));
+            invoiceResponseDTO.setLink(savePaymentAndGetPaymentUrl(invoice.get(), paymentMethod.get(), language));
             invoiceRepository.save(invoice.get());
         }
         return invoiceResponseDTO;
     }
 
-    public String savePaymentAndGetPaymentUrl(Invoice invoice, PaymentMethod paymentMethod) {
+    public String savePaymentAndGetPaymentUrl(Invoice invoice, PaymentMethod paymentMethod, String language) {
         DateFormat df = new SimpleDateFormat("HHmmss");
         String transactionId = invoice.getAccountId().toString() + df.format(new Timestamp(System.currentTimeMillis()));
 
@@ -666,7 +667,11 @@ public class PaymentService {
 
         paymentRepository.save(payment);
 
-        return (paymentUrl + Constants.TRANSACTION_IDENTIFIER_BASE_64 + "=" + Base64.getEncoder().encodeToString(transactionId.getBytes()));
+        String url = paymentUrl + Constants.TRANSACTION_IDENTIFIER_BASE_64 + "=" + Base64.getEncoder().encodeToString(transactionId.getBytes());
+        if (StringUtils.isNotEmpty(url) && Constants.LANGUAGE.ENGLISH.getHeaderKey().equalsIgnoreCase(language)) {
+            url += "&" + Constants.REQUEST_PARAM_LANGUAGE + "=en";
+        }
+        return url;
     }
 
     public DataTablesOutput<PaymentDTO> get(DataTablesInput input) {

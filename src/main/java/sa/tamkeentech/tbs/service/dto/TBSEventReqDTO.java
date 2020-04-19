@@ -21,4 +21,6 @@ public class TBSEventReqDTO<T> {
     // if present in request -> no need to set in response
     private String referenceId;
 
+    private String language;
+
 }
