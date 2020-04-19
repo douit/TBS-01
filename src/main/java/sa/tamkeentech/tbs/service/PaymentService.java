@@ -144,7 +144,7 @@ public class PaymentService {
      */
     @Transactional
     public String initPayment(Model model, String transactionId, String lang) {
-        log.info("Request to initiate Payment : {}", transactionId);
+        log.info("Request to initiate Payment : {}, language {}", transactionId, lang);
         Payment payment = paymentRepository.findByTransactionId(transactionId);
         if (payment == null) {
             // ToDo change to error page
@@ -668,8 +668,8 @@ public class PaymentService {
         paymentRepository.save(payment);
 
         String url = paymentUrl + Constants.TRANSACTION_IDENTIFIER_BASE_64 + "=" + Base64.getEncoder().encodeToString(transactionId.getBytes());
-        if (Constants.LANGUAGE.ENGLISH.getHeaderKey().equalsIgnoreCase(language)) {
-            url += "&lang=en";
+        if (StringUtils.isNotEmpty(url) && Constants.LANGUAGE.ENGLISH.getHeaderKey().equalsIgnoreCase(language)) {
+            url += "&" + Constants.REQUEST_PARAM_LANGUAGE + "=en";
         }
         return url;
     }
