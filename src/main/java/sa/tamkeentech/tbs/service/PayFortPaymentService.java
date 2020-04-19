@@ -16,11 +16,18 @@ import org.springframework.web.client.RestTemplate;
 import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.Invoice;
 import sa.tamkeentech.tbs.domain.Payment;
+import sa.tamkeentech.tbs.domain.PaymentMethod;
+import sa.tamkeentech.tbs.domain.Refund;
+import sa.tamkeentech.tbs.domain.enumeration.InvoiceStatus;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
+import sa.tamkeentech.tbs.domain.enumeration.RequestStatus;
 import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.repository.PaymentRepository;
+import sa.tamkeentech.tbs.repository.RefundRepository;
 import sa.tamkeentech.tbs.service.dto.PayFortOperationDTO;
 import sa.tamkeentech.tbs.service.dto.PaymentStatusResponseDTO;
+import sa.tamkeentech.tbs.service.dto.RefundDTO;
+import sa.tamkeentech.tbs.service.mapper.RefundMapper;
 import sa.tamkeentech.tbs.service.util.LanguageUtil;
 import sa.tamkeentech.tbs.web.rest.errors.PaymentGatewayException;
 
@@ -37,6 +44,19 @@ import java.util.TreeMap;
 public class PayFortPaymentService {
 
     private final Logger log = LoggerFactory.getLogger(PayFortPaymentService.class);
+
+
+    @Inject
+    @Lazy
+    RefundMapper refundMapper;
+
+    @Inject
+    @Lazy
+    RefundRepository refundRepository;
+
+    @Inject
+    @Lazy
+    RefundService refundService;
 
     @Inject
     @Lazy
@@ -77,6 +97,8 @@ public class PayFortPaymentService {
     private String urlForm;
     @Value("${tbs.payment.payfort-url-json}")
     private String urlJson;
+    @Value("${tbs.payment.payfort-refund-url}")
+    private String refundURL;
     @Value("${tbs.payment.payfort-process-payment}")
     private String processPaymentUrl;
 
@@ -175,6 +197,7 @@ public class PayFortPaymentService {
                 .currency("SAR")
                 .language(language)
                 .customerEmail(invoice.getCustomer().getContact().getEmail())
+                // .customerIp("192.178.1.10") // detect public ip
                 .customerIp(request.getRemoteAddr())
                 // case wrong cc token null
                 .tokenName(params.get("token_name") != null? params.get("token_name").toString(): "")
@@ -335,5 +358,111 @@ public class PayFortPaymentService {
         }
         return encryptedSignature;
     }
+
+
+    /*public static void main(String[] args) throws UnsupportedEncodingException {
+        System.out.println("generatedsecureHash: " + 111);
+        System.out.println("-----------------------");
+    }*/
+
+    /*@Scheduled(initialDelay = 1000 * 10, fixedDelay=Long.MAX_VALUE)
+    public void testTokenization() throws JSONException, JsonProcessingException {
+        initPayment(UUID.randomUUID().toString(), "2105", "4005550000000001", "123", "Ahmed Bouzaien");
+    }*/
+
+
+    public Refund proceedRefundOperation(Refund refund, Invoice invoice, Optional<Payment> payment){
+        log.info("Request to initiate Refund : {}", refund.getId());
+
+        BigDecimal roundedAmount = refund.getRefundValue().setScale(2, RoundingMode.HALF_UP);
+        PayFortOperationDTO payfortOperationRequest = PayFortOperationDTO.builder()
+            .command(Constants.PaymentOperation.REFUND.name())
+            .accessCode(accessCode)
+            .merchantIdentifier(merchantIdentifier)
+            .merchantReference(payment.get().getTransactionId())
+            .amount(roundedAmount.multiply(new BigDecimal("100")).longValue())// 100 SAR
+            .currency("SAR")
+            .build();
+
+        Map<String, Object> map = new TreeMap();
+        map.put("service_command",Constants.PaymentOperation.REFUND.name());
+        map.put("access_code",accessCode);
+        map.put("merchant_identifier",merchantIdentifier);
+        map.put("merchant_reference",payment.get().getTransactionId());
+        map.put("amount",refund.getRefundValue());
+        map.put("currency",refund.getRefundValue());
+        map.put("language",language);
+
+        payfortOperationRequest.setSignature(calculatePayfortRequestSignature(map, true));
+
+        ResponseEntity<PayFortOperationDTO> result = null;
+        try {
+            result = restTemplate.postForEntity(refundURL, payfortOperationRequest, PayFortOperationDTO.class);
+            log.debug("Refund request status: {}, description ", result.getBody().getStatus(), result.getBody().getResponseMessage());
+            if (result.getBody().getStatus().equals(06)) {
+                refund.setStatus(RequestStatus.SUCCEEDED);
+                payment.get().setStatus(PaymentStatus.REFUNDED);
+                invoice.setPaymentStatus(PaymentStatus.REFUNDED);
+                paymentRepository.save(payment.get());
+                invoiceRepository.save(invoice);
+
+            } else {
+                refund.setStatus(RequestStatus.FAILED);
+            }
+        } catch (RestClientException e) {
+            log.info("------ Refund Processing Exception: {}");
+        }
+
+        return refund;
+
+    }
+    /*private PayFortOperationDTO initPayment() throws UnsupportedEncodingException {
+        log.info("Request to initiate Payment : {}", invoiceNumber);
+        DateFormat df = new SimpleDateFormat("HHmmss");
+        String transactionId = invoiceNumber.toString() + df.format(new Timestamp(System.currentTimeMillis()));
+
+        Optional<Invoice> invoice = invoiceRepository.findByAccountId(invoiceNumber);
+        if (!invoice.isPresent()) {
+            throw new TbsRunTimeException("Invoice does not exist");
+        } else if (invoice.get().getPaymentStatus() == PaymentStatus.PAID) {
+            throw new TbsRunTimeException("Invoice already paid");
+        } else if (invoice.get().getPaymentStatus() == PaymentStatus.REFUNDED) {
+            throw new TbsRunTimeException("Invoice already refunded");
+        } else if (invoice.get().getStatus() == InvoiceStatus.EXPIRED) {
+            throw new TbsRunTimeException("Invoice already expired");
+        }
+
+        Payment payment = Payment.builder().build();//paymentMapper.toEntity(paymentDTO);
+        Optional<PaymentMethod> paymentMethod = paymentMethodService.findByCode(Constants.CREDIT_CARD);
+        payment.setPaymentMethod(paymentMethod.get());
+        payment.setInvoice(invoice.get());
+        payment.setAmount(invoice.get().getAmount());
+        payment.setStatus(PaymentStatus.PENDING);
+        payment.setTransactionId(transactionId);
+
+        paymentRepository.save(payment);
+
+        // put the parameters in a TreeMap to have the parameters to have them sorted alphabetically.
+        Map<String, Object> map = new TreeMap();
+        map.put("service_command",Constants.PaymentOperation.TOKENIZATION.name());
+        map.put("access_code",accessCode);
+        map.put("merchant_identifier",merchantIdentifier);
+        map.put("merchant_reference",transactionId);
+        map.put("language",language);
+        map.put("return_url",processPaymentUrl);
+
+        PayFortOperationDTO payfortOperationRequest = PayFortOperationDTO.builder()
+            .serviceCommand(Constants.PaymentOperation.TOKENIZATION.name())
+            .accessCode(accessCode)
+            .merchantIdentifier(merchantIdentifier)
+            .merchantReference(transactionId)
+            .language(language)
+            .returnUrl(processPaymentUrl)
+            .build();
+        payfortOperationRequest.setSignature(calculatePayfortRequestSignature(map, true));
+
+        return payfortOperationRequest;
+    }*/
+
 
 }
