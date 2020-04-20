@@ -87,30 +87,21 @@ public class PaymentCreditCardResource {
         return sTSPaymentService.checkOffilnePaymentStatus(transactionID);
     }
 
-    /* Payfort integration */
-    /*@GetMapping("/api/payments/payfort-initiate/{invoiceNumber}")
-    // @GetMapping("/billing/payfort-signature/{invoiceNumber}")
-    @ResponseBody
-    public PayFortOperationDTO initPayfortPayment(@PathVariable Long invoiceNumber) throws UnsupportedEncodingException {
-        return payFortPaymentService.initPayment(invoiceNumber);
-    }*/
 
-    @GetMapping("/billing/payments/payfort-processing")
+    @PostMapping(value= "/billing/payments/payfort-processing", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     @ResponseBody
     public void processPayment(Model model
         , @RequestParam Map<String,Object> params, HttpServletRequest request, HttpServletResponse response) {
         payFortPaymentService.proceedPaymentOperation(params, request, response);
     }
 
-    // THIS IS NOTIFICATION AFTER REDIRECTION TO CUSTOMER
-    /*@GetMapping("/billing/payments/payfort/notification")
+    // This was replaced by post in order to solve the issue of arabic card holder
+    @GetMapping("/billing/payments/payfort-processing")
     @ResponseBody
-    public void updatePayment(HttpServletRequest request, HttpServletResponse response,
-                              @RequestParam Map<String, Object> params) throws IOException {
-        // get All Request Parameters
-        log.info("-----got payfort payment notification");
-        payFortPaymentService.processPaymentNotification(request, response, params);
-    }*/
+    public void processPaymentGet(Model model
+        , @RequestParam Map<String,Object> params, HttpServletRequest request, HttpServletResponse response) {
+        payFortPaymentService.proceedPaymentOperation(params, request, response);
+    }
 
     // This is post notification in case of connexion issue from payfort directly
     @PostMapping(value= "/billing/payments/payfort/correction", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
@@ -119,15 +110,5 @@ public class PaymentCreditCardResource {
         log.info("-----got payfort payment correction {}", formData);
         payFortPaymentService.processPaymentNotification(request, response, formData);
     }
-
-    // Payfort iframe -->  /billing/newPayment/
-    /* @GetMapping("/billing/payments/iframe/{invoiceNumber}")
-    public String initPayfortIframe(@PathVariable Long invoiceNumber, Model model, @RequestParam Map<String,String> params) throws UnsupportedEncodingException {
-        *//*if (params.keySet() == null || !params.keySet().contains(Constants.TRANSACTION_IDENTIFIER_BASE_64)) {
-            throw new TbsRunTimeException("Missing parameters");
-        }
-        String transactionId = new String(Base64.getDecoder().decode(params.get(Constants.TRANSACTION_IDENTIFIER_BASE_64)));*//*
-        return payFortPaymentService.initIframe(model, invoiceNumber);
-    }*/
 
 }
