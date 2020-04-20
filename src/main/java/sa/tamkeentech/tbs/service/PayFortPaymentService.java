@@ -149,7 +149,7 @@ public class PayFortPaymentService {
         model.addAttribute("cardPay", languageUtil.getMessageByKey("payment.card.pay", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
         model.addAttribute("cardCvvTooltip", languageUtil.getMessageByKey("payment.card.cvv.tooltip", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
         model.addAttribute("cardInvalid", languageUtil.getMessageByKey("payment.card.invalid", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
-        model.addAttribute("currentLang", lang);
+        model.addAttribute("currentLang", lang.equalsIgnoreCase(Constants.DEFAULT_HEADER_LANGUAGE)? "ar": "en");
 
         return "paymentIframePayfort";
     }
@@ -207,9 +207,8 @@ public class PayFortPaymentService {
                 .settlementReference(params.get("merchant_reference").toString())
                 .returnUrl(processPaymentUrl)
                 .build();
-            if (invoice.getInvoiceItems() != null && invoice.getInvoiceItems().size() == 1) {
-                payfortOperationRequest.setOrderDescription(invoice.getInvoiceItems().get(0).getDetails());
-            }
+            // arabic desc causes signature mismatch --> use client name
+            payfortOperationRequest.setOrderDescription(invoice.getClient().getName() + " Payment");
             Map<String, Object> map = new TreeMap();
             map.put("command", Constants.PaymentOperation.PURCHASE.name());
             map.put("access_code", accessCode);
@@ -221,9 +220,8 @@ public class PayFortPaymentService {
             map.put("customer_email", payfortOperationRequest.getCustomerEmail());
             map.put("customer_ip", payfortOperationRequest.getCustomerIp());
             map.put("token_name", payfortOperationRequest.getTokenName());
-            if (payfortOperationRequest.getOrderDescription() != null) {
-                map.put("order_description", payfortOperationRequest.getOrderDescription());
-            }
+            map.put("order_description", payfortOperationRequest.getOrderDescription());
+
             map.put("customer_name", payfortOperationRequest.getCustomerName());
             map.put("settlement_reference", payfortOperationRequest.getSettlementReference());
             map.put("return_url", payfortOperationRequest.getReturnUrl());
@@ -324,7 +322,8 @@ public class PayFortPaymentService {
      * @param requestMap
      * @return signature
      */
-    private String calculatePayfortRequestSignature(Map<String, Object> requestMap, boolean isRequest) {
+    private String
+    calculatePayfortRequestSignature(Map<String, Object> requestMap, boolean isRequest) {
 
         String key = (isRequest)?requestPhrase : responsePhrase;
         StringBuilder signatureBuilder = new StringBuilder(key);
