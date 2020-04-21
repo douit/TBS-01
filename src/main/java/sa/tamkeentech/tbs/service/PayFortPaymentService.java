@@ -388,7 +388,7 @@ public class PayFortPaymentService {
         map.put("access_code",accessCode);
         map.put("merchant_identifier",merchantIdentifier);
         map.put("merchant_reference",payment.get().getTransactionId());
-        map.put("amount",refund.getRefundValue());
+        map.put("amount", payfortOperationRequest.getAmount());
         map.put("currency","SAR");
         map.put("language",language);
 
