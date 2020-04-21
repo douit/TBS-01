@@ -382,15 +382,16 @@ public class PayFortPaymentService {
             .merchantReference(payment.get().getTransactionId())
             .amount(roundedAmount.multiply(new BigDecimal("100")).longValue())// 100 SAR
             .currency("SAR")
+            .language(language)
             .build();
 
         Map<String, Object> map = new TreeMap();
-        map.put("service_command",Constants.PaymentOperation.REFUND.name());
+        map.put("command",Constants.PaymentOperation.REFUND.name());
         map.put("access_code",accessCode);
         map.put("merchant_identifier",merchantIdentifier);
         map.put("merchant_reference",payment.get().getTransactionId());
         map.put("amount",refund.getRefundValue());
-        map.put("currency",refund.getRefundValue());
+        map.put("currency","SAR");
         map.put("language",language);
 
         payfortOperationRequest.setSignature(calculatePayfortRequestSignature(map, true));
