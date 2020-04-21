@@ -98,8 +98,6 @@ public class PayFortPaymentService {
     private String urlForm;
     @Value("${tbs.payment.payfort-url-json}")
     private String urlJson;
-    @Value("${tbs.payment.payfort-refund-url}")
-    private String refundURL;
     @Value("${tbs.payment.payfort-process-payment}")
     private String processPaymentUrl;
 
@@ -398,7 +396,7 @@ public class PayFortPaymentService {
 
         ResponseEntity<PayFortOperationDTO> result = null;
         try {
-            result = restTemplate.postForEntity(refundURL, payfortOperationRequest, PayFortOperationDTO.class);
+            result = restTemplate.postForEntity(urlJson, payfortOperationRequest, PayFortOperationDTO.class);
             log.debug("Refund request status: {}, description ", result.getBody().getStatus(), result.getBody().getResponseMessage());
             if (result.getBody().getStatus().equals(06)) {
                 refund.setStatus(RequestStatus.SUCCEEDED);
@@ -417,6 +415,61 @@ public class PayFortPaymentService {
         return refund;
 
     }
+
+    public PaymentStatusResponseDTO checkOffilnePaymentStatus(String transactionId ){
+        PayFortOperationDTO payfortOperationRequest =  PayFortOperationDTO.builder()
+            .queryCommand(Constants.PaymentOperation.CHECK_STATUS.name())
+            .accessCode(accessCode)
+            .merchantIdentifier(merchantIdentifier)
+            .merchantReference(transactionId)
+            .language(language)
+            .build();
+
+
+        Map<String, Object> map = new TreeMap();
+        map.put("query_command",Constants.PaymentOperation.REFUND.name());
+        map.put("access_code",accessCode);
+        map.put("merchant_identifier",merchantIdentifier);
+        map.put("merchant_reference",transactionId);
+        map.put("language",language);
+
+        payfortOperationRequest.setSignature(calculatePayfortRequestSignature(map, true));
+
+
+        ResponseEntity<PayFortOperationDTO> result = null;
+        try {
+            result = restTemplate.postForEntity(urlJson, payfortOperationRequest, PayFortOperationDTO.class);
+            log.debug("Refund request status: {}, description ", result.getBody().getStatus(), result.getBody().getResponseMessage());
+
+            if (result.getBody().getStatus().equals(06)) {
+                refund.setStatus(RequestStatus.SUCCEEDED);
+                payment.get().setStatus(PaymentStatus.REFUNDED);
+                invoice.setPaymentStatus(PaymentStatus.REFUNDED);
+                paymentRepository.save(payment.get());
+                invoiceRepository.save(invoice);
+
+            } else {
+                refund.setStatus(RequestStatus.FAILED);
+            }
+        } catch (RestClientException e) {
+            log.info("------ Refund Processing Exception: {}");
+        }
+
+        PaymentStatusResponseDTO paymentStatusResponseDTO = PaymentStatusResponseDTO.builder()
+            .code(result.get("Response.StatusCode"))
+            .cardNumber(result.get("Response.CardNumber"))
+            .transactionId(result.get("Response.TransactionID"))
+            .cardHolderName(result.get("Response.CardHolderName"))
+            //.billNumber(result.get())
+            .cardExpiryDate(result.get("Response.CardExpiryDate"))
+            .description(result.get("Response.StatusDescription"))
+            .build();
+        Payment payment = paymentRepository.findByTransactionId(result.get("Response.TransactionID"));
+
+        paymentService.updateCreditCardPaymentAndSendEvent(paymentStatusResponseDTO, payment);
+        return paymentStatusResponseDTO;
+    }
+
     /*private PayFortOperationDTO initPayment() throws UnsupportedEncodingException {
         log.info("Request to initiate Payment : {}", invoiceNumber);
         DateFormat df = new SimpleDateFormat("HHmmss");

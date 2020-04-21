@@ -115,7 +115,8 @@ public final class Constants {
     public enum PaymentOperation {
         TOKENIZATION,
         PURCHASE,
-        REFUND
+        REFUND,
+        CHECK_STATUS
     }
 
     public enum PayfortResponseStatus {

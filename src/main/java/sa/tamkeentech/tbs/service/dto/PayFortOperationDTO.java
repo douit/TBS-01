@@ -14,6 +14,9 @@ public class PayFortOperationDTO {
     @JsonProperty("service_command")
     private String serviceCommand;
 
+    @JsonProperty("query_command")
+    private String queryCommand;
+
     @JsonProperty("access_code")
     private String accessCode;
 
