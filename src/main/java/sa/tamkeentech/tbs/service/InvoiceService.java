@@ -622,6 +622,9 @@ public class InvoiceService {
             if (StringUtils.isNotEmpty(invoiceSearchRequestDTO.getCustomerId())) {
                 predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("customer").get("identity"), invoiceSearchRequestDTO.getCustomerId())));
             }
+            if (invoiceSearchRequestDTO.getAccountId() != 0l) {
+                predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("accountId"), invoiceSearchRequestDTO.getAccountId())));
+            }
 //            if (!invoiceSearchRequestDTO.getPaymentStatus().equals(null)) {
 //                predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("paymentStatus"), invoiceSearchRequestDTO.getPaymentStatus())));
 //            }

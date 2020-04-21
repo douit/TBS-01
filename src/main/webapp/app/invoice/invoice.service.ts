@@ -29,7 +29,7 @@ export class InvoiceService {
   }
 //datatable?${_tbs.serializeDataTableRequest(datatableInput)} || datatableInput: DataTableInput,
   getInvoiceBySearch(invoiceSearchRequest : IInvoiceSearchRequest): Observable<Pageable<IInvoice>> {
-    return this.http.post<Pageable<IInvoice>>(`${this.resourceUrl}/search`,invoiceSearchRequest);
+    return this.http.post<Pageable<IInvoice>>(`${this.resourceUrl}/search`, invoiceSearchRequest);
   }
 
   getInvoiceAudit(id: number) {

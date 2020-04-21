@@ -704,6 +704,9 @@ public class PaymentService {
             if (!paymentSearchRequestDTO.getPaymentStatus().equals(PaymentStatus.NONE)) {
                 predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("status"), paymentSearchRequestDTO.getPaymentStatus())));
             }
+            if (paymentSearchRequestDTO.getAccountId() != 0l) {
+                predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("invoice").get("accountId"), paymentSearchRequestDTO.getAccountId())));
+            }
             return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
         }));
     }
