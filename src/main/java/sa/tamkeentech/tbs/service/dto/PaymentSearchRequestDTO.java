@@ -23,6 +23,7 @@ public class PaymentSearchRequestDTO implements Serializable {
     private ZonedDateTime toDate;
     private DataTablesInput input ;
     private long clientId;
+    private long accountId;
 //  private String customerId;
     private PaymentStatus paymentStatus;
 }

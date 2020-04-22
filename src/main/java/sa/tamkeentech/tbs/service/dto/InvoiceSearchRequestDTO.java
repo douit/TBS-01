@@ -24,5 +24,6 @@ public class InvoiceSearchRequestDTO implements Serializable {
     private DataTablesInput input ;
     private long clientId;
     private String customerId;
+    private long accountId;
 //    private PaymentStatus paymentStatus;
 }

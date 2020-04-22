@@ -176,7 +176,7 @@
 			</staticText>
 			<textField>
 				<reportElement x="511" y="80" width="57" height="14" uuid="0e8ff686-2a6b-4cdc-ac23-287dd2376b25"/>
-				<textFieldExpression><![CDATA[$P{invoice}.getDiscount().getIsPercentage()  == true ? $P{invoice}.getDiscount().getValue()+"%" :  $P{invoice}.getDiscount().getValue()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($P{invoice}.getDiscount() != null)? ($P{invoice}.getDiscount().getIsPercentage()  == true ? $P{invoice}.getDiscount().getValue()+"%" :  $P{invoice}.getDiscount().getValue()): 0]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="511" y="67" width="57" height="14" uuid="aba503f6-d916-44b9-83eb-db87540979ed"/>

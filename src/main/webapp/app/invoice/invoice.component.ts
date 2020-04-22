@@ -93,6 +93,7 @@ export class InvoiceComponent implements OnInit {
   selectedClient: IClient;
   clients: IClient[];
   customerId: string;
+  accountId: number;
   paymentStatus: any;
   isSearchOpr = false;
   taxRate = 0;
@@ -102,6 +103,7 @@ export class InvoiceComponent implements OnInit {
     toDate : null,
     clientId : null,
     customerId : null,
+    accountId : null
     // paymentStatus:this.paymentStatusSelected.value,
   };
   onDateSelection(date: NgbDate, datepicker) {
@@ -155,6 +157,7 @@ export class InvoiceComponent implements OnInit {
     this.invoiceSearch.toDate = toDate;
     this.invoiceSearch.clientId = clientId;
     this.invoiceSearch.customerId = this.customerId;
+    this.invoiceSearch.accountId = this.accountId;
 
     // if(!this.isSearchOpr){
       this.initDatatable();
@@ -341,6 +344,7 @@ export class InvoiceComponent implements OnInit {
   clearSearch() {
     this.datatable.search = '';
     this.customerId = '';
+    this.accountId = null;
     this.selectedClient = null;
     this.selectedClient = null;
     this.fromDate = null;
