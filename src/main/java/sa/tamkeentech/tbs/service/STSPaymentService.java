@@ -25,6 +25,7 @@ import sa.tamkeentech.tbs.repository.PaymentRepository;
 import sa.tamkeentech.tbs.repository.RefundRepository;
 import sa.tamkeentech.tbs.service.dto.PaymentStatusResponseDTO;
 import sa.tamkeentech.tbs.service.dto.RefundDTO;
+import sa.tamkeentech.tbs.service.dto.RefundStatusCCResponseDTO;
 import sa.tamkeentech.tbs.service.dto.RefundStatusSadadResponseDTO;
 import sa.tamkeentech.tbs.service.mapper.RefundMapper;
 import sa.tamkeentech.tbs.web.rest.errors.PaymentGatewayException;
@@ -389,8 +390,10 @@ public class STSPaymentService {
         return responseOrderdString.toString();
     }
 
-    public Refund proceedRefundOperation(Refund refund, Invoice invoice, Optional<Payment> payment) throws IOException {
+    public RefundStatusCCResponseDTO proceedRefundOperation(Refund refund, Invoice invoice, Optional<Payment> payment) throws IOException {
 
+        RefundStatusCCResponseDTO refundStatusCCResponseDTO =  RefundStatusCCResponseDTO.builder()
+            .refundId(refund.getPayment().getTransactionId()).build();
         //Step 1: Generate Secure Hash
         //  String SECRET_KEY = "Y2FkMTdlOWZiMzJjMzY4ZGFkMzhkMWIz"; // Use Yours, Please Store Your Secret Key in safe Place(e.g. database)
 
@@ -499,16 +502,15 @@ public class STSPaymentService {
             log.info("Refund request {} status {}", refund.getId(), status);
             if (Constants.STS_PAYMENT_SUCCESS_CODE.equals(status)) {
                 log.debug("Successful refund {}", invoice.getAccountId());
-                refund.setStatus(RequestStatus.SUCCEEDED);
-                payment.get().setStatus(PaymentStatus.REFUNDED);
-                invoice.setPaymentStatus(PaymentStatus.REFUNDED);
-                paymentRepository.save(payment.get());
-                invoiceResitory.save(invoice);
-
+                refundStatusCCResponseDTO.setStatus(RequestStatus.SUCCEEDED);
             }
+            else
+                refundStatusCCResponseDTO.setStatus(RequestStatus.FAILED);
         }
 
-        return refund;
+
+
+        return refundStatusCCResponseDTO;
     }
 
 

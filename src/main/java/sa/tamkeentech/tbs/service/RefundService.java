@@ -171,7 +171,7 @@ public class RefundService {
                 if (refundDTO.getRefundValue().compareTo(payment.get().getAmount()) > 0) {
                     throw new TbsRunTimeException("Wrong refund value");
                 }
-                BigDecimal roundedAmount = refundDTO.getAmount().setScale(2, RoundingMode.HALF_UP);
+                BigDecimal roundedAmount = refundDTO.getRefundValue().setScale(2, RoundingMode.HALF_UP);
                 refund.setRefundValue(roundedAmount);
             }
         } else {
@@ -207,10 +207,24 @@ public class RefundService {
                 invoiceResitory.save(invoice);
 
             }
-        } else if (payment.get().getPaymentProvider() == PaymentProvider.STS) {
-            stsPaymentService.proceedRefundOperation(refund, invoice, payment);
-        } else if (payment.get().getPaymentProvider() == PaymentProvider.PAYFORT) {
-            payFortPaymentService.proceedRefundOperation(refund, invoice, payment);
+        } else {
+            RefundStatusCCResponseDTO refundStatusCCResponseDTO;
+            String principalId = paymentService.getCustomerId(invoice.getCustomer());
+            TBSEventReqDTO<Refund> req = TBSEventReqDTO.<Refund>builder()
+                .principalId(principalId)
+                .referenceId(invoice.getAccountId().toString())
+                .req(refund).build();
+            refundStatusCCResponseDTO = eventPublisherService.callRefundByCreditCardEvent(req, invoice, payment).getResp();
+          if(refundStatusCCResponseDTO.getStatus().equals(RequestStatus.SUCCEEDED)){
+              refund.setStatus(RequestStatus.SUCCEEDED);
+              payment.get().setStatus(PaymentStatus.REFUNDED);
+              invoice.setPaymentStatus(PaymentStatus.REFUNDED);
+              paymentRepository.save(payment.get());
+              invoiceResitory.save(invoice);
+          }else{
+              refund.setStatus(RequestStatus.FAILED);
+          }
+
         }
 
         refund = refundRepository.save(refund);
@@ -448,22 +462,27 @@ public class RefundService {
 //        return HttpStatus.EXPECTATION_FAILED.value();
     }
 
-    public Integer callRefundByCreditCard(String jsonStr) throws IOException {
-        HttpClient client = HttpClientBuilder.create().build();
-        HttpPost post = new HttpPost(creditCardRefundUrl);
-        post.setHeader("Content-Type", "application/json");
-        RefundStatusCCResponseDTO refundResponseDTO = null;
-        post.setEntity(new StringEntity(jsonStr));
-        log.debug("++++Refund CC request : {}", jsonStr);
-        HttpResponse response = client.execute(post);
-        if (response.getEntity() != null) {
-            log.debug("----Refund CC response content : {}", response.getEntity().getContent().toString());
-            log.debug("----Refund CC response Code : {}", response.getStatusLine().getStatusCode());
-        }
-        refundResponseDTO = objectMapper.readValue(response.getEntity().getContent(), RefundStatusCCResponseDTO.class);
-        log.info("************** response from credit Card ************ : " + refundResponseDTO);
-        return response.getStatusLine().getStatusCode();
-    }
+//    public Refund callRefundByCreditCard(RefundDTO refundDTO, Invoice invoice, Optional<Payment> payment) throws IOException {
+//
+//    }
+//    public Integer callRefundByCreditCard(String jsonStr) throws IOException {
+//
+//
+//        HttpClient client = HttpClientBuilder.create().build();
+//        HttpPost post = new HttpPost(creditCardRefundUrl);
+//        post.setHeader("Content-Type", "application/json");
+//        RefundStatusCCResponseDTO refundResponseDTO = null;
+//        post.setEntity(new StringEntity(jsonStr));
+//        log.debug("++++Refund CC request : {}", jsonStr);
+//        HttpResponse response = client.execute(post);
+//        if (response.getEntity() != null) {
+//            log.debug("----Refund CC response content : {}", response.getEntity().getContent().toString());
+//            log.debug("----Refund CC response Code : {}", response.getStatusLine().getStatusCode());
+//        }
+//        refundResponseDTO = objectMapper.readValue(response.getEntity().getContent(), RefundStatusCCResponseDTO.class);
+//        log.info("************** response from credit Card ************ : " + refundResponseDTO);
+//        return response.getStatusLine().getStatusCode();
+//    }
 
     /**
      * Save a refund.

@@ -27,6 +27,7 @@ import sa.tamkeentech.tbs.repository.RefundRepository;
 import sa.tamkeentech.tbs.service.dto.PayFortOperationDTO;
 import sa.tamkeentech.tbs.service.dto.PaymentStatusResponseDTO;
 import sa.tamkeentech.tbs.service.dto.RefundDTO;
+import sa.tamkeentech.tbs.service.dto.RefundStatusCCResponseDTO;
 import sa.tamkeentech.tbs.service.mapper.RefundMapper;
 import sa.tamkeentech.tbs.service.util.LanguageUtil;
 import sa.tamkeentech.tbs.web.rest.errors.PaymentGatewayException;
@@ -369,8 +370,11 @@ public class PayFortPaymentService {
     }*/
 
 
-    public Refund proceedRefundOperation(Refund refund, Invoice invoice, Optional<Payment> payment){
+    public RefundStatusCCResponseDTO proceedRefundOperation(Refund refund, Invoice invoice, Optional<Payment> payment){
         log.info("Request to initiate Refund : {}", refund.getId());
+
+        RefundStatusCCResponseDTO refundStatusCCResponseDTO =  RefundStatusCCResponseDTO.builder()
+            .refundId(refund.getPayment().getTransactionId()).build();
 
         BigDecimal roundedAmount = refund.getRefundValue().setScale(2, RoundingMode.HALF_UP);
         PayFortOperationDTO payfortOperationRequest = PayFortOperationDTO.builder()
@@ -398,21 +402,17 @@ public class PayFortPaymentService {
         try {
             result = restTemplate.postForEntity(urlJson, payfortOperationRequest, PayFortOperationDTO.class);
             log.debug("Refund request status: {}, description ", result.getBody().getStatus(), result.getBody().getResponseMessage());
-            if (result.getBody().getStatus().equals(06)) {
-                refund.setStatus(RequestStatus.SUCCEEDED);
-                payment.get().setStatus(PaymentStatus.REFUNDED);
-                invoice.setPaymentStatus(PaymentStatus.REFUNDED);
-                paymentRepository.save(payment.get());
-                invoiceRepository.save(invoice);
+            if (result.getBody().getStatus().equals("06")) {
+                refundStatusCCResponseDTO.setStatus(RequestStatus.SUCCEEDED);
 
             } else {
-                refund.setStatus(RequestStatus.FAILED);
+                refundStatusCCResponseDTO.setStatus(RequestStatus.FAILED);
             }
         } catch (RestClientException e) {
             log.info("------ Refund Processing Exception: {}");
         }
 
-        return refund;
+        return refundStatusCCResponseDTO;
 
     }
 
@@ -437,34 +437,34 @@ public class PayFortPaymentService {
 
 
         ResponseEntity<PayFortOperationDTO> result = null;
-        try {
-            result = restTemplate.postForEntity(urlJson, payfortOperationRequest, PayFortOperationDTO.class);
-            log.debug("Refund request status: {}, description ", result.getBody().getStatus(), result.getBody().getResponseMessage());
-
-            if (result.getBody().getStatus().equals(06)) {
-                refund.setStatus(RequestStatus.SUCCEEDED);
-                payment.get().setStatus(PaymentStatus.REFUNDED);
-                invoice.setPaymentStatus(PaymentStatus.REFUNDED);
-                paymentRepository.save(payment.get());
-                invoiceRepository.save(invoice);
-
-            } else {
-                refund.setStatus(RequestStatus.FAILED);
-            }
-        } catch (RestClientException e) {
-            log.info("------ Refund Processing Exception: {}");
-        }
-
+//        try {
+//            result = restTemplate.postForEntity(urlJson, payfortOperationRequest, PayFortOperationDTO.class);
+//            log.debug("Refund request status: {}, description ", result.getBody().getStatus(), result.getBody().getResponseMessage());
+//
+//            if (result.getBody().getStatus().equals(06)) {
+//                refund.setStatus(RequestStatus.SUCCEEDED);
+//                payment.get().setStatus(PaymentStatus.REFUNDED);
+//                invoice.setPaymentStatus(PaymentStatus.REFUNDED);
+//                paymentRepository.save(payment.get());
+//                invoiceRepository.save(invoice);
+//
+//            } else {
+//                refund.setStatus(RequestStatus.FAILED);
+//            }
+//        } catch (RestClientException e) {
+//            log.info("------ Refund Processing Exception: {}");
+//        }
+//
         PaymentStatusResponseDTO paymentStatusResponseDTO = PaymentStatusResponseDTO.builder()
-            .code(result.get("Response.StatusCode"))
-            .cardNumber(result.get("Response.CardNumber"))
-            .transactionId(result.get("Response.TransactionID"))
-            .cardHolderName(result.get("Response.CardHolderName"))
-            //.billNumber(result.get())
-            .cardExpiryDate(result.get("Response.CardExpiryDate"))
-            .description(result.get("Response.StatusDescription"))
+            .code("")
+//            .cardNumber(result.get("Response.CardNumber"))
+//            .transactionId(result.get("Response.TransactionID"))
+//            .cardHolderName(result.get("Response.CardHolderName"))
+//            //.billNumber(result.get())
+//            .cardExpiryDate(result.get("Response.CardExpiryDate"))
+//            .description(result.get("Response.StatusDescription"))
             .build();
-        Payment payment = paymentRepository.findByTransactionId(result.get("Response.TransactionID"));
+        Payment payment = paymentRepository.findByTransactionId(transactionId);
 
         paymentService.updateCreditCardPaymentAndSendEvent(paymentStatusResponseDTO, payment);
         return paymentStatusResponseDTO;
