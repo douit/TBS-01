@@ -132,6 +132,7 @@ public class SecurityConfiguration {
                 .antMatchers("/app/**/*.{js,html}")
                 .antMatchers("/i18n/**")
                 .antMatchers("/content/**")
+                .antMatchers("/.well-known/**")
                 .antMatchers("/swagger-ui/index.html")
                 .antMatchers("/test/**")
                 .antMatchers("/h2-console/**")

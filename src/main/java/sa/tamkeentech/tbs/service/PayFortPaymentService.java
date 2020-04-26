@@ -142,6 +142,7 @@ public class PayFortPaymentService {
 
         // Adding language tokens
         model.addAttribute("cardTitle", languageUtil.getMessageByKey("payment.card.title", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
+        model.addAttribute("applePayTitle", languageUtil.getMessageByKey("payment.card.applepay", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
         model.addAttribute("cardNumber", languageUtil.getMessageByKey("payment.card.number", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
         model.addAttribute("cardCvv", languageUtil.getMessageByKey("payment.card.cvv", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
         model.addAttribute("cardHolder", languageUtil.getMessageByKey("payment.card.holder", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
