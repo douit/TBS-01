@@ -427,7 +427,7 @@ public class PayFortPaymentService {
 
 
         Map<String, Object> map = new TreeMap();
-        map.put("query_command",Constants.PaymentOperation.REFUND.name());
+        map.put("query_command",Constants.PaymentOperation.CHECK_STATUS.name());
         map.put("access_code",accessCode);
         map.put("merchant_identifier",merchantIdentifier);
         map.put("merchant_reference",transactionId);
@@ -435,12 +435,18 @@ public class PayFortPaymentService {
 
         payfortOperationRequest.setSignature(calculatePayfortRequestSignature(map, true));
 
-
+        PaymentStatusResponseDTO paymentStatusResponseDTO = new PaymentStatusResponseDTO();
         ResponseEntity<PayFortOperationDTO> result = null;
-//        try {
-//            result = restTemplate.postForEntity(urlJson, payfortOperationRequest, PayFortOperationDTO.class);
-//            log.debug("Refund request status: {}, description ", result.getBody().getStatus(), result.getBody().getResponseMessage());
-//
+        try {
+            result = restTemplate.postForEntity(urlJson, payfortOperationRequest, PayFortOperationDTO.class);
+            log.debug("Refund request status: {}, description ", result.getBody().getStatus(), result.getBody().getResponseMessage());
+            paymentStatusResponseDTO.setCode(result.getBody().getStatus());
+            paymentStatusResponseDTO.setCardNumber(result.getBody().getCardNumber());
+            paymentStatusResponseDTO.setTransactionId(transactionId);
+            paymentStatusResponseDTO.setCardHolderName(result.getBody().getCardHolderName());
+            paymentStatusResponseDTO.setCardExpiryDate(result.getBody().getExpiryDate());
+            paymentStatusResponseDTO.setDescription(result.getBody().getOrderDescription());
+
 //            if (result.getBody().getStatus().equals(06)) {
 //                refund.setStatus(RequestStatus.SUCCEEDED);
 //                payment.get().setStatus(PaymentStatus.REFUNDED);
@@ -451,19 +457,10 @@ public class PayFortPaymentService {
 //            } else {
 //                refund.setStatus(RequestStatus.FAILED);
 //            }
-//        } catch (RestClientException e) {
-//            log.info("------ Refund Processing Exception: {}");
-//        }
-//
-        PaymentStatusResponseDTO paymentStatusResponseDTO = PaymentStatusResponseDTO.builder()
-            .code("")
-//            .cardNumber(result.get("Response.CardNumber"))
-//            .transactionId(result.get("Response.TransactionID"))
-//            .cardHolderName(result.get("Response.CardHolderName"))
-//            //.billNumber(result.get())
-//            .cardExpiryDate(result.get("Response.CardExpiryDate"))
-//            .description(result.get("Response.StatusDescription"))
-            .build();
+        } catch (RestClientException e) {
+            log.info("------ Refund Processing Exception: {}");
+        }
+
         Payment payment = paymentRepository.findByTransactionId(transactionId);
 
         paymentService.updateCreditCardPaymentAndSendEvent(paymentStatusResponseDTO, payment);
