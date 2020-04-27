@@ -238,7 +238,7 @@ public class PaymentService {
     public PaymentDTO updateCreditCardPayment(PaymentStatusResponseDTO paymentStatusResponseDTO, Payment payment, Invoice invoice) {
         log.debug("Request to update status Payment : {}", paymentStatusResponseDTO);
         if ((Constants.STS_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode())
-            || Constants.PAYFORT_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode())) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
+                || Constants.PAYFORT_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode())) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
             payment.setStatus(PaymentStatus.PAID);
             invoice.setPaymentStatus(PaymentStatus.PAID);
             // in case client does not call check-payment Job will send notification
@@ -754,7 +754,17 @@ public class PaymentService {
                         }
                     }
                 } else if (payment.getPaymentProvider().equals(PaymentProvider.PAYFORT)) {
-
+                    PaymentStatusResponseDTO response = payFortPaymentService.checkOffilnePaymentStatus(payment.getTransactionId());
+                    if (Constants.PAYFORT_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(response.getCode()) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
+                        // Notify Client app
+                        Invoice invoice = payment.getInvoice();
+                        if (CommonUtils.isProfile(environment, "prod") || CommonUtils.isProfile(environment, "staging")
+                            || CommonUtils.isProfile(environment, "ahmed") || CommonUtils.isProfile(environment, "abdullah")) {
+                            sendPaymentNotificationToClient(clientMapper.toDto(invoice.getClient()), invoice.getAccountId(), payment);
+                        } else {
+                            log.warn("----Not prod/staging env, client notif desabled, Invoice: {}" + invoice.getAccountId());
+                        }
+                    }
                 }
             }
 
