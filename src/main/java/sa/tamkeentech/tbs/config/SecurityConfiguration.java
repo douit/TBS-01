@@ -151,7 +151,9 @@ public class SecurityConfiguration {
             // processing
                 .antMatchers("/billing/payments/payfort-processing")
             // iframe
-                .antMatchers("/billing/payments/iframe/**");
+                .antMatchers("/billing/payments/iframe/**")
+            // apple pay session
+                .antMatchers("/billing/payments/apple-session");
         }
 
         @Override

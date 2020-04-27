@@ -286,26 +286,9 @@
                 }
             }
 
-            /* Apple pay */
-            /*function showApplePayButton() {
-                if (window.ApplePaySession) {
-                    if (ApplePaySession.canMakePayments) {
-                        // showApplePayButton
-                        document.getElementById("ApplePayDiv").classList.add("display-block");
-                        document.getElementById("ApplePayBtn").classList.add("visible");
-                    } else console.log('---no canMakePayments');
-                } else {
-                    console.log('----no apple session');
-                }
-            }*/
-
-            /*document.querySelector('#payment_frame').addEventListener("load", ev => {
-                // your stuff
-                console.log('----calling showApplePayButton');
-                showApplePayButton();
-            })*/
-
-            //window.parent.document.getElementById("#payment_frame").onload = function() {
+            /*****************************/
+            /********* Apple pay *********/
+            // Show apple pay button
             window.onload = function() {
                 console.log('---load iframe');
                 document.getElementById("CreditCardDiv").classList.add("display-block");
@@ -318,6 +301,74 @@
                     console.log('--- cant MakePayments');
                 }
             }
+
+            /**
+             * Apple Pay Logic
+             * Our entry point for Apple Pay interactions.
+             * Triggered when the Apple Pay button is pressed
+             */
+            function applePayButtonClicked() {
+                const paymentRequest = {
+                    "countryCode": "SA",
+                    "currencyCode": "SAR",
+                    "merchantCapabilities": [
+                        "supports3DS"
+                    ],
+                    "supportedNetworks": [
+                        "visa",
+                        "masterCard"
+                    ],
+                    "total": {
+                        "label": "Demo (Card is not charged)",
+                        "type": "final",
+                        "amount": "1.99"
+                    }
+                };
+
+                const session = new ApplePaySession(1, paymentRequest);
+
+                /**
+                 * Merchant Validation
+                 * We call our merchant session endpoint, passing the URL to use
+                 */
+                session.onvalidatemerchant = (event) => {
+                    const validationURL = event. ValidationURL;
+                    getApplePaySession(validationURL).then(function(response) {
+                        session.completeMerchantValidation(response);
+                    });
+                };
+            }
+
+            /**
+             * Server to Server call to apple for response used to validate *merchant
+             */
+            function getApplePaySession(url) {
+                return new Promise(function (resolve, reject) {
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('POST', '/billing/payments/apple-session');
+                    xhr.onload = function () {
+                        if (this.status >= 200 && this.status < 300) {
+                            resolve(JSON.parse(xhr.response));
+                        } else {
+                            reject({
+                                status: this.status,
+                                statusText: xhr.statusText
+                            });
+                        }
+                    };
+
+                    xhr.onerror = function () {
+                        reject({
+                            status: this.status,
+                            statusText: xhr.statusText
+                        });
+                    };
+
+                    xhr.setRequestHeader("Content-Type", "application/json");
+                    xhr.send(JSON.stringify({validationUrl: url}));
+                });
+            }
+
 
         </script>
     </head>
@@ -447,10 +498,8 @@
     </body>
 
     <!-- Apple device simulation -- to be deleted -->
-    <script src="/content/js/ApplePaySession.js"></script>
+    <!--<script src="/content/js/ApplePaySession.js"></script>
     <script>
-
-
 
         /* Set the merchant identifier to use */
         ApplePaySessionPolyfill.setMerchantIdentifier("merchant.sa.tamkeentech.billing");
@@ -471,6 +520,7 @@
         };
         ApplePaySessionPolyfill.createBillingContact = createContact;
         ApplePaySessionPolyfill.createShippingContact = createContact;
+
         /*
         Create a dummy payment token, or use one generated from a test
         device or a test token made available by your payment provider.
@@ -486,7 +536,7 @@
         }
 
         var transactionId = uuidv4().toUpperCase();
-        console.log('----TransId: ' + transactionId);
+        console.log('&#45;&#45;&#45;&#45;TransId: ' + transactionId);
         ApplePaySessionPolyfill.createPaymentToken = function (session) {
             return {
                 paymentData: "SomeEncryptedPaymentData",
@@ -499,6 +549,6 @@
                 transactionIdentifier: transactionId
             };
         };
-    </script>
+    </script>-->
 
 </html>

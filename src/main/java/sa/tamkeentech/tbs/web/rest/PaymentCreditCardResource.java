@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -21,6 +22,11 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.util.Base64;
 import java.util.Map;
 
@@ -109,6 +115,13 @@ public class PaymentCreditCardResource {
                                              @RequestParam  Map<String, Object> formData){
         log.info("-----got payfort payment correction {}", formData);
         payFortPaymentService.processPaymentNotification(request, response, formData);
+    }
+
+    @PostMapping("/billing/payments/apple-session")
+    public String generateSession(String validationURL) throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException, JSONException {
+        String session =  payFortPaymentService.generateSession(validationURL);
+        log.debug("---Apple pay generate session: {}", session);
+        return session;
     }
 
 }

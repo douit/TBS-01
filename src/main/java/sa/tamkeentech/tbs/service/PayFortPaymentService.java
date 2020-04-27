@@ -5,6 +5,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.configurationprocessor.json.JSONException;
+import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,10 +35,19 @@ import sa.tamkeentech.tbs.service.util.LanguageUtil;
 import sa.tamkeentech.tbs.web.rest.errors.PaymentGatewayException;
 
 import javax.inject.Inject;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.security.*;
+import java.security.cert.CertificateException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
@@ -101,6 +112,8 @@ public class PayFortPaymentService {
     private String urlJson;
     @Value("${tbs.payment.payfort-process-payment}")
     private String processPaymentUrl;
+    @Value("${tbs.payment.key-store-password}")
+    private String keyStorePassword;
 
 
     /**
@@ -466,6 +479,58 @@ public class PayFortPaymentService {
 
         paymentService.updateCreditCardPaymentAndSendEvent(paymentStatusResponseDTO, payment);
         return paymentStatusResponseDTO;
+    }
+
+
+    public String generateSession(String validationURL) throws KeyStoreException, IOException, CertificateException,
+        NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException, JSONException {
+
+        log.debug("---Apple pay generate session, validationURL: {}", validationURL);
+        String keyStoreFile = "config/tls/merchant_id.p12";
+        String uri = validationURL;
+
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+        KeyStore clientStore = KeyStore.getInstance("PKCS12");
+        clientStore.load(new FileInputStream(classLoader.getResource(keyStoreFile).getFile()), keyStorePassword.toCharArray());
+
+        KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        kmf.init(clientStore, keyStorePassword.toCharArray());
+        KeyManager[] kms = kmf.getKeyManagers();
+        SSLContext sslContext = null;
+        sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(kms, null, new SecureRandom());
+        HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
+        URL url = new URL(uri);
+        HttpsURLConnection urlConn = (HttpsURLConnection) url.openConnection();
+        urlConn.setDoOutput(true);
+        urlConn.setDoInput(true);
+        urlConn.setRequestProperty("Content-Type", "application/json");
+        urlConn.setRequestProperty("Accept", "application/json");
+        urlConn.setRequestMethod("POST");
+        JSONObject cred   = new JSONObject();
+        cred.put("merchantIdentifier","merchant.sa.tamkeentech.billing");
+        cred.put("domainName", "d0a45686.ngrok.io");
+        cred.put("displayName", "Test");
+
+        OutputStreamWriter wr = new OutputStreamWriter
+            (urlConn.getOutputStream());
+        wr.write(cred.toString());
+        wr.flush();
+        StringBuilder sb = new StringBuilder();
+        int HttpResult = urlConn.getResponseCode();
+        if (HttpResult == HttpURLConnection.HTTP_OK) {
+            BufferedReader br = new BufferedReader(
+                new InputStreamReader(urlConn.getInputStream(), "utf-8"));
+            String line = null;
+            while ((line = br.readLine()) != null) {
+                sb.append(line + "\n");
+            }
+            br.close();
+            return sb.toString();
+        } else {
+            return urlConn.getResponseMessage();
+        }
     }
 
     /*private PayFortOperationDTO initPayment() throws UnsupportedEncodingException {
