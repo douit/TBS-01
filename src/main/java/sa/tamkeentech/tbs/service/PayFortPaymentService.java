@@ -115,6 +115,9 @@ public class PayFortPaymentService {
     @Value("${tbs.payment.key-store-password}")
     private String keyStorePassword;
 
+    @Value("${tbs.payment.key-store-apple-key}")
+    private String keyStoreFile;
+
 
     /**
      * Return the credit card form
@@ -486,13 +489,14 @@ public class PayFortPaymentService {
         NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException, JSONException {
 
         log.debug("---Apple pay generate session, validationURL: {}", validationURL);
-        String keyStoreFile = "config/tls/merchant_id.p12";
+        //String keyStoreFile = "config/tls/merchant_id.p12";
         String uri = validationURL;
 
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        //ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
         KeyStore clientStore = KeyStore.getInstance("PKCS12");
-        clientStore.load(new FileInputStream(classLoader.getResource(keyStoreFile).getFile()), keyStorePassword.toCharArray());
+        //clientStore.load(new FileInputStream(classLoader.getResource(keyStoreFile).getFile()), keyStorePassword.toCharArray());
+        clientStore.load(new FileInputStream(getClass().getClassLoader().getResource(keyStoreFile).getFile()), keyStorePassword.toCharArray());
 
         KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
         kmf.init(clientStore, keyStorePassword.toCharArray());

@@ -313,15 +313,17 @@
                 var paymentRequest = {
                     countryCode: "SA",
                     currencyCode: "SAR",
+                    // "supportsCredit", "supportsDebit"???
                     merchantCapabilities: ["supports3DS"],
-                    supportedNetworks: ["mada", "masterCard", "visa"],
+                    supportedNetworks: [/*"mada", */"masterCard", "visa"],
                     total: {
                         label: "Demo Billing",
                         amount: "1.00"
                     }
                 };
 
-                var session = new ApplePaySession(6, paymentRequest);
+                console.log('---  creating applePayButtonClicked session v1');
+                var session = new ApplePaySession(1, paymentRequest);
                 console.log('--- applePayButtonClicked session created');
 
                 /**
@@ -331,8 +333,10 @@
                  * on the Macbook and the connected iPhone
                  */
                 session.onvalidatemerchant = (event) => {
-                    console.log('--- enter onvalidatemerchant');
-                    const validationURL = event. ValidationURL;
+                    console.log('--- enter onvalidatemerchant' + event.validationURL);
+                    console.log('--- event' + JSON.stringify(event));
+
+                    const validationURL = event.validationURL;
                     getApplePaySession(validationURL).then(function(response) {
                         session.completeMerchantValidation(response);
                     });
@@ -341,12 +345,15 @@
                 // onpaymentauthorized is called after payment is authorised by the user either
                 // with a fingerprint from an iPhone or iPad or by pressing a button on their Apple Watch.
                 // This provides the payment token for capturing the funds from the user.
+
+                session.begin();
             }
 
             /**
              * Server to Server call to apple for response used to validate *merchant
              */
             function getApplePaySession(url) {
+                // const url2 = 'https://apple-pay-gateway-cert.apple.com';
                 console.log('--- enter getApplePaySession url:' + url);
                 return new Promise(function (resolve, reject) {
                     var xhr = new XMLHttpRequest();

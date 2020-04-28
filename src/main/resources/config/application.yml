@@ -208,6 +208,7 @@ tbs:
 
     #apple pay server to server key: merchant_id
     key-store-password: tm1548pmHea92
+    key-store-apple-key: 'tls/merchant_id.p12'
 
 
 
