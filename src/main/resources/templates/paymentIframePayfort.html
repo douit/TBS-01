@@ -292,6 +292,7 @@
             window.onload = function() {
                 console.log('---load iframe');
                 document.getElementById("CreditCardDiv").classList.add("display-block");
+                // test also canMakePaymentsWithActiveCard: whether the user has an active card in Wallet
                 if (window.ApplePaySession && ApplePaySession.canMakePayments) {
                     // showApplePayButton
                     document.getElementById("ApplePayDiv").classList.add("display-block");
@@ -308,43 +309,48 @@
              * Triggered when the Apple Pay button is pressed
              */
             function applePayButtonClicked() {
-                const paymentRequest = {
-                    "countryCode": "SA",
-                    "currencyCode": "SAR",
-                    "merchantCapabilities": [
-                        "supports3DS"
-                    ],
-                    "supportedNetworks": [
-                        "visa",
-                        "masterCard"
-                    ],
-                    "total": {
-                        "label": "Demo (Card is not charged)",
-                        "type": "final",
-                        "amount": "1.99"
+
+                var paymentRequest = {
+                    countryCode: "SA",
+                    currencyCode: "SAR",
+                    merchantCapabilities: ["supports3DS"],
+                    supportedNetworks: ["mada", "masterCard", "visa"],
+                    total: {
+                        label: "Demo Billing",
+                        amount: "1.00"
                     }
                 };
 
-                const session = new ApplePaySession(1, paymentRequest);
+                var session = new ApplePaySession(6, paymentRequest);
+                console.log('--- applePayButtonClicked session created');
 
                 /**
                  * Merchant Validation
                  * We call our merchant session endpoint, passing the URL to use
+                 * After the merchant validation is completed, the Apple payment sheet will be shown
+                 * on the Macbook and the connected iPhone
                  */
                 session.onvalidatemerchant = (event) => {
+                    console.log('--- enter onvalidatemerchant');
                     const validationURL = event. ValidationURL;
                     getApplePaySession(validationURL).then(function(response) {
                         session.completeMerchantValidation(response);
                     });
                 };
+
+                // onpaymentauthorized is called after payment is authorised by the user either
+                // with a fingerprint from an iPhone or iPad or by pressing a button on their Apple Watch.
+                // This provides the payment token for capturing the funds from the user.
             }
 
             /**
              * Server to Server call to apple for response used to validate *merchant
              */
             function getApplePaySession(url) {
+                console.log('--- enter getApplePaySession url:' + url);
                 return new Promise(function (resolve, reject) {
                     var xhr = new XMLHttpRequest();
+                    console.log('--- getApplePaySession sending post req to backend');
                     xhr.open('POST', '/billing/payments/apple-session');
                     xhr.onload = function () {
                         if (this.status >= 200 && this.status < 300) {
@@ -536,7 +542,7 @@
         }
 
         var transactionId = uuidv4().toUpperCase();
-        console.log('&#45;&#45;&#45;&#45;TransId: ' + transactionId);
+        console.log('Apple pay TransId: ' + transactionId);
         ApplePaySessionPolyfill.createPaymentToken = function (session) {
             return {
                 paymentData: "SomeEncryptedPaymentData",
@@ -549,6 +555,8 @@
                 transactionIdentifier: transactionId
             };
         };
+
+        ApplePaySessionPolyfill.setUserSetupStatus(false);
     </script>-->
 
 </html>
