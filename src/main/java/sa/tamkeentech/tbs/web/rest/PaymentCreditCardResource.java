@@ -118,11 +118,27 @@ public class PaymentCreditCardResource {
     }
 
     @PostMapping("/billing/payments/apple-session")
-    public String generateSession(@RequestBody Map<String, String> payload) throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException, JSONException {
+    @ResponseBody
+    public String generateAppleSession(@RequestBody Map<String, String> payload) throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException, JSONException {
         String validationURL = payload.get("validationUrl");
         String session =  payFortPaymentService.generateSession(validationURL);
         log.debug("---Apple pay generate session: {}", session);
         return session;
+    }
+
+
+
+    @PostMapping("/billing/payments/apple-authorize")
+    @ResponseBody
+    public String authorizeApplePayment(@RequestBody Map<String, String> payload) throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException, JSONException {
+        /*String validationURL = payload.get("validationUrl");
+        String session =  payFortPaymentService.generateSession(validationURL);
+        log.debug("---Apple pay generate session: {}", session);
+        return session;*/
+        for (Map.Entry<String, String> entry: payload.entrySet()) {
+            log.debug("---Apple pay authorizeApplePayment: {} : {}", entry.getKey(), entry.getValue());
+        }
+        return "";
     }
 
 }

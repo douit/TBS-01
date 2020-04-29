@@ -35,10 +35,7 @@ import sa.tamkeentech.tbs.service.util.LanguageUtil;
 import sa.tamkeentech.tbs.web.rest.errors.PaymentGatewayException;
 
 import javax.inject.Inject;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
+import javax.net.ssl.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -48,6 +45,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.*;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
@@ -495,15 +493,43 @@ public class PayFortPaymentService {
         //ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
         KeyStore clientStore = KeyStore.getInstance("PKCS12");
+        // KeyStore clientStore = KeyStore.getInstance("JKS");
         //clientStore.load(new FileInputStream(classLoader.getResource(keyStoreFile).getFile()), keyStorePassword.toCharArray());
-        clientStore.load(new FileInputStream(getClass().getClassLoader().getResource(keyStoreFile).getFile()), keyStorePassword.toCharArray());
+        clientStore.load(getClass().getClassLoader().getResourceAsStream(keyStoreFile), keyStorePassword.toCharArray());
+        // clientStore.load(new FileInputStream(keyStoreFile), keyStorePassword.toCharArray());
 
         KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
         kmf.init(clientStore, keyStorePassword.toCharArray());
         KeyManager[] kms = kmf.getKeyManagers();
+        //ahmed
+        /*KeyStore trustStore = KeyStore.getInstance("JKS");
+        trustStore.load(new FileInputStream("E:\\Tamkeen\\Billing\\ApplePay\\tls-apple\\merchant_id.jks"), keyStorePassword.toCharArray());
+
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        tmf.init(trustStore);
+        TrustManager[] tms = tmf.getTrustManagers();*/
+        // Workarrounf  tell Java to trust the self-signed certificates
+        // source https://blogs.mulesoft.com/dev/mule-dev/working-with-certificates/
+        TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+            public X509Certificate[] getAcceptedIssuers() {
+                return null;
+            }
+
+            public void checkClientTrusted(X509Certificate[] certs, String authType) {
+            }
+
+            public void checkServerTrusted(X509Certificate[] certs, String authType) {
+            }
+        } };
+        //end
+
         SSLContext sslContext = null;
         sslContext = SSLContext.getInstance("TLS");
-        sslContext.init(kms, null, new SecureRandom());
+
+        // sslContext.init(kms, null, new SecureRandom());
+        //ahmed
+        // sslContext.init(kms, tms, new SecureRandom());
+        sslContext.init(kms, trustAllCerts, new SecureRandom());
         HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
         URL url = new URL(uri);
         HttpsURLConnection urlConn = (HttpsURLConnection) url.openConnection();
@@ -514,8 +540,8 @@ public class PayFortPaymentService {
         urlConn.setRequestMethod("POST");
         JSONObject cred   = new JSONObject();
         cred.put("merchantIdentifier","merchant.sa.tamkeentech.billing");
-        cred.put("domainName", "d0a45686.ngrok.io");
-        cred.put("displayName", "Test");
+        cred.put("domainName", "tamkeen.pagekite.me");
+        cred.put("displayName", "Billing");
 
         OutputStreamWriter wr = new OutputStreamWriter
             (urlConn.getOutputStream());

@@ -339,12 +339,33 @@
                     const validationURL = event.validationURL;
                     getApplePaySession(validationURL).then(function(response) {
                         session.completeMerchantValidation(response);
+                        console.log('--- Got session from apple' + JSON.stringify(response));
                     });
                 };
 
                 // onpaymentauthorized is called after payment is authorised by the user either
                 // with a fingerprint from an iPhone or iPad or by pressing a button on their Apple Watch.
                 // This provides the payment token for capturing the funds from the user.
+                session.onpaymentauthorized = (event) => {
+                    // Send payment for processing...
+                    const payment = event.payment;
+
+                    console.log('--- enter onpaymentauthorized' + JSON.stringify(event));
+                    console.log('--- payment' + JSON.stringify(payment));
+
+                    authorize(payment.token).then(function(response) {
+                        if(response.match(/status=.error./)) {
+                            console.log("an error occured!");
+                            console.log(response);
+                            return session.abort();
+                        }
+
+                        session.completePayment(ApplePaySession.STATUS_SUCCESS);
+                        console.log("successful payment !!!");
+                        //$('#complete_checkout_apple_pay').submit();
+                    });
+
+                };
 
                 session.begin();
             }
@@ -353,7 +374,7 @@
              * Server to Server call to apple for response used to validate *merchant
              */
             function getApplePaySession(url) {
-                // const url2 = 'https://apple-pay-gateway-cert.apple.com';
+                // const url2 = 'https://apple-pay-gateway-pr-pod3.apple.com/paymentservices/startSession';
                 console.log('--- enter getApplePaySession url:' + url);
                 return new Promise(function (resolve, reject) {
                     var xhr = new XMLHttpRequest();
@@ -382,6 +403,38 @@
                 });
             }
 
+            /**
+             * Server to Server call to complete the payment
+             */
+            function authorize(token) {
+                return new Promise(function (resolve, reject) {
+                    var xhr = new XMLHttpRequest();
+                    console.log('--- authorize sending post req to backend');
+                    xhr.open('POST', '/billing/payments/apple-authorize');
+                    // var orderData = orderPayload(); // custom method to fetch order data
+                    // token.epsOrderData = orderData;
+                    xhr.onload = function () {
+                        if (this.status >= 200 && this.status < 300) {
+                            console.log('--- Success result');
+                            resolve(xhr.response);
+                        } else {
+                            console.log('--- Fail result');
+                            reject({
+                                status: this.status,
+                                statusText: xhr.statusText
+                            });
+                        }
+                    };
+                    xhr.onerror = function () {
+                        reject({
+                            status: this.status,
+                            statusText: xhr.statusText
+                        });
+                    };
+                    xhr.setRequestHeader("Content-Type", "application/json");
+                    xhr.send(JSON.stringify(token));
+                });
+            }
 
         </script>
     </head>

@@ -208,7 +208,8 @@ tbs:
 
     #apple pay server to server key: merchant_id
     key-store-password: tm1548pmHea92
-    key-store-apple-key: 'tls/merchant_id.p12'
+    key-store-apple-key: 'config/tls/merchant_id.p12'
+    #key-store-apple-key: 'E:\\Tamkeen\\Billing\\ApplePay\\tls-apple\\merchant_id.p12'
 
 
 
