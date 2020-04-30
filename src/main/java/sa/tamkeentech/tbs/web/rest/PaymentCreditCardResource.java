@@ -15,6 +15,7 @@ import sa.tamkeentech.tbs.domain.Payment;
 import sa.tamkeentech.tbs.service.PayFortPaymentService;
 import sa.tamkeentech.tbs.service.PaymentService;
 import sa.tamkeentech.tbs.service.STSPaymentService;
+import sa.tamkeentech.tbs.service.dto.ApplePayTokenAuthorizeDTO;
 import sa.tamkeentech.tbs.service.dto.PaymentStatusResponseDTO;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
@@ -130,15 +131,10 @@ public class PaymentCreditCardResource {
 
     @PostMapping("/billing/payments/apple-authorize")
     @ResponseBody
-    public String authorizeApplePayment(@RequestBody Map<String, String> payload) throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException, JSONException {
-        /*String validationURL = payload.get("validationUrl");
-        String session =  payFortPaymentService.generateSession(validationURL);
-        log.debug("---Apple pay generate session: {}", session);
-        return session;*/
-        for (Map.Entry<String, String> entry: payload.entrySet()) {
-            log.debug("---Apple pay authorizeApplePayment: {} : {}", entry.getKey(), entry.getValue());
-        }
-        return "";
+    public void authorizeApplePayment(@RequestBody ApplePayTokenAuthorizeDTO token, HttpServletRequest request,
+                                        HttpServletResponse response) throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException, JSONException {
+        log.debug("---Apple pay token to process payment: {}", token);
+        payFortPaymentService.proceedApplePurchaseOperation(token, request, response);
     }
 
 }

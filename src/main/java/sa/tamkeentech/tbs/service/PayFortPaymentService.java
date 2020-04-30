@@ -26,10 +26,7 @@ import sa.tamkeentech.tbs.domain.enumeration.RequestStatus;
 import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.repository.PaymentRepository;
 import sa.tamkeentech.tbs.repository.RefundRepository;
-import sa.tamkeentech.tbs.service.dto.PayFortOperationDTO;
-import sa.tamkeentech.tbs.service.dto.PaymentStatusResponseDTO;
-import sa.tamkeentech.tbs.service.dto.RefundDTO;
-import sa.tamkeentech.tbs.service.dto.RefundStatusCCResponseDTO;
+import sa.tamkeentech.tbs.service.dto.*;
 import sa.tamkeentech.tbs.service.mapper.RefundMapper;
 import sa.tamkeentech.tbs.service.util.LanguageUtil;
 import sa.tamkeentech.tbs.web.rest.errors.PaymentGatewayException;
@@ -483,6 +480,7 @@ public class PayFortPaymentService {
     }
 
 
+    // Todo change payment to checkout page? must receive transactionId
     public String generateSession(String validationURL) throws KeyStoreException, IOException, CertificateException,
         NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException, JSONException {
 
@@ -561,6 +559,107 @@ public class PayFortPaymentService {
         } else {
             return urlConn.getResponseMessage();
         }
+    }
+
+    public void proceedApplePurchaseOperation(ApplePayTokenAuthorizeDTO token, HttpServletRequest request, HttpServletResponse response) {
+        Payment payment = paymentRepository.findByTransactionId(token.getTransactionIdBilling());
+        Invoice invoice = null;
+        if (payment != null) {
+            payment.setStatus(PaymentStatus.CHECKOUT_PAGE);
+            paymentRepository.save(payment);
+
+            invoice = payment.getInvoice();
+            invoice.setPaymentStatus(PaymentStatus.CHECKOUT_PAGE);
+            invoiceRepository.save(invoice);
+        } else {
+            throw new PaymentGatewayException("Payfort prchase, Payment not found, transactionId=" + token.getTransactionIdBilling());
+        }
+        BigDecimal roundedAmount = invoice.getAmount().setScale(2, RoundingMode.HALF_UP);
+        PayFortOperationDTO payfortOperationRequest = PayFortOperationDTO.builder()
+            .digitalWallet("APPLE_PAY")
+            .command(Constants.PaymentOperation.PURCHASE.name())
+            .accessCode(accessCode)
+            .merchantIdentifier(merchantIdentifier)
+            .merchantReference(token.getTransactionIdBilling())
+            //.amount(roundedAmount.multiply(new BigDecimal("100")).longValue())
+            // test 1 Sar
+            .amount(100l)
+
+            .currency("SAR")
+            .language(language)
+            .customerEmail(invoice.getCustomer().getContact().getEmail())
+            .appleData(token.getPaymentData().getData())
+            .appleSignature(token.getPaymentData().getSignature())
+            .appleHeader(PayFortOperationDTO.AppleHeader.builder()
+                .ephemeralPublicKey(token.getPaymentData().getHeader().getEphemeralPublicKey())
+                .publicKeyHash(token.getPaymentData().getHeader().getPublicKeyHash())
+                .transactionId(token.getPaymentData().getHeader().getTransactionId()).build())
+            // two one capital and one small : token.getTransactionIdentifier()
+            .appleTransactionId(token.getPaymentData().header.getTransactionId())
+            .appleEphemeralPublicKey(token.getPaymentData().getHeader().getEphemeralPublicKey())
+            .applePublicKeyHash(token.getPaymentData().getHeader().getPublicKeyHash())
+            .applePaymentMethod(PayFortOperationDTO.ApplePaymentMethod.builder()
+                .displayName(token.getPaymentMethod().getDisplayName())
+                .network(token.getPaymentMethod().getNetwork())
+                .type(token.getPaymentMethod().getType()).build())
+            .appleDisplayName(token.getPaymentMethod().getDisplayName())
+            .appleNetwork(token.getPaymentMethod().getNetwork())
+            .appleType(token.getPaymentMethod().getType())
+            .build();
+
+        Map<String, Object> map = new TreeMap();
+        map.put("digital_wallet", payfortOperationRequest.getDigitalWallet());
+        map.put("command", Constants.PaymentOperation.PURCHASE.name());
+        map.put("access_code", accessCode);
+        map.put("merchant_identifier", merchantIdentifier);
+        map.put("merchant_reference", payfortOperationRequest.getMerchantReference());
+        map.put("amount", payfortOperationRequest.getAmount().toString());
+        map.put("currency", payfortOperationRequest.getCurrency());
+        map.put("language", language);
+        map.put("customer_email", payfortOperationRequest.getCustomerEmail());
+        map.put("apple_data", payfortOperationRequest.getAppleData());
+        map.put("apple_signature", payfortOperationRequest.getAppleSignature());
+        // header attributes
+        map.put("apple_ephemeralPublicKey", payfortOperationRequest.getAppleHeader().getEphemeralPublicKey());
+        map.put("apple_publicKeyHash", payfortOperationRequest.getAppleHeader().getPublicKeyHash());
+        map.put("apple_transactionId", payfortOperationRequest.getAppleHeader().getTransactionId());
+
+        map.put("apple_transactionId", payfortOperationRequest.getAppleTransactionId());
+        map.put("apple_ephemeralPublicKey", payfortOperationRequest.getAppleEphemeralPublicKey());
+        map.put("apple_publicKeyHash", payfortOperationRequest.getApplePublicKeyHash());
+
+        // paymentMethod attributes
+        map.put("apple_displayName", payfortOperationRequest.getApplePaymentMethod().getDisplayName());
+        map.put("apple_network", payfortOperationRequest.getApplePaymentMethod().getNetwork());
+        map.put("apple_type", payfortOperationRequest.getApplePaymentMethod().getType());
+
+        map.put("apple_displayName", payfortOperationRequest.getAppleDisplayName());
+        map.put("apple_network", payfortOperationRequest.getAppleNetwork());
+        map.put("apple_type", payfortOperationRequest.getAppleType());
+
+        payfortOperationRequest.setSignature(calculatePayfortRequestSignature(map, true));
+        log.debug("Purchase request: {}", payfortOperationRequest);
+
+
+        ResponseEntity<PayFortOperationDTO> result = null;
+        String redirectUrl = invoice.getClient().getRedirectUrl() + "?transactionId=" + token.getTransactionIdBilling();
+
+        try {
+            result = restTemplate.postForEntity(urlJson, payfortOperationRequest, PayFortOperationDTO.class);
+            log.debug("Purchase request status: {}, description ", result.getBody().getStatus(), result.getBody().getResponseMessage());
+            log.debug("-------Purchase result: {}", result);
+
+            // redirectUrl += "&status=" + result.getBody().getStatus();
+            log.info("------ Processing ended without 3ds to: {}", redirectUrl);
+            Map<String, Object> paramsresponse = objectMapper.convertValue(result.getBody(), Map.class);
+            processPaymentNotification(request, response, paramsresponse);
+
+        } catch (RestClientException e) {
+            log.info("------ Processing issue Redirect after before payment to: {}", redirectUrl);
+            response.addHeader("Location", redirectUrl);
+            e.printStackTrace();
+        }
+        response.setStatus(HttpStatus.FOUND.value());
     }
 
     /*private PayFortOperationDTO initPayment() throws UnsupportedEncodingException {

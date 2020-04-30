@@ -109,9 +109,68 @@ public class PayFortOperationDTO {
     @JsonProperty("3ds_url")
     private String url3ds;
 
-    ///////Test Mada
-
     @JsonProperty("authorization_code")
     private String authorizationCode;
+
+    // Apple pay
+    @JsonProperty("digital_wallet")
+    private String digitalWallet;
+
+    @JsonProperty("apple_data")
+    private String appleData;
+
+    @JsonProperty("apple_signature")
+    private String appleSignature;
+
+    @JsonProperty("apple_header")
+    private AppleHeader appleHeader;
+
+    @JsonProperty("apple_transactionId")
+    private String appleTransactionId;
+
+    @JsonProperty("apple_ephemeralPublicKey")
+    private String appleEphemeralPublicKey;
+
+    @JsonProperty("apple_publicKeyHash")
+    private String applePublicKeyHash;
+
+    @JsonProperty("apple_paymentMethod")
+    private ApplePaymentMethod applePaymentMethod;
+
+    @JsonProperty("apple_displayName")
+    private String appleDisplayName;
+
+    @JsonProperty("apple_network")
+    private String appleNetwork;
+
+    @JsonProperty("apple_type")
+    private String appleType;
+
+    @Data
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class AppleHeader {
+        @JsonProperty("apple_ephemeralPublicKey")
+        private String ephemeralPublicKey;
+        @JsonProperty("apple_publicKeyHash")
+        private String publicKeyHash;
+        @JsonProperty("apple_transactionId")
+        private String transactionId;
+    }
+
+
+    @Data
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class ApplePaymentMethod {
+        @JsonProperty("apple_displayName")
+        private String displayName;
+        @JsonProperty("apple_network")
+        private String network;
+        @JsonProperty("apple_type")
+        private String type;
+    }
 
 }

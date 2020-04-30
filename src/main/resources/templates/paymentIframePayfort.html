@@ -127,6 +127,15 @@
 
         </style>
 
+
+        <script th:inline="javascript">
+            //test
+            /*<![CDATA[*/
+            var transactionIdBilling = /*[[${merchant_reference}]]*/ "";
+            console.log('--- transactionIdBilling:' + transactionIdBilling);
+            /*]]>*/
+        </script>
+
         <script>
             function payOnClick() {
                 var date = document.getElementById('expiry_date_formatted').value;
@@ -376,6 +385,7 @@
             function getApplePaySession(url) {
                 // const url2 = 'https://apple-pay-gateway-pr-pod3.apple.com/paymentservices/startSession';
                 console.log('--- enter getApplePaySession url:' + url);
+
                 return new Promise(function (resolve, reject) {
                     var xhr = new XMLHttpRequest();
                     console.log('--- getApplePaySession sending post req to backend');
@@ -413,6 +423,7 @@
                     xhr.open('POST', '/billing/payments/apple-authorize');
                     // var orderData = orderPayload(); // custom method to fetch order data
                     // token.epsOrderData = orderData;
+                    token.transactionIdBilling = transactionIdBilling;
                     xhr.onload = function () {
                         if (this.status >= 200 && this.status < 300) {
                             console.log('--- Success result');
@@ -564,7 +575,8 @@
     </body>
 
     <!-- Apple device simulation -- to be deleted -->
-    <!--<script src="/content/js/ApplePaySession.js"></script>
+    <!--
+    <script src="/content/js/ApplePaySession.js"></script>
     <script>
 
         /* Set the merchant identifier to use */
