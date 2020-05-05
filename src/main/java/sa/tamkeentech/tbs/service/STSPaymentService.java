@@ -111,6 +111,9 @@ public class STSPaymentService {
         boolean includeDesc = true;
         if (invoice.getInvoiceItems() != null && invoice.getInvoiceItems().size() == 1) {
             String itemDetail = invoice.getInvoiceItems().get(0).getDetails();
+            if (StringUtils.isEmpty(itemDetail)) {
+                itemDetail = invoice.getInvoiceItems().get(0).getName();
+            }
             parameters.put("PaymentDescription", itemDetail);
         }
 

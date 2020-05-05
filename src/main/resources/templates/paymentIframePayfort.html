@@ -135,6 +135,8 @@
             console.log('--- transactionIdBilling:' + transactionIdBilling);
             var transactionAmount = /*[[${amount}]]*/ "";
             console.log('--- transactionAmount:' + transactionAmount);
+            var paymentDescription = /*[[${paymentDescription}]]*/ "";
+            console.log('--- paymentDescription:' + paymentDescription);
             /*]]>*/
         </script>
 
@@ -328,7 +330,8 @@
                     merchantCapabilities: ["supports3DS"],
                     supportedNetworks: [/*"mada", */"masterCard", "visa"],
                     total: {
-                        label: "To be updated according to invoice -- Billing System",
+                        // label: "To be updated according to invoice -- Billing System",
+                        label: paymentDescription,
                         // amount: "1.00"
                         amount: transactionAmount
                     }

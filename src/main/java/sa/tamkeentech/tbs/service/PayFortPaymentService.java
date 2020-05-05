@@ -152,6 +152,16 @@ public class PayFortPaymentService {
         // Apple pay attributes
         BigDecimal roundedAmount = payment.getAmount().setScale(2, RoundingMode.HALF_UP);
         model.addAttribute("amount", roundedAmount.toString());
+        Invoice invoice = payment.getInvoice();
+        if (invoice.getInvoiceItems() != null && invoice.getInvoiceItems().size() == 1) {
+            String itemDetail = invoice.getInvoiceItems().get(0).getDetails();
+            if (StringUtils.isEmpty(itemDetail)) {
+                itemDetail = invoice.getInvoiceItems().get(0).getName();
+            }
+            model.addAttribute("paymentDescription", itemDetail);
+        } else {
+            model.addAttribute("paymentDescription", "invoice" + invoice.getAccountId());
+        }
 
         // Adding language tokens
         model.addAttribute("cardTitle", languageUtil.getMessageByKey("payment.card.title", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
