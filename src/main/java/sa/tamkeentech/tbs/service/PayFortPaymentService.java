@@ -43,9 +43,7 @@ import java.net.URL;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Map;
-import java.util.Optional;
-import java.util.TreeMap;
+import java.util.*;
 
 @Service
 @Transactional
@@ -150,6 +148,10 @@ public class PayFortPaymentService {
         model.addAttribute("signature", payfortOperationRequest.getSignature());
         model.addAttribute("return_url", payfortOperationRequest.getReturnUrl());
         model.addAttribute("actionUrl", urlForm);
+
+        // Apple pay attributes
+        BigDecimal roundedAmount = payment.getAmount().setScale(2, RoundingMode.HALF_UP);
+        model.addAttribute("amount", roundedAmount.toString());
 
         // Adding language tokens
         model.addAttribute("cardTitle", languageUtil.getMessageByKey("payment.card.title", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
@@ -274,7 +276,7 @@ public class PayFortPaymentService {
      * @param response
      * @param params
      */
-    public void processPaymentNotification(HttpServletRequest request, HttpServletResponse response, Map<String, Object> params) {
+    public PaymentStatusResponseDTO processPaymentNotification(HttpServletRequest request, HttpServletResponse response, Map<String, Object> params) {
         // PayFort resp: after Purchase
         // response_code=14000&card_holder_name=Ahmed%20B&signature=21b2314fc360366fdcceeab354391c7d311c35e02aef4641af874e28e74cf1e7
         // &merchant_identifier=e93bbe3b&access_code=D3KyGokx8hLlQmOVszty&order_description=Test%20integration
@@ -323,6 +325,7 @@ public class PayFortPaymentService {
         log.info("------Redirect after payment to: {}", redirectUrl);
         response.addHeader("Location", redirectUrl);
         response.setStatus(HttpStatus.FOUND.value());
+        return paymentStatusResp;
     }
 
 
@@ -333,8 +336,7 @@ public class PayFortPaymentService {
      * @param requestMap
      * @return signature
      */
-    private String
-    calculatePayfortRequestSignature(Map<String, Object> requestMap, boolean isRequest) {
+    private String calculatePayfortRequestSignature(Map<String, Object> requestMap, boolean isRequest) {
 
         String key = (isRequest)?requestPhrase : responsePhrase;
         StringBuilder signatureBuilder = new StringBuilder(key);
@@ -561,7 +563,7 @@ public class PayFortPaymentService {
         }
     }
 
-    public void proceedApplePurchaseOperation(ApplePayTokenAuthorizeDTO token, HttpServletRequest request, HttpServletResponse response) {
+    public String proceedApplePurchaseOperation(ApplePayTokenAuthorizeDTO token, HttpServletRequest request, HttpServletResponse response) {
         Payment payment = paymentRepository.findByTransactionId(token.getTransactionIdBilling());
         Invoice invoice = null;
         if (payment != null) {
@@ -581,10 +583,7 @@ public class PayFortPaymentService {
             .accessCode(accessCode)
             .merchantIdentifier(merchantIdentifier)
             .merchantReference(token.getTransactionIdBilling())
-            //.amount(roundedAmount.multiply(new BigDecimal("100")).longValue())
-            // test 1 Sar
-            .amount(100l)
-
+            .amount(roundedAmount.multiply(new BigDecimal("100")).longValue())
             .currency("SAR")
             .language(language)
             .customerEmail(invoice.getCustomer().getContact().getEmail())
@@ -595,16 +594,10 @@ public class PayFortPaymentService {
                 .publicKeyHash(token.getPaymentData().getHeader().getPublicKeyHash())
                 .transactionId(token.getPaymentData().getHeader().getTransactionId()).build())
             // two one capital and one small : token.getTransactionIdentifier()
-            .appleTransactionId(token.getPaymentData().header.getTransactionId())
-            .appleEphemeralPublicKey(token.getPaymentData().getHeader().getEphemeralPublicKey())
-            .applePublicKeyHash(token.getPaymentData().getHeader().getPublicKeyHash())
             .applePaymentMethod(PayFortOperationDTO.ApplePaymentMethod.builder()
                 .displayName(token.getPaymentMethod().getDisplayName())
                 .network(token.getPaymentMethod().getNetwork())
                 .type(token.getPaymentMethod().getType()).build())
-            .appleDisplayName(token.getPaymentMethod().getDisplayName())
-            .appleNetwork(token.getPaymentMethod().getNetwork())
-            .appleType(token.getPaymentMethod().getType())
             .build();
 
         Map<String, Object> map = new TreeMap();
@@ -620,22 +613,18 @@ public class PayFortPaymentService {
         map.put("apple_data", payfortOperationRequest.getAppleData());
         map.put("apple_signature", payfortOperationRequest.getAppleSignature());
         // header attributes
-        map.put("apple_ephemeralPublicKey", payfortOperationRequest.getAppleHeader().getEphemeralPublicKey());
-        map.put("apple_publicKeyHash", payfortOperationRequest.getAppleHeader().getPublicKeyHash());
-        map.put("apple_transactionId", payfortOperationRequest.getAppleHeader().getTransactionId());
-
-        map.put("apple_transactionId", payfortOperationRequest.getAppleTransactionId());
-        map.put("apple_ephemeralPublicKey", payfortOperationRequest.getAppleEphemeralPublicKey());
-        map.put("apple_publicKeyHash", payfortOperationRequest.getApplePublicKeyHash());
+        StringBuilder appleHeader = new StringBuilder
+            ("{apple_transactionId").append("=").append(payfortOperationRequest.getAppleHeader().getTransactionId()).append(", ")
+            .append("apple_ephemeralPublicKey").append("=").append(payfortOperationRequest.getAppleHeader().getEphemeralPublicKey()).append(", ")
+            .append("apple_publicKeyHash").append("=").append(payfortOperationRequest.getAppleHeader().getPublicKeyHash()).append("}");
+        map.put("apple_header", appleHeader.toString());
 
         // paymentMethod attributes
-        map.put("apple_displayName", payfortOperationRequest.getApplePaymentMethod().getDisplayName());
-        map.put("apple_network", payfortOperationRequest.getApplePaymentMethod().getNetwork());
-        map.put("apple_type", payfortOperationRequest.getApplePaymentMethod().getType());
-
-        map.put("apple_displayName", payfortOperationRequest.getAppleDisplayName());
-        map.put("apple_network", payfortOperationRequest.getAppleNetwork());
-        map.put("apple_type", payfortOperationRequest.getAppleType());
+        StringBuilder applePaymentMethod = new StringBuilder
+            ("{apple_displayName").append("=").append(payfortOperationRequest.getApplePaymentMethod().getDisplayName()).append(", ")
+            .append("apple_network").append("=").append(payfortOperationRequest.getApplePaymentMethod().getNetwork()).append(", ")
+            .append("apple_type").append("=").append(payfortOperationRequest.getApplePaymentMethod().getType()).append("}");
+        map.put("apple_paymentMethod", applePaymentMethod.toString());
 
         payfortOperationRequest.setSignature(calculatePayfortRequestSignature(map, true));
         log.debug("Purchase request: {}", payfortOperationRequest);
@@ -643,24 +632,31 @@ public class PayFortPaymentService {
 
         ResponseEntity<PayFortOperationDTO> result = null;
         String redirectUrl = invoice.getClient().getRedirectUrl() + "?transactionId=" + token.getTransactionIdBilling();
+        PaymentStatusResponseDTO paymentStatusResponseDTO = null;
 
         try {
             result = restTemplate.postForEntity(urlJson, payfortOperationRequest, PayFortOperationDTO.class);
-            log.debug("Purchase request status: {}, description ", result.getBody().getStatus(), result.getBody().getResponseMessage());
+            log.debug("+++++++Purchase result status: {}, code: {}, description: {}", result.getBody().getStatus(), result.getBody().getResponseCode(), result.getBody().getResponseMessage());
             log.debug("-------Purchase result: {}", result);
 
             // redirectUrl += "&status=" + result.getBody().getStatus();
             log.info("------ Processing ended without 3ds to: {}", redirectUrl);
             Map<String, Object> paramsresponse = objectMapper.convertValue(result.getBody(), Map.class);
-            processPaymentNotification(request, response, paramsresponse);
+            paymentStatusResponseDTO = processPaymentNotification(request, response, paramsresponse);
 
         } catch (RestClientException e) {
             log.info("------ Processing issue Redirect after before payment to: {}", redirectUrl);
             response.addHeader("Location", redirectUrl);
             e.printStackTrace();
         }
-        response.setStatus(HttpStatus.FOUND.value());
+         if (paymentStatusResponseDTO != null && Constants.PAYFORT_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode())) {
+             response.setStatus(HttpStatus.OK.value());
+         } else {
+             response.setStatus(HttpStatus.BAD_REQUEST.value());
+         }
+        return redirectUrl;
     }
+
 
     /*private PayFortOperationDTO initPayment() throws UnsupportedEncodingException {
         log.info("Request to initiate Payment : {}", invoiceNumber);

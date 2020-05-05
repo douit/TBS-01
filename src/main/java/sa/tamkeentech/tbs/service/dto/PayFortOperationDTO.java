@@ -125,38 +125,21 @@ public class PayFortOperationDTO {
     @JsonProperty("apple_header")
     private AppleHeader appleHeader;
 
-    @JsonProperty("apple_transactionId")
-    private String appleTransactionId;
-
-    @JsonProperty("apple_ephemeralPublicKey")
-    private String appleEphemeralPublicKey;
-
-    @JsonProperty("apple_publicKeyHash")
-    private String applePublicKeyHash;
-
     @JsonProperty("apple_paymentMethod")
     private ApplePaymentMethod applePaymentMethod;
 
-    @JsonProperty("apple_displayName")
-    private String appleDisplayName;
-
-    @JsonProperty("apple_network")
-    private String appleNetwork;
-
-    @JsonProperty("apple_type")
-    private String appleType;
 
     @Data
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
     public static class AppleHeader {
+        @JsonProperty("apple_transactionId")
+        private String transactionId;
         @JsonProperty("apple_ephemeralPublicKey")
         private String ephemeralPublicKey;
         @JsonProperty("apple_publicKeyHash")
         private String publicKeyHash;
-        @JsonProperty("apple_transactionId")
-        private String transactionId;
     }
 
 

@@ -128,13 +128,12 @@ public class PaymentCreditCardResource {
     }
 
 
-
     @PostMapping("/billing/payments/apple-authorize")
     @ResponseBody
-    public void authorizeApplePayment(@RequestBody ApplePayTokenAuthorizeDTO token, HttpServletRequest request,
+    public String authorizeApplePayment(@RequestBody ApplePayTokenAuthorizeDTO token, HttpServletRequest request,
                                         HttpServletResponse response) throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException, JSONException {
         log.debug("---Apple pay token to process payment: {}", token);
-        payFortPaymentService.proceedApplePurchaseOperation(token, request, response);
+        return payFortPaymentService.proceedApplePurchaseOperation(token, request, response);
     }
 
 }
