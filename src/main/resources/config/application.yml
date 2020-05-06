@@ -200,6 +200,7 @@ tbs:
     payfort-sha-request-phrase: '$2y$10$b2XJU7zWg'
     payfort-sha-response-phrase: '$2y$10$MnMjJ0SM6'
     payfort-access-code: 'D3KyGokx8hLlQmOVszty'
+    payfort-access-code-apple-pay: '5ODYV1FwvKEKGABmbQW2'
     payfort-merchant-identifier: 'e93bbe3b'
     payfort-language: 'en'
     payfort-url-json: 'https://sbpaymentservices.payfort.com/FortAPI/paymentApi'

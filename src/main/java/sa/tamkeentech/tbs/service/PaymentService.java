@@ -746,6 +746,15 @@ public class PaymentService {
                     if (Constants.STS_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(response.getCode()) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
                         // Notify Client app
                         Invoice invoice = payment.getInvoice();
+
+                        payment.setStatus(PaymentStatus.PAID);
+                        invoice.setPaymentStatus(PaymentStatus.PAID);
+                        // in case client does not call check-payment Job will send notification
+                        invoice.setStatus(InvoiceStatus.WAITING);
+                        paymentRepository.save(payment);
+                        invoiceRepository.save(invoice);
+
+
                         if (CommonUtils.isProfile(environment, "prod") || CommonUtils.isProfile(environment, "staging")
                             || CommonUtils.isProfile(environment, "ahmed")) {
                             sendPaymentNotificationToClient(clientMapper.toDto(invoice.getClient()), invoice.getAccountId(), payment);
@@ -755,9 +764,15 @@ public class PaymentService {
                     }
                 } else if (payment.getPaymentProvider().equals(PaymentProvider.PAYFORT)) {
                     PaymentStatusResponseDTO response = payFortPaymentService.checkOffilnePaymentStatus(payment.getTransactionId());
-                    if (Constants.PAYFORT_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(response.getCode()) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
+                    if (Constants.PAYFORT_PAYMENT_CHECK_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(response.getCode()) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
                         // Notify Client app
                         Invoice invoice = payment.getInvoice();
+                        payment.setStatus(PaymentStatus.PAID);
+                        invoice.setPaymentStatus(PaymentStatus.PAID);
+                        // in case client does not call check-payment Job will send notification
+                        invoice.setStatus(InvoiceStatus.WAITING);
+                        paymentRepository.save(payment);
+                        invoiceRepository.save(invoice);
                         if (CommonUtils.isProfile(environment, "prod") || CommonUtils.isProfile(environment, "staging")
                             || CommonUtils.isProfile(environment, "ahmed") || CommonUtils.isProfile(environment, "abdullah")) {
                             sendPaymentNotificationToClient(clientMapper.toDto(invoice.getClient()), invoice.getAccountId(), payment);

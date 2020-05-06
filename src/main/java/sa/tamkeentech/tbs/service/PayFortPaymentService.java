@@ -95,6 +95,8 @@ public class PayFortPaymentService {
     private String responsePhrase;
     @Value("${tbs.payment.payfort-access-code}")
     private String accessCode;
+    @Value("${tbs.payment.payfort-access-code-apple-pay}")
+    private String accessCodeApplePay;
     @Value("${tbs.payment.payfort-merchant-identifier}")
     private String merchantIdentifier;
     @Value("${tbs.payment.payfort-language}")
@@ -471,16 +473,6 @@ public class PayFortPaymentService {
             paymentStatusResponseDTO.setCardExpiryDate(result.getBody().getExpiryDate());
             paymentStatusResponseDTO.setDescription(result.getBody().getOrderDescription());
 
-//            if (result.getBody().getStatus().equals(06)) {
-//                refund.setStatus(RequestStatus.SUCCEEDED);
-//                payment.get().setStatus(PaymentStatus.REFUNDED);
-//                invoice.setPaymentStatus(PaymentStatus.REFUNDED);
-//                paymentRepository.save(payment.get());
-//                invoiceRepository.save(invoice);
-//
-//            } else {
-//                refund.setStatus(RequestStatus.FAILED);
-//            }
         } catch (RestClientException e) {
             log.info("------ Refund Processing Exception: {}");
         }
@@ -590,7 +582,7 @@ public class PayFortPaymentService {
         PayFortOperationDTO payfortOperationRequest = PayFortOperationDTO.builder()
             .digitalWallet("APPLE_PAY")
             .command(Constants.PaymentOperation.PURCHASE.name())
-            .accessCode(accessCode)
+            .accessCode(accessCodeApplePay)
             .merchantIdentifier(merchantIdentifier)
             .merchantReference(token.getTransactionIdBilling())
             .amount(roundedAmount.multiply(new BigDecimal("100")).longValue())
@@ -613,7 +605,7 @@ public class PayFortPaymentService {
         Map<String, Object> map = new TreeMap();
         map.put("digital_wallet", payfortOperationRequest.getDigitalWallet());
         map.put("command", Constants.PaymentOperation.PURCHASE.name());
-        map.put("access_code", accessCode);
+        map.put("access_code", accessCodeApplePay);
         map.put("merchant_identifier", merchantIdentifier);
         map.put("merchant_reference", payfortOperationRequest.getMerchantReference());
         map.put("amount", payfortOperationRequest.getAmount().toString());

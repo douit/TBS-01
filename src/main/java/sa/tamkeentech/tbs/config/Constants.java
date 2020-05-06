@@ -27,6 +27,7 @@ public final class Constants {
 
     // Payfort Payment codes
     public static final String PAYFORT_PAYMENT_SUCCESS_CODE = "14";
+    public static final String PAYFORT_PAYMENT_CHECK_PAYMENT_SUCCESS_CODE = "12";
     public static final String PAYFORT_PAYMENT_FAILURE_CODE = "13";
 
     public static Integer INVOICE_EXPIRY_DAYS = 1;

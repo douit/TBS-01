@@ -12,6 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.Payment;
+import sa.tamkeentech.tbs.domain.enumeration.PaymentProvider;
 import sa.tamkeentech.tbs.service.PayFortPaymentService;
 import sa.tamkeentech.tbs.service.PaymentService;
 import sa.tamkeentech.tbs.service.STSPaymentService;
@@ -88,10 +89,13 @@ public class PaymentCreditCardResource {
     }
 
     // ToDo Tmp check only called by Job
-    @GetMapping("/billing/check-payment-tmp/{transactionID}")
+    @GetMapping("/billing/check-payment-tmp/{provider}/{transactionID}")
     @ResponseBody
-    public PaymentStatusResponseDTO checkPaymentStatus(@PathVariable String transactionID) {
-        return sTSPaymentService.checkOffilnePaymentStatus(transactionID);
+    public PaymentStatusResponseDTO checkPaymentStatus(@PathVariable String provider, @PathVariable String transactionID) {
+        if (PaymentProvider.STS.name().equals(provider))
+            return sTSPaymentService.checkOffilnePaymentStatus(transactionID);
+        else
+            return payFortPaymentService.checkOffilnePaymentStatus(transactionID);
     }
 
 
