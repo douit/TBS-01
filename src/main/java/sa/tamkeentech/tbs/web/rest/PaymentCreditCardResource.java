@@ -119,7 +119,7 @@ public class PaymentCreditCardResource {
     public void paymentCorrectionFromPayfort(HttpServletRequest request, HttpServletResponse response,
                                              @RequestParam  Map<String, Object> formData){
         log.info("-----got payfort payment correction {}", formData);
-        payFortPaymentService.processPaymentNotification(request, response, formData);
+        payFortPaymentService.processPaymentNotification(request, response, formData, true);
     }
 
     @PostMapping("/billing/payments/apple-session")

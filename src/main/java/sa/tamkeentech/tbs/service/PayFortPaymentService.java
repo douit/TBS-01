@@ -197,7 +197,7 @@ public class PayFortPaymentService {
     public void proceedPaymentOperation(Map<String, Object> params, HttpServletRequest request, HttpServletResponse response) {
 
         if (params != null && Constants.PaymentOperation.PURCHASE.name().equals(params.get("command"))) {
-            processPaymentNotification(request, response, params);
+            processPaymentNotification(request, response, params, false);
         } else if (params != null && Constants.PaymentOperation.TOKENIZATION.name().equals(params.get("service_command"))) {
             log.debug("------Payfort payment processing tokenizaion code: {}, message: {}", params.get("status"),  params.get("response_message"));
             // Must change status to checkout page
@@ -268,7 +268,7 @@ public class PayFortPaymentService {
                     log.info("------ Processing ended without 3ds to: {}", redirectUrl);
                     // response.addHeader("Location", redirectUrl);
                     Map<String, Object> paramsresponse = objectMapper.convertValue(result.getBody(), Map.class);
-                    processPaymentNotification(request, response, paramsresponse);
+                    processPaymentNotification(request, response, paramsresponse, false);
                 }
             } catch (RestClientException e) {
                 log.info("------ Processing issue Redirect after before payment to: {}", redirectUrl);
@@ -288,7 +288,7 @@ public class PayFortPaymentService {
      * @param response
      * @param params
      */
-    public PaymentStatusResponseDTO processPaymentNotification(HttpServletRequest request, HttpServletResponse response, Map<String, Object> params) {
+    public PaymentStatusResponseDTO processPaymentNotification(HttpServletRequest request, HttpServletResponse response, Map<String, Object> params, boolean isCorrection) {
         // PayFort resp: after Purchase
         // response_code=14000&card_holder_name=Ahmed%20B&signature=21b2314fc360366fdcceeab354391c7d311c35e02aef4641af874e28e74cf1e7
         // &merchant_identifier=e93bbe3b&access_code=D3KyGokx8hLlQmOVszty&order_description=Test%20integration
@@ -304,6 +304,8 @@ public class PayFortPaymentService {
         String transactionId = params.get("merchant_reference").toString();
         Payment payment = paymentRepository.findByTransactionId(transactionId);
         if (payment == null) {
+            // !!!!!!!!!!!! tmp to pass payfort check
+            // return null;
             throw new PaymentGatewayException("Payfort notification, Payment not found");
         }
         Invoice invoice = payment.getInvoice();
@@ -332,6 +334,10 @@ public class PayFortPaymentService {
             // Please refer to The Integration Manual to see the List of The Received Parameters
             log.info("Status is: {}", params.get("status"));
             paymentService.updateCreditCardPaymentAndSendEvent(paymentStatusResp, payment);
+        }
+        // in case of correction -> no redirection
+        if (isCorrection) {
+            return null;
         }
         String redirectUrl = invoice.getClient().getRedirectUrl() + "?transactionId=" + transactionId + "&status=" + paymentStatusResp.getCode();
         log.info("------Redirect after payment to: {}", redirectUrl);
@@ -644,7 +650,7 @@ public class PayFortPaymentService {
             // redirectUrl += "&status=" + result.getBody().getStatus();
             log.info("------ Processing ended without 3ds to: {}", redirectUrl);
             Map<String, Object> paramsresponse = objectMapper.convertValue(result.getBody(), Map.class);
-            paymentStatusResponseDTO = processPaymentNotification(request, response, paramsresponse);
+            paymentStatusResponseDTO = processPaymentNotification(request, response, paramsresponse, false);
 
         } catch (RestClientException e) {
             log.info("------ Processing issue Redirect after before payment to: {}", redirectUrl);
