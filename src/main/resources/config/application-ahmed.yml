@@ -145,6 +145,8 @@ tbs:
 #    sts-refund-and-inquiry: 'http://127.0.0.1:8082/STSInquiryAndRefund'
 #    wahid-url: 'http://localhost:8082/SSOTokenRequest'
 #    payfort-process-payment: 'http://localhost:8082/PayfortPaymentProcessing'
+# Test Apple pay via mule
+    payfort-url-json: 'https://platform.tamkeentech.sa/billing-system-test/PayfortPaymentApi'
   refund:
     sadad-shared-folder: 'C:\\sadad_share\\'
   report:

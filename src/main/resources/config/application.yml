@@ -207,6 +207,8 @@ tbs:
     payfort-url-form: 'https://sbcheckout.PayFort.com/FortAPI/paymentPage'
     payfort-process-payment: 'http://localhost:8081/billing/payments/payfort-processing'
 
+    apple-pay-validate-session: 'https://platform.tamkeentech.sa/billing-system-test/apple-pay/generateSession'
+
     #apple pay server to server key: merchant_id
     key-store-password: tm1548pmHea92
     key-store-apple-key: 'config/tls/merchant_id.p12'

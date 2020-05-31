@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -112,6 +114,9 @@ public class PayFortPaymentService {
 
     @Value("${tbs.payment.key-store-apple-key}")
     private String keyStoreFile;
+
+    @Value("${tbs.payment.apple-pay-validate-session}")
+    private String validateSessionUrl;
 
 
     /**
@@ -489,14 +494,24 @@ public class PayFortPaymentService {
         return paymentStatusResponseDTO;
     }
 
-
-    // Todo change payment to checkout page? must receive transactionId
-    public String generateSession(String validationURL) throws KeyStoreException, IOException, CertificateException,
+    /**
+     *
+     * @param validationURL
+     * @return
+     * @throws KeyStoreException
+     * @throws IOException
+     * @throws CertificateException
+     * @throws NoSuchAlgorithmException
+     * @throws KeyManagementException
+     * @throws UnrecoverableKeyException
+     * @throws JSONException
+     */
+    public String generateSession(String validationURLAppleServer) throws KeyStoreException, IOException, CertificateException,
         NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException, JSONException {
 
-        log.debug("---Apple pay generate session, validationURL: {}", validationURL);
+        log.debug("---Apple pay generate session, validationURL: {}", validationURLAppleServer);
         //String keyStoreFile = "config/tls/merchant_id.p12";
-        String uri = validationURL;
+        /*String uri = validationURL;
 
         //ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
@@ -510,12 +525,12 @@ public class PayFortPaymentService {
         kmf.init(clientStore, keyStorePassword.toCharArray());
         KeyManager[] kms = kmf.getKeyManagers();
         //ahmed
-        /*KeyStore trustStore = KeyStore.getInstance("JKS");
+        *//*KeyStore trustStore = KeyStore.getInstance("JKS");
         trustStore.load(new FileInputStream("E:\\Tamkeen\\Billing\\ApplePay\\tls-apple\\merchant_id.jks"), keyStorePassword.toCharArray());
 
         TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         tmf.init(trustStore);
-        TrustManager[] tms = tmf.getTrustManagers();*/
+        TrustManager[] tms = tmf.getTrustManagers();*//*
         // Workarrounf  tell Java to trust the self-signed certificates
         // source https://blogs.mulesoft.com/dev/mule-dev/working-with-certificates/
         TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
@@ -545,9 +560,12 @@ public class PayFortPaymentService {
         urlConn.setDoInput(true);
         urlConn.setRequestProperty("Content-Type", "application/json");
         urlConn.setRequestProperty("Accept", "application/json");
+        // Added for mule call
+        // urlConn.setRequestProperty("location", validationURL);
         urlConn.setRequestMethod("POST");
         JSONObject cred   = new JSONObject();
         cred.put("merchantIdentifier","merchant.sa.tamkeentech.billing");
+        // ToDo domain is dynamic !!!
         cred.put("domainName", "tamkeen.pagekite.me");
         cred.put("displayName", "Billing");
 
@@ -568,7 +586,22 @@ public class PayFortPaymentService {
             return sb.toString();
         } else {
             return urlConn.getResponseMessage();
-        }
+        }/**/
+
+        JSONObject cred   = new JSONObject();
+        cred.put("merchantIdentifier","merchant.sa.tamkeentech.billing");
+        // ToDo domain is dynamic !!!
+        cred.put("domainName", "tamkeen.pagekite.me");
+        cred.put("displayName", "Billing");
+        ResponseEntity<String> result = null;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("location", validationURLAppleServer);
+        headers.set("Content-Type", "application/json");
+        HttpEntity<String> entity = new HttpEntity<String>(cred.toString(), headers);
+        result = restTemplate.postForEntity(validateSessionUrl, entity, String.class);
+        log.debug("Apple pay generate session request status code: {}, body ", result.getStatusCode(), result.getBody());
+        return result.getBody();
     }
 
     public String proceedApplePurchaseOperation(ApplePayTokenAuthorizeDTO token, HttpServletRequest request, HttpServletResponse response) {
