@@ -5,7 +5,7 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     </head>
     <body onload="javascript:document.redirectForm.submit();">
-        <form th:action="${RedirectURL}" method="post" name="redirectForm">
+        <form th:action="${RedirectURL}" method="post" name="redirectForm" target="_top">
             <input name="MerchantID" type="hidden" th:value="${MerchantID}"/>
             <input name="Amount" type="hidden" th:value="${Amount}"/>
             <input name="CurrencyISOCode" type="hidden" th:value="${CurrencyISOCode}"/>

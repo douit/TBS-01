@@ -14,6 +14,8 @@ import sa.tamkeentech.tbs.aop.event.TBSEventPub;
 import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.Invoice;
 import sa.tamkeentech.tbs.domain.Payment;
+import sa.tamkeentech.tbs.domain.Refund;
+import sa.tamkeentech.tbs.domain.enumeration.PaymentProvider;
 import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.repository.PaymentRepository;
 import sa.tamkeentech.tbs.schemas.refund.RefundRqType;
@@ -21,6 +23,7 @@ import sa.tamkeentech.tbs.service.*;
 import sa.tamkeentech.tbs.service.dto.*;
 import sa.tamkeentech.tbs.service.mapper.PaymentMapper;
 
+import javax.inject.Inject;
 import java.io.IOException;
 import java.util.Optional;
 
@@ -66,6 +69,14 @@ public class EventPublisherService {
     @Autowired
     private Environment environment;
 
+    @Lazy
+    @Inject
+    private STSPaymentService stsPaymentService;
+
+    @Lazy
+    @Inject
+    private PayFortPaymentService payFortPaymentService;
+
     public EventPublisherService(SequenceUtil sequenceUtil, ClientService clientService, CustomerService customerService, ItemService itemService, InvoiceRepository invoiceRepository, PaymentMethodService paymentMethodService, PaymentRepository paymentRepository) {
         this.sequenceUtil = sequenceUtil;
         this.clientService = clientService;
@@ -78,14 +89,14 @@ public class EventPublisherService {
 
     @TBSEventPub(eventName = Constants.EventType.INVOICE_CREATE)
     public TBSEventRespDTO<InvoiceResponseDTO> saveOneItemInvoiceEvent(TBSEventReqDTO<OneItemInvoiceDTO> eventReq) {
-        InvoiceResponseDTO resp = invoiceService.saveOneItemInvoice(eventReq.getReq());
+        InvoiceResponseDTO resp = invoiceService.saveOneItemInvoice(eventReq.getReq(), eventReq.getLanguage());
         TBSEventRespDTO<InvoiceResponseDTO> eventResp = TBSEventRespDTO.<InvoiceResponseDTO>builder().referenceId(resp.getBillNumber()).resp(resp).build();
         return eventResp;
     }
 
     @TBSEventPub(eventName = Constants.EventType.INVOICE_CREATE)
     public TBSEventRespDTO<InvoiceResponseDTO> saveInvoiceEvent(TBSEventReqDTO<InvoiceDTO> eventReq) {
-        InvoiceResponseDTO resp = invoiceService.saveInvoice(eventReq.getReq());
+        InvoiceResponseDTO resp = invoiceService.saveInvoice(eventReq.getReq(), eventReq.getLanguage());
         TBSEventRespDTO<InvoiceResponseDTO> eventResp = TBSEventRespDTO.<InvoiceResponseDTO>builder().referenceId(resp.getBillNumber()).resp(resp).build();
         return eventResp;
     }
@@ -136,9 +147,14 @@ public class EventPublisherService {
 
     @TBSEventPub(eventName = Constants.EventType.CREDIT_CARD_REFUND_REQUEST)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public TBSEventRespDTO<Integer> callRefundByCreditCardEvent(TBSEventReqDTO<String> eventReq) throws IOException {
-        Integer sadadResp = refundService.callRefundByCreditCard(eventReq.getReq());
-        TBSEventRespDTO<Integer> eventResp = TBSEventRespDTO.<Integer>builder().resp(sadadResp).build();
+    public TBSEventRespDTO<RefundStatusCCResponseDTO> callRefundByCreditCardEvent(TBSEventReqDTO<Refund> eventReq, Invoice invoice, Optional<Payment> payment) throws IOException {
+        RefundStatusCCResponseDTO refundStatusCCResponseDTO;
+        if(payment.get().getPaymentProvider().equals(PaymentProvider.STS)){
+            refundStatusCCResponseDTO = stsPaymentService.proceedRefundOperation(eventReq.getReq(), invoice, payment);
+        }else {
+            refundStatusCCResponseDTO =  payFortPaymentService.proceedRefundOperation(eventReq.getReq(), invoice, payment);
+        }
+        TBSEventRespDTO<RefundStatusCCResponseDTO> eventResp = TBSEventRespDTO.<RefundStatusCCResponseDTO>builder().resp(refundStatusCCResponseDTO).build();
         return eventResp;
     }
 

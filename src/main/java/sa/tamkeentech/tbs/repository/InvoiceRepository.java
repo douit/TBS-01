@@ -64,7 +64,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long>, DataTab
         "AND invoice.status != 'FAILED'", nativeQuery = true)
     List<Invoice> getExpiryInvoices(ZonedDateTime currentDate);
 
-    Page<Invoice> findByPaymentStatusOrderByIdDesc(PaymentStatus status, Pageable pageable);
+    Page<Invoice> findByPaymentStatusAndStatusNotOrderByIdDesc(PaymentStatus status, InvoiceStatus invoiceStatus, Pageable pageable);
 
     @Modifying
     @Transactional

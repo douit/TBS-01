@@ -13,6 +13,7 @@ import { CustomerDeletePopupComponent } from './customer-delete-dialog.component
 import { ICustomer } from 'app/shared/model/customer.model';
 import {PaymentResolve} from "app/payment/payment.route";
 import {CustomerTestCcComponent} from "app/customer/customer-test-cc.component";
+import {CustomerTestPayfortComponent} from 'app/customer/customer-test-payfort.component';
 
 @Injectable({ providedIn: 'root' })
 export class CustomerResolve implements Resolve<ICustomer> {
@@ -77,8 +78,20 @@ export const customerRoute: Routes = [
     canActivate: [UserRouteAccessService]
   },
   {
-    path: 'test_cc',
+    path: 'test-cc',
     component: CustomerTestCcComponent,
+    resolve: {
+      payment: PaymentResolve
+    },
+    data: {
+      authorities: ['ROLE_USER'],
+      pageTitle: 'tbsApp.payment.home.title'
+    },
+    canActivate: [UserRouteAccessService]
+  },
+  {
+    path: 'test-payfort',
+    component: CustomerTestPayfortComponent,
     resolve: {
       payment: PaymentResolve
     },

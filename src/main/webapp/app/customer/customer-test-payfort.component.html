@@ -1,0 +1,167 @@
+<div class="main-content">
+    <div class="container-fluid">
+
+        <jhi-alert-error></jhi-alert-error>
+        <div *ngIf="isSaving" class="alert alert-info">
+            <button mat-button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <i class="material-icons">close</i>
+            </button>
+            <span> {{operation}} <b> in progress </b>, please wait... </span>
+        </div>
+        <div *ngIf="operationStatus!=undefined && operationStatus==true" class="alert alert-success">
+            <button mat-button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <i class="material-icons">close</i>
+            </button>
+            <span>Your {{operation}} has been <b>successfully</b> completed.</span>
+        </div>
+        <div *ngIf="operationStatus!=undefined && operationStatus==false" class="alert alert-danger">
+            <button mat-button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <i class="material-icons">close</i>
+            </button>
+            <span>Your {{operation}} <b>failed</b>.</span>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header card-header-text card-header-primary" data-background-color="primary-one">
+                        <div class="card-text">
+                            <h4 id="page-heading">
+                                <span> Credit card / mada bank Card
+                                   <!-- <i class="fa fa-mada"></i>-->
+                                </span>
+                            </h4>
+                        </div>
+                    </div>
+                    <div class="card-content">
+
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <div class="loader" *ngIf="busy">
+                                        <svg class="circular" viewBox="25 25 50 50">
+                                            <circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="2"
+                                                    stroke-miterlimit="10"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="form-group">
+                                    <label class="form-control-label" jhiTranslate="tbsApp.payment.invoice" for="field_invoice">Invoice</label>
+                                    <select class="form-control" id="field_invoice" name="invoice" [(ngModel)]="invoiceSelected" (change)="onChangeInvoice($event.target.value, 'payment')">
+                                        <option [ngValue]="null"></option>
+                                        <option [ngValue]="invoiceOption" *ngFor="let invoiceOption of invoices; trackBy: invoiceOption">{{invoiceOption.accountId}}</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-control-label" jhiTranslate="tbsApp.payment.amount" for="field_amount">Amount</label>
+                                    <input type="number" class="form-control" name="amount" id="field_amount"
+                                            readonly/>
+                                </div>
+                            </div>
+
+                            <!-- Start credit card -->
+                        <!--
+                        <form  name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+                            <input type="hidden" formControlName="service_command">
+                            <input type="hidden" formControlName="access_code">
+                            <input type="hidden" formControlName="merchant_identifier">
+                            <input type="hidden" formControlName="merchant_reference">
+                            <input type="hidden" formControlName="language">
+                            <input type="hidden" formControlName="signature">
+                            <input type="hidden" formControlName="return_url">
+
+                            <div class="row">
+                                <div class="card-container">
+                                <span class="input">
+                                    <input class="input-field " type="tel" formControlName="card_number" pattern="[0-9]*" maxlength="16">
+                                    <label class="input-label" for="">
+                                        <i class="icon-credit-card icon"></i>
+                                        <i id="" class="icon-cc-visa visa"></i>
+                                        <span class="input-label-content">Card Number</span>
+                                    </label>
+                                </span>
+                                    <span class="popover wrong-cn">
+                                    <span class="content">
+                                        Card number is
+                                        <em>invalid.</em>
+                                    </span>
+                                </span>
+                                    <div class="half-containter">
+                                <span class="input half1">
+                                    <input class="input-field" type="tel" formControlName="expiry_date" pattern="[0-9]*" maxlength="4" placeholder="">
+                                    <label class="input-label" for="">
+                                        <i class="icon-calendar-empty icon"></i>
+                                        <span class="input-label-content">YY/MM</span>
+                                    </label>
+                                </span>
+                                        <span class="popover wrong-exc">
+                                    <span class="content">
+                                        The expiry date entered for the credit card is in the
+                                        <em>Past !</em>
+                                    </span>
+                                </span>
+                                    </div>
+
+                                    <div class="half-containter">
+                                <span class="input visible half2">
+                                    <input class="input-field" type="tel" formControlName="card_security_code" pattern="[0-9]*" maxlength="3">
+                                    <label class="input-label" for="">
+                                        <i class="icon-lock icon"></i>
+                                        <span class="input-label-content">CVV</span>
+                                        <i class="icon-attention-circled icon-right icon"></i>
+                                        <i class="tooltip" data-tooltip="Your Credit Card Security Number"> </i>
+
+                                    </label>
+                                </span>
+                                        <span class="popover empty-fields">
+                                    <span class="content">
+                                        Fields marked in
+                                        <em>red</em> are mandatory to proceed.
+                                    </span>
+                                </span>
+                                    </div>
+
+                                    <span class="input">
+                                <input class="input-field name" type="text" formControlName="card_holder_name" maxlength="50">
+                                <label class="input-label" for="">
+                                    <i class="icon-user icon"></i>
+                                    <span class="input-label-content" id="showServices">Cardholder Name</span>
+                                </label>
+                                </span>
+                                    <button type="submit" id="save-entity" class="pay br " data-text="Pay" [disabled]="editForm.invalid || isSaving">
+                                        <i class="animated icon-spin4 animate-spin"></i>
+                                        <span>Pay</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                        -->
+
+
+                        <!-- Iframe -->
+                        <br>
+                        <div class="row">
+                            <div class="col-sm-12" *ngIf="urlIframe">
+                                <!--<iframe  class="app-iframe" name="payment_frame"
+                                    style="height: 700px; width: 100%" frameborder="0" scrolling="no" allowtransparency="true"
+                                         [src]="urlIframe">
+                                </iframe>-->
+                                <iframe [src]="urlIframe" class="app-iframe" name="payment_frame" id="payment_frame"
+                                         style="height: 525px; width: 100%" frameborder="0" scrolling="no" allowtransparency="true"
+                                        sandbox="allow-top-navigation allow-scripts allow-forms allow-same-origin">
+
+                                </iframe>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+    </div>
+</div>

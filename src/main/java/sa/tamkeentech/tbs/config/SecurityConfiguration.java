@@ -132,6 +132,7 @@ public class SecurityConfiguration {
                 .antMatchers("/app/**/*.{js,html}")
                 .antMatchers("/i18n/**")
                 .antMatchers("/content/**")
+                .antMatchers("/.well-known/**")
                 .antMatchers("/swagger-ui/index.html")
                 .antMatchers("/test/**")
                 .antMatchers("/h2-console/**")
@@ -143,10 +144,17 @@ public class SecurityConfiguration {
                 .antMatchers("/billing/newPayment/**")
             ////////Test Mule
                 .antMatchers("/billing/payments/credit-card/notification")
-                .antMatchers("/billing/payments/credit-card/notification")
-                //ToDo you must delete this line after finish testing
-                .antMatchers("/api/report/**");
-            ;
+            // Payfort payment notification --customer get -> Mule
+            //    .antMatchers("/billing/payments/payfort/notification")
+            // Payfort payment notification --server correction post -> Mule
+                .antMatchers("/billing/payments/payfort/correction")
+            // processing
+                .antMatchers("/billing/payments/payfort-processing")
+            // iframe
+                .antMatchers("/billing/payments/iframe/**")
+            // apple pay session
+                .antMatchers("/billing/payments/apple-session")
+                .antMatchers("/billing/payments/apple-authorize");
         }
 
         @Override
@@ -182,7 +190,7 @@ public class SecurityConfiguration {
                 .permitAll()
             .and()
                 .headers()
-                .contentSecurityPolicy("default-src 'self'; frame-src 'self' https://www.google.com data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://storage.googleapis.com https://www.google.com https://www.gstatic.com; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; img-src 'self' data:; font-src 'self' https://fonts.gstatic.com data:")
+                .contentSecurityPolicy("default-src 'self'; frame-src 'self' https://platform.tamkeentech.sa https://www.google.com data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://storage.googleapis.com https://www.google.com https://www.gstatic.com; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; img-src 'self' data:; font-src 'self' https://fonts.gstatic.com data:")
                 //.contentSecurityPolicy("default-src 'self'; frame-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://storage.googleapis.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:")
             .and()
                 .referrerPolicy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)

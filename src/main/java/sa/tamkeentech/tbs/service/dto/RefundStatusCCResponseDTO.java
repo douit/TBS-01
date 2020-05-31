@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import sa.tamkeentech.tbs.domain.enumeration.RequestStatus;
 
 import java.io.Serializable;
 
@@ -23,6 +24,9 @@ public class RefundStatusCCResponseDTO implements Serializable {
 
     @JsonProperty("Code")
     private Long code;
+
+    @JsonProperty("Status")
+    private RequestStatus status;
 
     @JsonProperty("TransactionNumber")
     private String refundId;

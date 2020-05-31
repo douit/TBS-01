@@ -86,13 +86,15 @@ export class PaymentComponent implements OnInit {
   clients: IClient[];
   paymentStatusSelected: any;
   paymentStatusSelectedLable: any;
-  paymentStatus:any;
-  isSearchOpr : boolean = false;
+  paymentStatus: any;
+  isSearchOpr = false;
+  accountId: number;
   paymentSearch: IPaymentSearchRequest = {
     fromDate : null,
     toDate : null,
     clientId : null,
-     paymentStatus:null
+    paymentStatus: null,
+    accountId: null
   };
   onDateSelection(date: NgbDate, datepicker) {
     if (!this.fromDate && !this.toDate) {
@@ -151,9 +153,10 @@ export class PaymentComponent implements OnInit {
       clientId = this.selectedClient.id;
     }
     this.paymentSearch.fromDate = fromDate;
-    this.paymentSearch.toDate =toDate;
-    this.paymentSearch.clientId =clientId;
-    this.paymentSearch.paymentStatus= this.paymentStatusSelected
+    this.paymentSearch.toDate = toDate;
+    this.paymentSearch.clientId = clientId;
+    this.paymentSearch.paymentStatus = this.paymentStatusSelected;
+    this.paymentSearch.accountId = this.accountId;
 
     // if(!this.isSearchOpr){
       this.initDatatable();
@@ -239,8 +242,8 @@ export class PaymentComponent implements OnInit {
         cellTemplate: this.modifiedDateTemplate
       }),
       new DatatableColumn({
-        name: this.translateService.instant('tbsApp.payment.invoice'),
-        prop: 'invoice.id',
+        name: this.translateService.instant('tbsApp.invoice.accountId'),
+        prop: 'invoice.accountId',
         headerTemplate: this.headerTemplate,
         // cellTemplate: this.invoiceRowTemplate
         cellTemplate: this.rowTemplate

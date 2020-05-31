@@ -1,9 +1,11 @@
 package sa.tamkeentech.tbs.service;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,12 +14,20 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.Invoice;
 import sa.tamkeentech.tbs.domain.Payment;
+import sa.tamkeentech.tbs.domain.Refund;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
+import sa.tamkeentech.tbs.domain.enumeration.RequestStatus;
 import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.repository.PaymentRepository;
+import sa.tamkeentech.tbs.repository.RefundRepository;
 import sa.tamkeentech.tbs.service.dto.PaymentStatusResponseDTO;
+import sa.tamkeentech.tbs.service.dto.RefundDTO;
+import sa.tamkeentech.tbs.service.dto.RefundStatusCCResponseDTO;
+import sa.tamkeentech.tbs.service.dto.RefundStatusSadadResponseDTO;
+import sa.tamkeentech.tbs.service.mapper.RefundMapper;
 import sa.tamkeentech.tbs.web.rest.errors.PaymentGatewayException;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
@@ -38,9 +48,15 @@ import java.util.*;
 
 @Service
 @Transactional
-public class CreditCardPaymentService {
+public class STSPaymentService {
 
-    private final Logger log = LoggerFactory.getLogger(CreditCardPaymentService.class);
+    private final Logger log = LoggerFactory.getLogger(STSPaymentService.class);
+
+
+    @Inject
+    @Lazy
+    InvoiceRepository invoiceResitory;
+
 
     @Inject
     @Lazy
@@ -63,13 +79,13 @@ public class CreditCardPaymentService {
     private String stsResponseBackUrl;
     @Value("${tbs.payment.sts-refund-and-inquiry}")
     private String stsCheckStatusUrl;
+    @Value("${tbs.payment.sts-refund-and-inquiry}")
+    private String stsRefundUrl;
 
-    public String initPayment(Model model, String transactionId) {
-        log.info("Request to initiate Payment : {}", transactionId);
-        Payment payment = paymentRepository.findByTransactionId(transactionId);
-        if (payment == null) {
-            throw new TbsRunTimeException("Payment not found");
-        }
+
+    public String initPayment(Model model, Payment payment, String lang) {
+        log.info("Request to initiate Payment : {}", payment.getTransactionId());
+
         Invoice invoice = payment.getInvoice();
         if (invoice.getPaymentStatus() == PaymentStatus.PAID) {
             throw new TbsRunTimeException("Invoice already paid");
@@ -85,7 +101,7 @@ public class CreditCardPaymentService {
         Map<String,String> parameters = new TreeMap<>();
         // String transactionId = String.valueOf(System.currentTimeMillis());
         // fill required parameters
-        parameters.put("TransactionID", transactionId);
+        parameters.put("TransactionID", payment.getTransactionId());
         parameters.put("MerchantID", stsMerchantId);
         BigDecimal roundedAmount = invoice.getAmount().setScale(2, RoundingMode.HALF_UP);
         parameters.put("Amount", roundedAmount.multiply(new BigDecimal("100")).toBigInteger().toString());
@@ -95,6 +111,9 @@ public class CreditCardPaymentService {
         boolean includeDesc = true;
         if (invoice.getInvoiceItems() != null && invoice.getInvoiceItems().size() == 1) {
             String itemDetail = invoice.getInvoiceItems().get(0).getDetails();
+            if (StringUtils.isEmpty(itemDetail)) {
+                itemDetail = invoice.getInvoiceItems().get(0).getName();
+            }
             parameters.put("PaymentDescription", itemDetail);
         }
 
@@ -103,7 +122,7 @@ public class CreditCardPaymentService {
         parameters.put("Quantity", "1");
         parameters.put("Channel", "0");
         // fill some optional parameters
-        parameters.put("Language", "Ar");
+        parameters.put("Language", lang.equalsIgnoreCase(Constants.DEFAULT_HEADER_LANGUAGE)? "ar": "en");
         parameters.put("ThemeID", "theme1");
         // if this url is configured for the merchant it's not required
         parameters.put("ResponseBackURL", stsResponseBackUrl);
@@ -117,13 +136,18 @@ public class CreditCardPaymentService {
             } else {
                 // ok only for english
                 // orderedString.append(parameters.get(treeMapKey).replaceAll(" ", "+"));
-                try {
-                    String desc = URLEncoder.encode(parameters.get(treeMapKey), "UTF-8");
-                    orderedString.append(desc);
-                } catch (UnsupportedEncodingException e) {
+                if (StringUtils.isNotEmpty(parameters.get(treeMapKey))) {
+                    try {
+                        String desc = URLEncoder.encode(parameters.get(treeMapKey), "UTF-8");
+                        orderedString.append(desc);
+                    } catch (UnsupportedEncodingException e) {
+                        includeDesc = false;
+                        e.printStackTrace();
+                    }
+                } else {
                     includeDesc = false;
-                    e.printStackTrace();
                 }
+
             }
         }
 
@@ -143,7 +167,7 @@ public class CreditCardPaymentService {
         return "submitPayment";
     }
 
-    public void processPaymentNotification (HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void processPaymentNotification(HttpServletRequest request, HttpServletResponse response) throws IOException {
         Enumeration<String> parameterNames = request.getParameterNames();
         // store all response Parameters to generate Response Secure Hash
         // and get Parameters to use it later in your Code
@@ -186,7 +210,6 @@ public class CreditCardPaymentService {
             log.info("Status is: {}", responseParameters.get("Response.StatusCode"));
             paymentService.updateCreditCardPaymentAndSendEvent(paymentStatusResp.build(), payment);
         }
-        // ToDo replace by client redirectUrl
         String redirectUrl = invoice.getClient().getRedirectUrl() + "?transactionId=" + transactionId;
         log.info("------Redirect after payment to: {}", redirectUrl);
         response.addHeader("Location", redirectUrl);
@@ -292,19 +315,18 @@ public class CreditCardPaymentService {
         String generatedsecureHash = new String(DigestUtils.sha256Hex(formattedResponse).getBytes());
         // String generatedsecureHash = new String(DigestUtils.sha256Hex(getResponseOrderdString(result)).getBytes());*/
 
-        // Ahmed unify impl
-        String generatedsecureHash = null;
+        String generatedSecureHash = null;
         try {
-            generatedsecureHash = new String(DigestUtils.sha256Hex(getResponseOrderdString(result, stsSecretKey, false)).getBytes());
+            generatedSecureHash = new String(DigestUtils.sha256Hex(getResponseOrderdString(result, stsSecretKey, false)).getBytes());
         } catch (UnsupportedEncodingException e) {
             throw new TbsRunTimeException("--<<>>--Async: not able to generate Secure hash, {}", e);
         }
 
         // get the received secure hash from result map
         String receivedSecurehash = result.get("Response.SecureHash");
-        log.debug("----> generatedsecureHash: {}", generatedsecureHash);
+        log.debug("----> generatedsecureHash: {}", generatedSecureHash);
         log.debug("----> receivedSecurehash : {}", receivedSecurehash);
-        if(!receivedSecurehash.equals(generatedsecureHash)){
+        if(!receivedSecurehash.equals(generatedSecureHash)){
             //IF they are not equal then the response shall not be accepted
             throw new TbsRunTimeException("--<<>>--Async: Received Secure Hash does not Equal generated Secure hash");
         }  else {
@@ -357,6 +379,8 @@ public class CreditCardPaymentService {
                         }
                         log.info("-->After Upper: {}", statusDescription);
                         responseOrderdString.append(statusDescription);
+                        // check if it works for both languages
+                        // responseOrderdString.append(URLEncoder.encode(statusDescription, "UTF-8"));
                         break;
                     default:
                         responseOrderdString.append(responseParameters.get(treeMapKey));
@@ -369,6 +393,128 @@ public class CreditCardPaymentService {
         return responseOrderdString.toString();
     }
 
+    public RefundStatusCCResponseDTO proceedRefundOperation(Refund refund, Invoice invoice, Optional<Payment> payment) throws IOException {
+
+        RefundStatusCCResponseDTO refundStatusCCResponseDTO =  RefundStatusCCResponseDTO.builder()
+            .refundId(refund.getPayment().getTransactionId()).build();
+        //Step 1: Generate Secure Hash
+        //  String SECRET_KEY = "Y2FkMTdlOWZiMzJjMzY4ZGFkMzhkMWIz"; // Use Yours, Please Store Your Secret Key in safe Place(e.g. database)
+
+        // put the parameters in a TreeMap to have the parameters to have them sorted alphabetically.
+        Map<String, String> parameters = new TreeMap<String, String>();
+
+        // fill required parameters
+        parameters.put("MessageID", "4");
+        parameters.put("TransactionID", refund.getId().toString());
+        parameters.put("OriginalTransactionID", payment.get().getTransactionId());
+        parameters.put("MerchantID", stsMerchantId);
+        BigDecimal roundedAmount = refund.getRefundValue().setScale(2, RoundingMode.HALF_UP);
+        String formattedAmount = roundedAmount.multiply(new BigDecimal("100")).toBigInteger().toString();
+        parameters.put("Amount", formattedAmount);
+//        invoice.getAmount().toString()
+        parameters.put("CurrencyISOCode", "682");
+        parameters.put("Version", "1.0");
+
+        //Create an Ordered String of The Parameters Map with Secret Key
+        StringBuilder orderedString = new StringBuilder();
+        orderedString.append(stsSecretKey);
+        for (String treeMapKey : parameters.keySet()) {
+            orderedString.append(parameters.get(treeMapKey));
+        }
+        log.debug("orderdString " + orderedString);
+
+        // Generate SecureHash with SHA256
+        // Using DigestUtils from appache.commons.codes.jar Library
+        String secureHash = new String(DigestUtils.sha256Hex(orderedString.toString()).getBytes());
+
+        StringBuffer requestQuery = new StringBuffer();
+        requestQuery.append("TransactionID").append("=").append(refund.getId()).append("&").
+            append("MerchantID").append("=").append(stsMerchantId).append("&").
+            append("MessageID").append("=").append("4").append("&").
+            append("Amount").append("=").append(formattedAmount).append("&")
+            .append("OriginalTransactionID").append("=").append(refund.getId()).append("&")
+            .append("CurrencyISOCode").append("=").append("682").append("&")
+            .append("SecureHash").append("=").append(secureHash).append("&")
+            .append("Version").append("=").append("1.0").append("&");
+
+        //Send the request
+        URL url = new URL(stsRefundUrl);
+        URLConnection conn = url.openConnection();
+        conn.setDoOutput(true);
+        OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream(), "UTF-8");
+
+        //write parameters
+        writer.write(requestQuery.toString());
+        writer.flush();
+
+        // Get the response
+        StringBuffer output = new StringBuffer();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            output.append(line);
+        }
+        writer.close();
+        reader.close();
+
+        //Output the response
+        log.debug(output.toString());
+
+        // this string is formatted as a "Query String" - name=value&name2=value2.......
+        String outputString = output.toString();
+
+        // To read the output string you might want to split it
+        // on '&' to get pairs then on '=' to get name and value
+        // and for a better and ease on verifying secure hash you should put them in a TreeMap
+        String[] pairs = outputString.split("&");
+        Map<String, String> result = new TreeMap<String, String>();
+
+        // now we have separated the pairs from each other {"name1=value1","name2=value2",....}
+        for (String pair : pairs) {
+            // now we have separated the pair to {"name”, “value"}
+            String[] nameValue = pair.split("=");
+            String name = nameValue[0];//first element is the name
+            String value = nameValue[1];//second element is the value
+            // put the pair in the result map
+            result.put(name, value);
+        }
+
+        // Now that we have the map, order it to generate secure hash and compare it with the received one
+        StringBuilder responseOrderdString = new StringBuilder();
+        responseOrderdString.append(stsSecretKey);
+        for (String treeMapKey : result.keySet()) {
+            if (!treeMapKey.equals("Response.SecureHash")) {
+                responseOrderdString.append(result.get(treeMapKey));
+            }
+        }
+
+        String formattedResponse = responseOrderdString.toString().replaceAll(" ", "+");
+        log.debug("Response Orderd String is " + formattedResponse);
+
+        // Generate SecureHash with SHA256
+        // Using DigestUtils from appache.commons.codes.jar Library
+        String generatedsecureHash = new String(DigestUtils.sha256Hex(formattedResponse).getBytes());
+        // get the received secure hash from result map
+        String receivedSecurehash = result.get("Response.SecureHash");
+        if (!receivedSecurehash.equals(generatedsecureHash)) {
+            //IF they are not equal then the response shall not be accepted
+            throw new TbsRunTimeException("Received Secure Hash does not Equal generated Secure hash, refundId" + refund.getId());
+        } else {
+            // Complete the Action get other parameters from result map and do your processes // please refer to The Integration Manual to See The List of The Received Parameters
+            String status = result.get("Response.StatusCode");
+            log.info("Refund request {} status {}", refund.getId(), status);
+            if (Constants.STS_PAYMENT_SUCCESS_CODE.equals(status)) {
+                log.debug("Successful refund {}", invoice.getAccountId());
+                refundStatusCCResponseDTO.setStatus(RequestStatus.SUCCEEDED);
+            }
+            else
+                refundStatusCCResponseDTO.setStatus(RequestStatus.FAILED);
+        }
+
+
+
+        return refundStatusCCResponseDTO;
+    }
 
 
     public static void main(String[] args) throws UnsupportedEncodingException {
@@ -451,7 +597,7 @@ public class CreditCardPaymentService {
         // Ahmed unify impl
         String generatedsecureHash = null;
         try {
-            CreditCardPaymentService paymentserv = new CreditCardPaymentService();
+            STSPaymentService paymentserv = new STSPaymentService();
             generatedsecureHash = new String(DigestUtils.sha256Hex(paymentserv.getResponseOrderdString(map, key, false)).getBytes());
         } catch (UnsupportedEncodingException e) {
             throw new TbsRunTimeException("--<<>>--Async: not able to generate Secure hash, {}", e);

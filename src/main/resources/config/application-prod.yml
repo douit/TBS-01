@@ -176,5 +176,18 @@ tbs:
     sts-refund-and-inquiry: 'https://platform.tamkeentech.sa/billing-system/STSInquiryAndRefund'
     url: 'https://platform.tamkeentech.sa/billing-system/requestPayment?'
 
+    payfort-sha-request-phrase: '$2y$10$b2XJU7zWg'
+    payfort-sha-response-phrase: '$2y$10$MnMjJ0SM6'
+    payfort-access-code: 'D3KyGokx8hLlQmOVszty'
+    payfort-access-code-apple-pay: '5ODYV1FwvKEKGABmbQW2'
+    payfort-merchant-identifier: 'e93bbe3b'
+
+    payfort-url-json: 'https://platform.tamkeentech.sa/billing-system/PayfortPaymentApi'
+    payfort-url-form: 'https://checkout.payfort.com/FortAPI/paymentPage'
+
+    payfort-process-payment: 'https://platform.tamkeentech.sa/billing-system/PayfortPaymentProcessing'
+
+    apple-pay-validate-session: 'https://platform.tamkeentech.sa/billing-system/apple-pay/generateSession'
+
   refund:
     sadad-url-refund: 'http://10.4.7.61:2020/Sender/api/Sadad/RefundLoadRq'

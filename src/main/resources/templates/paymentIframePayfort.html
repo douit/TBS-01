@@ -1,0 +1,666 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title>Tamkeen Billing System</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <link rel="stylesheet" href="https://cdn.payfort.com/merchant_page/css/fontello.css">
+        <link rel="stylesheet" href="https://cdn.payfort.com/merchant_page/css/tooltip.css">
+
+        <link rel="stylesheet" href="https://cdn.payfort.com/merchant_page/css/en/ccStyle-en.css">
+
+        <!--Include arabic css if lang ar-->
+        <link rel="stylesheet" th:href="@{'https://cdn.payfort.com/merchant_page/css/ar/ccStyle-' + ${currentLang} + '.css'}">
+
+        <style>
+            .half-containter{
+                width: 50%;
+                float: left;
+            }
+
+            .half-containter .popover{
+                width:96%;
+                margin:2%;
+            }
+
+            .half1{
+                width: 100%;
+            }
+
+            .half2{
+                width: 98%;
+                margin-left:2%;
+            }
+
+            .card-container {
+                max-width: 400px;
+                height: 100%;
+                border-radius: 5px;
+                background: #fff;
+                border: 1px solid #D3DAEB;
+                padding: 2em;
+                margin: 2em auto;
+            }
+
+            /***cards mada visa, master ******/
+            .icon-mada-visa-master{
+                background-size: contain;
+                background-image: url("data:image/png;base64,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");
+                background-repeat: no-repeat;
+                width: 90px !important;
+                height: 14px !important;
+                margin-left: 5px;
+                margin-right: 5px;
+                display: inline-block;
+            }
+
+            .icon-mada{
+                background-size: contain;
+                background-image: url("data:image/png;base64,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");
+                background-repeat: no-repeat;
+                width: 42px !important;
+                height: 14px !important;
+                opacity: 1 !important;
+            }
+
+            .icon-visa{
+                background-size: contain;
+                background-image: url("data:image/png;base64,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");
+                background-repeat: no-repeat;
+                width: 28px !important;
+                height: 14px !important;
+                opacity: 1 !important;
+            }
+
+            .icon-master{
+                background-size: contain;
+                background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACIAAAAVCAYAAAAjODzXAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAACXBIWXMAABYlAAAWJQFJUiTwAAAABmJLR0QA/wD/AP+gvaeTAAAAB3RJTUUH5AQNChoyM4ajpAAAAAFvck5UAc+id5oAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjAtMDQtMTNUMTA6MjY6NTArMDA6MDDLBzI1AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDIwLTA0LTEzVDEwOjI2OjUwKzAwOjAwulqKiQAABE5JREFUSEutlltsFFUYx/9z2d2W6fayrduk3XW37e426QMtSiWgogkmoJEENMEQYqLGN58ID4Ynn0x8U1I0Phg1vogJmEAsgsZq7JOh0CDFFJZ2oWlDay+0ZXdnLzNz/GbmNNvd2Z3lwV+y7Xzn+p//+c45IzACLujTSeR/uIT89xeh37sPGAYEZQfkvc/Cd+x1eI+8CrEjAJZbgzF3BfrMjzCWb1DHAiDKEFpikCKvQew5DLE1zkd14ipEPfs11I9HYKytA5puibAQ6CdKEDwyxEQUykdHwISLYI9T1EYDGLXdQhDpR219rZB2fgB54H1eUU5NIel3TyJ/fhQsmysJqERg8Pbl0fRCBlq/AiPoozJTZRVMQVIDuXMQnv0jvLAE1TpRz3yF/IXLYBm1tghCailCGVyHyHLwpNYhpIu8pgqMxtFU6HO/QJv6kheWcAjR/7kL9ZMvbBEu6SPIBpQ9GxB32MsgFHTI9zZostrCaUBLjCnEeDTNy2wcQvLnfwJ7RDnh4oSJSG7IbZrluAXNIWYpzri4YmI6U9iE8eAyL7BxCjl3CUyjhKuD3FGgHCx3TDAYxE3aLfUwdBgLf/LAxrk0dynzdXc3TOQ2evPK3qYr9RwxIVdYvaWxrHsCBC9/KMPMgXKXqsPI9Sx/tnEIEZoU+lNjC27DyFLXyjmpH/NJPHDBHL+xgwc2DiGe53fTvnQaVYm2QpZUmMdofMPv4ZELdMCJHbt4YOOY0XvsMJ2Y9QfTVjxkb4VzIjnSXHXNyhFkSOFXeGDjENLwzlt0L4TJFXeLjYyMXKqhJIZEaO0UN8p2XAvzuFe6ICWO8wKbqmvg//ZTiO2t1uA1oXVQ/26GtkbO0LOhyNB7mu31rwXVmXeOZ/9nvKBEVSHy8BD8352heyFEQe03ZAUJ6etBFIVOFAc6KcFcXLSc6Ib8Ir3kU8/wwhKut682cRO5s9+gcOUPsI3HdNXneQ11pE8BMRiA7+034TtxACw9Bn32Api6Sh23bU3JRznXBLH7JUgD71GSDvGKclyFbKFN3kJh9Dfod2YpoFPX5yN7n4P35X0QeyO8lY2ePAdj8S96INHmp4K/F2L4AAnYyVtU54mE/N8sLS2hs5OWchtVhczOzGDuwRza2gNobGhEoj+B38fG0NXVRT0EbG5sQM2qSGfSGB4eRjKZRF8shtWVFSiKgtXVNbQF2qDrOnJqDgEa51+aPBgMYurWFG7fnsLJU6f4bDZVhXw+MoLdNMHiw4dYXFyiO0rHnn178fPoKO1qGS2tLRgcHLTaTt6YxMLCPDx09mj0FXf0jaOYn59HPB7H+Pg4otEospks7Sz6iPJ50R0K4derV/Hh6dNW/y2q7poQNQ6FwojRYJFoBNHeHlyfmKA3a8fQriG6jgzL2jvT0+jr60Mi0Y+Dhw7R/wRisTiJX8Ty8jK0YhH3UylL+NORCMLhMCauXYPfT9u8DOA/Qr6dcJ9U15gAAAAASUVORK5CYII=");
+                background-repeat: no-repeat;
+                width: 23px !important;
+                height: 14px !important;
+                opacity: 1 !important;
+            }
+
+            .pay { background-color: #ba0c2f !important;}
+
+            .pay span { display: inline !important; }
+
+            .display-block { display: block !important; }
+
+            .align-right{ text-align: right !important; }
+
+            .direction-right { direction: rtl; }
+
+            /* Apple pay */
+            .apple-pay {
+                max-width: 600px;
+                margin-left: auto;
+                margin-right: auto;
+                text-align: center;
+            }
+
+            .apple-pay-button {
+                -webkit-appearance: -apple-pay-button;
+                -apple-pay-button-type: buy;
+                visibility: hidden;
+                display: inline-block;
+                width: 200px;
+                min-height: 30px;
+                border: 1px solid black;
+                background-image: -webkit-named-image(apple-pay-logo-black);
+                background-size: 100% calc(60% + 2px);
+                background-repeat: no-repeat;
+                background-color: white;
+                background-position: 50% 50%;
+                border-radius: 5px;
+                padding: 0px;
+                margin: 5px auto;
+                transition: background-color .15s;
+            }
+
+            .apple-pay-button.visible {
+                visibility: visible;
+            }
+
+            .apple-pay-button:active {
+                background-color: rgb(152, 152, 152);
+            }
+
+        </style>
+
+
+        <script th:inline="javascript">
+            //test
+            /*<![CDATA[*/
+            var transactionIdBilling = /*[[${merchant_reference}]]*/ "";
+            console.log('--- transactionIdBilling:' + transactionIdBilling);
+            var transactionAmount = /*[[${amount}]]*/ "";
+            console.log('--- transactionAmount:' + transactionAmount);
+            var paymentDescription = /*[[${paymentDescription}]]*/ "";
+            console.log('--- paymentDescription:' + paymentDescription);
+            /*]]>*/
+        </script>
+
+        <script>
+            function payOnClick() {
+                var date = document.getElementById('expiry_date_formatted').value;
+                var cardNumberInput = document.getElementById('card_number').value;
+                var cvvInput = document.getElementById('card_security_code').value;
+                var chNameInput = document.getElementById('card_holder_name').value;
+                console.log('validation date ' + date.length);
+                console.log('validation cardNumberInput ' + cardNumberInput.length);
+                console.log('validation cvvInput ' + cvvInput.length);
+                console.log('validation chNameInput ' + date.length);
+                if (date.length != 5 || cardNumberInput.length < 13 || cvvInput.length != 3 || chNameInput.length == 0) {
+                    console.log('validation failed');
+                    document.getElementById("error_msg").classList.add("display-block");
+                    return false;
+                }
+                document.getElementById("error_msg").classList.remove("display-block");
+                console.log('validation pass');
+                document.getElementById('expiry_date').value = date.substring(3) + date.substring(0,2);
+                startLoading();
+                document.redirectForm.submit();
+            }
+            function startLoading() {
+                disbaleElements();
+                // $("#btnHint").html("");
+                // $("#loadingI").show();
+                var loadIcon = document.getElementById("loadingI");
+                loadIcon.style.visibility = "visible";
+
+                //$("#submitBtn").addClass("loading");
+                //$("#submitBtn").attr("disabled", true);
+                var submitButton = document.getElementById("submitBtn");
+                //submitButton.classList.add("loading");
+                submitButton.disabled = true;
+            }
+
+            function disbaleElements() {
+                var cardNumberInput = document.getElementById('card_number');
+                var expDateInput = document.getElementById('expiry_date_formatted');
+                var cvvInput = document.getElementById('card_security_code');
+                var chNameInput = document.getElementById('card_holder_name');
+                cardNumberInput.readOnly = true;
+                expDateInput.readOnly = true;
+                cvvInput.readOnly = true;
+                chNameInput.readOnly = true;
+            }
+
+            function isNumber(evt) {
+                var code = evt.keyCode || evt.which;
+                var regex = new RegExp("^\\d+$");
+                if(evt.key.match(regex) || code == '9' || code == '8'){
+                    return true;
+                }
+                return false;
+            }
+
+            function formatExpiryDate(e, b) {
+                // var date = $("input[id=expiry_date_formatted]").val();
+                var date = document.getElementById('expiry_date_formatted').value;
+                // styling placeholder
+                if (date.length >= 1) {
+                    document.getElementById('expiry_date_formatted').parentElement.classList.add("input-filled");
+                } else {
+                    document.getElementById('expiry_date_formatted').parentElement.classList.remove("input-filled");
+                }
+                if (date != '' && b == false) {
+                    date = date.replace(/[^0-9\.\/]/g, '');
+                    date = date.replace('\/\/', '');
+                    date = date.replace(new RegExp("[\/]$"), "");
+                    if (date.length == 2 && e.keyCode != 8) {
+                        date = String(date) + "/";
+                    }
+                    if (date.length == 1) {
+                        if (date.substring(0, 1) > 1) {
+                            date = "0" + String(date) + "/";
+                        }
+                    }
+                    if(date.length == 4 && date.indexOf("/") == -1){
+                        date = date.substring(0,2)+"/"+date.substring(2);
+                    }
+                }
+                else{
+                    if (date.length == 2 && e.keyCode != 8) {
+                        date = String(date) + "/";
+                    }
+                }
+                // $("input[id=expiry_date_formatted]").val(date);
+                document.getElementById('expiry_date_formatted').value = date;
+            }
+
+            function cardTypeListener() {
+                var madaBins = [
+                    // Al Bilad Ban
+                    '636120', '417633', '468540', '468541', '468542', '468543', '446393',
+                    // Al Rajhi Banking & Inv. Corp.
+                    '400861', '409201', '458456', '484783', '462220',
+                    // Arab National Bank
+                    '455036', '486094', '486095', '486096',
+                    // Bank Al-Jazira
+                    '504300', '440533', '489318', '489319', '445564',
+                    // Alinma Bank
+                    '432328', '428671', '428672', '428673', '446672', '543357',
+                    // National Commercial Bank
+                    '529415', '535825', '543085', '524130', '554180', '549760',
+                    // Riyad Bank
+                    '524514', '529741', '537767', '535989', '536023', '513213',
+                    // Saudi American Bank
+                    '588982', '589005', '508160', '531095', '530906', '532013',
+                    // Saudi British Bank
+                    '422817', '422818', '422819', '428331',
+                    // Saudi Investment Bank
+                    '483010', '483011', '483012', '589206'
+                ];
+                var cardNumberAsString = document.getElementById('card_number').value.replace(/ /g, '').trim();
+                // styling placeholder
+                if (cardNumberAsString.length >= 1) {
+                    document.getElementById('card_number').parentElement.classList.add("input-filled");
+                } else {
+                    document.getElementById('card_number').parentElement.classList.remove("input-filled");
+                }
+                // All Visa card numbers start with a 4. New cards have 16 digits. Old cards have 13.
+                // All MasterCard debit and credit card numbers start with 50, 51, 52, 53, 54 or 55 and are 16-digit long
+                if(cardNumberAsString.length >= 6) {
+                    var bin = cardNumberAsString.substring(0,6);
+                    if (madaBins.indexOf(bin) != -1) {
+                        document.getElementById("card-icon-type").classList.add("icon-mada");
+                    } else if (bin.substring(0,1) == '4') {
+                        document.getElementById("card-icon-type").classList.add("icon-visa");
+                    } else if (['50','51','52','53','54','55'].indexOf(bin.substring(0,2)) != -1) {
+                        document.getElementById("card-icon-type").classList.add("icon-master");
+                    }
+                } else if (cardNumberAsString.length < 6) {
+                    document.getElementById("card-icon-type").classList.remove("icon-mada");
+                    document.getElementById("card-icon-type").classList.remove("icon-visa");
+                    document.getElementById("card-icon-type").classList.remove("icon-master");
+                }
+            }
+
+            function securityCodeListener() {
+                var securityCode = document.getElementById('card_security_code').value;
+
+                // styling placeholder
+                if (securityCode.length >= 1) {
+                    document.getElementById('card_security_code').parentElement.classList.add("input-filled");
+                } else {
+                    document.getElementById('card_security_code').parentElement.classList.remove("input-filled");
+                }
+            }
+
+            function cardHolderListener() {
+                var holdr = document.getElementById('card_holder_name').value;
+
+                // styling placeholder
+                if (holdr.length >= 1) {
+                    document.getElementById('card_holder_name').parentElement.classList.add("input-filled");
+                } else {
+                    document.getElementById('card_holder_name').parentElement.classList.remove("input-filled");
+                }
+            }
+
+            /*****************************/
+            /********* Apple pay *********/
+            // Show apple pay button
+            window.onload = function() {
+                console.log('---load iframe');
+                document.getElementById("CreditCardDiv").classList.add("display-block");
+                // test also canMakePaymentsWithActiveCard: whether the user has an active card in Wallet
+                if (window.ApplePaySession && ApplePaySession.canMakePayments) {
+                    // showApplePayButton
+                    document.getElementById("ApplePayDiv").classList.add("display-block");
+                    document.getElementById("ApplePayBtn").classList.add("visible");
+                    console.log('+++ canMakePayments');
+                } else {
+                    console.log('--- cant MakePayments');
+                }
+            }
+
+            /**
+             * Apple Pay Logic
+             * Our entry point for Apple Pay interactions.
+             * Triggered when the Apple Pay button is pressed
+             */
+            function applePayButtonClicked() {
+
+                var paymentRequest = {
+                    countryCode: "SA",
+                    currencyCode: "SAR",
+                    // "supportsCredit", "supportsDebit"???
+                    merchantCapabilities: ["supports3DS"],
+                    supportedNetworks: [/*"mada", */"masterCard", "visa"],
+                    total: {
+                        // label: "To be updated according to invoice -- Billing System",
+                        label: paymentDescription,
+                        // amount: "1.00"
+                        amount: transactionAmount
+                    }
+                };
+
+                console.log('---  creating applePayButtonClicked session v1');
+                var session = new ApplePaySession(1, paymentRequest);
+                console.log('--- applePayButtonClicked session created');
+
+                /**
+                 * Merchant Validation
+                 * We call our merchant session endpoint, passing the URL to use
+                 * After the merchant validation is completed, the Apple payment sheet will be shown
+                 * on the Macbook and the connected iPhone
+                 */
+                session.onvalidatemerchant = (event) => {
+                    console.log('--- enter onvalidatemerchant' + event.validationURL);
+                    console.log('--- event' + JSON.stringify(event));
+
+                    const validationURL = event.validationURL;
+                    getApplePaySession(validationURL).then(function(response) {
+                        session.completeMerchantValidation(response);
+                        console.log('--- Got session from apple' + JSON.stringify(response));
+                    });
+                };
+
+                // onpaymentauthorized is called after payment is authorised by the user either
+                // with a fingerprint from an iPhone or iPad or by pressing a button on their Apple Watch.
+                // This provides the payment token for capturing the funds from the user.
+                session.onpaymentauthorized = (event) => {
+                    // Send payment for processing...
+                    const payment = event.payment;
+
+                    console.log('--- enter onpaymentauthorized' + JSON.stringify(event));
+                    console.log('--- payment' + JSON.stringify(payment));
+
+                    authorize(payment.token).then(function(response) {
+                        console.log('--- authorize resp: ' + JSON.stringify(response));
+                        /*if(response.match(/status=.error./)) {
+                            console.log("an error occured!");
+                            console.log(response);
+                            return session.abort();
+                        }*/
+
+                        session.completePayment(ApplePaySession.STATUS_SUCCESS);
+                        console.log("successful payment !!! ");
+                        //$('#complete_checkout_apple_pay').submit();
+                        //window.location.href = "/success.html";
+                        if (response != null) {
+                            window.top.location.href = response;
+                        }
+                    }).catch(err => {
+                        console.log('--- authorize resp err: ' + JSON.stringify(err));
+                        session.abort();
+                        if (err.link && err.link != null) {
+                            window.top.location.href = err.link;
+                        }
+                    });
+
+                };
+
+                session.begin();
+            }
+
+            /**
+             * Server to Server call to apple for response used to validate *merchant
+             */
+            function getApplePaySession(url) {
+                // const url2 = 'https://apple-pay-gateway-pr-pod3.apple.com/paymentservices/startSession';
+                console.log('--- enter getApplePaySession url:' + url);
+
+                return new Promise(function (resolve, reject) {
+                    var xhr = new XMLHttpRequest();
+                    console.log('--- getApplePaySession sending post req to backend');
+                    xhr.open('POST', '/billing/payments/apple-session');
+                    xhr.onload = function () {
+                        if (this.status == 200) {
+                            resolve(JSON.parse(xhr.response));
+                        } else {
+                            reject({
+                                status: this.status,
+                                statusText: xhr.statusText
+                            });
+                        }
+                    };
+
+                    xhr.onerror = function () {
+                        reject({
+                            status: this.status,
+                            statusText: xhr.statusText
+                        });
+                    };
+
+                    xhr.setRequestHeader("Content-Type", "application/json");
+                    xhr.send(JSON.stringify({validationUrl: url}));
+                });
+            }
+
+            /**
+             * Server to Server call to complete the payment
+             */
+            function authorize(token) {
+                return new Promise(function (resolve, reject) {
+                    var xhr = new XMLHttpRequest();
+                    console.log('--- authorize sending post req to backend');
+                    xhr.open('POST', '/billing/payments/apple-authorize');
+                    // add header test
+                    xhr.setRequestHeader("Access-Control-Allow-Origin", "*");
+                    // var orderData = orderPayload(); // custom method to fetch order data
+                    // token.epsOrderData = orderData;
+                    token.transactionIdBilling = transactionIdBilling;
+                    xhr.onload = function () {
+                        if (this.status >= 200 && this.status < 300) {
+                            console.log('--- Success result');
+                            resolve(xhr.response);
+                        } else {
+                            console.log('--- Fail result');
+                            reject({
+                                status: this.status,
+                                statusText: xhr.statusText,
+                                link: xhr.response
+                            });
+                        }
+                    };
+                    xhr.onerror = function () {
+                        reject({
+                            status: this.status,
+                            statusText: xhr.statusText,
+                            link: xhr.response
+                        });
+                    };
+                    xhr.setRequestHeader("Content-Type", "application/json");
+                    xhr.send(JSON.stringify(token));
+                });
+            }
+
+        </script>
+    </head>
+    <body>
+        <!--<form th:action="${RedirectURL}" method="post" name="redirectForm">
+            <input name="MerchantID" type="hidden" th:value="${MerchantID}"/>
+            <input name="Amount" type="hidden" th:value="${Amount}"/>
+            <input name="CurrencyISOCode" type="hidden" th:value="${CurrencyISOCode}"/>
+            <input name="ItemID" type="hidden" th:value="${ItemID}" >
+            <input name="Language" type="hidden" th:value="${Language}"/>
+            <input name="MessageID" type="hidden" th:value="${MessageID}"/>
+            <input name="PaymentDescription" type="hidden"  th:value="${PaymentDescription}" >
+            <input name="TransactionID" type="hidden" th:value="${TransactionID}"/>
+            <input name="ThemeID" type="hidden" th:value="${ThemeID}"/>
+            <input name="ResponseBackURL" type="hidden" th:value="${ResponseBackURL}"/>
+            <input name="Quantity" type="hidden" th:value="${Quantity}"/>
+            <input name="Channel" type="hidden" th:value="${Channel}"/>
+            <input name="Version" type="hidden" th:value="${Version}"/>
+            <input name="SecureHash" type="hidden" th:value="${SecureHash}"/>
+        </form>-->
+
+        <!--<div class="row apple-pay">
+            <div class="apple-pay-button" id="ApplePayBtn" onclick="applePayButtonClicked()"></div>
+        </div>-->
+
+        <div class="row" id="ApplePayDiv" style="display: none">
+            <!--<h2> Buy with Apple&nbsp;Pay </h2>-->
+            <h4 th:classappend="(${currentLang}== 'ar')? 'align-right direction-right' : ''">
+                <span class="payment-title"><span th:text="${applePayTitle}" style="cursor: default;"> Buy with Apple&nbsp;Pay </span>
+                </span>
+            </h4>
+            <div class="apple-pay">
+                <div class="apple-pay-button" id="ApplePayBtn" onclick="applePayButtonClicked()"></div>
+
+            </div>
+        </div>
+
+
+        <div id="CreditCardDiv" style="display: none">
+        <div class="row">
+            <h4 id="page-heading" th:classappend="(${currentLang}== 'ar')? 'align-right direction-right' : ''">
+                <span class="payment-title"><span th:text="${cardTitle}" style="cursor: default;"> Credit card / mada bank Card </span>
+                    <i class="icon-mada-visa-master"></i>
+                </span>
+            </h4>
+        </div>
+
+        <form  th:action="${actionUrl}" method="post" name="redirectForm" target="_top">
+            <input type="hidden" name="service_command" th:value="${service_command}">
+            <input type="hidden" name="access_code" th:value="${access_code}">
+            <input type="hidden" name="merchant_identifier" th:value="${merchant_identifier}">
+            <input type="hidden" name="merchant_reference" th:value="${merchant_reference}">
+            <input type="hidden" name="language" th:value="${language}">
+            <input type="hidden" name="signature" th:value="${signature}">
+            <input type="hidden" name="return_url" th:value="${return_url}">
+
+            <div class="row">
+                <div class="card-container">
+
+                    <span class="popover" id="error_msg" th:classappend="(${currentLang}== 'ar')? align-right : ''">
+                        <span class="content" th:text="${cardInvalid}"></span>
+                    </span>
+
+                    <span class="input">
+                                    <input class="input-field " type="tel" name="card_number" id="card_number" pattern="[0-9]*" maxlength="16"
+                                           onkeypress="javascript: return isNumber(event)"
+                                           onkeyup="javascript: cardTypeListener();"
+                                           ondrag="return false" ondrop="return false" autocomplete="off">
+                                    <label class="input-label" for="">
+                                        <i class="icon-credit-card icon"></i>
+                                        <i id="card-icon-type" class="visa"></i>
+
+                                        <span class="input-label-content"  th:text="${cardNumber}">Card Number</span>
+                                    </label>
+                                </span>
+
+                                <div class="half-containter">
+                                <span class="input half1">
+                                    <input class="input-field" type="tel" id="expiry_date_formatted"
+                                           ondrag="return false" ondrop="return false" autocomplete="off" maxlength="5"
+                                           onkeypress="javascript: return isNumber(event)"
+                                           onkeyup="formatExpiryDate(event,false)" onkeydown="formatExpiryDate(event,true)"
+                                           pattern="[0-9/]*">
+                                    <label class="input-label" for="">
+                                        <i class="icon-calendar-empty icon"></i>
+                                        <span class="input-label-content">MM/YY</span>
+                                        <!--<span class="input-label-content">YY/MM</span>-->
+                                    </label>
+                                </span>
+                    </div>
+
+                    <div class="half-containter">
+                                <span class="input visible half2">
+                                    <input class="input-field" type="tel" name="card_security_code" id="card_security_code" pattern="[0-9]*" maxlength="3"
+                                           onkeypress="javascript: return isNumber(event)"
+                                           onkeyup="javascript: securityCodeListener();"
+                                           ondrag="return false" ondrop="return false" autocomplete="off">
+                                    <label class="input-label" for="">
+                                        <i class="icon-lock icon"></i>
+                                        <span class="input-label-content" th:text="${cardCvv}">CVV</span>
+                                        <i class="icon-attention-circled icon-right icon"></i>
+                                        <i class="tooltip" th:attr="data-tooltip=${cardCvvTooltip}"> </i>
+
+                                    </label>
+                                </span>
+                    </div>
+
+                    <span class="input">
+                                <input class="input-field name" type="text" name="card_holder_name" id="card_holder_name" maxlength="50"
+                                       ondrag="return false" ondrop="return false"
+                                       onkeyup="javascript: cardHolderListener();" autocomplete="off">
+                                <label class="input-label" for="">
+                                    <i class="icon-user icon"></i>
+                                    <span class="input-label-content" id="showServices" th:text="${cardHolder}">Cardholder Name</span>
+                                </label>
+                                </span>
+                    <input class="input-field" type="hidden" id="expiry_date" name="expiry_date" maxlength="4">
+                    <button type="submit" id="submitBtn" class="pay br " data-text="Pay" onclick="javascript: return payOnClick();">
+                        <!--<button type="submit" id="save-entity"  class="pay br " data-text="Pay">-->
+                        <i class="animated icon-spin4 animate-spin" id="loadingI" style="visibility: hidden;"></i>
+                        <span th:text="${cardPay}">Pay</span>
+                    </button>
+                </div>
+            </div>
+        </form>
+        </div>
+    </body>
+
+    <!-- Apple device simulation -- to be deleted -->
+    <!--
+        <script src="/content/js/ApplePaySession.js"></script>
+        <script>
+
+            /* Set the merchant identifier to use */
+            ApplePaySessionPolyfill.setMerchantIdentifier("merchant.sa.tamkeentech.billing");
+            /* Create a dummy billing and shipping contact */
+            var createContact = function () {
+                return {
+                    emailAddress: "user@domain.com",
+                    familyName: "Smith",
+                    givenName: "John",
+                    phoneNumber: "07777777777",
+                    addressLines: ["Just Eat", "Fleet Place House", "2 Fleet Place"],
+                    locality: "London",
+                    administrativeArea: "",
+                    postalCode: "EC4M 7RF",
+                    country: "United Kingdom",
+                    countryCode: "GB"
+                };
+            };
+            ApplePaySessionPolyfill.createBillingContact = createContact;
+            ApplePaySessionPolyfill.createShippingContact = createContact;
+
+            /*
+            Create a dummy payment token, or use one generated from a test
+            device or a test token made available by your payment provider.
+            */
+            // example here:
+            // https://stackoverflow.com/questions/46963611/is-apple-pay-token-transactionid-globally-unique
+
+            function uuidv4() {
+                return 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxxxxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                    return v.toString(16);
+                });
+            }
+
+            var transactionId = uuidv4().toUpperCase();
+            console.log('Apple pay TransId: ' + transactionId);
+            ApplePaySessionPolyfill.createPaymentToken = function (session) {
+                return {
+                    paymentData: {
+                        version: "EC_v1",
+                        data: "Csk3ptSza4sZ3MwUDojF4dT/PAJqGJod/38CXEv5Md2a7zDz+/b69q7u6ZVIoxlZ/qW2r/DhM7MDpvIWUBzzbgbbxI4A01TBbVb8GAXWUdgjdJ1IXDMEaQNvSUX+XHohN3PbvGsUHgCsrOx4HFJnF93qHZPBVKmTN4MbSCbtDDVWNdvFDGb/tcWzfwb8ZqmpXnkZUtVQJcgOBenYk4waEdXoq79Nox1tPx7oYImRgGJ2tQOrWDm9RgtoUV6zPpGO1QtdJjVjLcQe6ZNih7ywW9lZO17ipPUcRjR8t0QnRYIFIyzFpqo9hjRO4AD7Yeb+cmR7GjFgs0ENdvxuHkAl6PXOa4GKvmtXD17BMbbl+1ebL1oZ1MkivyXzOoQE7+tMlmycrVMm4mDlDf5e2ZRzzTulwCejKDNbgmJnKudCLw==",
+                        signature: "MIAGCSqGSIb3DQEHAqCAMIACAQExDzANBglghkgBZQMEAgEFADCABgkqhkiG9w0BBwEAAKCAMIID5jCCA4ugAwIBAgIIaGD2mdnMpw8wCgYIKoZIzj0EAwIwejEuMCwGA1UEAwwlQXBwbGUgQXBwbGljYXRpb24gSW50ZWdyYXRpb24gQ0EgLSBHMzEmMCQGA1UECwwdQXBwbGUgQ2VydGlmaWNhdGlvbiBBdXRob3JpdHkxEzARBgNVBAoMCkFwcGxlIEluYy4xCzAJBgNVBAYTAlVTMB4XDTE2MDYwMzE4MTY0MFoXDTIxMDYwMjE4MTY0MFowYjEoMCYGA1UEAwwfZWNjLXNtcC1icm9rZXItc2lnbl9VQzQtU0FOREJPWDEUMBIGA1UECwwLaU9TIFN5c3RlbXMxEzARBgNVBAoMCkFwcGxlIEluYy4xCzAJBgNVBAYTAlVTMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEgjD9q8Oc914gLFDZm0US5jfiqQHdbLPgsc1LUmeY+M9OvegaJajCHkwz3c6OKpbC9q+hkwNFxOh6RCbOlRsSlaOCAhEwggINMEUGCCsGAQUFBwEBBDkwNzA1BggrBgEFBQcwAYYpaHR0cDovL29jc3AuYXBwbGUuY29tL29jc3AwNC1hcHBsZWFpY2EzMDIwHQYDVR0OBBYEFAIkMAua7u1GMZekplopnkJxghxFMAwGA1UdEwEB/wQCMAAwHwYDVR0jBBgwFoAUI/JJxE+T5O8n5sT2KGw/orv9LkswggEdBgNVHSAEggEUMIIBEDCCAQwGCSqGSIb3Y2QFATCB/jCBwwYIKwYBBQUHAgIwgbYMgbNSZWxpYW5jZSBvbiB0aGlzIGNlcnRpZmljYXRlIGJ5IGFueSBwYXJ0eSBhc3N1bWVzIGFjY2VwdGFuY2Ugb2YgdGhlIHRoZW4gYXBwbGljYWJsZSBzdGFuZGFyZCB0ZXJtcyBhbmQgY29uZGl0aW9ucyBvZiB1c2UsIGNlcnRpZmljYXRlIHBvbGljeSBhbmQgY2VydGlmaWNhdGlvbiBwcmFjdGljZSBzdGF0ZW1lbnRzLjA2BggrBgEFBQcCARYqaHR0cDovL3d3dy5hcHBsZS5jb20vY2VydGlmaWNhdGVhdXRob3JpdHkvMDQGA1UdHwQtMCswKaAnoCWGI2h0dHA6Ly9jcmwuYXBwbGUuY29tL2FwcGxlYWljYTMuY3JsMA4GA1UdDwEB/wQEAwIHgDAPBgkqhkiG92NkBh0EAgUAMAoGCCqGSM49BAMCA0kAMEYCIQDaHGOui+X2T44R6GVpN7m2nEcr6T6sMjOhZ5NuSo1egwIhAL1a+/hp88DKJ0sv3eT3FxWcs71xmbLKD/QJ3mWagrJNMIIC7jCCAnWgAwIBAgIISW0vvzqY2pcwCgYIKoZIzj0EAwIwZzEbMBkGA1UEAwwSQXBwbGUgUm9vdCBDQSAtIEczMSYwJAYDVQQLDB1BcHBsZSBDZXJ0aWZpY2F0aW9uIEF1dGhvcml0eTETMBEGA1UECgwKQXBwbGUgSW5jLjELMAkGA1UEBhMCVVMwHhcNMTQwNTA2MjM0NjMwWhcNMjkwNTA2MjM0NjMwWjB6MS4wLAYDVQQDDCVBcHBsZSBBcHBsaWNhdGlvbiBJbnRlZ3JhdGlvbiBDQSAtIEczMSYwJAYDVQQLDB1BcHBsZSBDZXJ0aWZpY2F0aW9uIEF1dGhvcml0eTETMBEGA1UECgwKQXBwbGUgSW5jLjELMAkGA1UEBhMCVVMwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAATwFxGEGddkhdUaXiWBB3bogKLv3nuuTeCN/EuT4TNW1WZbNa4i0Jd2DSJOe7oI/XYXzojLdrtmcL7I6CmE/1RFo4H3MIH0MEYGCCsGAQUFBwEBBDowODA2BggrBgEFBQcwAYYqaHR0cDovL29jc3AuYXBwbGUuY29tL29jc3AwNC1hcHBsZXJvb3RjYWczMB0GA1UdDgQWBBQj8knET5Pk7yfmxPYobD+iu/0uSzAPBgNVHRMBAf8EBTADAQH/MB8GA1UdIwQYMBaAFLuw3qFYM4iapIqZ3r6966/ayySrMDcGA1UdHwQwMC4wLKAqoCiGJmh0dHA6Ly9jcmwuYXBwbGUuY29tL2FwcGxlcm9vdGNhZzMuY3JsMA4GA1UdDwEB/wQEAwIBBjAQBgoqhkiG92NkBgIOBAIFADAKBggqhkjOPQQDAgNnADBkAjA6z3KDURaZsYb7NcNWymK/9Bft2Q91TaKOvvGcgV5Ct4n4mPebWZ+Y1UENj53pwv4CMDIt1UQhsKMFd2xd8zg7kGf9F3wsIW2WT8ZyaYISb1T4en0bmcubCYkhYQaZDwmSHQAAMYIBjTCCAYkCAQEwgYYwejEuMCwGA1UEAwwlQXBwbGUgQXBwbGljYXRpb24gSW50ZWdyYXRpb24gQ0EgLSBHMzEmMCQGA1UECwwdQXBwbGUgQ2VydGlmaWNhdGlvbiBBdXRob3JpdHkxEzARBgNVBAoMCkFwcGxlIEluYy4xCzAJBgNVBAYTAlVTAghoYPaZ2cynDzANBglghkgBZQMEAgEFAKCBlTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMDA0MzAxNDQ2MTFaMCoGCSqGSIb3DQEJNDEdMBswDQYJYIZIAWUDBAIBBQChCgYIKoZIzj0EAwIwLwYJKoZIhvcNAQkEMSIEICif4JZYpd1PMVV9LKazZ1Ld5xAfrs1WOHkprpyIITCJMAoGCCqGSM49BAMCBEgwRgIhAJi+PUrTvX/0jwmDuaHBxoqj9/sbNySeNa5XEqOK2Y5qAiEAoLEl5+KGc1k2NZ8JGnIlDdAxj38kqRD8CXJm59vZ39YAAAAAAAA=",
+                        header: {
+                            ephemeralPublicKey: "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAERJf+koMYia2IZrtzrpZyfjvIfe7gAs+gNKfL+VfYXOAFrzrJwLpPdw2nwcgmNcGGUlNEa/zRpI3xbjehGTKxlg==",
+                            publicKeyHash: "tAKMqcXSS7mItI31AqVZN7VTxz0j3bZmRtNOoDqyGsk=",
+                            transactionId: "4242e594f7e923c3944b0c676ed3b34279a239980ff609e89a5ff21d198246a9"
+                        }
+                    },
+                    paymentMethod: {
+                        displayName: "Visa 1",
+                        network: "visa",
+                        type: "credit",
+                        paymentPass: null
+                    },
+                    transactionIdentifier: transactionId,
+                    transactionIdBilling: transactionIdBilling
+                };
+            };
+
+            ApplePaySessionPolyfill.setUserSetupStatus(false);
+        </script>
+        -->
+
+    </html>

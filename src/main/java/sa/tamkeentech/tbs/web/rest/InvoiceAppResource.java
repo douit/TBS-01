@@ -55,12 +55,13 @@ public class InvoiceAppResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/billing/createbill")
-    public ResponseEntity<InvoiceResponseDTO> createOneItemInvoice(@Valid @RequestBody OneItemInvoiceDTO oneItemInvoiceDTO) throws URISyntaxException {
+    public ResponseEntity<InvoiceResponseDTO> createOneItemInvoice(@Valid @RequestBody OneItemInvoiceDTO oneItemInvoiceDTO,
+                 @RequestHeader(value = "accept-language", defaultValue = Constants.DEFAULT_HEADER_LANGUAGE) String language) throws URISyntaxException {
         log.debug("REST request to save Invoice : {}", oneItemInvoiceDTO);
         if (oneItemInvoiceDTO.getBillNumber() != null) {
             throw new BadRequestAlertException("A new invoice cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        InvoiceResponseDTO result = invoiceService.saveOneItemInvoiceAndSendEvent(oneItemInvoiceDTO);
+        InvoiceResponseDTO result = invoiceService.saveOneItemInvoiceAndSendEvent(oneItemInvoiceDTO, language);
         String id = (result.getBillNumber()!= null)? result.getBillNumber().toString(): "";
         return ResponseEntity.created(new URI("/api/invoices/" + result.getBillNumber()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, id))
@@ -82,7 +83,7 @@ public class InvoiceAppResource {
         if (invoiceDTO.getBillNumber() != null) {
             throw new BadRequestAlertException("A new invoice cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        InvoiceResponseDTO result = invoiceService.saveInvoiceAndSendEvent(invoiceDTO);
+        InvoiceResponseDTO result = invoiceService.saveInvoiceAndSendEvent(invoiceDTO, language);
         boolean isSadadCreateCase = Constants.SADAD.equalsIgnoreCase(invoiceDTO.getPaymentMethod().getCode())? true: false;
         invoiceService.addExtraPaymentInfo(result, language, isSadadCreateCase);
         String id = (result.getBillNumber()!= null)? result.getBillNumber().toString(): "";
@@ -105,12 +106,13 @@ public class InvoiceAppResource {
 
     // possible values SADAD or CREDIT_CARD
     @GetMapping("/billing/newPayment/{referenceId}/{paymentMethodCode}")
-    public ResponseEntity<InvoiceResponseDTO> getPayment(@PathVariable String referenceId, @PathVariable String paymentMethodCode) {
+    public ResponseEntity<InvoiceResponseDTO> getPayment(@PathVariable String referenceId, @PathVariable String paymentMethodCode,
+               @RequestHeader(value = "accept-language", defaultValue = Constants.DEFAULT_HEADER_LANGUAGE) String language) {
         log.debug("REST request to change payment method Payment to : {}", paymentMethodCode);
         if (!Constants.SADAD.equals(paymentMethodCode) && !Constants.CREDIT_CARD.equals(paymentMethodCode)) {
             throw new TbsRunTimeException("Unkown payment method");
         }
-        InvoiceResponseDTO resp = paymentService.requestNewPayment(referenceId, paymentMethodCode);
+        InvoiceResponseDTO resp = paymentService.requestNewPayment(referenceId, paymentMethodCode, language);
         return new ResponseEntity<InvoiceResponseDTO>(resp,  HttpStatus.OK);
     }
 

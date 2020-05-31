@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
 import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
@@ -24,6 +25,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.ui.Model;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpServerErrorException;
@@ -31,6 +33,7 @@ import org.springframework.web.client.RestTemplate;
 import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.*;
 import sa.tamkeentech.tbs.domain.enumeration.InvoiceStatus;
+import sa.tamkeentech.tbs.domain.enumeration.PaymentProvider;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 import sa.tamkeentech.tbs.repository.*;
 import sa.tamkeentech.tbs.service.dto.*;
@@ -105,7 +108,15 @@ public class PaymentService {
     private UserService userService;
 
     @Autowired
-    private CreditCardPaymentService creditCardPaymentService;
+    @Lazy
+    private STSPaymentService sTSPaymentService;
+
+    @Autowired
+    @Lazy
+    private PayFortPaymentService payFortPaymentService;
+
+    @Autowired
+    private RestTemplate restTemplate;
 
     public PaymentService(PaymentRepository paymentRepository, PaymentMapper paymentMapper, InvoiceRepository invoiceRepository, BankRepository bankRepository, BinRepository binRepository, PaymentMethodService paymentMethodService, ObjectMapper objectMapper, EventPublisherService eventPublisherService, ClientService clientService, ClientMapper clientMapper, PersistenceAuditEventRepository persistenceAuditEventRepository, PaymentMethodMapper paymentMethodMapper, ClientRepository clientRepository) {
         this.paymentRepository = paymentRepository;
@@ -116,11 +127,35 @@ public class PaymentService {
         this.paymentMethodService = paymentMethodService;
         this.objectMapper = objectMapper;
         this.eventPublisherService = eventPublisherService;
-       this.clientService =clientService;
+        this.clientService = clientService;
         this.clientMapper = clientMapper;
         this.persistenceAuditEventRepository = persistenceAuditEventRepository;
         this.paymentMethodMapper = paymentMethodMapper;
         this.clientRepository = clientRepository;
+    }
+
+
+    /**
+     * Load form payment according to the provider
+     *
+     * @param model
+     * @param transactionId
+     * @param lang
+     * @return
+     */
+    @Transactional
+    public String initPayment(Model model, String transactionId, String lang) {
+        log.info("Request to initiate Payment : {}, language {}", transactionId, lang);
+        Payment payment = paymentRepository.findByTransactionId(transactionId);
+        if (payment == null) {
+            // ToDo change to error page
+            throw new TbsRunTimeException("Payment not found");
+        }
+        if (payment.getPaymentProvider() == PaymentProvider.PAYFORT) {
+            return payFortPaymentService.initPayment(model, payment, lang);
+        } else {
+            return sTSPaymentService.initPayment(model, payment, lang);
+        }
     }
 
     /**
@@ -182,7 +217,7 @@ public class PaymentService {
     }*/
 
     /**
-     *  Update Credit card payment status
+     * Update Credit card payment status
      *
      * @param paymentStatusResponseDTO
      * @return
@@ -202,12 +237,14 @@ public class PaymentService {
     @Transactional
     public PaymentDTO updateCreditCardPayment(PaymentStatusResponseDTO paymentStatusResponseDTO, Payment payment, Invoice invoice) {
         log.debug("Request to update status Payment : {}", paymentStatusResponseDTO);
-        if (Constants.CC_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode()) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
+        if ((Constants.STS_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode())
+                || Constants.PAYFORT_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode())) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
             payment.setStatus(PaymentStatus.PAID);
             invoice.setPaymentStatus(PaymentStatus.PAID);
             // in case client does not call check-payment Job will send notification
             invoice.setStatus(InvoiceStatus.WAITING);
-        } else if (Constants.CC_PAYMENT_FAILURE_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode()) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
+        } else if ((Constants.STS_PAYMENT_FAILURE_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode())
+            || Constants.PAYFORT_PAYMENT_FAILURE_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode())) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
             payment.setStatus(PaymentStatus.UNPAID);
             invoice.setPaymentStatus(PaymentStatus.UNPAID);
         }
@@ -240,9 +277,9 @@ public class PaymentService {
     }
 
     private String findBankCode(String cardNumber) {
-        for(Bin bin : binRepository.findAll()){
-            if(bin.getBin().toString().substring(0,5).equals(cardNumber.substring(0,5))){
-               return bankRepository.findById(bin.getIdBank()).get().getCode();
+        for (Bin bin : binRepository.findAll()) {
+            if (bin.getBin().toString().substring(0, 5).equals(cardNumber.substring(0, 5))) {
+                return bankRepository.findById(bin.getIdBank()).get().getCode();
             }
         }
         return "";
@@ -291,7 +328,6 @@ public class PaymentService {
     }
 
     /**
-     *
      * @param sadadBillId
      * @param sadadAccount
      * @param amount
@@ -301,13 +337,13 @@ public class PaymentService {
      * @throws JSONException
      */
     @Transactional
-    public int sendEventAndCallSadad(Long sadadBillId, String sadadAccount , BigDecimal amount, String principal) throws IOException, JSONException {
+    public int sendEventAndCallSadad(Long sadadBillId, String sadadAccount, BigDecimal amount, String principal) throws IOException, JSONException {
 
         JSONObject billInfo = new JSONObject();
         JSONObject billInfoContent = new JSONObject();
-        billInfoContent.put("billNumber", sadadBillId ); // autoincrement
+        billInfoContent.put("billNumber", sadadBillId); // autoincrement
         billInfoContent.put("billAccount", sadadAccount); // Unique 15 digits
-        billInfoContent.put("amount",amount);
+        billInfoContent.put("amount", amount);
         Calendar c1 = Calendar.getInstance();
         // c.add(Calendar.HOUR, 3);
         // ToDO delete +35 work arround !!!!
@@ -317,10 +353,10 @@ public class PaymentService {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.DATE, Constants.INVOICE_EXPIRY_DAYS);
         String expiryDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(c.getTime());
-        billInfoContent.put("expirydate",expiryDate);
-        billInfoContent.put("billStatus","BillNew");
+        billInfoContent.put("expirydate", expiryDate);
+        billInfoContent.put("billStatus", "BillNew");
         // applicationId 0 for test
-        billInfoContent.put("applicationId",sadadApplicationId);
+        billInfoContent.put("applicationId", sadadApplicationId);
         billInfo.put("BillInfo", billInfoContent);
         TBSEventReqDTO<String> req = TBSEventReqDTO.<String>builder()
             .principalId(principal).referenceId(sadadAccount).req(billInfo.toString()).build();
@@ -390,7 +426,7 @@ public class PaymentService {
             .req(req).build();
         NotifiRespDTO resp = eventPublisherService.sendPaymentNotification(reqNotification, invoice).getResp();
 
-        return new ResponseEntity<NotifiRespDTO>(resp,  HttpStatus.OK);
+        return new ResponseEntity<NotifiRespDTO>(resp, HttpStatus.OK);
     }
 
     // @Transactional
@@ -434,7 +470,7 @@ public class PaymentService {
                         || CommonUtils.isProfile(environment, "ahmed")) {
                         sendPaymentNotificationToClient(clientMapper.toDto(invoice.getClient()), invoice.getAccountId(), payment);
                     } else {
-                        log.warn("----Not prod/staging env, client notif desabled, Invoice: {}"+ invoice.getAccountId());
+                        log.warn("----Not prod/staging env, client notif desabled, Invoice: {}" + invoice.getAccountId());
                     }
                 } catch (Exception e) {
                     log.error("---Payment notification Failed");
@@ -466,8 +502,8 @@ public class PaymentService {
     @Scheduled(cron = "${tbs.cron.payment-notification-correction}")
     public void sendPaymentNotificationToClientJob() {
 
-        List<ClientDTO> clients =  clientService.findAll();
-        for(ClientDTO clientDTO : clients){
+        List<ClientDTO> clients = clientService.findAll();
+        for (ClientDTO clientDTO : clients) {
             // Add lastModifiedDate before 1 min to avoid sending notif before check-payment
             List<Optional<Invoice>> invoices = invoiceRepository.findByStatusAndClientIdAndLastModifiedDateBefore(InvoiceStatus.WAITING,
                 clientDTO.getId(), ZonedDateTime.now().minusMinutes(1));
@@ -479,10 +515,10 @@ public class PaymentService {
                         || CommonUtils.isProfile(environment, "ahmed")) {
                         sendPaymentNotificationToClient(clientDTO, invoice.get().getAccountId(), payment.get());
                     } else {
-                        log.warn("----Not prod/staging env, Invoice status is waiting and payment found, Invoice: {}"+ invoice.get().getAccountId());
+                        log.warn("----Not prod/staging env, Invoice status is waiting and payment found, Invoice: {}" + invoice.get().getAccountId());
                     }
                 } else {
-                    log.warn("----Invoice status is waiting but no payment found, Invoice: {}"+ invoice.get().getAccountId());
+                    log.warn("----Invoice status is waiting but no payment found, Invoice: {}" + invoice.get().getAccountId());
                 }
             }
         }
@@ -491,7 +527,7 @@ public class PaymentService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Async
-    public void sendPaymentNotificationToClient(ClientDTO client , Long accountId , Payment payment){
+    public void sendPaymentNotificationToClient(ClientDTO client, Long accountId, Payment payment) {
         Date currentDate = new Date();
         // tokenModifiedDate means deadline, after that new token must be generated
         Date tokenModifiedDate = new Date();
@@ -502,8 +538,7 @@ public class PaymentService {
         long diffInMinutes = currentDate.toInstant().until(tokenModifiedDate.toInstant(), ChronoUnit.MINUTES);
         log.info("---> sendPaymentNotificationToClient token expires after {} min", diffInMinutes);
         String token = null;
-        if (diffInMinutes <= 1 || client.getClientToken() == null ) {
-            RestTemplate rt1 = new RestTemplate();
+        if (diffInMinutes <= 1 || client.getClientToken() == null) {
             HttpHeaders headers1 = new HttpHeaders();
             headers1.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
             MultiValueMap<String, String> map1 = new LinkedMultiValueMap<String, String>();
@@ -513,8 +548,8 @@ public class PaymentService {
             map1.add("client_secret", environment.getProperty("tbs.payment.wahid-secret")); // production
             org.springframework.http.HttpEntity<MultiValueMap<String, String>> request1 = new org.springframework.http.HttpEntity<MultiValueMap<String, String>>(map1, headers1);
             //  String uri = "https://sso.tamkeen.land/auth/realms/tamkeen/protocol/openid-connect/token"; // staging
-            String uri =  environment.getProperty("tbs.payment.wahid-url"); // production
-            ResponseEntity<TokenResponseDTO> response1 = rt1.postForEntity(uri, request1, TokenResponseDTO.class);
+            String uri = environment.getProperty("tbs.payment.wahid-url"); // production
+            ResponseEntity<TokenResponseDTO> response1 = restTemplate.postForEntity(uri, request1, TokenResponseDTO.class);
             token = response1.getBody().getAccess_token();
 
             Optional<Client> clientEntity = clientRepository.findById(client.getId());
@@ -528,8 +563,6 @@ public class PaymentService {
             token = client.getClientToken();
         }
 
-
-        RestTemplate restTemplate = new RestTemplate();
         String pattern = " dd/MM/yyyy hh:mm:ss a";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
         String paymentDate = simpleDateFormat.format(Date.from(payment.getCreatedDate().toInstant()));
@@ -537,22 +570,14 @@ public class PaymentService {
         /*if(Arrays.stream(environment.getActiveProfiles()).anyMatch(
             env -> (env.equalsIgnoreCase("prod")) )) {*/
         if (CommonUtils.isProfile(environment, "prod") || CommonUtils.isProfile(environment, "staging")) {
-        // if (CommonUtils.isProdOrStaging(environment)) {
+            // if (CommonUtils.isProdOrStaging(environment)) {
             resourceUrl += client.getNotificationUrl();
         } else {
             resourceUrl += "https://test";
         }
         // resourceUrl += ("?billnumber=" + accountId.toString() + "&paymentdate=" +  paymentDate + "&token=" + token);
-        log.info("----calling Client update: "+ resourceUrl);
-        // ResponseEntity<NotifiRespDTO> response2= restTemplate.getForEntity(resourceUrl, NotifiRespDTO.class);
+        log.info("----calling Client update: " + resourceUrl);
 
-        //Mule Post query
-        /*PaymentNotifReqToClientDTO paymentNotifReqToClientDTO = PaymentNotifReqToClientDTO.builder()
-            .billNumber(accountId.toString())
-            .paymentDate(paymentDate)
-            .status("paid")
-            .paymentMethod(new PaymentNotifReqToClientDTO.PaymentInternalInfo("1", "SADAD"))
-            .build();*/
         PaymentDTO paymentNotifReqToClientDTO = PaymentDTO.builder()
             .billNumber(accountId.toString())
             .transactionId(payment.getTransactionId())
@@ -562,13 +587,13 @@ public class PaymentService {
             .paymentDate(payment.getLastModifiedDate())
             .amount(payment.getAmount()).build();
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer "+token);
+        headers.set("Authorization", "Bearer " + token);
         headers.set("Content-Type", "application/json");
         headers.set("client_id", environment.getProperty("tbs.payment.notification-client-id"));
         headers.set("client_secret", environment.getProperty("tbs.payment.notification-client-secret"));
 
         HttpEntity<PaymentDTO> request = new HttpEntity<>(paymentNotifReqToClientDTO, headers);
-        ResponseEntity<PaymentNotifResFromClientDTO> response2= null;
+        ResponseEntity<PaymentNotifResFromClientDTO> response2 = null;
         try {
             response2 = restTemplate.exchange(resourceUrl, HttpMethod.POST, request, PaymentNotifResFromClientDTO.class);
         } catch (HttpServerErrorException e) {
@@ -584,12 +609,12 @@ public class PaymentService {
             invoice.get().setStatus(InvoiceStatus.CLIENT_NOTIFIED);
             invoiceRepository.save(invoice.get());
         } else {
-            log.info("----Issue Client update: {} -- status code: {}", ((response2 != null && response2.getBody()!= null)? response2.getBody().getStatusId(): "Empty body"), (response2 != null)? response2.getStatusCode(): "Null resp");
+            log.info("----Issue Client update: {} -- status code: {}", ((response2 != null && response2.getBody() != null) ? response2.getBody().getStatusId() : "Empty body"), (response2 != null) ? response2.getStatusCode() : "Null resp");
         }
     }
 
     @Transactional
-    public InvoiceResponseDTO requestNewPayment(String referenceId, String paymentMethodCode) {
+    public InvoiceResponseDTO requestNewPayment(String referenceId, String paymentMethodCode, String language) {
 
         Optional<Invoice> invoice = invoiceRepository.findByAccountId(Long.parseLong(referenceId));
         if (!invoice.isPresent()) {
@@ -622,13 +647,13 @@ public class PaymentService {
 
         } else {
             Optional<PaymentMethod> paymentMethod = paymentMethodService.findByCode(paymentMethodCode);
-            invoiceResponseDTO.setLink(savePaymentAndGetPaymentUrl(invoice.get(), paymentMethod.get()));
+            invoiceResponseDTO.setLink(savePaymentAndGetPaymentUrl(invoice.get(), paymentMethod.get(), language));
             invoiceRepository.save(invoice.get());
         }
         return invoiceResponseDTO;
     }
 
-    public String savePaymentAndGetPaymentUrl(Invoice invoice, PaymentMethod paymentMethod) {
+    public String savePaymentAndGetPaymentUrl(Invoice invoice, PaymentMethod paymentMethod, String language) {
         DateFormat df = new SimpleDateFormat("HHmmss");
         String transactionId = invoice.getAccountId().toString() + df.format(new Timestamp(System.currentTimeMillis()));
 
@@ -638,10 +663,15 @@ public class PaymentService {
         payment.setAmount(invoice.getAmount());
         payment.setStatus(PaymentStatus.PENDING);
         payment.setTransactionId(transactionId);
+        payment.setPaymentProvider(invoice.getClient().getPaymentProvider());
 
         paymentRepository.save(payment);
 
-        return (paymentUrl + Constants.TRANSACTION_IDENTIFIER_BASE_64 + "=" + Base64.getEncoder().encodeToString(transactionId.getBytes()));
+        String url = paymentUrl + Constants.TRANSACTION_IDENTIFIER_BASE_64 + "=" + Base64.getEncoder().encodeToString(transactionId.getBytes());
+        if (StringUtils.isNotEmpty(url) && Constants.LANGUAGE.ENGLISH.getHeaderKey().equalsIgnoreCase(language)) {
+            url += "&" + Constants.REQUEST_PARAM_LANGUAGE + "=en";
+        }
+        return url;
     }
 
     public DataTablesOutput<PaymentDTO> get(DataTablesInput input) {
@@ -673,6 +703,9 @@ public class PaymentService {
 //            }
             if (!paymentSearchRequestDTO.getPaymentStatus().equals(PaymentStatus.NONE)) {
                 predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("status"), paymentSearchRequestDTO.getPaymentStatus())));
+            }
+            if (paymentSearchRequestDTO.getAccountId() != 0l) {
+                predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("invoice").get("accountId"), paymentSearchRequestDTO.getAccountId())));
             }
             return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
         }));
@@ -708,18 +741,48 @@ public class PaymentService {
         log.debug("---- checking {} payments with status checkout page", payments.size());
         if (CollectionUtils.isNotEmpty(payments)) {
             for (Payment payment : payments) {
-                PaymentStatusResponseDTO response = creditCardPaymentService.checkOffilnePaymentStatus(payment.getTransactionId());
-                if (Constants.CC_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(response.getCode()) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
-                    // Notify Client app
-                    Invoice invoice = payment.getInvoice();
-                    if (CommonUtils.isProfile(environment, "prod") || CommonUtils.isProfile(environment, "staging")
-                        || CommonUtils.isProfile(environment, "ahmed")) {
-                        sendPaymentNotificationToClient(clientMapper.toDto(invoice.getClient()), invoice.getAccountId(), payment);
-                    } else {
-                        log.warn("----Not prod/staging env, client notif desabled, Invoice: {}"+ invoice.getAccountId());
+                if (payment.getPaymentProvider().equals(PaymentProvider.STS)) {
+                    PaymentStatusResponseDTO response = sTSPaymentService.checkOffilnePaymentStatus(payment.getTransactionId());
+                    if (Constants.STS_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(response.getCode()) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
+                        // Notify Client app
+                        Invoice invoice = payment.getInvoice();
+
+                        payment.setStatus(PaymentStatus.PAID);
+                        invoice.setPaymentStatus(PaymentStatus.PAID);
+                        // in case client does not call check-payment Job will send notification
+                        invoice.setStatus(InvoiceStatus.WAITING);
+                        paymentRepository.save(payment);
+                        invoiceRepository.save(invoice);
+
+
+                        if (CommonUtils.isProfile(environment, "prod") || CommonUtils.isProfile(environment, "staging")
+                            || CommonUtils.isProfile(environment, "ahmed")) {
+                            sendPaymentNotificationToClient(clientMapper.toDto(invoice.getClient()), invoice.getAccountId(), payment);
+                        } else {
+                            log.warn("----Not prod/staging env, client notif desabled, Invoice: {}" + invoice.getAccountId());
+                        }
+                    }
+                } else if (payment.getPaymentProvider().equals(PaymentProvider.PAYFORT)) {
+                    PaymentStatusResponseDTO response = payFortPaymentService.checkOffilnePaymentStatus(payment.getTransactionId());
+                    if (Constants.PAYFORT_PAYMENT_CHECK_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(response.getCode()) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
+                        // Notify Client app
+                        Invoice invoice = payment.getInvoice();
+                        payment.setStatus(PaymentStatus.PAID);
+                        invoice.setPaymentStatus(PaymentStatus.PAID);
+                        // in case client does not call check-payment Job will send notification
+                        invoice.setStatus(InvoiceStatus.WAITING);
+                        paymentRepository.save(payment);
+                        invoiceRepository.save(invoice);
+                        if (CommonUtils.isProfile(environment, "prod") || CommonUtils.isProfile(environment, "staging")
+                            || CommonUtils.isProfile(environment, "ahmed") || CommonUtils.isProfile(environment, "abdullah")) {
+                            sendPaymentNotificationToClient(clientMapper.toDto(invoice.getClient()), invoice.getAccountId(), payment);
+                        } else {
+                            log.warn("----Not prod/staging env, client notif desabled, Invoice: {}" + invoice.getAccountId());
+                        }
                     }
                 }
             }
+
         }
     }
 

@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {HttpClient, HttpResponse} from '@angular/common/http';
+import {HttpClient, HttpHeaders, HttpResponse} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import * as moment from 'moment';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -11,10 +11,11 @@ import {IPayment} from 'app/shared/model/payment.model';
 import {DataTableInput} from 'app/shared/model/datatable/datatable-input';
 import {_tbs} from 'app/shared/util/tbs-utility';
 import {Pageable} from 'app/shared/model/pageable';
-import {IRefund} from "app/shared/model/refund.model";
-import {IInvoiceSearchRequest} from "app/shared/model/invoice-serach-request";
-import {IInvoice} from "app/shared/model/invoice.model";
-import {PaymentSearchRequest} from "app/shared/model/payment-serach-request";
+import {IRefund} from 'app/shared/model/refund.model';
+import {IInvoiceSearchRequest} from 'app/shared/model/invoice-serach-request';
+import {IInvoice} from 'app/shared/model/invoice.model';
+import {PaymentSearchRequest} from 'app/shared/model/payment-serach-request';
+import {environment} from '../../environments/environment';
 
 type EntityResponseType = HttpResponse<IPayment>;
 type EntityArrayResponseType = HttpResponse<IPayment[]>;
@@ -41,9 +42,12 @@ export class PaymentService {
   }
 
   createCcPayment(accountId): Observable<EntityResponseType> {
+    const headers = new HttpHeaders()
+      .set('Accept-Language', 'en');
     return this.http
       /*.post<IPayment>(this.resourceUrlCreditCard, copy, { observe: 'response' })*/
-      .get<IPayment>(this.resourceUrlCreditCard + '/' + accountId + '/CREDIT_CARD', { observe: 'response' })
+      .get<any>(this.resourceUrlCreditCard + '/' + accountId + '/CREDIT_CARD',
+        { observe: 'response', headers: headers })
       .pipe(map((res: EntityResponseType) => this.convertDateFromServer(res)));
   }
 
@@ -72,6 +76,40 @@ export class PaymentService {
     return this.http
       .get<IPayment[]>(this.resourceUrl, { params: options, observe: 'response' })
       .pipe(map((res: EntityArrayResponseType) => this.convertDateArrayFromServer(res)));
+  }
+
+  // get signature
+  /*getSignature(accountId: number): Observable<any> {
+    return this.http
+      .get(`${this.resourceUrl}/payfort-signature/${accountId}`, { responseType: 'text'})
+     //.pipe(map((res: EntityResponseType) => this.convertDateFromServer(res)))
+    ;
+  }*/
+  initPayfortPayment(invoiceNumber: number): Observable<any> {
+    return this.http
+      .get<any>(`${this.resourceUrl}/payfort-initiate/${invoiceNumber}`, { observe: 'response' })
+      .pipe(map((res: EntityResponseType) => this.convertDateFromServer(res)))
+      ;
+  }
+
+  payfortTokenization(form: any) {
+    return this.http.post(environment.payFortPaymentPage , form,
+      {
+        headers: new HttpHeaders()
+          .set('Content-Type', 'application/x-www-form-urlencoded')
+/*          .set('authority', 'sbcheckout.payfort.com')
+          .set('path', '/FortAPI/paymentPage')
+          .set('origin', 'http://localhost:9000')
+          .set('referer', 'http://localhost:9000/#/customer/test-payfort')*/
+          // .set('Access-Control-Allow-Origin', 'http://localhost')
+          /*.set('Access-Control-Allow-Origin', '*')
+          .set('Access-Control-Allow-Methods', 'GET, POST, PATCH, PUT, DELETE, OPTIONS')*/
+         // .set('Access-Control-Allow-Headers', '*')
+         /*.set('Access-Control-Allow-Headers', 'x-requested-with, Content-Type, origin, authorization, accept, client-security-token')
+         .set('Access-Control-Expose-Headers', 'Content-Length, X-JSON')*/
+      }
+    )// .pipe(map((res: EntityResponseType) => this.convertDateFromServer(res)))
+      ;
   }
 
   delete(id: number): Observable<HttpResponse<any>> {

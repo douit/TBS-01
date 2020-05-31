@@ -1,5 +1,7 @@
 package sa.tamkeentech.tbs.config;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.time.ZoneId;
 
 /**
@@ -19,9 +21,14 @@ public final class Constants {
     public static final String CREDIT_CARD = "CREDIT_CARD";
     public static final String CASH = "CASH";
 
-    // public static final String CC_PAYMENT_SUCCESS_CODE = "1007";
-    public static final String CC_PAYMENT_SUCCESS_CODE = "00000";
-    public static final String CC_PAYMENT_FAILURE_CODE = "10001";
+    // STS Payment codes
+    public static final String STS_PAYMENT_SUCCESS_CODE = "00000";
+    public static final String STS_PAYMENT_FAILURE_CODE = "10001";
+
+    // Payfort Payment codes
+    public static final String PAYFORT_PAYMENT_SUCCESS_CODE = "14";
+    public static final String PAYFORT_PAYMENT_CHECK_PAYMENT_SUCCESS_CODE = "12";
+    public static final String PAYFORT_PAYMENT_FAILURE_CODE = "13";
 
     public static Integer INVOICE_EXPIRY_DAYS = 1;
 
@@ -29,6 +36,7 @@ public final class Constants {
 
     // Default language
     public static final String DEFAULT_HEADER_LANGUAGE = "ar";
+    public static final String REQUEST_PARAM_LANGUAGE = "lang";
 
     /**
      * Language enumeration
@@ -42,7 +50,10 @@ public final class Constants {
         }
 
         public static String getLanguageByHeaderKey(String headerKey) {
-            switch (headerKey){
+            if (StringUtils.isEmpty(headerKey)) {
+                return ARABIC.getLanguageKey();
+            }
+            switch (headerKey.toLowerCase()){
                 case "en": return ENGLISH.getLanguageKey();
                 default: return ARABIC.getLanguageKey();
             }
@@ -95,6 +106,32 @@ public final class Constants {
     public static ZoneId RIYADH_ZONE_ID = ZoneId.of("Asia/Riyadh");
     public static String RIYADH_OFFSET = "+03:00";
     public static ZoneId UTC_ZONE_ID = ZoneId.of("UTC");
+
+    // PayFort
+    public enum ShaType {
+        SHA_256,
+        SHA_512
+    }
+
+    public enum PaymentOperation {
+        TOKENIZATION,
+        PURCHASE,
+        REFUND,
+        CHECK_STATUS
+    }
+
+    public enum PayfortResponseStatus {
+        TOKEN_SUCCESS("200");
+
+        PayfortResponseStatus (String status) {
+            this.Status = status;
+        }
+        String Status;
+
+        public String getStatus() {
+            return Status;
+        }
+    }
 
     private Constants() {
     }
