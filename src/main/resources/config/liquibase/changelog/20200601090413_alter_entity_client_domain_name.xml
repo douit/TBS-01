@@ -17,11 +17,11 @@
     </changeSet>
 
     <changeSet id="20200601105213-2" author="Ahmed B" context="faker">
-        <update tableName="payment">
+        <update tableName="client">
             <column name="domain_name" value="mnar.sa" />
             <where>client_id = 'MNAR'</where>
         </update>
-        <update tableName="payment">
+        <update tableName="client">
             <column name="domain_name" value="abaan.sa" />
             <where>client_id = 'TAHAQAQ'</where>
         </update>
