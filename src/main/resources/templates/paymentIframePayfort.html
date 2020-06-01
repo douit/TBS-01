@@ -352,7 +352,7 @@
                     console.log('--- event' + JSON.stringify(event));
 
                     const validationURL = event.validationURL;
-                    getApplePaySession(validationURL).then(function(response) {
+                    getApplePaySession(validationURL, transactionIdBilling).then(function(response) {
                         session.completeMerchantValidation(response);
                         console.log('--- Got session from apple' + JSON.stringify(response));
                     });
@@ -399,7 +399,7 @@
             /**
              * Server to Server call to apple for response used to validate *merchant
              */
-            function getApplePaySession(url) {
+            function getApplePaySession(url, transactionIdBilling) {
                 // const url2 = 'https://apple-pay-gateway-pr-pod3.apple.com/paymentservices/startSession';
                 console.log('--- enter getApplePaySession url:' + url);
 
@@ -426,7 +426,7 @@
                     };
 
                     xhr.setRequestHeader("Content-Type", "application/json");
-                    xhr.send(JSON.stringify({validationUrl: url}));
+                    xhr.send(JSON.stringify({validationUrl: url, transactionId: transactionIdBilling}));
                 });
             }
 
