@@ -3,6 +3,8 @@ package sa.tamkeentech.tbs.config;
 import org.apache.commons.lang3.StringUtils;
 
 import java.time.ZoneId;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Application constants.
@@ -28,7 +30,8 @@ public final class Constants {
     // Payfort Payment codes
     public static final String PAYFORT_PAYMENT_SUCCESS_CODE = "14";
     public static final String PAYFORT_PAYMENT_CHECK_PAYMENT_SUCCESS_CODE = "12";
-    public static final String PAYFORT_PAYMENT_FAILURE_CODE = "13";
+    // Purchase Failure, Invalid Request
+    public static final List<String> PAYFORT_PAYMENT_FAILURE_CODE = Arrays.asList("13", "00");
 
     public static Integer INVOICE_EXPIRY_DAYS = 1;
 

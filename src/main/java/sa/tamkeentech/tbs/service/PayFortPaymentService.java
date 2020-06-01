@@ -311,8 +311,6 @@ public class PayFortPaymentService {
         String transactionId = params.get("merchant_reference").toString();
         Payment payment = paymentRepository.findByTransactionId(transactionId);
         if (payment == null) {
-            // !!!!!!!!!!!! tmp to pass payfort check
-            // return null;
             throw new PaymentGatewayException("Payfort notification, Payment not found");
         }
         Invoice invoice = payment.getInvoice();
@@ -340,8 +338,8 @@ public class PayFortPaymentService {
             // Complete the Action get other parameters from result map and do your processes
             // Please refer to The Integration Manual to see the List of The Received Parameters
             log.info("Status is: {}", params.get("status"));
-            paymentService.updateCreditCardPaymentAndSendEvent(paymentStatusResp, payment);
         }
+        paymentService.updateCreditCardPaymentAndSendEvent(paymentStatusResp, payment);
         // in case of correction -> no redirection
         if (isCorrection) {
             return null;
@@ -594,7 +592,7 @@ public class PayFortPaymentService {
         JSONObject cred   = new JSONObject();
         cred.put("merchantIdentifier","merchant.sa.tamkeentech.billing");
         // ToDo domain is dynamic !!!
-        // cred.put("domainName", "tamkeen.pagekite.me");
+        // cred.put("domainName", "tamkeentech.pagekite.me");
         cred.put("domainName", payment.getInvoice().getClient().getDomainName());
         cred.put("displayName", "Billing");
         ResponseEntity<String> result = null;
