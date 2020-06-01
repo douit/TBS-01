@@ -178,7 +178,7 @@ public class PayFortPaymentService {
         model.addAttribute("cardHolder", languageUtil.getMessageByKey("payment.card.holder", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
         model.addAttribute("cardPay", languageUtil.getMessageByKey("payment.card.pay", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
         model.addAttribute("cardCvvTooltip", languageUtil.getMessageByKey("payment.card.cvv.tooltip", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
-        model.addAttribute("cardInvalid", languageUtil.getMessageByKey("payment.card.invalid", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
+            model.addAttribute("cardInvalid", languageUtil.getMessageByKey("payment.card.invalid", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
         model.addAttribute("currentLang", lang.equalsIgnoreCase(Constants.DEFAULT_HEADER_LANGUAGE)? "ar": "en");
 
         return "paymentIframePayfort";
