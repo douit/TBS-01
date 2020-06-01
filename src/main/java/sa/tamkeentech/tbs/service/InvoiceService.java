@@ -181,7 +181,7 @@ public class InvoiceService {
 
     public InvoiceResponseDTO saveInvoice(InvoiceDTO invoiceDTO, String language) {
 
-        Invoice invoice = createNewInvoice(invoiceDTO);
+        Invoice invoice = createNewInvoice(invoiceDTO, language);
 
         // Payment
         // Payment method
@@ -228,7 +228,7 @@ public class InvoiceService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW, noRollbackFor = TbsRunTimeException.class)
-    Invoice createNewInvoice(InvoiceDTO invoiceDTO) {
+    Invoice createNewInvoice(InvoiceDTO invoiceDTO, String language) {
         // Client
         String appName = SecurityUtils.getCurrentUserLogin().orElse("");
         Optional<Client> client = clientService.getClientByClientId(appName);
@@ -276,7 +276,9 @@ public class InvoiceService {
         for (InvoiceItemDTO invoiceItemDTO : invoiceDTO.getInvoiceItems()) {
             Optional<Item> item = itemService.findByCodeAndClient(invoiceItemDTO.getItemCode(), client.get().getId());
             if (!item.isPresent()) {
-                throw new TbsRunTimeException("Unknown item: " + invoiceItemDTO.getItemCode());
+                throw new TbsRunTimeException(invoiceItemDTO.getItemCode() +" "+ languageUtil.getMessageByKey("unknown.item", Constants.LANGUAGE.getLanguageByHeaderKey(language)));
+
+
             }
             InvoiceItem invoiceItem = InvoiceItem.builder()
                 .item(item.get())
@@ -287,7 +289,8 @@ public class InvoiceService {
                 .build();
             if (item.get().isFlexiblePrice()) {
                 if (StringUtils.isEmpty(invoiceItemDTO.getDetails()) || invoiceItemDTO.getAmount() == null || invoiceItemDTO.getAmount().equals(BigDecimal.ZERO)) {
-                    throw new TbsRunTimeException("Item amount and details are mandatory");
+                    throw new TbsRunTimeException(languageUtil.getMessageByKey("item.amount.details.mandatory", Constants.LANGUAGE.getLanguageByHeaderKey(language)));
+
                 } else {
                     invoiceItem.setAmount(invoiceItemDTO.getAmount());
                 }
@@ -303,7 +306,8 @@ public class InvoiceService {
             if (invoiceItemDTO.getDiscount() != null && invoiceItemDTO.getDiscount().getValue().compareTo(BigDecimal.ZERO) > 0) {
                 if (invoiceItemDTO.getDiscount().getIsPercentage() == false) {
                     if (invoiceItemDTO.getDiscount().getValue().compareTo(invoiceItem.getAmount()) > 0) {
-                        throw new TbsRunTimeException("Wrong discount value");
+                        throw new TbsRunTimeException(languageUtil.getMessageByKey("wrong.discount.value", Constants.LANGUAGE.getLanguageByHeaderKey(language)));
+
                     }
                     BigDecimal discountValue = BigDecimal.ZERO;
                     Discount discount = Discount.builder().isPercentage(false).type(DiscountType.ITEM).value(invoiceItemDTO.getDiscount().getValue()).build();
@@ -314,7 +318,8 @@ public class InvoiceService {
                 // Percentage Discount
                 else {
                     if (invoiceItemDTO.getDiscount().getValue().compareTo(new BigDecimal("100")) > 0) {
-                        throw new TbsRunTimeException("Wrong discount value");
+                        throw new TbsRunTimeException(languageUtil.getMessageByKey("wrong.discount.value", Constants.LANGUAGE.getLanguageByHeaderKey(language)));
+
                     }
                     Discount discount = Discount.builder().isPercentage(true).type(DiscountType.ITEM).value(invoiceItemDTO.getDiscount().getValue()).build();
                     invoiceItem.setDiscount(discount);
@@ -360,13 +365,13 @@ public class InvoiceService {
             }
         }
         if (totalPriceInvoice.compareTo(BigDecimal.ZERO) < 0) {
-            throw new TbsRunTimeException("Wrong discount value");
+            throw new TbsRunTimeException(languageUtil.getMessageByKey("wrong.discount.value", Constants.LANGUAGE.getLanguageByHeaderKey(language)));
         }
 
         // Check based on passed values in case of flexible price
         if (invoiceDTO.getAmount()!= null && (invoiceDTO.getAmount().compareTo(totalPriceInvoice.setScale(2, RoundingMode.HALF_UP)) != 0
             || invoiceDTO.getAmount().compareTo(BigDecimal.ZERO) < 0)) {
-            throw new TbsRunTimeException("Wrong invoice amount");
+            throw new TbsRunTimeException(languageUtil.getMessageByKey("wrong.invoice.amount", Constants.LANGUAGE.getLanguageByHeaderKey(language)));
         }
         // calculate average tax
         if (avgTaxDenominator.compareTo(BigDecimal.ZERO) > 0) {
@@ -376,7 +381,8 @@ public class InvoiceService {
         // get bill seq
         Long seq = sequenceUtil.getNextInvoiceNumber(client.get().getClientId());
         if (seq == null || client.get().getInitialAccountId() == null || client.get().getInitialBillId() == null) {
-            throw new TbsRunTimeException("Unable to get invoice number.");
+            throw new TbsRunTimeException(languageUtil.getMessageByKey("unable.invoice.number", Constants.LANGUAGE.getLanguageByHeaderKey(language)));
+
         }
         invoice.setAccountId(seq + client.get().getInitialAccountId());
         invoice.setNumber(seq + client.get().getInitialBillId());
@@ -407,7 +413,7 @@ public class InvoiceService {
 
     public InvoiceResponseDTO saveOneItemInvoice(OneItemInvoiceDTO oneItemInvoiceDTO, String language) {
 
-        Invoice invoice = addNewOneItemInvoice(oneItemInvoiceDTO);
+        Invoice invoice = addNewOneItemInvoice(oneItemInvoiceDTO, language);
         // Payment
         // Payment method
         Optional<PaymentMethod> paymentMethod = paymentMethodService.findById(oneItemInvoiceDTO.getPaymentMethodId());
@@ -468,7 +474,7 @@ public class InvoiceService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW, noRollbackFor = TbsRunTimeException.class)
-    public Invoice addNewOneItemInvoice(OneItemInvoiceDTO oneItemInvoiceDTO) {
+    public Invoice addNewOneItemInvoice(OneItemInvoiceDTO oneItemInvoiceDTO, String language) {
         // Client
         String appName = SecurityUtils.getCurrentUserLogin().orElse("");
         Optional<Client> client = clientService.getClientByClientId(appName);
@@ -497,13 +503,15 @@ public class InvoiceService {
         //invoiceItem
         Optional<Item> item = itemService.findByCodeAndClient(oneItemInvoiceDTO.getItemName(), client.get().getId());
         if (!item.isPresent()) {
-            throw new TbsRunTimeException("Unknown item: " + oneItemInvoiceDTO.getItemName());
+            throw new TbsRunTimeException(oneItemInvoiceDTO.getItemName() +" "+ languageUtil.getMessageByKey("unknown.item", Constants.LANGUAGE.getLanguageByHeaderKey(language)));
+
         }
 
         // get bill seq
         Long seq = sequenceUtil.getNextInvoiceNumber(client.get().getClientId());
         if (seq == null || client.get().getInitialAccountId() == null || client.get().getInitialBillId() == null) {
-            throw new TbsRunTimeException("Unable to get invoice number.");
+            throw new TbsRunTimeException(languageUtil.getMessageByKey("unable.invoice.number", Constants.LANGUAGE.getLanguageByHeaderKey(language)));
+
         }
         Invoice invoice = Invoice.builder()
             .accountId(seq + client.get().getInitialAccountId())
