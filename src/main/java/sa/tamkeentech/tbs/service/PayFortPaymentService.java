@@ -33,6 +33,7 @@ import sa.tamkeentech.tbs.service.dto.RefundStatusCCResponseDTO;
 import sa.tamkeentech.tbs.service.mapper.RefundMapper;
 import sa.tamkeentech.tbs.service.util.LanguageUtil;
 import sa.tamkeentech.tbs.web.rest.errors.PaymentGatewayException;
+import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -45,9 +46,11 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -119,6 +122,9 @@ public class PayFortPaymentService {
 
     @Value("${tbs.payment.apple-pay-validate-session}")
     private String validateSessionUrl;
+
+    @Value("${tbs.payment.apple-pay-white-list-servers}")
+    private List<String> applePaysServers;
 
 
     /**
@@ -511,7 +517,11 @@ public class PayFortPaymentService {
         NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException, JSONException {
 
         log.debug("---Apple pay generate session, validationURL: {}", validationURLAppleServer);
-
+        if (applePaysServers.stream()
+            .filter(server -> validationURLAppleServer != null && validationURLAppleServer.contains(server))
+            .collect(Collectors.toSet()).size() == 0) {
+            throw new TbsRunTimeException("---Apple pay generate session, blacklisted URL: " + validationURLAppleServer);
+        }
         // moved to Mule
         // String keyStoreFile = "config/tls/merchant_id.p12";
         /*String uri = validationURL;
