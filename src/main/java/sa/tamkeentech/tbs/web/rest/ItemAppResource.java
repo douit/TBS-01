@@ -8,12 +8,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.Item;
 import sa.tamkeentech.tbs.repository.ItemRepository;
 import sa.tamkeentech.tbs.repository.TaxRepository;
 import sa.tamkeentech.tbs.service.ItemService;
 import sa.tamkeentech.tbs.service.dto.ItemDTO;
 import sa.tamkeentech.tbs.service.mapper.TaxMapper;
+import sa.tamkeentech.tbs.service.util.LanguageUtil;
 import sa.tamkeentech.tbs.web.rest.errors.BadRequestAlertException;
 
 import java.net.URI;
@@ -39,9 +41,12 @@ public class ItemAppResource {
 
     private final ItemService itemService;
     private final ItemRepository itemRepository;
-    public ItemAppResource(ItemService itemService, TaxRepository taxRepository, TaxMapper taxMapper, ItemRepository itemRepository) {
+    private final LanguageUtil languageUtil;
+
+    public ItemAppResource(ItemService itemService, TaxRepository taxRepository, TaxMapper taxMapper, ItemRepository itemRepository, LanguageUtil languageUtil) {
         this.itemService = itemService;
         this.itemRepository = itemRepository;
+        this.languageUtil = languageUtil;
     }
 
     /**
@@ -52,13 +57,16 @@ public class ItemAppResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/items")
-    public ResponseEntity<ItemDTO> createItem(@RequestBody ItemDTO itemDTO) throws URISyntaxException {
+    public ResponseEntity<ItemDTO> createItem(@RequestBody ItemDTO itemDTO,
+                                              @RequestHeader(value = "accept-language", defaultValue = Constants.DEFAULT_HEADER_LANGUAGE) String language) throws URISyntaxException {
+
         log.debug("REST request to save Item : {}", itemDTO);
         if (itemDTO.getId() != null) {
-            throw new BadRequestAlertException("A new item cannot already have an ID", ENTITY_NAME, "idexists");
+            //throw new BadRequestAlertException("A new item cannot already have an ID", ENTITY_NAME, "idexists");
+            throw new BadRequestAlertException(languageUtil.getMessageByKey("unable.invoice.number", Constants.LANGUAGE.getLanguageByHeaderKey(language)),  ENTITY_NAME, "idexists");
         }
 
-        ItemDTO result = itemService.save(itemDTO, true);
+        ItemDTO result = itemService.save(itemDTO, true, language);
         if (result != null) {
             result.setClient(null);
         }

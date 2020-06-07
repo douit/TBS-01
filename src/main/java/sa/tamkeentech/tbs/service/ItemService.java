@@ -8,6 +8,7 @@ import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
 import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.*;
 import sa.tamkeentech.tbs.repository.CategoryRepository;
 import sa.tamkeentech.tbs.repository.ItemHistoryRepository;
@@ -20,6 +21,7 @@ import sa.tamkeentech.tbs.service.dto.TaxDTO;
 import sa.tamkeentech.tbs.service.mapper.ItemHistoryMapper;
 import sa.tamkeentech.tbs.service.mapper.ItemMapper;
 import sa.tamkeentech.tbs.service.mapper.TaxMapper;
+import sa.tamkeentech.tbs.service.util.LanguageUtil;
 import sa.tamkeentech.tbs.web.rest.errors.ItemAlreadyUsedException;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
@@ -50,11 +52,12 @@ public class ItemService {
     private final ClientService clientService;
 
     private final UserService userService;
+    private final LanguageUtil languageUtil;
 
     private final ItemHistoryMapper itemHistoryMapper;
     private final ItemHistoryRepository itemHistoryRepository;
 
-    public ItemService(ItemRepository itemRepository, ItemMapper itemMapper, TaxRepository taxRepository, TaxMapper taxMapper, CategoryRepository categoryRepository, ClientService clientService, UserService userService, ItemHistoryMapper itemHistoryMapper, ItemHistoryRepository itemHistoryRepository) {
+    public ItemService(ItemRepository itemRepository, ItemMapper itemMapper, TaxRepository taxRepository, TaxMapper taxMapper, CategoryRepository categoryRepository, ClientService clientService, UserService userService, LanguageUtil languageUtil, ItemHistoryMapper itemHistoryMapper, ItemHistoryRepository itemHistoryRepository) {
         this.itemRepository = itemRepository;
         this.itemMapper = itemMapper;
         this.taxRepository = taxRepository;
@@ -62,6 +65,7 @@ public class ItemService {
         this.categoryRepository = categoryRepository;
         this.clientService = clientService;
         this.userService = userService;
+        this.languageUtil = languageUtil;
         this.itemHistoryMapper = itemHistoryMapper;
         this.itemHistoryRepository = itemHistoryRepository;
     }
@@ -72,7 +76,7 @@ public class ItemService {
      * @param itemDTO the entity to save.
      * @return the persisted entity.
      */
-    public ItemDTO save(ItemDTO itemDTO, boolean isApp) {
+    public ItemDTO save(ItemDTO itemDTO, boolean isApp, String language) {
         log.debug("Request to save Item : {}", itemDTO);
         Set<Tax> taxes = new HashSet<>();
         if (CollectionUtils.isNotEmpty(itemDTO.getTaxes())) {
@@ -82,7 +86,8 @@ public class ItemService {
                     taxes.add(tax.get());
 
                 } else {
-                    throw new TbsRunTimeException("Tax doesn't exist");
+                    throw new TbsRunTimeException(languageUtil.getMessageByKey("tax.does.not.exist", Constants.LANGUAGE.getLanguageByHeaderKey(language)));
+
                 }
             }
         }
@@ -90,7 +95,8 @@ public class ItemService {
         if(itemDTO.isFlexiblePrice()){
             itemDTO.setPrice(BigDecimal.ZERO);
         } else if (itemDTO.getPrice() == null || itemDTO.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new TbsRunTimeException("Wrong price");
+            throw new TbsRunTimeException(languageUtil.getMessageByKey("wrong.price", Constants.LANGUAGE.getLanguageByHeaderKey(language)));
+
         }
         if (StringUtils.isNotEmpty(itemDTO.getCode())) {
             itemDTO.setCode(itemDTO.getCode().trim());
@@ -101,7 +107,8 @@ public class ItemService {
         // set category and client
         Optional<Category> category = categoryRepository.findByCode(itemDTO.getCategory().getCode());
         if (!category.isPresent()) {
-            throw new TbsRunTimeException("Category doesn't exist");
+            throw new TbsRunTimeException(languageUtil.getMessageByKey("category.does.not.exist", Constants.LANGUAGE.getLanguageByHeaderKey(language)));
+
         }
         item.setCategory(category.get());
 
@@ -115,23 +122,24 @@ public class ItemService {
         }
 
         if (!client.isPresent()) {
-            throw new TbsRunTimeException("Client not Authorized");
+            throw new TbsRunTimeException(languageUtil.getMessageByKey("client.not.authorized", Constants.LANGUAGE.getLanguageByHeaderKey(language)));
         }
         if(StringUtils.isEmpty(itemDTO.getCode())){
-            throw new TbsRunTimeException("Item code Type is mandatory");
+            throw new TbsRunTimeException(languageUtil.getMessageByKey("item.code.type.mandatory", Constants.LANGUAGE.getLanguageByHeaderKey(language)));
         }
 
         if (itemDTO.getId() == null) {
             // check if code is unique per client
             if (itemRepository.findByCodeAndClientId(itemDTO.getCode(), client.get().getId()).isPresent()) {
-                throw new ItemAlreadyUsedException("Item already created");
+                throw new TbsRunTimeException(languageUtil.getMessageByKey("item.already.created", Constants.LANGUAGE.getLanguageByHeaderKey(language)));
+
             }
         }else{
             Optional<Item> oldItem = itemRepository.findById(itemDTO.getId());
             if(oldItem.isPresent()
                 && (!oldItem.get().getCode().equalsIgnoreCase(itemDTO.getCode()) || !oldItem.get().getClient().getId().equals(client.get().getId()))){
                 if (itemRepository.findByCodeAndClientId(itemDTO.getCode(), client.get().getId()).isPresent()) {
-                    throw new ItemAlreadyUsedException("Item already created");
+                    throw new TbsRunTimeException(languageUtil.getMessageByKey("item.already.created", Constants.LANGUAGE.getLanguageByHeaderKey(language)));
                 }
             }
         }
@@ -150,11 +158,12 @@ public class ItemService {
         String appName = SecurityUtils.getCurrentUserLogin().orElse("");
         Optional<Client> client =  clientService.getClientByClientId(appName);
         if (!client.isPresent()) {
-            throw new TbsRunTimeException("Client not Authorized");
+            throw new TbsRunTimeException(languageUtil.getMessageByKey("client.not.authorized", Constants.LANGUAGE.getLanguageByHeaderKey(language)));
         }
         Optional<Item> item = itemRepository.findByCodeAndClientId(itemDTO.getCode(), client.get().getId());
         if (!item.isPresent()) {
-            throw new TbsRunTimeException("Item not found");
+            throw new TbsRunTimeException(languageUtil.getMessageByKey("item.not.found", Constants.LANGUAGE.getLanguageByHeaderKey(language)));
+
         }
         // update tax
         Set<Tax> taxes = new HashSet<>();
@@ -164,7 +173,7 @@ public class ItemService {
                 if (tax.isPresent()) {
                     taxes.add(tax.get());
                 } else {
-                    throw new TbsRunTimeException("Tax doesn't exist");
+                    throw new TbsRunTimeException(languageUtil.getMessageByKey("tax.does.not.exist", Constants.LANGUAGE.getLanguageByHeaderKey(language)));
                 }
             }
         }
@@ -174,7 +183,7 @@ public class ItemService {
             // set category and client
             Optional<Category> category = categoryRepository.findByCode(itemDTO.getCategory().getCode());
             if (!category.isPresent()) {
-                throw new TbsRunTimeException("Category doesn't exist");
+                throw new TbsRunTimeException(languageUtil.getMessageByKey("category.does.not.exist", Constants.LANGUAGE.getLanguageByHeaderKey(language)));
             }
             item.get().setCategory(category.get());
         }
@@ -186,7 +195,7 @@ public class ItemService {
         }
         item.get().setFlexiblePrice(itemDTO.isFlexiblePrice());
         if (!itemDTO.isFlexiblePrice() && (itemDTO.getPrice() == null || itemDTO.getPrice().compareTo(BigDecimal.ZERO) <= 0)) {
-            throw new TbsRunTimeException("Wrong price");
+            throw new TbsRunTimeException(languageUtil.getMessageByKey("wrong.price", Constants.LANGUAGE.getLanguageByHeaderKey(language)));
         }
         // update name
         if (StringUtils.isNotEmpty(itemDTO.getName())) {

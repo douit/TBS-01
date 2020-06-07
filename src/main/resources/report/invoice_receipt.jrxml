@@ -100,8 +100,8 @@
 				<textFieldExpression><![CDATA[$P{generatedDate}]]></textFieldExpression>
 			</textField>
 			<image>
-				<reportElement x="0" y="-8" width="50" height="50" uuid="2222cf73-7cc4-4382-a5ae-bdc2737d4fb3"/>
-				<imageExpression><![CDATA["/Users/a.alkathiri/Downloads/24p9q9A2_400x400.jpg"]]></imageExpression>
+				<reportElement x="0" y="-8" width="50" height="50" uuid="8b2d5203-328d-4d12-831c-9102dc9b75ce"/>
+				<imageExpression><![CDATA["/Users/a.alkathiri/IdeaProjects/TBS-01/src/main/resources/report/logo.jpg"]]></imageExpression>
 			</image>
 		</band>
 	</pageHeader>
@@ -200,10 +200,6 @@
 			<line>
 				<reportElement key="line-9" x="20" y="30" width="544" height="1" uuid="70703d3e-c37c-4338-84ab-dc0b46f7e52f"/>
 			</line>
-			<image>
-				<reportElement x="20" y="50" width="30" height="19" uuid="a185eda2-845e-47b0-b527-c08fb56f362e"/>
-				<imageExpression><![CDATA["/Users/a.alkathiri/Downloads/address.png"]]></imageExpression>
-			</image>
 			<staticText>
 				<reportElement x="80" y="49" width="305" height="79" uuid="01eae8a3-2d0c-48ca-9a4e-30ae11aa4534"/>
 				<text><![CDATA[Tamkeen Technologies
@@ -216,14 +212,18 @@ Saudi Arabia]]></text>
 				<reportElement x="43" y="49" width="68" height="20" uuid="c7c80c97-9b2d-4bc9-b574-f75a14239e19"/>
 				<text><![CDATA[Adress:]]></text>
 			</staticText>
-			<image>
-				<reportElement x="390" y="50" width="15" height="19" uuid="c1b9d3fa-1be5-45c5-a842-aa6fbb2a5103"/>
-				<imageExpression><![CDATA["/Users/a.alkathiri/Downloads/phone.png"]]></imageExpression>
-			</image>
 			<staticText>
 				<reportElement x="406" y="50" width="170" height="30" uuid="20aa3431-a2fe-4602-8604-eed92766d704"/>
 				<text><![CDATA[Tel: 1411-1416-1420-4407700]]></text>
 			</staticText>
+			<image>
+				<reportElement x="11" y="46" width="29" height="23" uuid="27548e29-1caf-40ab-a61e-2c1e83413d35"/>
+				<imageExpression><![CDATA["/Users/a.alkathiri/IdeaProjects/TBS-01/src/main/resources/report/address.png"]]></imageExpression>
+			</image>
+			<image>
+				<reportElement x="387" y="50" width="16" height="24" uuid="e8730649-df31-4930-b5e8-7a9d6d514e67"/>
+				<imageExpression><![CDATA["/Users/a.alkathiri/IdeaProjects/TBS-01/src/main/resources/report/phone.png"]]></imageExpression>
+			</image>
 		</band>
 	</pageFooter>
 </jasperReport>
