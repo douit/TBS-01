@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, OnInit} from '@angular/core';
+import {AfterViewInit, Component, OnInit, ViewChild} from '@angular/core';
 import {TableData} from '../md/md-table/md-table.component';
 import * as Chartist from 'chartist';
 import * as $ from 'jquery';
@@ -56,6 +56,54 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   month: string;
   year: string;
 
+  // new date picker
+  start = moment().startOf('month');
+  end = moment().endOf('month');
+  label = '';
+
+  public daterange: any = {
+  };
+
+  public tableData: TableData;
+  filterRangeDate: any = {};
+  selectedClient: IClient;
+  clients: IClient[];
+  public options: any = {
+    locale: {format: 'YYYY-MM-DD'},
+    alwaysShowCalendars: false,
+    autoApply: true,
+    opens: 'center',
+    autoUpdateInput: true,
+    startDate: new Date(new Date().setMonth(new Date().getMonth() - 1)),
+    endDate: new Date(),
+    maxDate: new Date(),
+    ranges: {
+      'Today': [moment(), moment()],
+      'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+      'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+      'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+      'This Month': [moment().startOf('month'), moment().endOf('month')],
+      'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+    }
+  };
+  myDate: any;
+
+
+
+  public selectedDate(value: any, datepicker?: any) {
+    // this is the date  selected
+    console.log(value);
+
+    // any object can be passed to the selected event and it will be passed back here
+    datepicker.start = value.start;
+    datepicker.end = value.end;
+
+    // use passed valuable to update state
+    this.daterange.start = value.start;
+    this.daterange.end = value.end;
+    this.daterange.label = value.label;
+  }
+
   constructor(private http: HttpClient, dashboardService: DashboardService,
               private calendar: NgbCalendar, public formatter: NgbDateParserFormatter,
               private config: NgbDatepickerConfig, protected clientService: ClientService,
@@ -81,24 +129,6 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     // this.fromDate = calendar.getToday();
     // this.toDate = calendar.getNext(calendar.getToday(), 'd', 10);
   }
-
-  public tableData: TableData;
-  filterRangeDate: any = {};
-  selectedClient: IClient;
-  clients: IClient[];
-  public options: any = {
-    locale: {format: 'YYYY-MM-DD'},
-    alwaysShowCalendars: false,
-    autoApply: true,
-    opens: 'center',
-    timePicker: true,
-    timePicker24Hour: true,
-    autoUpdateInput: true,
-    startDate: new Date(),
-    endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
-  };
-  myDate: any;
-
 
   formatDate(date: NgbDate) {
     // NgbDates use 1 for Jan, Moement uses 0, must substract 1 month for proper date conversion
@@ -386,7 +416,11 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     //     map((response: HttpResponse<IClient[]>) => response.body)
     //   )
     //   .subscribe((res: IClient[]) => (this.clients = res), (res: HttpErrorResponse) => this.onError(res.message));
-
+    // new Date picker
+    this.daterange = {
+      start: this.options.startDate,
+      end: this.options.endDate
+    };
     this.clientService.getClientByRole()
       .subscribe(
         res => {
@@ -397,14 +431,14 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       );
 
     const chartMonthlyStatisticsRequest: IStatisticsRequest = {
-      fromDate: moment(),
+      fromDate: this.daterange.start,
       type: TypeStatistics.MONTHLY,
       clientId: 0,
       offset: ZonedDateTime.now().offset()._id
     };
 
     const chartAnnualStatisticsRequest: IStatisticsRequest = {
-      fromDate: moment(),
+      fromDate: this.daterange.start,
       type: TypeStatistics.ANNUAL,
       clientId: 0,
       offset: ZonedDateTime.now().offset()._id
@@ -415,12 +449,25 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     const generalStatisticsRequest: IStatisticsRequest = {
       type: TypeStatistics.GENERAL,
       clientId: 0,
-      offset: ZonedDateTime.now().offset()._id
+      offset: ZonedDateTime.now().offset()._id,
+      fromDate: this.daterange.start,
+      toDate: this.daterange.end
 
     };
     this.getStatistics(generalStatisticsRequest);
     this.getMonthlyChartStatistics(chartMonthlyStatisticsRequest);
     this.getAnnualChartStatistics(chartAnnualStatisticsRequest);
+
+
+    // new Date picker
+    const that = this;
+    $('#btnInc').click ( function(e) {
+      that.incDecMonth('Inc');
+    });
+
+    $('#btnDec').click ( function(e) {
+      that.incDecMonth('Dec');
+    });
 
   }
 
@@ -458,5 +505,33 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     return ((Math.round(num / 10) + 1) * 10);
   }
 
+
+  // new Date picker
+
+  isDate(val) {
+    //var d = new Date(val);
+    //return !isNaN(d.valueOf());
+    let d = Date.parse(val);
+    console.log(d);
+    return Date.parse(val);
+  }
+
+  incDecMonth(Action) {
+    if (!this.isDate(this.start)) {
+      this.start = moment().startOf('month');
+    }
+    if (Action == 'Inc') {
+      this.start = moment(this.start).add(1, 'month').startOf('month');
+      this.end =  moment(this.start).endOf('month');
+    } else {
+      this.start = moment(this.start).subtract(1, 'month').startOf('month');
+      this.end =  moment(this.start).endOf('month');
+    }
+    if (this.isDate(this.start)) {
+      $('#daterange-btn span').html(this.start.format('DD MMM YYYY') + ' - ' + this.end.format('DD MMM YYYY'));
+    }
+    console.log('start=' + this.start);
+    console.log('end=' + this.end);
+  }
 
 }
