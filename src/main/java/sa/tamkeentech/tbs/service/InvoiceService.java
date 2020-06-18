@@ -710,13 +710,14 @@ public class InvoiceService {
     }
 
 
-    public List<InvoiceDTO> findByCustomerId(String customerId, String language) {
-        return invoiceRepository.findTop1000ByCustomerIdentity(customerId).stream().map(invoice -> {
-            InvoiceDTO invoiceDTO = invoiceMapper.toDto(invoice);
+    public Page<InvoiceDTO> findByCustomerId(String customerId, String language, Pageable pageable) {
+
+        Page<InvoiceDTO> pageInvoice = invoiceMapper.toDtoPageable(invoiceRepository.findByCustomerIdentity(customerId, pageable));
+        pageInvoice.forEach(invoiceDTO -> {
             invoiceDTO.setClient(null);
             addExtraPaymentInfo(invoiceDTO, language, false);
-            return invoiceDTO;
-        }).collect(Collectors.toList());
+        });
+        return pageInvoice;
     }
 
     // Invoice report data
