@@ -31,6 +31,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long>, DataTab
 {
     Optional<Invoice> findByNumber(Long id);
     Optional<Invoice> findById(Long id);
+    Optional<Invoice> findByAccountIdAndClientId(Long accountId, Long clientId);
     Optional<Invoice> findByAccountId(Long accountId);
     List<Optional<Invoice>>  findByStatusAndClientIdAndLastModifiedDateBefore(InvoiceStatus invoiceStatus , Long clientId, ZonedDateTime modifiedDate );
 
@@ -79,5 +80,5 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long>, DataTab
         "group by Month ORDER BY Month;", nativeQuery = true)
     List<Object[]> getExpiredInvoices(ZonedDateTime from, ZonedDateTime to, long clientId);
 
-    List<Invoice> findTop1000ByCustomerIdentity(String customerId);
+    List<Invoice> findTop1000ByCustomerIdentityAndClientId(String customerId, Long clientId);
 }

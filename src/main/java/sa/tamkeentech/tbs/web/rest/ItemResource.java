@@ -9,6 +9,7 @@ import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
 import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.Item;
 import sa.tamkeentech.tbs.repository.ItemRepository;
 import sa.tamkeentech.tbs.repository.TaxRepository;
@@ -54,13 +55,14 @@ public class ItemResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/items")
-    public ResponseEntity<ItemDTO> createItem(@RequestBody ItemDTO itemDTO) throws URISyntaxException {
+    public ResponseEntity<ItemDTO> createItem(@RequestBody ItemDTO itemDTO,
+                                              @RequestHeader(value = "accept-language", defaultValue = Constants.DEFAULT_HEADER_LANGUAGE) String language) throws URISyntaxException {
         log.debug("REST request to save Item : {}", itemDTO);
         if (itemDTO.getId() != null) {
             throw new BadRequestAlertException("A new item cannot already have an ID", ENTITY_NAME, "idexists");
         }
 
-        ItemDTO result = itemService.save(itemDTO, false);
+        ItemDTO result = itemService.save(itemDTO, false, language);
         return ResponseEntity.created(new URI("/api/items/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -76,13 +78,14 @@ public class ItemResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/items")
-    public ResponseEntity<ItemDTO> updateItem(@RequestBody ItemDTO itemDTO) throws URISyntaxException {
+    public ResponseEntity<ItemDTO> updateItem(@RequestBody ItemDTO itemDTO,
+                                              @RequestHeader(value = "accept-language", defaultValue = Constants.DEFAULT_HEADER_LANGUAGE) String language) throws URISyntaxException {
         log.debug("REST request to update Item : {}", itemDTO);
         if (itemDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
 //        Optional<Item> item = itemRepository.findById(itemDTO.getId());
-        ItemDTO result = itemService.save(itemDTO, false);
+        ItemDTO result = itemService.save(itemDTO, false, language);
 //        if(item != null){
 //            throw new TbsRunTimeException("Item code Type is mandatory");
 //        }

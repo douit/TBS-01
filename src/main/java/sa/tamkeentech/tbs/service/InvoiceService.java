@@ -155,10 +155,13 @@ public class InvoiceService {
             .map(invoiceMapper::toDto);
     }
 
-    @Cacheable(value = INVOICE_BY_ACCOUNT_ID)
+    //ToDo What is Cacheable ?
+   // @Cacheable(value = INVOICE_BY_ACCOUNT_ID)
     public Optional<InvoiceDTO> findByAccountId(Long id) {
         log.debug("Request to get Invoice by findByAccountId : {}", id);
-        return invoiceRepository.findByAccountId(id)
+        String appName = SecurityUtils.getCurrentUserLogin().orElse("");
+        Optional<Client> client =  clientService.getClientByClientId(appName);
+        return invoiceRepository.findByAccountIdAndClientId(id, client.get().getId())
             .map(invoiceMapper::toDto);
     }
 
@@ -584,7 +587,9 @@ public class InvoiceService {
 
     public InvoiceStatusDTO getOneItemInvoice(Long billNumber) {
         // Optional<Invoice> invoice = invoiceRepository.findById(billNumber-7000000065l);
-        Optional<Invoice> invoice = invoiceRepository.findByAccountId(billNumber);
+        String appName = SecurityUtils.getCurrentUserLogin().orElse("");
+        Optional<Client> client =  clientService.getClientByClientId(appName);
+        Optional<Invoice> invoice = invoiceRepository.findByAccountIdAndClientId(billNumber, client.get().getId());
         if (!invoice.isPresent()) {
             throw new TbsRunTimeException("Bill does not exist");
         }
@@ -711,7 +716,10 @@ public class InvoiceService {
 
 
     public List<InvoiceDTO> findByCustomerId(String customerId, String language) {
-        return invoiceRepository.findTop1000ByCustomerIdentity(customerId).stream().map(invoice -> {
+
+        String appName = SecurityUtils.getCurrentUserLogin().orElse("");
+        Optional<Client> client =  clientService.getClientByClientId(appName);
+        return invoiceRepository.findTop1000ByCustomerIdentityAndClientId(customerId, client.get().getId()).stream().map(invoice -> {
             InvoiceDTO invoiceDTO = invoiceMapper.toDto(invoice);
             invoiceDTO.setClient(null);
             addExtraPaymentInfo(invoiceDTO, language, false);

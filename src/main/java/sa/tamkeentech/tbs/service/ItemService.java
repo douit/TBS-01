@@ -153,7 +153,7 @@ public class ItemService {
     }
 
 
-    public ItemDTO updateItemByApp(ItemDTO itemDTO) {
+    public ItemDTO updateItemByApp(ItemDTO itemDTO, String language) {
 
         String appName = SecurityUtils.getCurrentUserLogin().orElse("");
         Optional<Client> client =  clientService.getClientByClientId(appName);

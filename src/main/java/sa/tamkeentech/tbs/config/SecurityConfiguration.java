@@ -155,6 +155,7 @@ public class SecurityConfiguration {
             // apple pay session
                 .antMatchers("/billing/payments/apple-session")
                 .antMatchers("/billing/payments/apple-authorize");
+
         }
 
         @Override

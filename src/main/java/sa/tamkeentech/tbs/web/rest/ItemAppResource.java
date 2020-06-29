@@ -85,13 +85,14 @@ public class ItemAppResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/items")
-    public ResponseEntity<ItemDTO> updateItem(@RequestBody ItemDTO itemDTO) throws URISyntaxException {
+    public ResponseEntity<ItemDTO> updateItem(@RequestBody ItemDTO itemDTO,
+                                              @RequestHeader(value = "accept-language", defaultValue = Constants.DEFAULT_HEADER_LANGUAGE) String language) throws URISyntaxException {
         log.debug("REST request from app to update Item : {}", itemDTO);
         if (itemDTO.getCode() == null) {
             throw new BadRequestAlertException("Invalid Code", ENTITY_NAME, " code null");
         }
         // no code update --> get by code then update
-        ItemDTO result = itemService.updateItemByApp(itemDTO);//.save(itemDTO, true);
+        ItemDTO result = itemService.updateItemByApp(itemDTO, language);//.save(itemDTO, true);
         if (result != null) {
             result.setClient(null);
         }
