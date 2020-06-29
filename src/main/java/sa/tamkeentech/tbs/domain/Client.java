@@ -55,8 +55,8 @@ public class Client implements Serializable {
     @Column(name = "vat_number")
     private String vatNumber;
 
-    @Column(name = "payment_key_app")
-    private String paymentKeyApp;
+    @Column(name = "domain_name")
+    private String domainName;
 
     @Column(name = "client_token")
     private String clientToken;

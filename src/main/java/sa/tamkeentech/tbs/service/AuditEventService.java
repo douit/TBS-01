@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
@@ -55,7 +56,7 @@ public class AuditEventService {
     @Scheduled(cron = "${tbs.cron.audit-event-delete}")
     public void removeOldAuditEvents() {
         persistenceAuditEventRepository
-            .findByAuditEventDateBeforeAndAuditEventTypeIn(Instant.now().minus(jHipsterProperties.getAuditEvents().getRetentionPeriod(), ChronoUnit.DAYS),
+            .findByAuditEventDateBeforeAndAuditEventTypeIn(ZonedDateTime.now().minus(jHipsterProperties.getAuditEvents().getRetentionPeriod(), ChronoUnit.DAYS),
                 Arrays.asList("AUTHENTICATION_SUCCESS", "AUTHENTICATION_FAILURE"))
             .forEach(auditEvent -> {
                 log.debug("Deleting audit data {}", auditEvent.toString());

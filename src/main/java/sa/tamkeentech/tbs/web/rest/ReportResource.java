@@ -51,7 +51,7 @@ public class ReportResource {
         return ResponseEntity.ok(reportService.requestReport(reportRequest, ReportType.REFUND));
     }
     @GetMapping("/invoice/{invoiceId}")
-    public ResponseEntity<ReportDTO> createInvoiceReceipt(@Valid @PathVariable Long invoiceId){
+    public ResponseEntity<FileDTO> createInvoiceReceipt(@Valid @PathVariable Long invoiceId){
         return ResponseEntity.ok(reportService.generateInvoiceReceipt(invoiceId));
     }
 
@@ -62,7 +62,7 @@ public class ReportResource {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<FileDTO> getPaymentMethod(@PathVariable Long id) {
+    public ResponseEntity<FileDTO> getFile(@PathVariable Long id) {
         log.debug("REST request to get report : {}", id);
         Optional<FileDTO> reportDTO = reportService.getReport(id);
         return ResponseUtil.wrapOrNotFound(reportDTO);

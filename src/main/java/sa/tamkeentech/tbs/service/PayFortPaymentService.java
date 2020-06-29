@@ -20,32 +20,37 @@ import org.springframework.web.client.RestTemplate;
 import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.Invoice;
 import sa.tamkeentech.tbs.domain.Payment;
-import sa.tamkeentech.tbs.domain.PaymentMethod;
 import sa.tamkeentech.tbs.domain.Refund;
-import sa.tamkeentech.tbs.domain.enumeration.InvoiceStatus;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 import sa.tamkeentech.tbs.domain.enumeration.RequestStatus;
 import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.repository.PaymentRepository;
 import sa.tamkeentech.tbs.repository.RefundRepository;
-import sa.tamkeentech.tbs.service.dto.*;
+import sa.tamkeentech.tbs.service.dto.ApplePayTokenAuthorizeDTO;
+import sa.tamkeentech.tbs.service.dto.PayFortOperationDTO;
+import sa.tamkeentech.tbs.service.dto.PaymentStatusResponseDTO;
+import sa.tamkeentech.tbs.service.dto.RefundStatusCCResponseDTO;
 import sa.tamkeentech.tbs.service.mapper.RefundMapper;
 import sa.tamkeentech.tbs.service.util.LanguageUtil;
 import sa.tamkeentech.tbs.web.rest.errors.PaymentGatewayException;
+import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
 import javax.inject.Inject;
-import javax.net.ssl.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.security.*;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -117,6 +122,9 @@ public class PayFortPaymentService {
 
     @Value("${tbs.payment.apple-pay-validate-session}")
     private String validateSessionUrl;
+
+    @Value("${tbs.payment.apple-pay-white-list-servers}")
+    private List<String> applePaysServers;
 
 
     /**
@@ -309,8 +317,6 @@ public class PayFortPaymentService {
         String transactionId = params.get("merchant_reference").toString();
         Payment payment = paymentRepository.findByTransactionId(transactionId);
         if (payment == null) {
-            // !!!!!!!!!!!! tmp to pass payfort check
-            // return null;
             throw new PaymentGatewayException("Payfort notification, Payment not found");
         }
         Invoice invoice = payment.getInvoice();
@@ -338,8 +344,8 @@ public class PayFortPaymentService {
             // Complete the Action get other parameters from result map and do your processes
             // Please refer to The Integration Manual to see the List of The Received Parameters
             log.info("Status is: {}", params.get("status"));
-            paymentService.updateCreditCardPaymentAndSendEvent(paymentStatusResp, payment);
         }
+        paymentService.updateCreditCardPaymentAndSendEvent(paymentStatusResp, payment);
         // in case of correction -> no redirection
         if (isCorrection) {
             return null;
@@ -496,7 +502,8 @@ public class PayFortPaymentService {
 
     /**
      *
-     * @param validationURL
+     * @param validationURLAppleServer
+     * @param transactionId
      * @return
      * @throws KeyStoreException
      * @throws IOException
@@ -506,11 +513,17 @@ public class PayFortPaymentService {
      * @throws UnrecoverableKeyException
      * @throws JSONException
      */
-    public String generateSession(String validationURLAppleServer) throws KeyStoreException, IOException, CertificateException,
+    public String generateSession(String validationURLAppleServer, String transactionId) throws KeyStoreException, IOException, CertificateException,
         NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException, JSONException {
 
         log.debug("---Apple pay generate session, validationURL: {}", validationURLAppleServer);
-        //String keyStoreFile = "config/tls/merchant_id.p12";
+        if (applePaysServers.stream()
+            .filter(server -> validationURLAppleServer != null && validationURLAppleServer.contains(server))
+            .collect(Collectors.toSet()).size() == 0) {
+            throw new TbsRunTimeException("---Apple pay generate session, blacklisted URL: " + validationURLAppleServer);
+        }
+        // moved to Mule
+        // String keyStoreFile = "config/tls/merchant_id.p12";
         /*String uri = validationURL;
 
         //ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -549,9 +562,6 @@ public class PayFortPaymentService {
         SSLContext sslContext = null;
         sslContext = SSLContext.getInstance("TLS");
 
-        // sslContext.init(kms, null, new SecureRandom());
-        //ahmed
-        // sslContext.init(kms, tms, new SecureRandom());
         sslContext.init(kms, trustAllCerts, new SecureRandom());
         HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
         URL url = new URL(uri);
@@ -565,7 +575,6 @@ public class PayFortPaymentService {
         urlConn.setRequestMethod("POST");
         JSONObject cred   = new JSONObject();
         cred.put("merchantIdentifier","merchant.sa.tamkeentech.billing");
-        // ToDo domain is dynamic !!!
         cred.put("domainName", "tamkeen.pagekite.me");
         cred.put("displayName", "Billing");
 
@@ -588,10 +597,13 @@ public class PayFortPaymentService {
             return urlConn.getResponseMessage();
         }/**/
 
+        Payment payment = paymentRepository.findByTransactionId(transactionId);
+
         JSONObject cred   = new JSONObject();
         cred.put("merchantIdentifier","merchant.sa.tamkeentech.billing");
         // ToDo domain is dynamic !!!
-        cred.put("domainName", "tamkeen.pagekite.me");
+        // cred.put("domainName", "tamkeentech.pagekite.me");
+        cred.put("domainName", payment.getInvoice().getClient().getDomainName());
         cred.put("displayName", "Billing");
         ResponseEntity<String> result = null;
 
@@ -604,6 +616,14 @@ public class PayFortPaymentService {
         return result.getBody();
     }
 
+
+    /**
+     *
+     * @param token
+     * @param request
+     * @param response
+     * @return
+     */
     public String proceedApplePurchaseOperation(ApplePayTokenAuthorizeDTO token, HttpServletRequest request, HttpServletResponse response) {
         Payment payment = paymentRepository.findByTransactionId(token.getTransactionIdBilling());
         Invoice invoice = null;

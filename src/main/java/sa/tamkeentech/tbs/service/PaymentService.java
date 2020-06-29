@@ -244,7 +244,7 @@ public class PaymentService {
             // in case client does not call check-payment Job will send notification
             invoice.setStatus(InvoiceStatus.WAITING);
         } else if ((Constants.STS_PAYMENT_FAILURE_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode())
-            || Constants.PAYFORT_PAYMENT_FAILURE_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode())) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
+            || Constants.PAYFORT_PAYMENT_FAILURE_CODE.contains(paymentStatusResponseDTO.getCode())) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
             payment.setStatus(PaymentStatus.UNPAID);
             invoice.setPaymentStatus(PaymentStatus.UNPAID);
         }
