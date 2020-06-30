@@ -10,6 +10,7 @@
 	</subDataset>
 	<parameter name="invoice" class="sa.tamkeentech.tbs.service.dto.InvoiceDTO"/>
 	<parameter name="generatedDate" class="java.util.Date"/>
+	<parameter name="reportResource" class="java.lang.String"/>
 	<field name="amount" class="java.math.BigDecimal"/>
 	<field name="quantity" class="java.lang.Integer"/>
 	<field name="details" class="java.lang.String"/>
@@ -101,7 +102,7 @@
 			</textField>
 			<image>
 				<reportElement x="0" y="-8" width="50" height="50" uuid="8b2d5203-328d-4d12-831c-9102dc9b75ce"/>
-				<imageExpression><![CDATA["/Users/a.alkathiri/IdeaProjects/TBS-01/src/main/resources/report/logo.jpg"]]></imageExpression>
+				<imageExpression><![CDATA[$P{reportResource}+"logo"+"."+"jpg"]]></imageExpression>
 			</image>
 		</band>
 	</pageHeader>
@@ -218,11 +219,11 @@ Saudi Arabia]]></text>
 			</staticText>
 			<image>
 				<reportElement x="11" y="46" width="29" height="23" uuid="27548e29-1caf-40ab-a61e-2c1e83413d35"/>
-				<imageExpression><![CDATA["/Users/a.alkathiri/IdeaProjects/TBS-01/src/main/resources/report/address.png"]]></imageExpression>
+				<imageExpression><![CDATA[$P{reportResource} + "address.png"]]></imageExpression>
 			</image>
 			<image>
 				<reportElement x="387" y="50" width="16" height="24" uuid="e8730649-df31-4930-b5e8-7a9d6d514e67"/>
-				<imageExpression><![CDATA["/Users/a.alkathiri/IdeaProjects/TBS-01/src/main/resources/report/phone.png"]]></imageExpression>
+				<imageExpression><![CDATA[$P{reportResource} + "phone.png"]]></imageExpression>
 			</image>
 		</band>
 	</pageFooter>

@@ -155,7 +155,6 @@ public class InvoiceService {
             .map(invoiceMapper::toDto);
     }
 
-    //ToDo What is Cacheable ?
    // @Cacheable(value = INVOICE_BY_ACCOUNT_ID)
     public Optional<InvoiceDTO> findByAccountId(Long id) {
         log.debug("Request to get Invoice by findByAccountId : {}", id);

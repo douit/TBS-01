@@ -77,6 +77,9 @@ public class ReportService {
 
     @Value("${tbs.report.reports-folder}")
     private String outputFolder;
+    @Value("${tbs.report.resource-directory}")
+    private String reportResourceDirectory;
+
 
     public ReportDTO requestReport(ReportRequestDTO reportRequest, ReportType reportType) {
         Report reportEntity = new Report();
@@ -218,6 +221,7 @@ public class ReportService {
     private Map<String, Object> invoiceReportExtraParams(ReportDTO receipt, InvoiceDTO invoiceDTO) {
         Map<String, Object> extraParams = new HashMap<>();
         extraParams.put("invoice", invoiceDTO);
+        extraParams.put("reportResource", reportResourceDirectory);
         // extraParams.put("generatedDate", CommonUtils.getFormattedLocalDate(receipt.getGeneratedDate(), Constants.RIYADH_OFFSET));
 
 

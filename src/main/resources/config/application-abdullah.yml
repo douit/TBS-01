@@ -128,3 +128,5 @@ tbs:
 
   report:
      reports-folder: '/Users/a.alkathiri/Desktop/reports_share/'
+     resource-directory: '/Users/a.alkathiri/Download/'
+
