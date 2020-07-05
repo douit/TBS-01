@@ -147,13 +147,14 @@ public class InvoiceAppResource {
     }
 
     @GetMapping("/billing/invoice/customer/{customerId}")
-    public List<InvoiceDTO> getInvoicesByCustomer(@PathVariable String customerId,
-                                                 @RequestHeader(value = "accept-language", defaultValue = Constants.DEFAULT_HEADER_LANGUAGE) String language) {
+    public Page<InvoiceDTO> getInvoicesByCustomer(@PathVariable String customerId,
+                                                  @RequestHeader(value = "accept-language", defaultValue = Constants.DEFAULT_HEADER_LANGUAGE) String language,
+                                                  Pageable pageable) {
         log.debug("REST request to get Invoices for customer : {}", customerId);
         if (StringUtils.isEmpty(customerId)) {
             throw new TbsRunTimeException("customerId is mandatory");
         }
-        return invoiceService.findByCustomerId(customerId, language);
+        return invoiceService.findByCustomerId(customerId, language, pageable);
     }
 
 

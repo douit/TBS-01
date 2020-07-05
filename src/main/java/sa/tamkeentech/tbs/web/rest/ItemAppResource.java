@@ -62,8 +62,7 @@ public class ItemAppResource {
 
         log.debug("REST request to save Item : {}", itemDTO);
         if (itemDTO.getId() != null) {
-            //throw new BadRequestAlertException("A new item cannot already have an ID", ENTITY_NAME, "idexists");
-            throw new BadRequestAlertException(languageUtil.getMessageByKey("unable.invoice.number", Constants.LANGUAGE.getLanguageByHeaderKey(language)),  ENTITY_NAME, "idexists");
+            throw new BadRequestAlertException(languageUtil.getMessageByKey("new.item.cannot.have.ID", Constants.LANGUAGE.getLanguageByHeaderKey(language)),  ENTITY_NAME, "idexists");
         }
 
         ItemDTO result = itemService.save(itemDTO, true, language);

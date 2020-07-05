@@ -224,6 +224,7 @@ tbs:
     sadad-shared-folder: '/sadad_share/'
   report:
     reports-folder: '/reports_share/'
+    resource-directory: '/reports_share/resources/'
   sentry-url:
 
   cron:

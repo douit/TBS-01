@@ -714,16 +714,16 @@ public class InvoiceService {
     }
 
 
-    public List<InvoiceDTO> findByCustomerId(String customerId, String language) {
+    public Page<InvoiceDTO> findByCustomerId(String customerId, String language, Pageable pageable) {
 
         String appName = SecurityUtils.getCurrentUserLogin().orElse("");
         Optional<Client> client =  clientService.getClientByClientId(appName);
-        return invoiceRepository.findTop1000ByCustomerIdentityAndClientId(customerId, client.get().getId()).stream().map(invoice -> {
-            InvoiceDTO invoiceDTO = invoiceMapper.toDto(invoice);
+        Page<InvoiceDTO> pageInvoice = invoiceMapper.toDtoPageable(invoiceRepository.findByCustomerIdentityAndClientId(customerId, client.get().getId(), pageable));
+        pageInvoice.forEach(invoiceDTO -> {
             invoiceDTO.setClient(null);
             addExtraPaymentInfo(invoiceDTO, language, false);
-            return invoiceDTO;
-        }).collect(Collectors.toList());
+        });
+        return pageInvoice;
     }
 
     // Invoice report data
