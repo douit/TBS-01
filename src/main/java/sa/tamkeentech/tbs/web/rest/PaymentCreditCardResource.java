@@ -106,7 +106,7 @@ public class PaymentCreditCardResource {
         payFortPaymentService.proceedPaymentOperation(params, request, response);
     }
 
-    // This was replaced by post in order to solve the issue of arabic card holder
+
     @GetMapping("/billing/payments/payfort-processing")
     @ResponseBody
     public void processPaymentGet(Model model

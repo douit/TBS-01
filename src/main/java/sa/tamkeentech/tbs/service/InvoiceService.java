@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
@@ -89,6 +90,9 @@ public class InvoiceService {
     @Autowired
     @Lazy
     private PaymentRepository paymentRepository;
+
+    @Value("${tbs.payment.vat-number}")
+    private String vatNumber;
 
     public InvoiceService(InvoiceRepository invoiceRepository, InvoiceMapper invoiceMapper, ClientService clientService, CustomerService customerService, PaymentMethodService paymentMethodService, ItemService itemService, PaymentService paymentService, SequenceUtil sequenceUtil, EventPublisherService eventPublisherService, CustomerRepository customerRepository, EntityManager entityManager, PaymentMethodMapper paymentMethodMapper, PersistenceAuditEventRepository persistenceAuditEventRepository, LanguageUtil languageUtil) {
         this.invoiceRepository = invoiceRepository;
@@ -237,7 +241,11 @@ public class InvoiceService {
 
         // check if Customer identifier or phone is present
         if (invoiceDTO.getCustomer().getIdentity() == null && invoiceDTO.getCustomer().getPhone() == null) {
-            throw new TbsRunTimeException("Customer identity or phone is mandatory");
+            // throw new TbsRunTimeException("Customer identity or phone is mandatory");
+            throw new TbsRunTimeException(languageUtil.getMessageByKey("customer.identity.mandatory", Constants.LANGUAGE.getLanguageByHeaderKey(language)));
+        }
+        if (StringUtils.isEmpty(invoiceDTO.getCustomer().getEmail())) {
+            throw new TbsRunTimeException(languageUtil.getMessageByKey("customer.email.mandatory", Constants.LANGUAGE.getLanguageByHeaderKey(language)));
         }
         // Customer check if exists else create new
         Optional<Customer> customer;
@@ -301,6 +309,15 @@ public class InvoiceService {
             }
             invoiceItem.setDetails(invoiceItemDTO.getDetails());
             invoiceItem.setArguments(invoiceItemDTO.getArguments());
+
+            // if quantity not set get default
+            if (invoiceItem.getQuantity() == null) {
+                if (item.get().getDefaultQuantity() != null) {
+                    invoiceItem.setQuantity(item.get().getDefaultQuantity());
+                } else {
+                    invoiceItem.setQuantity(1);
+                }
+            }
 
             BigDecimal totalInvoiceItem = invoiceItem.getAmount().multiply(new BigDecimal(invoiceItem.getQuantity()));
             // Add sub discount for each item invoice  :
@@ -597,7 +614,7 @@ public class InvoiceService {
         return InvoiceStatusDTO.builder()
             .billNumber(billNumber.toString())
             .vat(invoice.get().getAmount().subtract(invoice.get().getSubtotal()))
-            .vatNumber("300879111900003")
+            .vatNumber(vatNumber)
             .price(invoice.get().getSubtotal())
             .itemName(invoiceItem.getItem().getCode())
             .quantity(1)
@@ -674,7 +691,7 @@ public class InvoiceService {
         // get invoice
         if (invoice instanceof InvoiceDTO) {
             InvoiceDTO invoiceDTO = (InvoiceDTO)invoice;
-            invoiceDTO.setVatNumber("300879111900003");
+            invoiceDTO.setVatNumber(vatNumber);
             String lang = StringUtils.isNotEmpty(language)? language: Constants.LANGUAGE.ARABIC.getHeaderKey();
             invoiceDTO.setCompanyName(languageUtil.getMessageByKey("company.name", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
 
@@ -703,7 +720,7 @@ public class InvoiceService {
         // create invoice
         } else if (invoice instanceof InvoiceResponseDTO) {
             InvoiceResponseDTO invoiceResponseDTO = (InvoiceResponseDTO)invoice;
-            invoiceResponseDTO.setVatNumber("300879111900003");
+            invoiceResponseDTO.setVatNumber(vatNumber);
             Optional<PersistentAuditEvent> event = persistenceAuditEventRepository.findFirstByRefIdAndSuccessfulAndAuditEventTypeOrderByIdDesc(Long.parseLong(invoiceResponseDTO.getBillNumber()), true, Constants.EventType.SADAD_INITIATE.name());
             if (event.isPresent() || isSadadCreateCase) {
                 invoiceResponseDTO.setBillerId(156);

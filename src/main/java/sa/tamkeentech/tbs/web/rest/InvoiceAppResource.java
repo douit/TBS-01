@@ -131,15 +131,6 @@ public class InvoiceAppResource {
         if (invoiceDTO.isPresent()) {
             invoiceDTO.get().setClient(null);
             invoiceService.addExtraPaymentInfo(invoiceDTO.get(), language, false);
-            // moved to service
-            /*invoiceDTO.get().setVatNumber("300879111900003");
-            Optional<PersistentAuditEvent> event = persistenceAuditEventRepository.findFirstByRefIdAndSuccessfulAndAuditEventTypeOrderByIdDesc(invoiceDTO.get().getAccountId(), true, Constants.EventType.SADAD_INITIATE.name());
-            if (event.isPresent()) {
-                invoiceDTO.get().setBillerId(156);
-            }
-            String lang = StringUtils.isNotEmpty(language)? language: Constants.LANGUAGE.ARABIC.getHeaderKey();
-            invoiceDTO.get().setCompanyName(languageUtil.getMessageByKey("company.name", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));*/
-
         }
         // stopwatch2.stop(); // optional
         // log.info("--InvoiceGet 2--Time elapsed: "+ stopwatch2.elapsed(TimeUnit.MILLISECONDS));
