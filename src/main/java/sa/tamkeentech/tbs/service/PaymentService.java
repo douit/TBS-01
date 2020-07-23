@@ -45,6 +45,7 @@ import sa.tamkeentech.tbs.service.util.EventPublisherService;
 import sa.tamkeentech.tbs.web.rest.errors.PaymentGatewayException;
 import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 
+import javax.persistence.EntityManager;
 import javax.persistence.criteria.Predicate;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -157,6 +158,8 @@ public class PaymentService {
             return sTSPaymentService.initPayment(model, payment, lang);
         }
     }
+
+
 
     /**
      * Create new credit card payment.
@@ -313,7 +316,27 @@ public class PaymentService {
             .collect(Collectors.toCollection(LinkedList::new));
     }
 
+    public PaymentDTO creatPayment(long billNum){
+        log.debug("Request to creat new Payment");
 
+        Optional<Invoice> invoice = invoiceRepository.findByAccountId(billNum);
+        DateFormat df = new SimpleDateFormat("HHmmss");
+        String transactionId = invoice.get().getAccountId().toString() + df.format(new java.sql.Timestamp(System.currentTimeMillis()));
+
+        PaymentMethod paymentMethod = PaymentMethod.builder()
+            .code(Constants.STCPay)
+            .name(Constants.STCPay)
+            .build();
+
+        Payment payment = Payment.builder()
+            .paymentMethod(paymentMethod)
+            .invoice(invoice.get())
+            .amount(invoice.get().getAmount())
+            .status(PaymentStatus.PENDING)
+            .build();
+
+       return save(paymentMapper.toDto(payment));
+    }
     /**
      * Get one payment by id.
      *
