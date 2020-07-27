@@ -142,15 +142,10 @@
 
     <script>
         function payOnClick() {
-            var date = document.getElementById('expiry_date_formatted').value;
-            var cardNumberInput = document.getElementById('card_number').value;
-            var cvvInput = document.getElementById('card_security_code').value;
-            var chNameInput = document.getElementById('card_holder_name').value;
-            console.log('validation date ' + date.length);
-            console.log('validation cardNumberInput ' + cardNumberInput.length);
-            console.log('validation cvvInput ' + cvvInput.length);
-            console.log('validation chNameInput ' + date.length);
-            if (date.length != 5 || cardNumberInput.length < 13 || cvvInput.length != 3 || chNameInput.length == 0) {
+            var optValue = document.getElementById('opt_value').value;
+            console.log('opt_value ' + optValue.length);
+
+            if (optValue.length > 5 ) {
                 console.log('validation failed');
                 document.getElementById("error_msg").classList.add("display-block");
                 return false;
@@ -180,31 +175,29 @@
 <div id="CreditCardDiv" style="display: none">
     <div class="row">
         <h4 id="page-heading" th:classappend="(${currentLang}== 'ar')? 'align-right direction-right' : ''">
-                <span class="payment-title"><span th:text="${cardTitle}" style="cursor: default;"> Credit card / mada bank Card </span>
+                <span class="payment-title"><span th:text="${formTitle}" style="cursor: default;"> STC Pay  </span>
                     <i class="icon-mada-visa-master"></i>
                 </span>
         </h4>
     </div>
 
     <form  th:action="${actionUrl}" method="post" name="redirectForm" target="_top">
-        <input type="hidden" name="merchant_reference" th:value="${merchant_reference}">
+        <input type="hidden" name="merchant_reference" th:value="${transactionId}">
 
         <div class="row">
             <div class="card-container">
 
                     <span class="popover" id="error_msg" th:classappend="(${currentLang}== 'ar')? align-right : ''">
-                        <span class="content" th:text="${cardInvalid}"></span>
+                        <span class="content" th:text="${text_label}"></span>
                     </span>
 
                 <span class="input">
-                                    <input class="input-field " type="tel" name="card_number" id="card_number" pattern="[0-9]*" maxlength="16"
+                                    <input class="input-field " type="tel" name="opt_value" id="opt_value" pattern="[0-9]*" maxlength="5"
                                            onkeypress="javascript: return isNumber(event)"
                                            ondrag="return false" ondrop="return false" autocomplete="off">
                                     <label class="input-label" for="">
-                                        <i class="icon-credit-card icon"></i>
-                                        <i id="card-icon-type" class="visa"></i>
-
-                                        <span class="input-label-content"  th:text="${cardNumber}">Card Number</span>
+                                        <i class="fas fa-shield-alt"></i>
+                                        <span class="input-label-content"  th:text="${texLabel}">Verification Code</span>
                                     </label>
                                 </span>
 

@@ -8,24 +8,24 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
-
-@ApiModel(description = "STC pay Direct Payment Authorize request DTO.")
+@ApiModel(description = "STC pay Direct Payment Authorize response DTO.")
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class STCPayDirectPaymentAuthorizeReqDTO {
+public class STCPayDirectPaymentRespDTO {
 
-    @JsonProperty("DirectPaymentAuthorizeV4RequestMessage")
-    private DirectPaymentAuthorizeV4RequestMessage directPaymentAuthorizeV4RequestMessage;
+    @JsonProperty("DirectPaymentV4ResponseMessage")
+    private DirectPaymentV4ResponseMessage directPaymentV4ResponseMessage;
 
     @Data
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class DirectPaymentAuthorizeV4RequestMessage {
+    public static class DirectPaymentV4ResponseMessage {
+        @JsonProperty("MerchantID")
+        private String merchantID;
         @JsonProperty("BranchID")
         private String branchID;
         @JsonProperty("TellerID")
@@ -34,14 +34,18 @@ public class STCPayDirectPaymentAuthorizeReqDTO {
         private String deviceID;
         @JsonProperty("RefNum")
         private String refNum;
-        @JsonProperty("BillNumber")
-        private String billNumber;
-        @JsonProperty("MobileNo")
-        private String mobileNo;
+        @JsonProperty("STCPayRefNum")
+        private String stcPayRefNum;
         @JsonProperty("Amount")
-        private String amount;
-        @JsonProperty("MerchantNote")
-        private String merchantNote;
+        private Integer amount;
+        @JsonProperty("PaymentDate")
+        private String paymentDate;
+        @JsonProperty("PaymentStatus")
+        private Integer paymentStatus;
+        @JsonProperty("PaymentStatusDesc")
+        private String paymentStatusDesc;
+
+
 
     }
 }

@@ -8,7 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@ApiModel(description = "STC pay Direct Payment Authorize response DTO.")
+@ApiModel(description = "STC pay Direct Payment response DTO.")
 @Data
 @Builder
 @AllArgsConstructor
@@ -30,6 +30,7 @@ public class STCPayDirectPaymentAuthorizeRespDTO {
         private String sTCPayPmtReference;
         @JsonProperty("ExpiryDuration")
         private Integer expiryDuration;
+
 
     }
 }
