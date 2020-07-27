@@ -267,6 +267,17 @@
                                                             <td> </td>
 
                                                             <td><span
+                                                                style=" font-size: medium;box-snap: block-end; " >Discount =
+                                                                {{(invoiceView && invoiceView.discount && invoiceView.discount != undefined)? invoiceView.discount.value : '0'}}</span>
+                                                                <span *ngIf="invoiceView && invoiceView.discount && invoiceView.discount != undefined && invoiceView.discount.isPercentage">%</span>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td> </td>
+                                                            <td> </td>
+                                                            <td> </td>
+
+                                                            <td><span
                                                                 style=" font-size: medium;box-snap: block-end; " >Sub total =
                                                                 {{invoiceView ? invoiceView.subtotal : ''}}</span></td>
                                                         </tr>
