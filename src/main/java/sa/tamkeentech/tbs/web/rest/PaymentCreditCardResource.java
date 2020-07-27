@@ -63,7 +63,7 @@ public class PaymentCreditCardResource {
      * @return
      */
     @GetMapping("/billing/payments/credit-card")
-    public String initCC(Model model, @RequestParam Map<String,String> params) {
+    public String initCC(Model model, @RequestParam Map<String,String> params) throws IOException, JSONException {
         // use https://www.codepunker.com/tools/string-converter  --> base64 deccode
         /*{
          "base64": "dHJhbnNhY3Rpb25JZGVudGlmaWVy",

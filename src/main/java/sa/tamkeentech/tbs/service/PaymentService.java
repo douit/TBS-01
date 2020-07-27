@@ -86,6 +86,7 @@ public class PaymentService {
     private final PersistenceAuditEventRepository persistenceAuditEventRepository;
     private final PaymentMethodMapper paymentMethodMapper;
     private final ClientRepository clientRepository;
+    private final STCPaymentService stcPaymentService;
 
     @Value("${tbs.payment.sadad-url}")
     private String sadadUrl;
@@ -119,7 +120,7 @@ public class PaymentService {
     @Autowired
     private RestTemplate restTemplate;
 
-    public PaymentService(PaymentRepository paymentRepository, PaymentMapper paymentMapper, InvoiceRepository invoiceRepository, BankRepository bankRepository, BinRepository binRepository, PaymentMethodService paymentMethodService, ObjectMapper objectMapper, EventPublisherService eventPublisherService, ClientService clientService, ClientMapper clientMapper, PersistenceAuditEventRepository persistenceAuditEventRepository, PaymentMethodMapper paymentMethodMapper, ClientRepository clientRepository) {
+    public PaymentService(PaymentRepository paymentRepository, PaymentMapper paymentMapper, InvoiceRepository invoiceRepository, BankRepository bankRepository, BinRepository binRepository, PaymentMethodService paymentMethodService, ObjectMapper objectMapper, EventPublisherService eventPublisherService, ClientService clientService, ClientMapper clientMapper, PersistenceAuditEventRepository persistenceAuditEventRepository, PaymentMethodMapper paymentMethodMapper, ClientRepository clientRepository, STCPaymentService stcPaymentService) {
         this.paymentRepository = paymentRepository;
         this.paymentMapper = paymentMapper;
         this.invoiceRepository = invoiceRepository;
@@ -133,6 +134,7 @@ public class PaymentService {
         this.persistenceAuditEventRepository = persistenceAuditEventRepository;
         this.paymentMethodMapper = paymentMethodMapper;
         this.clientRepository = clientRepository;
+        this.stcPaymentService = stcPaymentService;
     }
 
 
@@ -145,12 +147,15 @@ public class PaymentService {
      * @return
      */
     @Transactional
-    public String initPayment(Model model, String transactionId, String lang) {
+    public String initPayment(Model model, String transactionId, String lang) throws IOException, JSONException {
         log.info("Request to initiate Payment : {}, language {}", transactionId, lang);
         Payment payment = paymentRepository.findByTransactionId(transactionId);
         if (payment == null) {
             // ToDo change to error page
             throw new TbsRunTimeException("Payment not found");
+        }
+        if(payment.getPaymentMethod().getCode() == Constants.STCPay){
+            return stcPaymentService.initPayment(model, payment, lang);
         }
         if (payment.getPaymentProvider() == PaymentProvider.PAYFORT) {
             return payFortPaymentService.initPayment(model, payment, lang);

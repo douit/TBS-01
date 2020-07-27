@@ -70,4 +70,10 @@ public class Payment extends AbstractAuditingEntity implements Serializable {
     @Column(name = "payment_provider")
     private PaymentProvider paymentProvider;
 
+    @Column(name = "payment_reference")
+    private String paymentReference;
+
+    @Column(name = "otp_reference")
+    private String otpReference;
+
 }
