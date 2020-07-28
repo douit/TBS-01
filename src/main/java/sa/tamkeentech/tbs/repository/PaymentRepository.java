@@ -4,6 +4,7 @@ import org.springframework.data.jpa.datatables.repository.DataTablesRepository;
 import sa.tamkeentech.tbs.domain.Payment;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
+import sa.tamkeentech.tbs.domain.enumeration.PaymentProvider;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 import sa.tamkeentech.tbs.service.dto.PaymentDTO;
 
@@ -31,4 +32,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long>, DataTab
     List<Payment> findByInvoiceAccountIdOrderById(Long accountId);
 
     List<Payment> findByStatusAndAndLastModifiedDateBetween(PaymentStatus checkoutPageRendered, ZonedDateTime zonedDateTime, ZonedDateTime zonedDateTime1);
+
+    Optional<Payment> findFirstByInvoiceAccountIdStatusAndPaymentProviderAnd(Long accountId, PaymentStatus paymentStatus, PaymentProvider paymentProvider);
+
 }
