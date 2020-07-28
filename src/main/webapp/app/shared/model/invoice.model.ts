@@ -3,6 +3,7 @@ import { IInvoiceItem } from 'app/shared/model/invoice-item.model';
 import { IPayment } from 'app/shared/model/payment.model';
 import { InvoiceStatus } from 'app/shared/model/enumerations/invoice-status.model';
 import {PaymentStatus} from 'app/shared/constants';
+import {IDiscount} from 'app/shared/model/discount.model';
 
 export interface IInvoice {
   id?: number;
@@ -12,7 +13,7 @@ export interface IInvoice {
   dueDate?: Moment;
   subtotal?: number;
   amount?: number;
-  discountId?: number;
+  discount?: IDiscount;
   customerId?: string;
   invoiceItems?: IInvoiceItem[];
   payments?: IPayment[];

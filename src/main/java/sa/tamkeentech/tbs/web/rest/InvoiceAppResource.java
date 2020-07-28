@@ -131,15 +131,6 @@ public class InvoiceAppResource {
         if (invoiceDTO.isPresent()) {
             invoiceDTO.get().setClient(null);
             invoiceService.addExtraPaymentInfo(invoiceDTO.get(), language, false);
-            // moved to service
-            /*invoiceDTO.get().setVatNumber("300879111900003");
-            Optional<PersistentAuditEvent> event = persistenceAuditEventRepository.findFirstByRefIdAndSuccessfulAndAuditEventTypeOrderByIdDesc(invoiceDTO.get().getAccountId(), true, Constants.EventType.SADAD_INITIATE.name());
-            if (event.isPresent()) {
-                invoiceDTO.get().setBillerId(156);
-            }
-            String lang = StringUtils.isNotEmpty(language)? language: Constants.LANGUAGE.ARABIC.getHeaderKey();
-            invoiceDTO.get().setCompanyName(languageUtil.getMessageByKey("company.name", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));*/
-
         }
         // stopwatch2.stop(); // optional
         // log.info("--InvoiceGet 2--Time elapsed: "+ stopwatch2.elapsed(TimeUnit.MILLISECONDS));
@@ -147,13 +138,14 @@ public class InvoiceAppResource {
     }
 
     @GetMapping("/billing/invoice/customer/{customerId}")
-    public List<InvoiceDTO> getInvoicesByCustomer(@PathVariable String customerId,
-                                                 @RequestHeader(value = "accept-language", defaultValue = Constants.DEFAULT_HEADER_LANGUAGE) String language) {
+    public Page<InvoiceDTO> getInvoicesByCustomer(@PathVariable String customerId,
+                                                  @RequestHeader(value = "accept-language", defaultValue = Constants.DEFAULT_HEADER_LANGUAGE) String language,
+                                                  Pageable pageable) {
         log.debug("REST request to get Invoices for customer : {}", customerId);
         if (StringUtils.isEmpty(customerId)) {
             throw new TbsRunTimeException("customerId is mandatory");
         }
-        return invoiceService.findByCustomerId(customerId, language);
+        return invoiceService.findByCustomerId(customerId, language, pageable);
     }
 
 

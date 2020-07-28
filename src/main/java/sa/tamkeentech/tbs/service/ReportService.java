@@ -31,6 +31,7 @@ import sa.tamkeentech.tbs.web.rest.errors.TbsRunTimeException;
 import javax.persistence.criteria.Predicate;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
 import java.util.*;
 
@@ -47,7 +48,7 @@ public class ReportService {
     private static final String FORMAT_PDF = "pdf";
     private static final String REPORT_KEY_FORMAT = "format";
     private static final String TEMPLATE_PAYMENT = "payment_report.jrxml";
-    private static final String TEMPLATE_INVOICE = "invoice_receipt.jrxml";
+    private static final String TEMPLATE_INVOICE = "ar_invoice_receipt.jrxml";
     private static final String TEMPLATE_REFUND = "refund_report.jrxml";
     private static final String ALL_FILTER = "All";
     private static final String PARAM_GENERATED_DATE = "generatedDate";
@@ -79,6 +80,8 @@ public class ReportService {
     private String outputFolder;
     @Value("${tbs.report.resource-directory}")
     private String reportResourceDirectory;
+    @Value("${tbs.payment.vat-number}")
+    private String vatNumber;
 
 
     public ReportDTO requestReport(ReportRequestDTO reportRequest, ReportType reportType) {
@@ -153,6 +156,7 @@ public class ReportService {
         log.debug("generating invoice receipt ");
 
         Optional<InvoiceDTO> invoiceDTO = invoiceService.findOne(invoiceId);
+        invoiceDTO.get().setVatNumber(vatNumber);
 
         ReportDTO receipt = new ReportDTO();
         receipt.setGeneratedDate(ZonedDateTime.now());
@@ -246,7 +250,8 @@ public class ReportService {
             parameterMap.putAll(extraParams);
         }
         parameterMap.put(REPORT_KEY_FORMAT, format);
-        parameterMap.put(PARAM_GENERATED_DATE, new Date());
+        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+        parameterMap.put(PARAM_GENERATED_DATE, formatter.format(new Date()));
 
         byte[] report;
         if (format.equals(FORMAT_XLSX)) {

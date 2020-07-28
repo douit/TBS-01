@@ -1,0 +1,418 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.11.0.final using JasperReports Library version 6.11.0-0c4056ccaa4d25a5a8c45672d2f764ea3498bebb  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="invoice_receipt" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="20b4d4c8-208d-4e56-ae18-9cf8cc3650ae">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<property name="com.jaspersoft.studio.report.description" value=""/>
+	<subDataset name="invoiceItems" uuid="aebd5307-57dc-4ecd-af04-88f6cacd5b18">
+		<queryString>
+			<![CDATA[]]>
+		</queryString>
+	</subDataset>
+	<parameter name="invoice" class="sa.tamkeentech.tbs.service.dto.InvoiceDTO"/>
+	<parameter name="generatedDate" class="java.lang.String"/>
+	<parameter name="reportResource" class="java.lang.String"/>
+	<field name="amount" class="java.math.BigDecimal"/>
+	<field name="quantity" class="java.lang.Integer"/>
+	<field name="details" class="java.lang.String"/>
+	<field name="name" class="java.lang.String"/>
+	<pageHeader>
+		<band height="180" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<staticText>
+				<reportElement key="staticText-6" x="25" y="166" width="70" height="14" uuid="6165aad0-fc1b-4ced-a6ee-db9417dc6707">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font fontName="DejaVu Sans" size="9"/>
+				</textElement>
+				<text><![CDATA[المجموع الجزئي]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-7" x="95" y="166" width="55" height="14" uuid="38f23bee-cb14-46fd-b5e7-f1bfada8d5c0">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font fontName="DejaVu Sans" size="9"/>
+				</textElement>
+				<text><![CDATA[سعر الوحدة]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-8" x="150" y="166" width="35" height="14" uuid="edb34e14-5c73-4b8a-bf37-342ae13a5555">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font fontName="DejaVu Sans" size="9"/>
+				</textElement>
+				<text><![CDATA[الكمية]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-9" x="185" y="166" width="350" height="14" uuid="87a9da0d-f696-48e7-8f0b-54450e2fd859">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font fontName="DejaVu Sans" size="9"/>
+				</textElement>
+				<text><![CDATA[وصف الخدمة]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-31" x="545" y="166" width="17" height="14" uuid="4ec324ad-2e1e-4cb8-a77a-b4be9198d75c"/>
+				<textElement textAlignment="Center">
+					<font fontName="DejaVu Sans" size="9"/>
+				</textElement>
+				<text><![CDATA[م.]]></text>
+			</staticText>
+			<line>
+				<reportElement key="line-7" x="25" y="179" width="535" height="1" uuid="1b981f33-e68c-472f-aeaa-6c61015503bc">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+			</line>
+			<line>
+				<reportElement key="line-8" x="25" y="179" width="535" height="1" uuid="a17819aa-d770-4eaa-a3f3-8684daa6a67b">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+			</line>
+			<staticText>
+				<reportElement x="160" y="12" width="240" height="39" uuid="25d047a6-ed2d-4c53-befd-a11c16cc077c">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font fontName="DejaVu Sans" size="24" isBold="true"/>
+				</textElement>
+				<text><![CDATA[سند قبض]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="390" y="100" width="90" height="14" uuid="d150a0c8-ebd8-4948-ab40-a52219f507ce">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{invoice}.getVatNumber()]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-11" x="480" y="100" width="65" height="14" uuid="b7322d7a-f53f-4b2b-837c-d591e25639b9">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<text><![CDATA[الرقم الضريبي:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-11" x="480" y="86" width="65" height="14" uuid="9d9b3a20-77ff-42e4-9919-017ccbda0d07">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<text><![CDATA[رقم الفاتورة:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="390" y="86" width="90" height="14" uuid="1283d248-4f74-4c48-a6a3-8dceab315f82">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{invoice}.getAccountId()]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-11" x="480" y="114" width="65" height="14" uuid="363cc9b3-9362-4721-a3db-7ed0717da6df">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<text><![CDATA[اسم العميل:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="390" y="114" width="90" height="14" uuid="fa7daee5-30ee-4209-bc72-eae06db842ea">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{invoice}.getCustomer().getName()]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-11" x="106" y="86" width="65" height="14" uuid="461d6825-177b-4d02-8401-09fe63463519">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<text><![CDATA[تاريخ الإصدار:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="26" y="86" width="80" height="14" uuid="0fbc924a-8da2-4bfb-877f-23e5a7026c2f">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$P{generatedDate}]]></textFieldExpression>
+			</textField>
+			<image hAlign="Center">
+				<reportElement x="418" y="-8" width="150" height="50" uuid="8b2d5203-328d-4d12-831c-9102dc9b75ce">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<imageExpression><![CDATA[$P{reportResource}+"logo"+"."+"jpg"]]></imageExpression>
+			</image>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="210">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-5" x="545" y="0" width="17" height="15" uuid="a97534f0-de85-43b0-96f8-31e826447b7b">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box leftPadding="3"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField pattern="##0.00" isBlankWhenNull="false">
+				<reportElement key="textField-2" x="25" y="0" width="70" height="15" uuid="2cbb4675-7429-4bbf-be97-709cd6e09ac3">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<box leftPadding="3"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{amount}.multiply(new BigDecimal($F{quantity}))]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-11" x="65" y="95" width="75" height="14" uuid="145476da-c1de-45e0-b1d1-1acb561e56b0">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<text><![CDATA[إجمالي السعر]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="185" y="0" width="350" height="15" uuid="b60cc67b-a038-4901-acff-4129ce91b9c0">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($F{details} != null && $F{details}.length()>0)? $F{details}: $F{name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="150" y="0" width="35" height="15" uuid="f7226a77-cca9-43a2-950a-c783b2b23450">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{quantity}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="95" y="0" width="55" height="15" uuid="4ccc2ce4-5d62-4770-b025-529dd263c672">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{amount}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement key="line-10" x="25" y="66" width="115" height="1" uuid="93250179-b301-4b11-8c1e-8097caa780f9">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+			</line>
+			<textField>
+				<reportElement x="25" y="95" width="40" height="14" uuid="04ef2632-bb58-4998-a41b-627f73309f2c"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{invoice}.getAmount()]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement key="line-10" x="25" y="80" width="115" height="1" uuid="f3a5e31a-1e93-46fa-8c0d-ec0c84986b76">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+			</line>
+			<line>
+				<reportElement key="line-10" x="25" y="94" width="115" height="1" uuid="52f05771-406b-4610-ae3d-5bc5ade22349">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+			</line>
+			<line>
+				<reportElement key="line-10" x="25" y="109" width="115" height="1" uuid="73c907bc-46af-460d-8d05-076932e5da64">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+			</line>
+			<staticText>
+				<reportElement key="staticText-11" x="65" y="53" width="75" height="14" uuid="41040fb8-60d6-4fc1-b385-3efce9383276">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<text><![CDATA[الخصم]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-11" x="65" y="66" width="75" height="14" uuid="04e38fe7-e20a-45a2-8e47-b8a683dd72f4">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<text><![CDATA[المجموع الفرعي]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-11" x="65" y="80" width="75" height="14" uuid="fbc9f7f1-0f4c-424d-a1ae-8b865d61e0c4">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<text><![CDATA[مبلغ الضريبة]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="25" y="80" width="40" height="14" uuid="0e8ff686-2a6b-4cdc-ac23-287dd2376b25"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[($P{invoice}.getTaxFees() != null)? $P{invoice}.getTaxFees(): 0]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="25" y="67" width="40" height="14" uuid="aba503f6-d916-44b9-83eb-db87540979ed"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{invoice}.getSubtotal()]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="25" y="53" width="40" height="14" uuid="ac04a114-d072-4c31-a48b-c0b66ebea4a6">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[($P{invoice}.getDiscount() != null)? ($P{invoice}.getDiscount().getIsPercentage()  == true ? $P{invoice}.getDiscount().getValue()+"%" :  $P{invoice}.getDiscount().getValue()): 0]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement key="line-9" x="25" y="52" width="535" height="1" uuid="1313f828-9656-45a7-ad52-3f598fcae08a">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+			</line>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="320" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<line>
+				<reportElement key="line-9" x="20" y="221" width="544" height="1" uuid="70703d3e-c37c-4338-84ab-dc0b46f7e52f"/>
+			</line>
+			<staticText>
+				<reportElement x="250" y="240" width="240" height="79" uuid="01eae8a3-2d0c-48ca-9a4e-30ae11aa4534"/>
+				<textElement textAlignment="Right">
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<text><![CDATA[تمكين للتقنيات
+العقارية بلازا - مدخل E  - الدور الثاني
+مكتب 220
+صندوق بريد 2392
+الرياض
+المملكة العربية السعودية]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="490" y="240" width="38" height="20" uuid="c7c80c97-9b2d-4bc9-b574-f75a14239e19"/>
+				<textElement textAlignment="Right">
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<text><![CDATA[العنوان:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="21" y="240" width="200" height="30" uuid="20aa3431-a2fe-4602-8604-eed92766d704">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<text><![CDATA[الهاتف: 4407700 ، تحويلة 1411-1416-1420]]></text>
+			</staticText>
+			<image>
+				<reportElement x="530" y="240" width="29" height="23" uuid="27548e29-1caf-40ab-a61e-2c1e83413d35"/>
+				<imageExpression><![CDATA[$P{reportResource} + "address.png"]]></imageExpression>
+			</image>
+			<image>
+				<reportElement x="224" y="240" width="16" height="24" uuid="e8730649-df31-4930-b5e8-7a9d6d514e67"/>
+				<imageExpression><![CDATA[$P{reportResource} + "phone.png"]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement x="375" y="57" width="110" height="20" uuid="b56d3511-95d3-44ad-bcf3-11aae5b035d9">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" isBold="true"/>
+				</textElement>
+				<text><![CDATA[ مدير إدارة المحاسبة]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="375" y="77" width="110" height="20" uuid="d2739349-18e7-46ea-a83c-10975bbda487">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<text><![CDATA[فواز بن علي العلي]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="69" y="57" width="145" height="20" uuid="eccbc7df-0b30-4245-848e-cb431ce10aff">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" isBold="true"/>
+				</textElement>
+				<text><![CDATA[نائب الرئيس التنفيذي, المالية]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="69" y="77" width="145" height="20" uuid="d131266c-f9e1-453f-b923-08307ecb9cb5">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<text><![CDATA[عبدالله بن عبدالعزيز الرويتع ]]></text>
+			</staticText>
+			<image hAlign="Center">
+				<reportElement x="375" y="102" width="110" height="70" uuid="61f4d26e-286f-4def-99ed-81ef5e51b90d">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<imageExpression><![CDATA[$P{reportResource} + "director.png"]]></imageExpression>
+			</image>
+			<image hAlign="Center">
+				<reportElement x="69" y="102" width="145" height="70" uuid="186c4edb-7483-4453-b2d5-aeda16c1f1a2">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<imageExpression><![CDATA[$P{reportResource} + "vp.png"]]></imageExpression>
+			</image>
+		</band>
+	</pageFooter>
+</jasperReport>

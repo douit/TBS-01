@@ -81,4 +81,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long>, DataTab
     List<Object[]> getExpiredInvoices(ZonedDateTime from, ZonedDateTime to, long clientId);
 
     List<Invoice> findTop1000ByCustomerIdentityAndClientId(String customerId, Long clientId);
+
+    Page<Invoice> findByCustomerIdentityAndClientId(String customerId, Long clientId, Pageable pageable);
+
 }

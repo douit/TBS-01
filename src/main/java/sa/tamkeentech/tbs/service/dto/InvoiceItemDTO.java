@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModel;
 import lombok.*;
 
 import javax.persistence.Column;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -34,6 +35,7 @@ public class InvoiceItemDTO implements Serializable {
 
     private BigDecimal amount;
 
+    @Min(value= 1)
     private Integer quantity;
 
     // private String taxName;
