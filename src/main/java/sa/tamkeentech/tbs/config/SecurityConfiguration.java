@@ -154,7 +154,8 @@ public class SecurityConfiguration {
                 .antMatchers("/billing/payments/iframe/**")
             // apple pay session
                 .antMatchers("/billing/payments/apple-session")
-                .antMatchers("/billing/payments/apple-authorize");
+                .antMatchers("/billing/payments/apple-authorize")
+                .antMatchers("/billing/payments/stcpay-payment-processing");
 
         }
 

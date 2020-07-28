@@ -224,7 +224,7 @@ tbs:
     stcPay-url-form: '/billing/payments/stcpay-payment-processing'
 
     stcPay-key-store-password: tm1548pmHea92
-    stcPay-key-store: 'config/tls/billing.tamkeentech.sa.jks'
+    stcPay-key-store: 'config/tls/TkeenKeystore.p12'
 
 
 

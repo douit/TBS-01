@@ -127,7 +127,7 @@ export class InvoiceUpdateComponent implements OnInit {
       dueDate: invoice.dueDate != null ? invoice.dueDate.format(DATE_TIME_FORMAT) : null,
       subtotal: invoice.subtotal,
       amount: invoice.amount,
-      discountId: invoice.discountId,
+      discountId: invoice.discount.id,
       customerId: invoice.customerId,
       clientId: invoice.clientId
     });
@@ -157,7 +157,7 @@ export class InvoiceUpdateComponent implements OnInit {
       dueDate: this.editForm.get(['dueDate']).value != null ? moment(this.editForm.get(['dueDate']).value, DATE_TIME_FORMAT) : undefined,
       subtotal: this.editForm.get(['subtotal']).value,
       amount: this.editForm.get(['amount']).value,
-      discountId: this.editForm.get(['discountId']).value,
+      // discountId: this.editForm.get(['discountId']).value,
       customerId: this.editForm.get(['customerId']).value,
       clientId: this.editForm.get(['clientId']).value
     };

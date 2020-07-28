@@ -111,7 +111,8 @@ public class InvoiceAppResource {
     public ResponseEntity<InvoiceResponseDTO> getPayment(@PathVariable String referenceId, @PathVariable String paymentMethodCode,
                @RequestHeader(value = "accept-language", defaultValue = Constants.DEFAULT_HEADER_LANGUAGE) String language) {
         log.debug("REST request to change payment method Payment to : {}", paymentMethodCode);
-        if (!Constants.SADAD.equals(paymentMethodCode) && !Constants.CREDIT_CARD.equals(paymentMethodCode)) {
+        if (!Constants.SADAD.equals(paymentMethodCode) && !Constants.CREDIT_CARD.equals(paymentMethodCode)
+            && !Constants.STC_PAY.equals(paymentMethodCode)) {
             throw new TbsRunTimeException("Unkown payment method");
         }
         InvoiceResponseDTO resp = paymentService.requestNewPayment(referenceId, paymentMethodCode, language);

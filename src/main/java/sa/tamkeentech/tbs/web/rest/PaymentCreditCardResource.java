@@ -15,6 +15,7 @@ import sa.tamkeentech.tbs.domain.Payment;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentProvider;
 import sa.tamkeentech.tbs.service.PayFortPaymentService;
 import sa.tamkeentech.tbs.service.PaymentService;
+import sa.tamkeentech.tbs.service.STCPaymentService;
 import sa.tamkeentech.tbs.service.STSPaymentService;
 import sa.tamkeentech.tbs.service.dto.ApplePayTokenAuthorizeDTO;
 import sa.tamkeentech.tbs.service.dto.PaymentStatusResponseDTO;
@@ -49,6 +50,9 @@ public class PaymentCreditCardResource {
     @Inject
     @Lazy
     private PaymentService paymentService;
+
+    @Inject
+    private STCPaymentService stcPaymentService;
 
     public PaymentCreditCardResource(STSPaymentService sTSPaymentService, PayFortPaymentService payFortPaymentService) {
         this.sTSPaymentService = sTSPaymentService;
@@ -139,6 +143,13 @@ public class PaymentCreditCardResource {
                                         HttpServletResponse response) throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException, JSONException {
         log.debug("---Apple pay token to process payment: {}", token);
         return payFortPaymentService.proceedApplePurchaseOperation(token, request, response);
+    }
+
+    @PostMapping("/billing/payments/stcpay-payment-processing")
+    @ResponseBody
+    public void processPaymentSTC(Model model
+        , @RequestParam Map<String,Object> params, HttpServletRequest request, HttpServletResponse response) throws IOException, JSONException {
+        stcPaymentService.proceedPaymentOperation(params, request, response);
     }
 
 }
