@@ -18,7 +18,6 @@ import sa.tamkeentech.tbs.domain.Refund;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentProvider;
 import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.repository.PaymentRepository;
-import sa.tamkeentech.tbs.schemas.refund.RefundRqType;
 import sa.tamkeentech.tbs.service.*;
 import sa.tamkeentech.tbs.service.dto.*;
 import sa.tamkeentech.tbs.service.mapper.PaymentMapper;
@@ -43,6 +42,8 @@ public class EventPublisherService {
     private final PaymentMethodService paymentMethodService;
 
     private final PaymentRepository paymentRepository;
+
+    private final STCPaymentService stcPaymentService;
 
     @Autowired
     @Lazy
@@ -77,7 +78,7 @@ public class EventPublisherService {
     @Inject
     private PayFortPaymentService payFortPaymentService;
 
-    public EventPublisherService(SequenceUtil sequenceUtil, ClientService clientService, CustomerService customerService, ItemService itemService, InvoiceRepository invoiceRepository, PaymentMethodService paymentMethodService, PaymentRepository paymentRepository) {
+    public EventPublisherService(SequenceUtil sequenceUtil, ClientService clientService, CustomerService customerService, ItemService itemService, InvoiceRepository invoiceRepository, PaymentMethodService paymentMethodService, PaymentRepository paymentRepository, STCPaymentService stcPaymentService) {
         this.sequenceUtil = sequenceUtil;
         this.clientService = clientService;
         this.customerService = customerService;
@@ -85,6 +86,7 @@ public class EventPublisherService {
         this.invoiceRepository = invoiceRepository;
         this.paymentMethodService = paymentMethodService;
         this.paymentRepository = paymentRepository;
+        this.stcPaymentService = stcPaymentService;
     }
 
     @TBSEventPub(eventName = Constants.EventType.INVOICE_CREATE)
@@ -147,9 +149,12 @@ public class EventPublisherService {
 
     @TBSEventPub(eventName = Constants.EventType.CREDIT_CARD_REFUND_REQUEST)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public TBSEventRespDTO<RefundStatusCCResponseDTO> callRefundByCreditCardEvent(TBSEventReqDTO<Refund> eventReq, Invoice invoice, Optional<Payment> payment) throws IOException {
+    public TBSEventRespDTO<RefundStatusCCResponseDTO> callRefundByCreditCardEvent(TBSEventReqDTO<Refund> eventReq, Invoice invoice, Optional<Payment> payment) throws IOException, JSONException {
         RefundStatusCCResponseDTO refundStatusCCResponseDTO;
-        if(payment.get().getPaymentProvider().equals(PaymentProvider.STS)){
+        if(payment.get().getPaymentProvider().equals(PaymentProvider.STCPay)){
+            refundStatusCCResponseDTO = stcPaymentService.proceedRefundOperation(eventReq.getReq(), invoice, payment);
+        }
+        else if(payment.get().getPaymentProvider().equals(PaymentProvider.STS)){
             refundStatusCCResponseDTO = stsPaymentService.proceedRefundOperation(eventReq.getReq(), invoice, payment);
         }else {
             refundStatusCCResponseDTO =  payFortPaymentService.proceedRefundOperation(eventReq.getReq(), invoice, payment);

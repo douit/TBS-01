@@ -15,14 +15,18 @@ import org.springframework.ui.Model;
 import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.Invoice;
 import sa.tamkeentech.tbs.domain.Payment;
+import sa.tamkeentech.tbs.domain.Refund;
 import sa.tamkeentech.tbs.domain.enumeration.InvoiceStatus;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentProvider;
 import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
+import sa.tamkeentech.tbs.domain.enumeration.RequestStatus;
 import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.repository.PaymentRepository;
+import sa.tamkeentech.tbs.service.dto.RefundStatusCCResponseDTO;
 import sa.tamkeentech.tbs.service.dto.StcDTO.STCPayDirectPaymentAuthorizeRespDTO;
 import sa.tamkeentech.tbs.service.dto.StcDTO.STCPayDirectPaymentRespDTO;
 import sa.tamkeentech.tbs.service.dto.StcDTO.STCPayPaymentInquiryRespDTO;
+import sa.tamkeentech.tbs.service.dto.StcDTO.STCPayPaymentRefundRespDTO;
 import sa.tamkeentech.tbs.service.mapper.PaymentMapper;
 import sa.tamkeentech.tbs.service.util.LanguageUtil;
 import sa.tamkeentech.tbs.web.rest.errors.PaymentGatewayException;
@@ -54,6 +58,9 @@ public class STCPaymentService {
 
     @Value("${tbs.payment.stcpay-payment-inquiry}")
     private String stcPaymentInquiry;
+
+    @Value("${tbs.payment.stcpay-refund}")
+    private String stcPayRefund;
 
     @Inject
     private LanguageUtil languageUtil;
@@ -177,7 +184,7 @@ public class STCPaymentService {
             JSONObject stcPayInqReqObj = new JSONObject();
             stcPayInqReqParam.put("RefNum", payment.get().getTransactionId());
             stcPayInqReqParam.put("PaymentsDate", payment.get().getCreatedDate());
-            stcPayInqReqObj.put("PaymentInquiryV4RequestMessage", payment.get().getCreatedDate());
+            stcPayInqReqObj.put("PaymentInquiryV4RequestMessage", stcPayInqReqParam);
 
             HttpClient client = HttpClientBuilder.create().build();
             HttpPost post = new HttpPost(stcPaymentInquiry);
@@ -188,22 +195,53 @@ public class STCPaymentService {
             HttpResponse response1;
             response1 = client.execute(post);
             STCPayPaymentInquiryRespDTO stcPayInqRes = objectMapper.readValue(response1.getEntity().getContent(), STCPayPaymentInquiryRespDTO.class);
-            stcPayInqRes.getPaymentInquiryV4ResponseMessage().getTransactionList().forEach(transaction -> {
-                if (transaction.getPaymentStatus() == 0) {
-                    payment.get().setStatus(PaymentStatus.PAID);
-                    paymentRepository.save(payment.get());
-                    invoice.get().setPaymentStatus(PaymentStatus.PAID);
-                    invoiceRepository.save(invoice.get());
-                }
-            });
+            if (response1.getStatusLine().getStatusCode() == 200) {
+                stcPayInqRes.getPaymentInquiryV4ResponseMessage().getTransactionList().forEach(transaction -> {
+                    if (transaction.getPaymentStatus() == 0) {
+                        payment.get().setStatus(PaymentStatus.PAID);
+                        paymentRepository.save(payment.get());
+                        invoice.get().setPaymentStatus(PaymentStatus.PAID);
+                        invoiceRepository.save(invoice.get());
+                    }
+                });
+            }
+
         }
     }
 
-    public void refund(String transactionId){
+    public RefundStatusCCResponseDTO proceedRefundOperation(Refund refund, Invoice invoice, Optional<Payment> payment) throws JSONException, IOException {
 
-        Payment payment = paymentRepository.findByTransactionId(transactionId);
+        RefundStatusCCResponseDTO refundStatusCCResponseDTO =  RefundStatusCCResponseDTO.builder()
+            .refundId(refund.getPayment().getTransactionId()).build();
 
+        JSONObject stcPayRefReqParam = new JSONObject();
+        JSONObject stcPayRefReqObj = new JSONObject();
+        stcPayRefReqParam.put("STCPayRefNum", payment.get().getPaymentReference());
+        stcPayRefReqParam.put("Amount", payment.get().getAmount());
+        stcPayRefReqObj.put("RefundPaymentRequestMessage", stcPayRefReqParam);
 
+        HttpClient client = HttpClientBuilder.create().build();
+        HttpPost post = new HttpPost(stcPayRefund);
+        post.setHeader("Content-Type", "application/json");
+        post.setHeader("X-ClientCode", "61248102687");
+        post.setEntity(new StringEntity(stcPayRefReqObj.toString()));
 
+        HttpResponse response1;
+        response1 = client.execute(post);
+        STCPayPaymentRefundRespDTO stcPayRefRes = objectMapper.readValue(response1.getEntity().getContent(), STCPayPaymentRefundRespDTO.class);
+
+        if (response1.getStatusLine().getStatusCode() == 200) {
+            payment.get().setPaymentReference(stcPayRefRes.getRefundPaymentResponseMessage().getNewSTCPayRefNum());
+            payment.get().setStatus(PaymentStatus.REFUNDED);
+            paymentRepository.save(payment.get());
+            invoice.setPaymentStatus(PaymentStatus.REFUNDED);
+            invoiceRepository.save(invoice);
+            refundStatusCCResponseDTO.setStatus(RequestStatus.SUCCEEDED);
+        }else{
+            refundStatusCCResponseDTO.setStatus(RequestStatus.FAILED);
+
+        }
+
+        return refundStatusCCResponseDTO;
     }
 }
