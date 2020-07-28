@@ -75,5 +75,6 @@
     <include file="config/liquibase/changelog/20200415090413_alter_entity_client_and_payment.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20200601090413_alter_entity_client_domain_name.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20200827012342_alter_entity_payment.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20200728090413_alter_payment_method.xml" relativeToChangelogFile="false"/>
 
 </databaseChangeLog>

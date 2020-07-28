@@ -220,8 +220,10 @@ tbs:
     #stc pay
     stc-direct-payment-authorize: 'https://b2btest.stcpay.com.sa/B2B.DirectPayment.WebApi/DirectPayment/V4/DirectPaymentAuthorize'
     stc-direct-payment: 'https://b2btest.stcpay.com.sa/B2B.DirectPayment.WebApi/DirectPayment/V4/DirectPayment'
-    stc-url-form: 'https://www.google.com/'
-    stcPay-return-url: 'http://localhost:8081/billing/payments/stcpay-payment-processing'
+    stcPay-url-form: '/billing/payments/stcpay-payment-processing'
+
+    stcPay-key-store-password: tm1548pmHea92
+    stcPay-key-store: 'config/tls/billing.tamkeentech.sa.jks'
 
 
 

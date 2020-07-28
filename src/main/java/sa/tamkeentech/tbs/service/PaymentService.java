@@ -154,10 +154,9 @@ public class PaymentService {
             // ToDo change to error page
             throw new TbsRunTimeException("Payment not found");
         }
-        if(payment.getPaymentMethod().getCode() == Constants.STCPay){
+        if(payment.getPaymentMethod().getCode() == Constants.STC_PAY){
             return stcPaymentService.initPayment(model, payment, lang);
-        }
-        if (payment.getPaymentProvider() == PaymentProvider.PAYFORT) {
+        } else if (payment.getPaymentProvider() == PaymentProvider.PAYFORT) {
             return payFortPaymentService.initPayment(model, payment, lang);
         } else {
             return sTSPaymentService.initPayment(model, payment, lang);
@@ -329,8 +328,8 @@ public class PaymentService {
         String transactionId = invoice.get().getAccountId().toString() + df.format(new java.sql.Timestamp(System.currentTimeMillis()));
 
         PaymentMethod paymentMethod = PaymentMethod.builder()
-            .code(Constants.STCPay)
-            .name(Constants.STCPay)
+            .code(Constants.STC_PAY)
+            .name(Constants.STC_PAY)
             .build();
 
         Payment payment = Payment.builder()

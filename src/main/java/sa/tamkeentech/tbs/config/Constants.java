@@ -22,7 +22,7 @@ public final class Constants {
     public static final String SADAD = "SADAD";
     public static final String CREDIT_CARD = "CREDIT_CARD";
     public static final String CASH = "CASH";
-    public static final String STCPay = "STCPay";
+    public static final String STC_PAY = "STC_PAY";
 
     // STS Payment codes
     public static final String STS_PAYMENT_SUCCESS_CODE = "00000";

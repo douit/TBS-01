@@ -212,7 +212,7 @@ public class InvoiceService {
                     invoiceItemsResponseDTO.setLink(paymentService.savePaymentAndGetPaymentUrl(invoice, paymentMethod.get(), language));
                     log.debug("CC payment method");
                     break;
-                case Constants.STCPay:
+                case Constants.STC_PAY:
                     invoiceItemsResponseDTO.setLink(paymentService.savePaymentAndGetPaymentUrl(invoice, paymentMethod.get(), language));
                     log.debug("STCPay payment method");
                 default:
