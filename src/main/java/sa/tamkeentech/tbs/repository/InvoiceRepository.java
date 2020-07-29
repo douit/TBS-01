@@ -34,6 +34,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long>, DataTab
     Optional<Invoice> findByAccountIdAndClientId(Long accountId, Long clientId);
     Optional<Invoice> findByAccountId(Long accountId);
     List<Optional<Invoice>>  findByStatusAndClientIdAndLastModifiedDateBefore(InvoiceStatus invoiceStatus , Long clientId, ZonedDateTime modifiedDate );
+    List<Optional<Invoice>>  findByPaymentStatus(PaymentStatus paymentStatus);
 
     @Query(value = "SELECT date_trunc('day', invoice.created_date) As Day , count(*) As totalInvoice , \n" +
         "        sum(case when payment_status = 'PAID' then 1 else 0 end ) As PaidInvoice"+

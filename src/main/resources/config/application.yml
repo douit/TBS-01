@@ -219,13 +219,14 @@ tbs:
     apple-pay-white-list-servers: apple-pay-gateway.apple.com,apple-pay-gateway-nc-pod1.apple.com,apple-pay-gateway-nc-pod2.apple.com,apple-pay-gateway-nc-pod3.apple.com,apple-pay-gateway-nc-pod4.apple.com,apple-pay-gateway-nc-pod5.apple.com,apple-pay-gateway-pr-pod1.apple.com,apple-pay-gateway-pr-pod2.apple.com,apple-pay-gateway-pr-pod3.apple.com,apple-pay-gateway-pr-pod4.apple.com,apple-pay-gateway-pr-pod5.apple.com,apple-pay-gateway-nc-pod1-dr.apple.com,apple-pay-gateway-nc-pod2-dr.apple.com,apple-pay-gateway-nc-pod3-dr.apple.com,apple-pay-gateway-nc-pod4-dr.apple.com,apple-pay-gateway-nc-pod5-dr.apple.com,apple-pay-gateway-pr-pod1-dr.apple.com,apple-pay-gateway-pr-pod2-dr.apple.com,apple-pay-gateway-pr-pod3-dr.apple.com,apple-pay-gateway-pr-pod4-dr.apple.com,apple-pay-gateway-pr-pod5-dr.apple.com,cn-apple-pay-gateway-sh-pod1.apple.com,cn-apple-pay-gateway-sh-pod1-dr.apple.com,cn-apple-pay-gateway-sh-pod2.apple.com,cn-apple-pay-gateway-sh-pod2-dr.apple.com,cn-apple-pay-gateway-sh-pod3.apple.com,cn-apple-pay-gateway-sh-pod3-dr.apple.com,cn-apple-pay-gateway-tj-pod1.apple.com,cn-apple-pay-gateway-tj-pod1-dr.apple.com,cn-apple-pay-gateway-tj-pod2.apple.com,cn-apple-pay-gateway-tj-pod2-dr.apple.com,cn-apple-pay-gateway-tj-pod3.apple.com,cn-apple-pay-gateway-tj-pod3-dr.apple.com,apple-pay-gateway-cert.apple.com,cn-apple-pay-gateway-cert.apple.com
 
     #stc pay
-    stc-direct-payment-authorize: 'https://b2btest.stcpay.com.sa/B2B.DirectPayment.WebApi/DirectPayment/V4/DirectPaymentAuthorize'
-    stc-direct-payment: 'https://b2btest.stcpay.com.sa/B2B.DirectPayment.WebApi/DirectPayment/V4/DirectPayment'
-    stcPay-url-form: '/billing/payments/stcpay-payment-processing'
+    stcpay-direct-payment-authorize: 'https://b2btest.stcpay.com.sa/B2B.DirectPayment.WebApi/DirectPayment/V4/DirectPaymentAuthorize'
+    stcpay-direct-payment: 'https://b2btest.stcpay.com.sa/B2B.DirectPayment.WebApi/DirectPayment/V4/DirectPayment'
+    stcpay-payment-inquiry: 'https://b2btest.stcpay.com.sa/B2B.DirectPayment.WebApi/DirectPayment/V4/PaymentInquiry'
+    stcpay-url-form: '/billing/payments/stcpay-payment-processing'
+    stcpay-refund: 'https://b2btest.stcpay.com.sa/B2B.MerchantTransactionsWebApi/MerchantTransactions/v3/RefundPayment'
 
     stcPay-key-store-password: tm1548pmHea92
     stcPay-key-store: 'config/tls/billing.tamkeentech.sa.jks'
-
 
 
   refund:
@@ -242,5 +243,7 @@ tbs:
     refund-sadad-sync: 0 0 * * * ?
     invoice-expired: 0 30 * * * ?
     audit-event-delete: 0 0 4 * * ?
+    stcpay-payment-inquiry: 0 2/5 * * * ?
+
 
 
