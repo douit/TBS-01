@@ -122,7 +122,7 @@ public class RefundService {
      * @return the persisted entity.
      */
     @Transactional
-    public RefundDTO createNewRefundAndSendEvent(RefundDTO refundDTO) throws IOException {
+    public RefundDTO createNewRefundAndSendEvent(RefundDTO refundDTO) throws IOException, JSONException {
         log.debug("Request new Refund : {}", refundDTO);
         if (refundDTO.getAccountId() == null) {
             throw new TbsRunTimeException("Invoice Id is mandatory to process the refund");
@@ -149,7 +149,7 @@ public class RefundService {
     }
 
 
-    public RefundDTO createNewRefund(RefundDTO refundDTO, Invoice invoice, Optional<Payment> payment) throws IOException {
+    public RefundDTO createNewRefund(RefundDTO refundDTO, Invoice invoice, Optional<Payment> payment) throws IOException, JSONException {
 
         Refund refund = refundMapper.toEntity(refundDTO);
         refund.setStatus(RequestStatus.CREATED);
