@@ -37,7 +37,7 @@ export enum PaymentMethod {
   SADAD = 'SADAD',
   CREDIT_CARD = 'CREDIT_CARD',
   CASH = 'CASH',
-  STCPay = 'STCPay'
+  STC_PAY = 'STC_PAY'
 }
 
 export enum InvoiceStatus {

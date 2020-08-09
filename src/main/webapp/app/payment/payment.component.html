@@ -207,6 +207,7 @@
                                         <ng-template #paymentMethodRowTemplate let-value="value">
                                             <div><i style="color: #8FB1C7" class="fa" [ngClass]="{
                                                     'fa-credit-card': value.code === PaymentMethod.CREDIT_CARD,
+                                                    'fa-stcPay': value.code === PaymentMethod.STC_PAY,
                                                     'fa-sadad': value.code === PaymentMethod.SADAD
                                             }"></i></div>
                                         </ng-template>

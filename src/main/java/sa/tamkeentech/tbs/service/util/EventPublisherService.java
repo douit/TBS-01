@@ -151,7 +151,7 @@ public class EventPublisherService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public TBSEventRespDTO<RefundStatusCCResponseDTO> callRefundByCreditCardEvent(TBSEventReqDTO<Refund> eventReq, Invoice invoice, Optional<Payment> payment) throws IOException, JSONException {
         RefundStatusCCResponseDTO refundStatusCCResponseDTO;
-        if(payment.get().getPaymentProvider().equals(PaymentProvider.STCPay)){
+        if(payment.get().getPaymentProvider().equals(PaymentProvider.STC_PAY)){
             refundStatusCCResponseDTO = stcPaymentService.proceedRefundOperation(eventReq.getReq(), invoice, payment);
         }
         else if(payment.get().getPaymentProvider().equals(PaymentProvider.STS)){

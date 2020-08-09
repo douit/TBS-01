@@ -33,6 +33,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Long>, DataTab
 
     List<Payment> findByStatusAndAndLastModifiedDateBetween(PaymentStatus checkoutPageRendered, ZonedDateTime zonedDateTime, ZonedDateTime zonedDateTime1);
 
-    Optional<Payment> findFirstByInvoiceAccountIdStatusAndPaymentProviderAnd(Long accountId, PaymentStatus paymentStatus, PaymentProvider paymentProvider);
+    Optional<Payment> findFirstByInvoiceAccountIdAndStatusAndPaymentProvider(Long accountId, PaymentStatus paymentStatus, PaymentProvider paymentProvider);
 
 }

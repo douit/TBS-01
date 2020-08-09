@@ -258,7 +258,7 @@ public class STCPaymentService {
         List<Optional<Invoice>> invoices = invoiceRepository.findByPaymentStatus(PaymentStatus.CHECKOUT_PAGE);
 
         for (Optional<Invoice> invoice : invoices) {
-            Optional<Payment> payment = paymentRepository.findFirstByInvoiceAccountIdStatusAndPaymentProviderAnd(invoice.get().getAccountId(), PaymentStatus.CHECKOUT_PAGE, PaymentProvider.STCPay);
+            Optional<Payment> payment = paymentRepository.findFirstByInvoiceAccountIdAndStatusAndPaymentProvider(invoice.get().getAccountId(), PaymentStatus.CHECKOUT_PAGE, PaymentProvider.STC_PAY);
 
             JSONObject stcPayInqReqParam = new JSONObject();
             JSONObject stcPayInqReqObj = new JSONObject();
