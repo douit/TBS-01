@@ -104,7 +104,7 @@ export class CustomerTestCcComponent implements OnInit {
     this.operation = 'payment';
     this.isSaving = true;
     // const payment = this.createFromPaymentForm(this.editForm);
-    this.subscribeToSaveResponse(this.paymentService.createCcPayment(this.editForm.get(['invoiceId']).value.accountId));
+    this.subscribeToSaveResponse(this.paymentService.createCcPayment(this.editForm.get(['invoiceId']).value.accountId, 'CREDIT_CARD'));
   }
 
   /*private createFromPaymentForm(editForm): IPayment {

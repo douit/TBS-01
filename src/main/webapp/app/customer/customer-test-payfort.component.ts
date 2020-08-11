@@ -47,6 +47,8 @@ export class CustomerTestPayfortComponent implements OnInit {
 
   urlIframe: SafeResourceUrl;
 
+  isSTCPay = false;
+
   editForm = this.fb.group({
     service_command: ['', [Validators.required]],
     access_code: ['', [Validators.required]],
@@ -149,13 +151,23 @@ export class CustomerTestPayfortComponent implements OnInit {
     this.jhiAlertService.error(errorMessage, null, null);
   }
 
+  isSTCPayCheck(): boolean {
+    if (this.isSTCPay) {
+      return this.isSTCPay = false;
+    } else {
+      return this.isSTCPay = true;
+    }
+  }
+
   onChangeInvoice(val, type) {
     // console.log(val);
     if (type === 'payment') {
       // console.log(JSON.stringify(this.invoiceSelected));
       // get signature
       // this.busy = true;
-      this.subscribeToCreateCcPayment(this.paymentService.createCcPayment(this.invoiceSelected.accountId));
+      let paymentMethod;
+      paymentMethod = (this.isSTCPay) ? 'STC_PAY' : 'CREDIT_CARD';
+      this.subscribeToCreateCcPayment(this.paymentService.createCcPayment(this.invoiceSelected.accountId, paymentMethod));
       // this.editForm.patchValue({'amount' : (this.invoiceSelected != null) ? this.invoiceSelected.amount : 0});
       const amountField = document.getElementById('field_amount');
       amountField.setAttribute('value', this.invoiceSelected != null ? this.invoiceSelected.amount : 0);

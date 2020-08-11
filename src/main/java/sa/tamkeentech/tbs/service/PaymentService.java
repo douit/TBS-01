@@ -154,7 +154,7 @@ public class PaymentService {
             // ToDo change to error page
             throw new TbsRunTimeException("Payment not found");
         }
-        if(payment.getPaymentMethod().getCode() == Constants.STC_PAY){
+        if(payment.getPaymentProvider() == PaymentProvider.STC_PAY){
             return stcPaymentService.initPayment(model, payment, lang);
         } else if (payment.getPaymentProvider() == PaymentProvider.PAYFORT) {
             return payFortPaymentService.initPayment(model, payment, lang);
@@ -690,7 +690,11 @@ public class PaymentService {
         payment.setAmount(invoice.getAmount());
         payment.setStatus(PaymentStatus.PENDING);
         payment.setTransactionId(transactionId);
-        payment.setPaymentProvider(invoice.getClient().getPaymentProvider());
+        if (Constants.STC_PAY.equals(paymentMethod.getCode())) {
+            payment.setPaymentProvider(PaymentProvider.STC_PAY);
+        } else {
+            payment.setPaymentProvider(invoice.getClient().getPaymentProvider());
+        }
 
         paymentRepository.save(payment);
 

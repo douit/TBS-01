@@ -1,6 +1,7 @@
 package sa.tamkeentech.tbs.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -8,11 +9,14 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.core.env.Environment;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import sa.tamkeentech.tbs.config.Constants;
@@ -31,6 +35,7 @@ import sa.tamkeentech.tbs.service.dto.StcDTO.STCPayDirectPaymentRespDTO;
 import sa.tamkeentech.tbs.service.dto.StcDTO.STCPayPaymentInquiryRespDTO;
 import sa.tamkeentech.tbs.service.dto.StcDTO.STCPayPaymentRefundRespDTO;
 import sa.tamkeentech.tbs.service.mapper.PaymentMapper;
+import sa.tamkeentech.tbs.service.util.CommonUtils;
 import sa.tamkeentech.tbs.service.util.LanguageUtil;
 import sa.tamkeentech.tbs.web.rest.errors.PaymentGatewayException;
 
@@ -54,19 +59,19 @@ import java.util.Optional;
 @Service
 public class STCPaymentService {
 
-    @Value("${tbs.payment.stcpay-direct-payment-authorize}")
+    @Value("${tbs.payment.stc-direct-payment-authorize}")
     private String stcDirectPaymentAuthorize;
 
-    @Value("${tbs.payment.stcpay-direct-payment}")
+    @Value("${tbs.payment.stc-direct-payment}")
     private String stcDirectPayment;
 
-    @Value("${tbs.payment.stcpay-url-form}")
+    @Value("${tbs.payment.stcPay-url-form}")
     private String urlForm;
 
     @Value("${tbs.payment.stcPay-key-store-password}")
     private String keyStorePassword;
 
-    @Value("${{tbs.payment.stcPay-key-store}")
+    @Value("${tbs.payment.stcPay-key-store}")
     private String keyStoreFile;
 
     @Value("${tbs.payment.stcpay-payment-inquiry}")
@@ -81,6 +86,9 @@ public class STCPaymentService {
     @Inject
     @Lazy
     private PaymentService paymentService;
+
+    @Autowired
+    private Environment environment;
 
     private final ObjectMapper objectMapper;
     private final PaymentMapper paymentMapper;
@@ -106,13 +114,93 @@ public class STCPaymentService {
         stcPayReqParam.put("DeviceID", testId);
         stcPayReqParam.put("RefNum", payment.getTransactionId());
         stcPayReqParam.put("BillNumber", payment.getInvoice().getAccountId());
-        stcPayReqParam.put("MobileNo", payment.getInvoice().getCustomer().getContact().getPhone());
+        if (CommonUtils.isProfile(environment, "prod")) {
+            // ToDO format the mobile 966---- otherwise error
+            stcPayReqParam.put("MobileNo", payment.getInvoice().getCustomer().getContact().getPhone());
+        } else {
+            stcPayReqParam.put("MobileNo", "966539396141");
+        }
         stcPayReqParam.put("Amount", payment.getAmount());
         stcPayReqParam.put("MerchantNote", testId);
         stcPayReqObj.put("DirectPaymentAuthorizeV4RequestMessage", stcPayReqParam);
 
+        // STC Resp as string
+        String res = httpsStcRequest(stcPayReqObj.toString(), stcDirectPaymentAuthorize);
+
+        if (StringUtils.isNotEmpty(res)) {
+            STCPayDirectPaymentAuthorizeRespDTO stcPayRes = objectMapper.readValue(res, STCPayDirectPaymentAuthorizeRespDTO.class);
+            payment.setOtpReference(stcPayRes.getDirectPaymentAuthorizeV4ResponseMessage().getOtpReference());
+            payment.setPaymentReference(stcPayRes.getDirectPaymentAuthorizeV4ResponseMessage().getSTCPayPmtReference());
+            paymentRepository.save(payment);
+        } else {
+            log.error("------STC Authorize failed - empty body");
+        }
+
+        model.addAttribute("transactionId", payment.getTransactionId());
+        model.addAttribute("codeInvalid", languageUtil.getMessageByKey("stc.code.invalid", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
+        model.addAttribute("optValue", languageUtil.getMessageByKey("stc.optValue.label", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
+        model.addAttribute("formTitle", languageUtil.getMessageByKey("stc.form.title", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
+        model.addAttribute("cardPay", languageUtil.getMessageByKey("payment.card.pay", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
+        model.addAttribute("actionUrl", urlForm);
+        model.addAttribute("currentLang", lang.equalsIgnoreCase(Constants.DEFAULT_HEADER_LANGUAGE)? "ar": "en");
+
+        return "paymentIframeSTC";
+
+    }
+
+    public void proceedPaymentOperation(Map<String, Object> params, HttpServletRequest request, HttpServletResponse response) throws JSONException, IOException {
+
+        Payment payment = paymentRepository.findByTransactionId(params.get("merchant_reference").toString());
+        Invoice invoice = null;
+        if (payment != null) {
+            payment.setStatus(PaymentStatus.CHECKOUT_PAGE);
+            paymentRepository.save(payment);
+
+            invoice = payment.getInvoice();
+            invoice.setPaymentStatus(PaymentStatus.CHECKOUT_PAGE);
+            invoiceRepository.save(invoice);
+        } else {
+            throw new PaymentGatewayException("STC prchase, Payment not found, transactionId=" + params.get("transactionId"));
+        }
 
 
+        JSONObject stcPayReqParam = new JSONObject();
+        JSONObject stcPayReqObj = new JSONObject();
+        String testId = "0000000";
+        stcPayReqParam.put("BranchID", testId);
+        stcPayReqParam.put("TellerID", testId);
+        stcPayReqParam.put("RefNum", payment.getTransactionId());
+        stcPayReqParam.put("BillNumber", payment.getInvoice().getAccountId());
+        stcPayReqParam.put("BillDate", payment.getExpirationDate());
+        stcPayReqParam.put("Amount", payment.getAmount());
+        stcPayReqParam.put("MerchantNote", testId);
+        stcPayReqParam.put("TokenId", testId);
+        stcPayReqObj.put("DirectPaymentV4RequestMessage", stcPayReqParam);
+        /*HttpClient client = HttpClientBuilder.create().build();
+        HttpPost post = new HttpPost(stcDirectPayment);
+        post.setHeader("Content-Type", "application/json");
+        post.setEntity(new StringEntity(stcPayReqObj.toString()));
+
+        HttpResponse response1;
+        response1 = client.execute(post);*/
+
+        // STC Resp as string
+        String res = httpsStcRequest(stcPayReqObj.toString(), stcDirectPaymentAuthorize);
+
+        if (StringUtils.isNotEmpty(res)) {
+            STCPayDirectPaymentRespDTO stcPayRes = objectMapper.readValue(res, STCPayDirectPaymentRespDTO.class);
+            if(stcPayRes.getDirectPaymentV4ResponseMessage().getPaymentStatus() == 0){
+
+            }
+        } else {
+            log.error("------STC Payment failed - empty body");
+        }
+        String redirectUrl = invoice.getClient().getRedirectUrl() + "?transactionId=" + payment.getTransactionId();
+        response.addHeader("Location", redirectUrl);
+        response.setStatus(HttpStatus.FOUND.value());
+    }
+
+    private String httpsStcRequest(String requestBody, String requestUrl) {
         // HTTPS
         // STC Resp as string
         StringBuilder sb = new StringBuilder();
@@ -140,17 +228,17 @@ public class STCPaymentService {
 
             sslContext.init(kms, trustAllCerts, new SecureRandom());
             HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
-            URL url = new URL(stcDirectPaymentAuthorize);
+            URL url = new URL(requestUrl);
             HttpsURLConnection urlConn = (HttpsURLConnection) url.openConnection();
             urlConn.setDoOutput(true);
             urlConn.setDoInput(true);
             urlConn.setRequestProperty("Content-Type", "application/json");
-            urlConn.setRequestProperty("Accept", "application/json");
+            // urlConn.setRequestProperty("Accept", "application/json");
             urlConn.setRequestProperty("X-ClientCode", "61248102687");
             urlConn.setRequestMethod("POST");
             OutputStreamWriter wr = new OutputStreamWriter
                 (urlConn.getOutputStream());
-            wr.write(stcPayReqObj.toString());
+            wr.write(requestBody);
             wr.flush();
             // StringBuilder sb = new StringBuilder();
             int HttpResult = urlConn.getResponseCode();
@@ -162,41 +250,14 @@ public class STCPaymentService {
                     sb.append(line + "\n");
                 }
                 br.close();
-                return sb.toString();
             } else {
                 // error from STC
-                log.error("------STC Authorize failed: {}", HttpResult);
+                log.error("------STC call failed: {}", HttpResult);
             }
         } catch (Exception e) {
-            log.error("------STC Authorize exception: {}", e);
+            log.error("------STC call exception: {}", e);
         }
-        // End HTTPS
-
-
-        /*HttpClient client = HttpClientBuilder.create().build();
-        HttpPost post = new HttpPost(stcDirectPaymentAuthorize);
-        post.setHeader("Content-Type", "application/json");
-        post.setEntity(new StringEntity(stcPayReqObj.toString()));
-        HttpResponse response;
-        response = client.execute(post);
-        STCPayDirectPaymentAuthorizeRespDTO stcPayRes = objectMapper.readValue(response.getEntity().getContent(), STCPayDirectPaymentAuthorizeRespDTO.class);*/
-        STCPayDirectPaymentAuthorizeRespDTO stcPayRes = objectMapper.readValue(sb.toString(), STCPayDirectPaymentAuthorizeRespDTO.class);
-
-        payment.setOtpReference(stcPayRes.getDirectPaymentAuthorizeV4ResponseMessage().getOtpReference());
-        payment.setPaymentReference(stcPayRes.getDirectPaymentAuthorizeV4ResponseMessage().getOtpReference());
-        paymentService.save(paymentMapper.toDto(payment));
-
-        model.addAttribute("transactionId", payment.getTransactionId());
-        model.addAttribute("codeInvalid", languageUtil.getMessageByKey("stc.code.invalid", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
-        model.addAttribute("optValue", languageUtil.getMessageByKey("stc.optValue.label", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
-        model.addAttribute("formTitle", languageUtil.getMessageByKey("stc.form.title", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
-        model.addAttribute("cardPay", languageUtil.getMessageByKey("payment.card.pay", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
-//      model.addAttribute("actionUrl", urlForm);
-        model.addAttribute("return_url", urlForm);
-
-
-        return "paymentIframeSTC";
-
+        return sb.toString();
     }
 
     public void proceedPaymentOperation(Map<String, Object> params, HttpServletRequest request, HttpServletResponse response) throws JSONException, IOException {

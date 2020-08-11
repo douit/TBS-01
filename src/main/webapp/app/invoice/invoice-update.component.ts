@@ -127,7 +127,7 @@ export class InvoiceUpdateComponent implements OnInit {
       dueDate: invoice.dueDate != null ? invoice.dueDate.format(DATE_TIME_FORMAT) : null,
       subtotal: invoice.subtotal,
       amount: invoice.amount,
-      // discountId: invoice.discountId,
+      discountId: invoice.discount.id,
       customerId: invoice.customerId,
       clientId: invoice.clientId
     });

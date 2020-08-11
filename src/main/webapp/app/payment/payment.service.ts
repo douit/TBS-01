@@ -41,12 +41,12 @@ export class PaymentService {
       .pipe(map((res: EntityResponseType) => this.convertDateFromServer(res)));
   }
 
-  createCcPayment(accountId): Observable<EntityResponseType> {
+  createCcPayment(accountId, paymentMethod): Observable<EntityResponseType> {
     const headers = new HttpHeaders()
       .set('Accept-Language', 'en');
     return this.http
       /*.post<IPayment>(this.resourceUrlCreditCard, copy, { observe: 'response' })*/
-      .get<any>(this.resourceUrlCreditCard + '/' + accountId + '/CREDIT_CARD',
+      .get<any>(this.resourceUrlCreditCard + '/' + accountId + '/' + paymentMethod,
         { observe: 'response', headers: headers })
       .pipe(map((res: EntityResponseType) => this.convertDateFromServer(res)));
   }
