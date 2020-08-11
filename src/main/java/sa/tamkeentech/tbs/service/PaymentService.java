@@ -772,44 +772,56 @@ public class PaymentService {
         log.debug("---- checking {} payments with status checkout page", payments.size());
         if (CollectionUtils.isNotEmpty(payments)) {
             for (Payment payment : payments) {
+                // need 3 status null = pending --- PAID --- UNPAID
+                Boolean isSuccessfulOp = null;
+                boolean isNotifyClient = false;
                 if (payment.getPaymentProvider().equals(PaymentProvider.STS)) {
                     PaymentStatusResponseDTO response = sTSPaymentService.checkOffilnePaymentStatus(payment.getTransactionId());
-                    if (Constants.STS_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(response.getCode()) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
-                        // Notify Client app
-                        Invoice invoice = payment.getInvoice();
-
-                        payment.setStatus(PaymentStatus.PAID);
-                        invoice.setPaymentStatus(PaymentStatus.PAID);
-                        // in case client does not call check-payment Job will send notification
-                        invoice.setStatus(InvoiceStatus.WAITING);
-                        paymentRepository.save(payment);
-                        invoiceRepository.save(invoice);
-
-
-                        if (CommonUtils.isProfile(environment, "prod") || CommonUtils.isProfile(environment, "staging")
-                            || CommonUtils.isProfile(environment, "ahmed")) {
-                            sendPaymentNotificationToClient(clientMapper.toDto(invoice.getClient()), invoice.getAccountId(), payment);
-                        } else {
-                            log.warn("----Not prod/staging env, client notif desabled, Invoice: {}" + invoice.getAccountId());
-                        }
+                    if (Constants.STS_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(response.getCode())) {
+                        isSuccessfulOp = Boolean.TRUE;
+                        isNotifyClient = true;
+                    } else if (Constants.STS_PAYMENT_FAILURE_CODE.equalsIgnoreCase(response.getCode())) {
+                        isSuccessfulOp = Boolean.FALSE;
                     }
                 } else if (payment.getPaymentProvider().equals(PaymentProvider.PAYFORT)) {
                     PaymentStatusResponseDTO response = payFortPaymentService.checkOffilnePaymentStatus(payment.getTransactionId());
-                    if (Constants.PAYFORT_PAYMENT_CHECK_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(response.getCode()) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
-                        // Notify Client app
-                        Invoice invoice = payment.getInvoice();
-                        payment.setStatus(PaymentStatus.PAID);
-                        invoice.setPaymentStatus(PaymentStatus.PAID);
-                        // in case client does not call check-payment Job will send notification
-                        invoice.setStatus(InvoiceStatus.WAITING);
-                        paymentRepository.save(payment);
-                        invoiceRepository.save(invoice);
-                        if (CommonUtils.isProfile(environment, "prod") || CommonUtils.isProfile(environment, "staging")
-                            || CommonUtils.isProfile(environment, "ahmed") || CommonUtils.isProfile(environment, "abdullah")) {
-                            sendPaymentNotificationToClient(clientMapper.toDto(invoice.getClient()), invoice.getAccountId(), payment);
-                        } else {
-                            log.warn("----Not prod/staging env, client notif desabled, Invoice: {}" + invoice.getAccountId());
-                        }
+                    if (Constants.PAYFORT_PAYMENT_CHECK_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(response.getCode())) {
+                        isSuccessfulOp = Boolean.TRUE;
+                        isNotifyClient = true;
+                    } else if (Constants.PAYFORT_PAYMENT_FAILURE_CODE.contains(response.getCode())) {
+                        isSuccessfulOp = Boolean.FALSE;
+                    }
+                } else if (payment.getPaymentProvider().equals(PaymentProvider.STC_PAY)) {
+                    // case of stc update is part of checkOfflinePaymentStatus
+                    // only notify client
+                    isNotifyClient = stcPaymentService.checkOfflilnePaymentStatus(payment);
+                }
+
+                if (isSuccessfulOp != null && isSuccessfulOp) {
+                    // Notify Client app
+                    Invoice invoice = payment.getInvoice();
+                    payment.setStatus(PaymentStatus.PAID);
+                    invoice.setPaymentStatus(PaymentStatus.PAID);
+                    // in case client does not call check-payment Job will send notification
+                    invoice.setStatus(InvoiceStatus.WAITING);
+                    paymentRepository.save(payment);
+                    invoiceRepository.save(invoice);
+
+                } else if (isSuccessfulOp != null) {
+                    Invoice invoice = payment.getInvoice();
+                    payment.setStatus(PaymentStatus.UNPAID);
+                    invoice.setPaymentStatus(PaymentStatus.UNPAID);
+                    paymentRepository.save(payment);
+                    invoiceRepository.save(invoice);
+                }
+
+                if (isNotifyClient) {
+                    Invoice invoice = payment.getInvoice();
+                    if (CommonUtils.isProfile(environment, "prod") || CommonUtils.isProfile(environment, "staging")
+                        || CommonUtils.isProfile(environment, "ahmed")) {
+                        sendPaymentNotificationToClient(clientMapper.toDto(invoice.getClient()), invoice.getAccountId(), payment);
+                    } else {
+                        log.warn("----Not prod/staging env, client notif desabled, Invoice: {}" + invoice.getAccountId());
                     }
                 }
             }

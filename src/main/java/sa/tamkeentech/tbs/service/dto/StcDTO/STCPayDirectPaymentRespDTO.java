@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class STCPayDirectPaymentRespDTO {
 
-    @JsonProperty("DirectPaymentV4ResponseMessage")
+    @JsonProperty("DirectPaymentConfirmV4ResponseMessage")
     private DirectPaymentV4ResponseMessage directPaymentV4ResponseMessage;
 
     @Data

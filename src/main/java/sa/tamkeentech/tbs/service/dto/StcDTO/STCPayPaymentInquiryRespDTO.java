@@ -19,7 +19,7 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class STCPayPaymentInquiryRespDTO {
 
-    @JsonProperty("DirectPaymentV4ResponseMessage")
+    @JsonProperty("PaymentInquiryV4ResponseMessage")
     private PaymentInquiryV4ResponseMessage paymentInquiryV4ResponseMessage;
 
     @Data

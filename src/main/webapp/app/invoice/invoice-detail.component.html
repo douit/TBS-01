@@ -29,12 +29,12 @@
                 <dd>
                     <span>{{invoice.amount}}</span>
                 </dd>
-                <dt><span jhiTranslate="tbsApp.invoice.discount">Discount</span></dt>
+               <!-- <dt><span jhiTranslate="tbsApp.invoice.discount">Discount</span></dt>
                 <dd>
                     <div *ngIf="invoice.discountId">
                         <a [routerLink]="['/discount', invoice.discountId, 'view']">{{invoice.discountId}}</a>
                     </div>
-                </dd>
+                </dd>-->
                 <dt><span jhiTranslate="tbsApp.invoice.customer">Customer</span></dt>
                 <dd>
                     <div *ngIf="invoice.customerId">
