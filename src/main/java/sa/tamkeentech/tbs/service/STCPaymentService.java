@@ -11,9 +11,14 @@ import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.Invoice;
 import sa.tamkeentech.tbs.domain.Payment;
@@ -81,6 +86,9 @@ public class STCPaymentService {
 
     @Autowired
     private Environment environment;
+
+    @Inject
+    private RestTemplate restTemplate;
 
     private final ObjectMapper objectMapper;
     private final PaymentMapper paymentMapper;
@@ -183,7 +191,7 @@ public class STCPaymentService {
         // HTTPS
         // STC Resp as string
         StringBuilder sb = new StringBuilder();
-        try {
+        /*try {
             KeyStore clientStore = KeyStore.getInstance("JKS");
             clientStore.load(STCPaymentService.class.getClassLoader().getResourceAsStream(keyStoreFile), keyStorePassword.toCharArray());
             KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
@@ -236,7 +244,20 @@ public class STCPaymentService {
         } catch (Exception e) {
             log.error("------STC call exception: {}", e);
         }
-        return sb.toString();
+        return sb.toString();*/
+        String resp = null;
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Content-Type", "application/json");
+            HttpEntity<String> entity = new HttpEntity<String>(requestBody, headers);
+            ResponseEntity<String> result = restTemplate.postForEntity(requestUrl, entity, String.class);
+            log.debug("STC pay request status code: {}, body ", result.getStatusCode(), result.getBody());
+            resp = result.getBody();
+        } catch (Exception e) {
+            log.error("------STC call exception: {}", e);
+        }
+
+        return resp;
     }
 
     public boolean checkOfflilnePaymentStatus(Payment payment) {

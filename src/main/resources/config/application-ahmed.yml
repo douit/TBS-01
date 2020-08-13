@@ -147,6 +147,10 @@ tbs:
 #    payfort-process-payment: 'http://localhost:8082/PayfortPaymentProcessing'
 # Test Apple pay via mule
     payfort-url-json: 'https://platform.tamkeentech.sa/billing-system-test/PayfortPaymentApi'
+
+    #stc pay
+    stcpay-direct-payment-authorize: 'http://127.0.0.1:8082/B2B.DirectPayment.WebApi/DirectPayment/V4/DirectPaymentAuthorize'
+    stcpay-direct-payment: 'http://127.0.0.1:8082/B2B.DirectPayment.WebApi/DirectPayment/V4/DirectPaymentConfirm'
   refund:
     sadad-shared-folder: 'C:\\sadad_share\\'
   report:
