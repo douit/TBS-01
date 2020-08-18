@@ -14,10 +14,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sa.tamkeentech.tbs.config.Constants;
-import sa.tamkeentech.tbs.domain.Client;
-import sa.tamkeentech.tbs.domain.Invoice;
-import sa.tamkeentech.tbs.domain.Report;
-import sa.tamkeentech.tbs.domain.User;
+import sa.tamkeentech.tbs.domain.*;
 import sa.tamkeentech.tbs.domain.enumeration.ReportStatus;
 import sa.tamkeentech.tbs.domain.enumeration.ReportType;
 import sa.tamkeentech.tbs.domain.enumeration.RequestStatus;
@@ -59,6 +56,11 @@ public class ReportService {
     private static final String REFUND_FILE_SUFFIX = "refund_report_";
     private static final String REFUND_FOLDER_NAME = "refunds";
 
+    private static final String CUSTOMER_TRAINEE =   "اسم المتدرب  ";
+    private static final String CUSTOMER_INSTITUTE = "اسم المنشأة  ";
+    private static final String CUSTOMER_GENERAL =   "اسم العميل  ";
+
+
     @Autowired
     private UserService userService;
     @Autowired
@@ -75,6 +77,8 @@ public class ReportService {
     private InvoiceService invoiceService;
     @Autowired
     private RefundService refundService;
+    @Autowired
+    private ItemService itemService;
 
     @Value("${tbs.report.reports-folder}")
     private String outputFolder;
@@ -228,15 +232,14 @@ public class ReportService {
         extraParams.put("reportResource", reportResourceDirectory);
         // extraParams.put("generatedDate", CommonUtils.getFormattedLocalDate(receipt.getGeneratedDate(), Constants.RIYADH_OFFSET));
 
-
-//        // report summary
-//        BigDecimal totalInvoicesAmount = BigDecimal.ZERO;
-//        if (CollectionUtils.isNotEmpty(dataList) ) {
-//            totalInvoicesAmount = dataList.stream().map(PaymentDTO::getAmount)
-//                .filter(x -> x != null).reduce(BigDecimal.ZERO, BigDecimal::add);
-//        }
-//        extraParams.put("numberOfPayments", dataList.size());
-//        extraParams.put("totalPaymentsAmount", totalInvoicesAmount);
+        Optional<Item> item = itemService.findByCodeAndClient(invoiceDTO.getInvoiceItems().get(0).getItemCode(), invoiceDTO.getClient().getId());
+        if (item.get().getCategory().getCode().equals("COURSES")) {
+            extraParams.put("customerLabel", CUSTOMER_TRAINEE);
+        } else if (item.get().getCategory().getCode().equals("ADVERTISING")) {
+            extraParams.put("customerLabel", CUSTOMER_INSTITUTE);
+        } else {
+            extraParams.put("customerLabel", CUSTOMER_GENERAL);
+        }
 
         return extraParams;
     }
