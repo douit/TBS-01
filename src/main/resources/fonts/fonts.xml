@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fontFamilies>
+    <fontFamily name="Arial">
+        <normal><![CDATA[fonts/Arial/Arial.TTF]]></normal>
+        <bold><![CDATA[fonts/Arial/Arialbd.TTF]]></bold>
+        <italic><![CDATA[fonts/Arial/Ariali.TTF]]></italic>
+        <boldItalic><![CDATA[fonts/Arial/Arialbi.TTF]]></boldItalic>
+        <pdfEncoding>Identity-H</pdfEncoding>
+        <pdfEmbedded>true</pdfEmbedded>
+        <exportFonts/>
+    </fontFamily>
+    <!--<fontFamily name="Frutiger LT Arabic 45 Light">
+        <normal>fonts/Frutiger/FrutigerLTArabic-45Light.ttf</normal>
+        <bold>fonts/Frutiger/Frutiger-LT-Arabic-75-Black.ttf</bold>
+        <pdfEncoding>Identity-H</pdfEncoding>
+        <pdfEmbedded>true</pdfEmbedded>
+        <exportFonts/>
+    </fontFamily>-->
+</fontFamilies>
