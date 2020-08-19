@@ -59,6 +59,7 @@ public class ReportService {
     private static final String CUSTOMER_TRAINEE =   "اسم المتدرب  ";
     private static final String CUSTOMER_INSTITUTE = "اسم المنشأة  ";
     private static final String CUSTOMER_GENERAL =   "اسم العميل  ";
+    private static final String TAX_BASE_LABEL =   "مبلغ الضريبة";
 
 
     @Autowired
@@ -239,6 +240,13 @@ public class ReportService {
             extraParams.put("customerLabel", CUSTOMER_INSTITUTE);
         } else {
             extraParams.put("customerLabel", CUSTOMER_GENERAL);
+        }
+
+        // in case of one item invoice include tax rate
+        if (invoiceDTO.getInvoiceItems().size() == 1) {
+            extraParams.put("taxLabel", TAX_BASE_LABEL + " (" + invoiceDTO.getInvoiceItems().get(0).getTaxRate().intValue() + "%)");
+        } else {
+            extraParams.put("taxLabel", TAX_BASE_LABEL);
         }
 
         return extraParams;
