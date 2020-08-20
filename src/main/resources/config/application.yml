@@ -222,8 +222,8 @@ tbs:
     stcpay-direct-payment-authorize: 'https://b2btest.stcpay.com.sa/B2B.DirectPayment.WebApi/DirectPayment/V4/DirectPaymentAuthorize'
     stcpay-direct-payment: 'https://b2btest.stcpay.com.sa/B2B.DirectPayment.WebApi/DirectPayment/V4/DirectPaymentConfirm'
     stcpay-payment-inquiry: 'https://b2btest.stcpay.com.sa/B2B.DirectPayment.WebApi/DirectPayment/V4/PaymentInquiry'
-    stcpay-url-form: '/billing/payments/stcpay-payment-processing'
     stcpay-refund: 'https://b2btest.stcpay.com.sa/B2B.MerchantTransactionsWebApi/MerchantTransactions/v3/RefundPayment'
+    stcpay-url-form: '/billing/payments/stcpay-payment-processing'
 
     stcpay-key-store-password: tm1548pmHea92
     stcpay-key-store: 'config/tls/TkeenKeystore.p12'

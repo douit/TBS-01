@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -47,11 +48,11 @@ public class STCPayPaymentInquiryRespDTO {
         @JsonProperty("RefNum")
         private String RefNum;
         @JsonProperty("STCPayRefNum")
-        private Integer stcPayRefNum;
+        private String stcPayRefNum;
         @JsonProperty("Amount")
-        private Integer Amount;
+        private BigDecimal Amount;
         @JsonProperty("AmountReversed")
-        private Integer amountReversed;
+        private BigDecimal amountReversed;
         @JsonProperty("PaymentDate")
         private ZonedDateTime paymentDate;
         @JsonProperty("PaymentStatus")
