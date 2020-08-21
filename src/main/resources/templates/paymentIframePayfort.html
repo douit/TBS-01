@@ -406,6 +406,7 @@
                 return new Promise(function (resolve, reject) {
                     var xhr = new XMLHttpRequest();
                     console.log('--- getApplePaySession sending post req to backend');
+                    // !!!!----------------------------- Ahmed must chage To mule
                     xhr.open('POST', '/billing/payments/apple-session');
                     xhr.onload = function () {
                         if (this.status == 200) {
@@ -437,6 +438,7 @@
                 return new Promise(function (resolve, reject) {
                     var xhr = new XMLHttpRequest();
                     console.log('--- authorize sending post req to backend');
+                    // !!!!!!----------------------------- Ahmed must chage To mule
                     xhr.open('POST', '/billing/payments/apple-authorize');
                     // add header test
                     xhr.setRequestHeader("Access-Control-Allow-Origin", "*");

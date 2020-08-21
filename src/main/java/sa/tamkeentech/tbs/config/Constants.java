@@ -137,6 +137,12 @@ public final class Constants {
         }
     }
 
+    public enum STCPayMobileValidationStatus {
+        UNSET,
+        VALID,
+        INVALID
+    }
+
     private Constants() {
     }
 }

@@ -155,7 +155,7 @@ public class PaymentService {
             throw new TbsRunTimeException("Payment not found");
         }
         if(payment.getPaymentProvider() == PaymentProvider.STC_PAY){
-            return stcPaymentService.initPayment(model, payment, lang);
+            return stcPaymentService.preparePayment(model, payment, lang);
         } else if (payment.getPaymentProvider() == PaymentProvider.PAYFORT) {
             return payFortPaymentService.initPayment(model, payment, lang);
         } else {

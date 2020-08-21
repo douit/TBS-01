@@ -59,76 +59,75 @@
 
         .display-block { display: block !important; }
 
+        .hide-block { display: none; !important; }
+
         .align-right{ text-align: right !important; }
 
         .align-center {text-align: center !important; }
 
         .direction-right { direction: rtl; }
 
-        /* Apple pay */
-        .apple-pay {
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-            text-align: center;
-        }
 
-        .apple-pay-button {
-            -webkit-appearance: -apple-pay-button;
-            -apple-pay-button-type: buy;
-            visibility: hidden;
-            display: inline-block;
-            width: 200px;
-            min-height: 30px;
-            border: 1px solid black;
-            background-image: -webkit-named-image(apple-pay-logo-black);
-            background-size: 100% calc(60% + 2px);
-            background-repeat: no-repeat;
-            background-color: white;
-            background-position: 50% 50%;
-            border-radius: 5px;
-            padding: 0px;
-            margin: 5px auto;
-            transition: background-color .15s;
-        }
-
-        .apple-pay-button.visible {
-            visibility: visible;
-        }
-
-        .apple-pay-button:active {
-            background-color: rgb(152, 152, 152);
-        }
 
     </style>
 
 
     <script th:inline="javascript">
-        //test
         /*<![CDATA[*/
-        var transactionIdBilling = /*[[${merchant_reference}]]*/ "";
+        var mobileValidationStatus = /*[[${mobileValidationStatus}]]*/ "";
+        console.log('--- mobileValidationStatus:' + mobileValidationStatus);
+        var transactionIdBilling = /*[[${transactionId}]]*/ "";
         console.log('--- transactionIdBilling:' + transactionIdBilling);
-        var transactionAmount = /*[[${amount}]]*/ "";
-        console.log('--- transactionAmount:' + transactionAmount);
-        var paymentDescription = /*[[${paymentDescription}]]*/ "";
-        console.log('--- paymentDescription:' + paymentDescription);
+        var payButtonLabel = /*[[${payButtonLabel}]]*/ "";
+        console.log('--- payButtonLabel:' + payButtonLabel);
         /*]]>*/
+
+        if (mobileValidationStatus == 'INVALID') {
+            document.getElementById("error_mobile").classList.add("display-block");
+        }
+
     </script>
 
     <script>
         function payOnClick() {
-            var optValue = document.getElementById('opt_value').value;
-            console.log('opt_value ' + optValue.length);
+            // check if mobile submit
+            if (mobileValidationStatus != 'VALID') {
+                var mobileNo= document.getElementById('mobile_no').value;
+                console.log('mobileNo ' + mobileNo.length);
+                if (mobileNo.length == 10 ) {
+                    validateMobile(mobileNo, transactionIdBilling).then(function(response) {
+                        console.log('--- validateMobile resp: ' + JSON.stringify(response));
+                        console.log('--- validateMobile resp: ' + (response));
+                        if (response != null) {
+                            // window.top.location.href = response;
+                            // success case
+                            mobileValidationStatus = 'VALID';
+                            // mobile_row  -- otp_row  hide-block
+                            document.getElementById('mobile_row').classList.add("hide-block");
+                            document.getElementById('otp_row').classList.remove("hide-block");
+                            // change submit label
+                            document.getElementById("submitButtonText").innerHTML = payButtonLabel;
+                            document.getElementById("mobile_no").focus();
+                        }
+                    }).catch(err => {
+                        console.log('--- validateMobile resp err: ' + JSON.stringify(err));
 
-            if (optValue.length < 4 ) {
-                console.log('validation failed');
-                document.getElementById("error_msg").classList.add("display-block");
+                    });
+                }
                 return false;
+            } else {
+                var optValue = document.getElementById('opt_value').value;
+                console.log('opt_value ' + optValue.length);
+                if (optValue.length < 4 ) {
+                    console.log('validation failed');
+                    document.getElementById("error_msg").classList.add("display-block");
+                    return false;
+                }
+                document.getElementById("error_msg").classList.remove("display-block");
+                console.log('validation pass');
+                startLoading();
+                document.redirectForm.submit();
             }
-            document.getElementById("error_msg").classList.remove("display-block");
-            console.log('validation pass');
-            startLoading();
-            document.redirectForm.submit();
         }
 
         function isNumber(evt) {
@@ -138,6 +137,50 @@
                 return true;
             }
             return false;
+        }
+
+        window.onload = function() {
+            console.log('---load iframe');
+            if (mobileValidationStatus == 'VALID') {
+                document.getElementById("opt_value").focus();
+            } else {
+                document.getElementById("mobile_no").focus();
+            }
+        }
+
+        /*Validate mobile*/
+        /**
+         * Server to Server call to complete the payment
+         */
+        function validateMobile(mobile, transactionId) {
+            return new Promise(function (resolve, reject) {
+                var xhr = new XMLHttpRequest();
+                console.log('--- authorize sending post req to backend');
+                // !!! ----------------------------- Ahmed must change To mule
+                xhr.open('POST', '/billing/payments/stcpay-payment-processing');
+                // add header test
+                xhr.setRequestHeader("Access-Control-Allow-Origin", "*");
+                xhr.onload = function () {
+                    if (this.status >= 200 && this.status < 300) {
+                        console.log('--- Success result');
+                        resolve(xhr.response);
+                    } else {
+                        console.log('--- Fail result');
+                        reject({
+                            status: this.status,
+                            statusText: xhr.statusText
+                        });
+                    }
+                };
+                xhr.onerror = function () {
+                    reject({
+                        status: this.status,
+                        statusText: xhr.statusText
+                    });
+                };
+                xhr.setRequestHeader("Content-Type", "application/json");
+                xhr.send(JSON.stringify({merchant_reference: transactionId, mobile_no: mobile}));
+            });
         }
 
     </script>
@@ -165,10 +208,24 @@
                         <span class="content" th:text="${codeInvalid}"></span>
                     </span>
 
-                <span class="input">
+                    <span class="popover" id="error_mobile" th:classappend="(${currentLang}== 'ar')? align-right : ''">
+                        <span class="content" th:text="${mobileInvalid}"></span>
+                    </span>
+
+                <span class="input" id="mobile_row" th:classappend="(${mobileValidationStatus} == 'VALID')? hide-block : ''">
+                                    <input class="input-field align-center" type="tel" name="mobile_no" id="mobile_no" pattern="[0-9]*" maxlength="10"
+                                           onkeypress="javascript: return isNumber(event)" th:value="${MobileNo}"
+                                           ondrag="return false" ondrop="return false" autocomplete="off" autofocus>
+                                    <label class="input-label" for="">
+                                        <i class="fas fa-shield-alt"></i>
+                                        <span class="input-label-content"  th:text="${mobileLabel}">Mobile number</span>
+                                    </label>
+                                </span>
+
+                <span class="input" id="otp_row" th:classappend="(${mobileValidationStatus} != 'VALID')? hide-block : ''">
                                     <input class="input-field align-center" type="tel" name="opt_value" id="opt_value" pattern="[0-9]*" maxlength="8"
                                            onkeypress="javascript: return isNumber(event)"
-                                           ondrag="return false" ondrop="return false" autocomplete="off">
+                                           ondrag="return false" ondrop="return false" autocomplete="off" autofocus>
                                     <label class="input-label" for="">
                                         <i class="fas fa-shield-alt"></i>
                                         <span class="input-label-content"  th:text="${optLabel}">Verification Code</span>
@@ -177,9 +234,8 @@
 
 
                 <button type="submit" id="submitBtn" class="pay br " data-text="Pay" onclick="javascript: return payOnClick();">
-                    <!--<button type="submit" id="save-entity"  class="pay br " data-text="Pay">-->
                     <i class="animated icon-spin4 animate-spin" id="loadingI" style="visibility: hidden;"></i>
-                    <span th:text="${cardPay}">Pay</span>
+                    <span id="submitButtonText" th:text="${submitButtonLabel}">Pay</span>
                 </button>
             </div>
         </div>

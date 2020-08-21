@@ -145,11 +145,22 @@ public class PaymentCreditCardResource {
         return payFortPaymentService.proceedApplePurchaseOperation(token, request, response);
     }
 
-    @PostMapping("/billing/payments/stcpay-payment-processing")
+    @PostMapping(path = "/billing/payments/stcpay-payment-processing", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public void processPaymentSTC(Model model
+    public Object validateMobileSTC(@RequestBody Map<String, String> payload) throws IOException, JSONException {
+        // ToDo call directly initPayment or prepare
+        // ToDo Return void is ok 200 / 400
+        return stcPaymentService.proceedPaymentOperation(null, null, null, payload);
+    }
+
+
+    //@PostMapping("/billing/payments/stcpay-payment-processing")
+    @PostMapping(
+        path = "/billing/payments/stcpay-payment-processing", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @ResponseBody
+    public Object processPaymentSTC(Model model
         , @RequestParam Map<String,Object> params, HttpServletRequest request, HttpServletResponse response) throws IOException, JSONException {
-        stcPaymentService.proceedPaymentOperation(params, request, response);
+        return stcPaymentService.proceedPaymentOperation(params, request, response, null);
     }
 
 }

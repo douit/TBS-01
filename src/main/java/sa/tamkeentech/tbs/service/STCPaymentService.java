@@ -50,6 +50,7 @@ import java.net.URL;
 import java.security.KeyStore;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -104,8 +105,56 @@ public class STCPaymentService {
         this.invoiceRepository = invoiceRepository;
     }
 
+    // return the form to confirm/update mobile
+    public  String preparePayment(Model model, Payment payment, String lang) throws JSONException, IOException {
+        String mobile= payment.getInvoice().getCustomer().getContact().getPhone();
+        if (mobile != null) {
+            //00966539396141
+            if (mobile.length() == 14 && mobile.startsWith("009665")) {
+                mobile = "0" + mobile.substring(5);
+            } else if (mobile.length() == 13 && mobile.startsWith("+9665")) {
+                // +966539396141
+                mobile = "0" + mobile.substring(4);
+            } else if (mobile.length() == 10 && mobile.startsWith("05")) {
+                // 0539396141 --> correct
+            } else {
+                // wrong number
+                mobile = "";
+            }
+        } else {
+            mobile = "";
+        }
 
-    public  String initPayment(Model model, Payment payment, String lang) throws JSONException, IOException {
+        // if (CommonUtils.isProfile(environment, "prod")) {
+        model.addAttribute("MobileNo", mobile);
+        model.addAttribute("mobileValidationStatus", Constants.STCPayMobileValidationStatus.UNSET);
+        /*} else {
+            model.addAttribute("MobileNo", "966539396141");
+        }*/
+        model.addAttribute("transactionId", payment.getTransactionId());
+        model.addAttribute("codeInvalid", languageUtil.getMessageByKey("stc.code.invalid", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
+        model.addAttribute("optLabel", languageUtil.getMessageByKey("stc.optValue.label", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
+        model.addAttribute("formTitle", languageUtil.getMessageByKey("stc.form.title", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
+        model.addAttribute("submitButtonLabel", languageUtil.getMessageByKey("payment.card.submit", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
+        model.addAttribute("actionUrl", urlForm);
+        model.addAttribute("currentLang", lang.equalsIgnoreCase(Constants.DEFAULT_HEADER_LANGUAGE)? "ar": "en");
+        model.addAttribute("mobileLabel", languageUtil.getMessageByKey("stc.mobile.label", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
+
+        // all labels -- needed for otp and pay
+        model.addAttribute("payButtonLabel", languageUtil.getMessageByKey("payment.card.pay", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
+        model.addAttribute("mobileInvalid", languageUtil.getMessageByKey("stc.mobile.invalid", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
+        model.addAttribute("codeInvalid", languageUtil.getMessageByKey("stc.code.invalid", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
+        model.addAttribute("optLabel", languageUtil.getMessageByKey("stc.optValue.label", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
+        model.addAttribute("formTitle", languageUtil.getMessageByKey("stc.form.title", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
+
+        return "paymentIframeSTC";
+    }
+
+    // return the form to enter otp
+    public  Map<String, String> initPayment(Payment payment, String mobile) throws JSONException, IOException {
+
+        // resp
+        Map<String, String> model = new HashMap<>();
 
         JSONObject stcPayReqParam = new JSONObject();
         JSONObject stcPayReqObj = new JSONObject();
@@ -115,9 +164,9 @@ public class STCPaymentService {
         stcPayReqParam.put("DeviceID", clientName);
         stcPayReqParam.put("RefNum", payment.getTransactionId());
         stcPayReqParam.put("BillNumber", payment.getInvoice().getAccountId());
-        if (CommonUtils.isProfile(environment, "prod")) {
-            // ToDO format the mobile 966---- otherwise error
-            stcPayReqParam.put("MobileNo", payment.getInvoice().getCustomer().getContact().getPhone());
+        // ToDO Get Mobile form
+        if (CommonUtils.isProfile(environment, "prod") || CommonUtils.isProfile(environment, "ahmed")) {
+            stcPayReqParam.put("MobileNo", "966" + mobile.substring(1));
         } else {
             stcPayReqParam.put("MobileNo", "966539396141");
         }
@@ -133,36 +182,37 @@ public class STCPaymentService {
             payment.setOtpReference(stcPayRes.getDirectPaymentAuthorizeV4ResponseMessage().getOtpReference());
             payment.setPaymentReference(stcPayRes.getDirectPaymentAuthorizeV4ResponseMessage().getSTCPayPmtReference());
             paymentRepository.save(payment);
+            model.put("mobileValidationStatus", Constants.STCPayMobileValidationStatus.VALID.name());
+
         } else {
             log.error("------STC Authorize failed - empty body");
+            model.put("mobileValidationStatus", Constants.STCPayMobileValidationStatus.INVALID.name());
         }
 
-        model.addAttribute("transactionId", payment.getTransactionId());
-        model.addAttribute("codeInvalid", languageUtil.getMessageByKey("stc.code.invalid", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
-        model.addAttribute("optLabel", languageUtil.getMessageByKey("stc.optValue.label", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
-        model.addAttribute("formTitle", languageUtil.getMessageByKey("stc.form.title", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
-        model.addAttribute("cardPay", languageUtil.getMessageByKey("payment.card.pay", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
-        model.addAttribute("actionUrl", urlForm);
-        model.addAttribute("currentLang", lang.equalsIgnoreCase(Constants.DEFAULT_HEADER_LANGUAGE)? "ar": "en");
-
-        return "paymentIframeSTC";
+        return model;
 
     }
 
-    public void proceedPaymentOperation(Map<String, Object> params, HttpServletRequest request, HttpServletResponse response) throws JSONException, IOException {
+    public Map<String, String> proceedPaymentOperation(Map<String, Object> params, HttpServletRequest request, HttpServletResponse response, Map<String, String> payload) throws JSONException, IOException {
 
-        Payment payment = paymentRepository.findByTransactionId(params.get("merchant_reference").toString());
-        Invoice invoice = null;
-        if (payment != null) {
-            payment.setStatus(PaymentStatus.CHECKOUT_PAGE);
-            paymentRepository.save(payment);
-
-            invoice = payment.getInvoice();
-            invoice.setPaymentStatus(PaymentStatus.CHECKOUT_PAGE);
-            invoiceRepository.save(invoice);
+        // payload.get("merchant_reference") in case of mobile validation
+        // params.get("merchant_reference") in case of payment submit
+        Payment payment;
+        if (payload != null && StringUtils.isNotEmpty(payload.get("merchant_reference"))) {
+            // submit mobile
+            payment = paymentRepository.findByTransactionId(payload.get("merchant_reference"));
+            return initPayment(payment, payload.get("mobile_no"));
         } else {
-            throw new PaymentGatewayException("STC prchase, Payment not found, transactionId=" + params.get("transactionId"));
+            payment = paymentRepository.findByTransactionId(params.get("merchant_reference").toString());
         }
+
+        // submit otp
+        payment.setStatus(PaymentStatus.CHECKOUT_PAGE);
+        paymentRepository.save(payment);
+
+        Invoice invoice = payment.getInvoice();
+        invoice.setPaymentStatus(PaymentStatus.CHECKOUT_PAGE);
+        invoiceRepository.save(invoice);
 
         JSONObject stcPayReqParam = new JSONObject();
         JSONObject stcPayReqObj = new JSONObject();
@@ -186,6 +236,7 @@ public class STCPaymentService {
         String redirectUrl = invoice.getClient().getRedirectUrl() + "?transactionId=" + payment.getTransactionId();
         response.addHeader("Location", redirectUrl);
         response.setStatus(HttpStatus.FOUND.value());
+        return null;
     }
 
     private String httpsStcRequest(String requestBody, String requestUrl) {
