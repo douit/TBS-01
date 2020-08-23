@@ -80,6 +80,8 @@
         console.log('--- transactionIdBilling:' + transactionIdBilling);
         var payButtonLabel = /*[[${payButtonLabel}]]*/ "";
         console.log('--- payButtonLabel:' + payButtonLabel);
+        var actionUrl = /*[[${actionUrl}]]*/ "";
+        console.log('--- actionUrl:' + actionUrl);
         /*]]>*/
 
         if (mobileValidationStatus == 'INVALID') {
@@ -158,8 +160,9 @@
                 console.log('--- authorize sending post req to backend');
                 // !!! ----------------------------- Ahmed must change To mule
                 xhr.open('POST', '/billing/payments/stcpay-payment-processing');
+                // xhr.open('POST', actionUrl);
                 // add header test
-                xhr.setRequestHeader("Access-Control-Allow-Origin", "*");
+                // xhr.setRequestHeader("Access-Control-Allow-Origin", "*");
                 xhr.onload = function () {
                     if (this.status >= 200 && this.status < 300) {
                         console.log('--- Success result');
