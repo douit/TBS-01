@@ -137,6 +137,10 @@
             console.log('--- transactionAmount:' + transactionAmount);
             var paymentDescription = /*[[${paymentDescription}]]*/ "";
             console.log('--- paymentDescription:' + paymentDescription);
+            var applePaySessionUrl = /*[[${applePaySessionUrl}]]*/ "";
+            console.log('--- applePaySessionUrl:' + applePaySessionUrl);
+            var applePayAuthorizeUrl = /*[[${applePayAuthorizeUrl}]]*/ "";
+            console.log('--- applePayAuthorizeUrl:' + applePayAuthorizeUrl);
             /*]]>*/
         </script>
 
@@ -406,8 +410,8 @@
                 return new Promise(function (resolve, reject) {
                     var xhr = new XMLHttpRequest();
                     console.log('--- getApplePaySession sending post req to backend');
-                    // !!!!----------------------------- Ahmed must chage To mule
-                    xhr.open('POST', '/billing/payments/apple-session');
+                    // xhr.open('POST', '/billing/payments/apple-session');
+                    xhr.open('POST', applePaySessionUrl);
                     xhr.onload = function () {
                         if (this.status == 200) {
                             resolve(JSON.parse(xhr.response));
@@ -438,8 +442,8 @@
                 return new Promise(function (resolve, reject) {
                     var xhr = new XMLHttpRequest();
                     console.log('--- authorize sending post req to backend');
-                    // !!!!!!----------------------------- Ahmed must chage To mule
-                    xhr.open('POST', '/billing/payments/apple-authorize');
+                    // xhr.open('POST', '/billing/payments/apple-authorize');
+                    xhr.open('POST', applePayAuthorizeUrl);
                     // add header test
                     xhr.setRequestHeader("Access-Control-Allow-Origin", "*");
                     // var orderData = orderPayload(); // custom method to fetch order data

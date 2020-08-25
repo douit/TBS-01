@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -147,10 +148,11 @@ public class PaymentCreditCardResource {
 
     @PostMapping(path = "/billing/payments/stcpay-payment-processing", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public Object validateMobileSTC(@RequestBody Map<String, String> payload) throws IOException, JSONException {
+    public ResponseEntity<Object> validateMobileSTC(@RequestBody Map<String, String> payload) throws IOException, JSONException {
         // ToDo call directly initPayment or prepare
         // ToDo Return void is ok 200 / 400
-        return stcPaymentService.proceedPaymentOperation(null, null, null, payload);
+        // return stcPaymentService.proceedPaymentOperation(null, null, null, payload);
+        return stcPaymentService.initPayment(payload);
     }
 
 
@@ -158,9 +160,9 @@ public class PaymentCreditCardResource {
     @PostMapping(
         path = "/billing/payments/stcpay-payment-processing", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     @ResponseBody
-    public Object processPaymentSTC(Model model
+    public void processPaymentSTC(Model model
         , @RequestParam Map<String,Object> params, HttpServletRequest request, HttpServletResponse response) throws IOException, JSONException {
-        return stcPaymentService.proceedPaymentOperation(params, request, response, null);
+        stcPaymentService.proceedPaymentOperation(params, request, response, null);
     }
 
 }

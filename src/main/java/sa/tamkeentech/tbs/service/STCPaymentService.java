@@ -17,7 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.Invoice;
@@ -35,21 +34,11 @@ import sa.tamkeentech.tbs.service.dto.StcDTO.STCPayPaymentRefundRespDTO;
 import sa.tamkeentech.tbs.service.mapper.PaymentMapper;
 import sa.tamkeentech.tbs.service.util.CommonUtils;
 import sa.tamkeentech.tbs.service.util.LanguageUtil;
-import sa.tamkeentech.tbs.web.rest.errors.PaymentGatewayException;
 
 import javax.inject.Inject;
-import javax.net.ssl.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.security.KeyStore;
-import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -151,8 +140,10 @@ public class STCPaymentService {
     }
 
     // return the form to enter otp
-    public  Map<String, String> initPayment(Payment payment, String mobile) throws JSONException, IOException {
+    public ResponseEntity<Object> initPayment(Map<String, String> payload) throws JSONException, IOException {
 
+        Payment payment = paymentRepository.findByTransactionId(payload.get("merchant_reference"));
+        String mobile = payload.get("mobile_no");
         // resp
         Map<String, String> model = new HashMap<>();
 
@@ -165,46 +156,47 @@ public class STCPaymentService {
         stcPayReqParam.put("RefNum", payment.getTransactionId());
         stcPayReqParam.put("BillNumber", payment.getInvoice().getAccountId());
         // ToDO Get Mobile form
-        if (CommonUtils.isProfile(environment, "prod") || CommonUtils.isProfile(environment, "ahmed")) {
+        //if (CommonUtils.isProfile(environment, "prod") || CommonUtils.isProfile(environment, "ahmed")) {
             stcPayReqParam.put("MobileNo", "966" + mobile.substring(1));
-        } else {
+        /*} else {
             stcPayReqParam.put("MobileNo", "966539396141");
-        }
+        }*/
         stcPayReqParam.put("Amount", payment.getAmount());
-        stcPayReqParam.put("MerchantNote", "");
+        // stcPayReqParam.put("MerchantNote", "");
         stcPayReqObj.put("DirectPaymentAuthorizeV4RequestMessage", stcPayReqParam);
 
         // STC Resp as string
         String res = httpsStcRequest(stcPayReqObj.toString(), stcDirectPaymentAuthorize);
 
-        if (StringUtils.isNotEmpty(res)) {
-            STCPayDirectPaymentAuthorizeRespDTO stcPayRes = objectMapper.readValue(res, STCPayDirectPaymentAuthorizeRespDTO.class);
-            payment.setOtpReference(stcPayRes.getDirectPaymentAuthorizeV4ResponseMessage().getOtpReference());
-            payment.setPaymentReference(stcPayRes.getDirectPaymentAuthorizeV4ResponseMessage().getSTCPayPmtReference());
-            paymentRepository.save(payment);
-            model.put("mobileValidationStatus", Constants.STCPayMobileValidationStatus.VALID.name());
 
-        } else {
-            log.error("------STC Authorize failed - empty body");
+        try {
+            if (StringUtils.isNotEmpty(res)) {
+                STCPayDirectPaymentAuthorizeRespDTO stcPayRes = objectMapper.readValue(res, STCPayDirectPaymentAuthorizeRespDTO.class);
+                payment.setOtpReference(stcPayRes.getDirectPaymentAuthorizeV4ResponseMessage().getOtpReference());
+                payment.setPaymentReference(stcPayRes.getDirectPaymentAuthorizeV4ResponseMessage().getSTCPayPmtReference());
+                paymentRepository.save(payment);
+                model.put("mobileValidationStatus", Constants.STCPayMobileValidationStatus.VALID.name());
+
+            } else {
+                log.error("------STC Authorize failed - empty body");
+                model.put("mobileValidationStatus", Constants.STCPayMobileValidationStatus.INVALID.name());
+            }
+        } catch (IOException e) {
+            log.error("------STC Authorize failed - exception -- 403 ");
             model.put("mobileValidationStatus", Constants.STCPayMobileValidationStatus.INVALID.name());
         }
 
-        return model;
-
+        if (model.get("mobileValidationStatus").equals(Constants.STCPayMobileValidationStatus.VALID.name())) {
+            return ResponseEntity.status(HttpStatus.OK).build();//.body(model);
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();//.body(model);
     }
 
-    public Map<String, String> proceedPaymentOperation(Map<String, Object> params, HttpServletRequest request, HttpServletResponse response, Map<String, String> payload) throws JSONException, IOException {
+    public void proceedPaymentOperation(Map<String, Object> params, HttpServletRequest request, HttpServletResponse response, Map<String, String> payload) throws JSONException, IOException {
 
         // payload.get("merchant_reference") in case of mobile validation
         // params.get("merchant_reference") in case of payment submit
-        Payment payment;
-        if (payload != null && StringUtils.isNotEmpty(payload.get("merchant_reference"))) {
-            // submit mobile
-            payment = paymentRepository.findByTransactionId(payload.get("merchant_reference"));
-            return initPayment(payment, payload.get("mobile_no"));
-        } else {
-            payment = paymentRepository.findByTransactionId(params.get("merchant_reference").toString());
-        }
+        Payment payment = paymentRepository.findByTransactionId(params.get("merchant_reference").toString());
 
         // submit otp
         payment.setStatus(PaymentStatus.CHECKOUT_PAGE);
@@ -236,7 +228,7 @@ public class STCPaymentService {
         String redirectUrl = invoice.getClient().getRedirectUrl() + "?transactionId=" + payment.getTransactionId();
         response.addHeader("Location", redirectUrl);
         response.setStatus(HttpStatus.FOUND.value());
-        return null;
+        // return null;
     }
 
     private String httpsStcRequest(String requestBody, String requestUrl) {
@@ -303,7 +295,7 @@ public class STCPaymentService {
             headers.set("Content-Type", "application/json");
             HttpEntity<String> entity = new HttpEntity<String>(requestBody, headers);
             ResponseEntity<String> result = restTemplate.postForEntity(requestUrl, entity, String.class);
-            log.debug("STC pay request status code: {}, body ", result.getStatusCode(), result.getBody());
+            log.debug("STC pay request status code: {}, body {}", result.getStatusCode(), result.getBody());
             resp = result.getBody();
         } catch (Exception e) {
             log.error("------STC call exception: {}", e);

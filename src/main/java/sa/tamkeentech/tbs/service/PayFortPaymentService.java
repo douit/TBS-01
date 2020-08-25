@@ -126,6 +126,12 @@ public class PayFortPaymentService {
     @Value("${tbs.payment.apple-pay-white-list-servers}")
     private List<String> applePaysServers;
 
+    @Value("${tbs.payment.apple-pay-get-session}")
+    private String applePaySessionUrl;
+
+    @Value("${tbs.payment.apple-pay-authorize}")
+    private String applePayAuthorizeUrl;
+
 
     /**
      * Return the credit card form
@@ -163,6 +169,8 @@ public class PayFortPaymentService {
         model.addAttribute("signature", payfortOperationRequest.getSignature());
         model.addAttribute("return_url", payfortOperationRequest.getReturnUrl());
         model.addAttribute("actionUrl", urlForm);
+        model.addAttribute("applePaySessionUrl", applePaySessionUrl);
+        model.addAttribute("applePayAuthorizeUrl", applePayAuthorizeUrl);
 
         // Apple pay attributes
         BigDecimal roundedAmount = payment.getAmount().setScale(2, RoundingMode.HALF_UP);

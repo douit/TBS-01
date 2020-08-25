@@ -208,6 +208,9 @@ tbs:
     payfort-url-form: 'https://sbcheckout.PayFort.com/FortAPI/paymentPage'
     payfort-process-payment: 'http://localhost:8081/billing/payments/payfort-processing'
 
+    apple-pay-get-session: '/billing/payments/apple-session'
+    apple-pay-authorize: '/billing/payments/apple-authorize'
+
     apple-pay-validate-session: 'https://platform.tamkeentech.sa/billing-system-test/apple-pay/generateSession'
 
     #apple pay server to server key: merchant_id
@@ -219,11 +222,17 @@ tbs:
     apple-pay-white-list-servers: apple-pay-gateway.apple.com,apple-pay-gateway-nc-pod1.apple.com,apple-pay-gateway-nc-pod2.apple.com,apple-pay-gateway-nc-pod3.apple.com,apple-pay-gateway-nc-pod4.apple.com,apple-pay-gateway-nc-pod5.apple.com,apple-pay-gateway-pr-pod1.apple.com,apple-pay-gateway-pr-pod2.apple.com,apple-pay-gateway-pr-pod3.apple.com,apple-pay-gateway-pr-pod4.apple.com,apple-pay-gateway-pr-pod5.apple.com,apple-pay-gateway-nc-pod1-dr.apple.com,apple-pay-gateway-nc-pod2-dr.apple.com,apple-pay-gateway-nc-pod3-dr.apple.com,apple-pay-gateway-nc-pod4-dr.apple.com,apple-pay-gateway-nc-pod5-dr.apple.com,apple-pay-gateway-pr-pod1-dr.apple.com,apple-pay-gateway-pr-pod2-dr.apple.com,apple-pay-gateway-pr-pod3-dr.apple.com,apple-pay-gateway-pr-pod4-dr.apple.com,apple-pay-gateway-pr-pod5-dr.apple.com,cn-apple-pay-gateway-sh-pod1.apple.com,cn-apple-pay-gateway-sh-pod1-dr.apple.com,cn-apple-pay-gateway-sh-pod2.apple.com,cn-apple-pay-gateway-sh-pod2-dr.apple.com,cn-apple-pay-gateway-sh-pod3.apple.com,cn-apple-pay-gateway-sh-pod3-dr.apple.com,cn-apple-pay-gateway-tj-pod1.apple.com,cn-apple-pay-gateway-tj-pod1-dr.apple.com,cn-apple-pay-gateway-tj-pod2.apple.com,cn-apple-pay-gateway-tj-pod2-dr.apple.com,cn-apple-pay-gateway-tj-pod3.apple.com,cn-apple-pay-gateway-tj-pod3-dr.apple.com,apple-pay-gateway-cert.apple.com,cn-apple-pay-gateway-cert.apple.com
 
     #stc pay
-    stcpay-direct-payment-authorize: 'https://b2btest.stcpay.com.sa/B2B.DirectPayment.WebApi/DirectPayment/V4/DirectPaymentAuthorize'
-    stcpay-direct-payment: 'https://b2btest.stcpay.com.sa/B2B.DirectPayment.WebApi/DirectPayment/V4/DirectPaymentConfirm'
-    stcpay-payment-inquiry: 'https://b2btest.stcpay.com.sa/B2B.DirectPayment.WebApi/DirectPayment/V4/PaymentInquiry'
-    stcpay-refund: 'https://b2btest.stcpay.com.sa/B2B.MerchantTransactionsWebApi/MerchantTransactions/v3/RefundPayment'
-    stcpay-url-form: '/billing/payments/stcpay-payment-processing'
+    #stcpay-direct-payment-authorize: 'https://b2btest.stcpay.com.sa/B2B.DirectPayment.WebApi/DirectPayment/V4/DirectPaymentAuthorize'
+    #stcpay-direct-payment: 'https://b2btest.stcpay.com.sa/B2B.DirectPayment.WebApi/DirectPayment/V4/DirectPaymentConfirm'
+    #stcpay-payment-inquiry: 'https://b2btest.stcpay.com.sa/B2B.DirectPayment.WebApi/DirectPayment/V4/PaymentInquiry'
+    #stcpay-refund: 'https://b2btest.stcpay.com.sa/B2B.MerchantTransactionsWebApi/MerchantTransactions/v3/RefundPayment'
+    #stcpay-url-form: '/billing/payments/stcpay-payment-processing'
+
+    stcpay-direct-payment-authorize: 'https://platform.tamkeentech.sa/billing-system-test/B2B.DirectPayment.WebApi/DirectPayment/V4/DirectPaymentAuthorize'
+    stcpay-direct-payment: 'https://platform.tamkeentech.sa/billing-system-test/B2B.DirectPayment.WebApi/DirectPayment/V4/DirectPaymentConfirm'
+    stcpay-payment-inquiry: 'https://platform.tamkeentech.sa/billing-system-test/B2B.DirectPayment.WebApi/DirectPayment/V4/PaymentInquiry'
+    stcpay-refund: 'https://platform.tamkeentech.sa/billing-system-test/B2B.MerchantTransactionsWebApi/MerchantTransactions/v3/RefundPayment'
+    stcpay-url-form: 'https://platform.tamkeentech.sa/billing-system-test/billing/payments/stcpay-payment-processing'
 
     stcpay-key-store-password: tm1548pmHea92
     stcpay-key-store: 'config/tls/TkeenKeystore.p12'
