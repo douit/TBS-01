@@ -7,6 +7,8 @@ import io.swagger.annotations.ApiModel;
 import lombok.*;
 import sa.tamkeentech.tbs.domain.enumeration.IdentityType;
 
+import javax.validation.constraints.Email;
+
 /**
  * A DTO for the {@link sa.tamkeentech.tbs.domain.Customer} entity.
  */
@@ -27,6 +29,7 @@ public class CustomerDTO implements Serializable {
 
     private String name;
 
+    @Email(message = "Email should be valid")
     private String email;
 
     private String phone;

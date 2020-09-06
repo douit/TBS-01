@@ -42,6 +42,12 @@ public final class Constants {
     public static final String DEFAULT_HEADER_LANGUAGE = "ar";
     public static final String REQUEST_PARAM_LANGUAGE = "lang";
 
+
+    public static final String emailRegex = "^(.+)@(.+)$";
+
+
+
+
     /**
      * Language enumeration
      */

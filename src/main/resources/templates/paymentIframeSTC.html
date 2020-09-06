@@ -159,8 +159,8 @@
                 var xhr = new XMLHttpRequest();
                 console.log('--- authorize sending post req to backend');
                 // !!! ----------------------------- Ahmed must change To mule
-                xhr.open('POST', '/billing/payments/stcpay-payment-processing');
-                // xhr.open('POST', actionUrl);
+               // xhr.open('POST', '/billing/payments/stcpay-payment-processing');
+                 xhr.open('POST', actionUrl);
                 // add header test
                 // xhr.setRequestHeader("Access-Control-Allow-Origin", "*");
                 xhr.onload = function () {

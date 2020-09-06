@@ -57,7 +57,7 @@ spring:
   liquibase:
     # Remove 'faker' if you do not want the sample data to be loaded automatically
     contexts: dev, faker
-#    enabled: false
+    enabled: false
   mail:
     host: localhost
     port: 25
@@ -130,3 +130,10 @@ tbs:
      reports-folder: '/Users/a.alkathiri/Desktop/reports_share/'
      resource-directory: '/Users/a.alkathiri/Download/'
 
+  payment:
+  #stc pay
+  #out
+    stcpay-direct-payment-authorize: 'https://platform.tamkeentech.sa/billing-system-test/B2B.DirectPayment.WebApi/DirectPayment/V4/DirectPaymentAuthorize'
+    stcpay-direct-payment: 'https://platform.tamkeentech.sa/billing-system-test/B2B.DirectPayment.WebApi/DirectPayment/V4/DirectPaymentConfirm'
+    stcpay-payment-inquiry: 'https://platform.tamkeentech.sa/billing-system-test/B2B.DirectPayment.WebApi/DirectPayment/V4/PaymentInquiry'
+    stcpay-refund: 'https://platform.tamkeentech.sa/billing-system-test/B2B.MerchantTransactionsWebApi/MerchantTransactions/v3/RefundPayment'

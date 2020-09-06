@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.configurationprocessor.json.JSONException;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,6 +25,7 @@ import sa.tamkeentech.tbs.repository.PaymentRepository;
 import sa.tamkeentech.tbs.repository.PersistenceAuditEventRepository;
 import sa.tamkeentech.tbs.security.SecurityUtils;
 import sa.tamkeentech.tbs.service.dto.*;
+import sa.tamkeentech.tbs.service.mapper.CustomerMapper;
 import sa.tamkeentech.tbs.service.mapper.InvoiceMapper;
 import sa.tamkeentech.tbs.service.mapper.PaymentMethodMapper;
 import sa.tamkeentech.tbs.service.util.EventPublisherService;
@@ -43,7 +43,8 @@ import java.text.SimpleDateFormat;
 import java.time.YearMonth;
 import java.time.ZonedDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Service Implementation for managing {@link Invoice}.
@@ -59,6 +60,8 @@ public class InvoiceService {
     public final static String INVOICE_BY_ACCOUNT_ID = "invoiceByAccountId";
 
     private final InvoiceRepository invoiceRepository;
+
+    private final CustomerMapper customerMapper;
 
     private final InvoiceMapper invoiceMapper;
 
@@ -94,8 +97,9 @@ public class InvoiceService {
     @Value("${tbs.payment.vat-number}")
     private String vatNumber;
 
-    public InvoiceService(InvoiceRepository invoiceRepository, InvoiceMapper invoiceMapper, ClientService clientService, CustomerService customerService, PaymentMethodService paymentMethodService, ItemService itemService, PaymentService paymentService, SequenceUtil sequenceUtil, EventPublisherService eventPublisherService, CustomerRepository customerRepository, EntityManager entityManager, PaymentMethodMapper paymentMethodMapper, PersistenceAuditEventRepository persistenceAuditEventRepository, LanguageUtil languageUtil) {
+    public InvoiceService(InvoiceRepository invoiceRepository, CustomerMapper customerMapper, InvoiceMapper invoiceMapper, ClientService clientService, CustomerService customerService, PaymentMethodService paymentMethodService, ItemService itemService, PaymentService paymentService, SequenceUtil sequenceUtil, EventPublisherService eventPublisherService, CustomerRepository customerRepository, EntityManager entityManager, PaymentMethodMapper paymentMethodMapper, PersistenceAuditEventRepository persistenceAuditEventRepository, LanguageUtil languageUtil) {
         this.invoiceRepository = invoiceRepository;
+        this.customerMapper = customerMapper;
         this.invoiceMapper = invoiceMapper;
         this.customerService = customerService;
         this.paymentMethodService = paymentMethodService;
@@ -159,11 +163,11 @@ public class InvoiceService {
             .map(invoiceMapper::toDto);
     }
 
-   // @Cacheable(value = INVOICE_BY_ACCOUNT_ID)
+    // @Cacheable(value = INVOICE_BY_ACCOUNT_ID)
     public Optional<InvoiceDTO> findByAccountId(Long id) {
         log.debug("Request to get Invoice by findByAccountId : {}", id);
         String appName = SecurityUtils.getCurrentUserLogin().orElse("");
-        Optional<Client> client =  clientService.getClientByClientId(appName);
+        Optional<Client> client = clientService.getClientByClientId(appName);
         return invoiceRepository.findByAccountIdAndClientId(id, client.get().getId())
             .map(invoiceMapper::toDto);
     }
@@ -244,21 +248,36 @@ public class InvoiceService {
         Optional<Client> client = clientService.getClientByClientId(appName);
 
         // check if Customer identifier or phone is present
-        if (invoiceDTO.getCustomer().getIdentity() == null && invoiceDTO.getCustomer().getPhone() == null) {
+        if (invoiceDTO.getCustomer().getIdentity() == null) {
             // throw new TbsRunTimeException("Customer identity or phone is mandatory");
             throw new TbsRunTimeException(languageUtil.getMessageByKey("customer.identity.mandatory", Constants.LANGUAGE.getLanguageByHeaderKey(language)));
         }
         if (StringUtils.isEmpty(invoiceDTO.getCustomer().getEmail())) {
             throw new TbsRunTimeException(languageUtil.getMessageByKey("customer.email.mandatory", Constants.LANGUAGE.getLanguageByHeaderKey(language)));
         }
+        Pattern pattern = Pattern.compile(Constants.emailRegex);
+        Matcher matcher = pattern.matcher(invoiceDTO.getCustomer().getEmail());
+        if(!matcher.matches()){
+            throw new TbsRunTimeException(languageUtil.getMessageByKey("customer.email.format", Constants.LANGUAGE.getLanguageByHeaderKey(language)));
+        }
+
         // Customer check if exists else create new
         Optional<Customer> customer;
         if (invoiceDTO.getCustomer().getIdentity() != null) {
             customer = customerService.findByIdentifier(invoiceDTO.getCustomer().getIdentity());
+            if (customer.isPresent()) {
+                if (!customer.get().getName().equals(invoiceDTO.getCustomer().getName())) {
+                    customer.get().setName(invoiceDTO.getCustomer().getName());
+                } else if (!customer.get().getContact().getEmail().equals(invoiceDTO.getCustomer().getEmail())) {
+                    customer.get().getContact().setEmail(invoiceDTO.getCustomer().getEmail());
+
+                } else if (!customer.get().getContact().getPhone().equals(invoiceDTO.getCustomer().getPhone())) {
+                    customer.get().getContact().setPhone(invoiceDTO.getCustomer().getPhone());
+
+                }
+                customerRepository.save(customer.get());
+            }
         } else {
-            customer = customerService.findByPhone(invoiceDTO.getCustomer().getPhone());
-        }
-        if (!customer.isPresent()) {
             customer = Optional.of(Customer.builder()
                 .identity(invoiceDTO.getCustomer().getIdentity())
                 .identityType(invoiceDTO.getCustomer().getIdentityType())
@@ -266,7 +285,24 @@ public class InvoiceService {
                 .contact(Contact.builder().email(invoiceDTO.getCustomer().getEmail()).phone(invoiceDTO.getCustomer().getPhone()).build())
                 .build());
             customerRepository.save(customer.get());
+
+//            log.info("In else for Phone ...");
+//            customer = customerService.findByPhone(invoiceDTO.getCustomer().getPhone());
+//            if (customer.isPresent()) {
+//                if (!customer.get().equals(invoiceDTO.getCustomer())) {
+//                    customerRepository.save(customer.get());
+//                }
+//            }
         }
+//        if (!customer.isPresent()) {
+//            customer = Optional.of(Customer.builder()
+//                .identity(invoiceDTO.getCustomer().getIdentity())
+//                .identityType(invoiceDTO.getCustomer().getIdentityType())
+//                .name(invoiceDTO.getCustomer().getName())
+//                .contact(Contact.builder().email(invoiceDTO.getCustomer().getEmail()).phone(invoiceDTO.getCustomer().getPhone()).build())
+//                .build());
+//            customerRepository.save(customer.get());
+//        }
 
         List<InvoiceItem> invoiceItemList = new ArrayList<InvoiceItem>();
         Invoice invoice = Invoice.builder()
@@ -290,7 +326,7 @@ public class InvoiceService {
         for (InvoiceItemDTO invoiceItemDTO : invoiceDTO.getInvoiceItems()) {
             Optional<Item> item = itemService.findByCodeAndClient(invoiceItemDTO.getItemCode(), client.get().getId());
             if (!item.isPresent()) {
-                throw new TbsRunTimeException(invoiceItemDTO.getItemCode() +" "+ languageUtil.getMessageByKey("unknown.item", Constants.LANGUAGE.getLanguageByHeaderKey(language)));
+                throw new TbsRunTimeException(invoiceItemDTO.getItemCode() + " " + languageUtil.getMessageByKey("unknown.item", Constants.LANGUAGE.getLanguageByHeaderKey(language)));
 
 
             }
@@ -392,7 +428,7 @@ public class InvoiceService {
         }
 
         // Check based on passed values in case of flexible price
-        if (invoiceDTO.getAmount()!= null && (invoiceDTO.getAmount().compareTo(totalPriceInvoice.setScale(2, RoundingMode.HALF_UP)) != 0
+        if (invoiceDTO.getAmount() != null && (invoiceDTO.getAmount().compareTo(totalPriceInvoice.setScale(2, RoundingMode.HALF_UP)) != 0
             || invoiceDTO.getAmount().compareTo(BigDecimal.ZERO) < 0)) {
             throw new TbsRunTimeException(languageUtil.getMessageByKey("wrong.invoice.amount", Constants.LANGUAGE.getLanguageByHeaderKey(language)));
         }
@@ -416,7 +452,7 @@ public class InvoiceService {
         // Now
         invoice.setDueDate(ZonedDateTime.now());
         // default expiry date: Now + 1 days
-        if(invoiceDTO.getExpirationDays() != null  && invoiceDTO.getExpirationDays() > 0)
+        if (invoiceDTO.getExpirationDays() != null && invoiceDTO.getExpirationDays() > 0)
             invoice.setExpiryDate(ZonedDateTime.now().plusDays(invoiceDTO.getExpirationDays()));
         else
             invoice.setExpiryDate(ZonedDateTime.now().plusDays(Constants.INVOICE_EXPIRY_DAYS));
@@ -526,7 +562,7 @@ public class InvoiceService {
         //invoiceItem
         Optional<Item> item = itemService.findByCodeAndClient(oneItemInvoiceDTO.getItemName(), client.get().getId());
         if (!item.isPresent()) {
-            throw new TbsRunTimeException(oneItemInvoiceDTO.getItemName() +" "+ languageUtil.getMessageByKey("unknown.item", Constants.LANGUAGE.getLanguageByHeaderKey(language)));
+            throw new TbsRunTimeException(oneItemInvoiceDTO.getItemName() + " " + languageUtil.getMessageByKey("unknown.item", Constants.LANGUAGE.getLanguageByHeaderKey(language)));
 
         }
 
@@ -608,7 +644,7 @@ public class InvoiceService {
     public InvoiceStatusDTO getOneItemInvoice(Long billNumber) {
         // Optional<Invoice> invoice = invoiceRepository.findById(billNumber-7000000065l);
         String appName = SecurityUtils.getCurrentUserLogin().orElse("");
-        Optional<Client> client =  clientService.getClientByClientId(appName);
+        Optional<Client> client = clientService.getClientByClientId(appName);
         Optional<Invoice> invoice = invoiceRepository.findByAccountIdAndClientId(billNumber, client.get().getId());
         if (!invoice.isPresent()) {
             throw new TbsRunTimeException("Bill does not exist");
@@ -684,8 +720,8 @@ public class InvoiceService {
 
     @Scheduled(cron = "${tbs.cron.invoice-expired}")
     public void checkExpiredInvoice() {
-    List<Invoice> invoices = invoiceRepository.getExpiryInvoices(ZonedDateTime.now());
-        for(Invoice invoice : invoices){
+        List<Invoice> invoices = invoiceRepository.getExpiryInvoices(ZonedDateTime.now());
+        for (Invoice invoice : invoices) {
             invoice.setStatus(InvoiceStatus.EXPIRED);
             save(invoiceMapper.toDto(invoice));
         }
@@ -694,9 +730,9 @@ public class InvoiceService {
     public void addExtraPaymentInfo(Object invoice, String language, boolean isSadadCreateCase) {
         // get invoice
         if (invoice instanceof InvoiceDTO) {
-            InvoiceDTO invoiceDTO = (InvoiceDTO)invoice;
+            InvoiceDTO invoiceDTO = (InvoiceDTO) invoice;
             invoiceDTO.setVatNumber(vatNumber);
-            String lang = StringUtils.isNotEmpty(language)? language: Constants.LANGUAGE.ARABIC.getHeaderKey();
+            String lang = StringUtils.isNotEmpty(language) ? language : Constants.LANGUAGE.ARABIC.getHeaderKey();
             invoiceDTO.setCompanyName(languageUtil.getMessageByKey("company.name", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
 
             // set payment method and billerId
@@ -721,15 +757,15 @@ public class InvoiceService {
             PaymentMethod paymentMethodDTO = PaymentMethod.builder().code(paymentMethod).build();
             invoiceDTO.setPaymentMethod(paymentMethodDTO);
 
-        // create invoice
+            // create invoice
         } else if (invoice instanceof InvoiceResponseDTO) {
-            InvoiceResponseDTO invoiceResponseDTO = (InvoiceResponseDTO)invoice;
+            InvoiceResponseDTO invoiceResponseDTO = (InvoiceResponseDTO) invoice;
             invoiceResponseDTO.setVatNumber(vatNumber);
             Optional<PersistentAuditEvent> event = persistenceAuditEventRepository.findFirstByRefIdAndSuccessfulAndAuditEventTypeOrderByIdDesc(Long.parseLong(invoiceResponseDTO.getBillNumber()), true, Constants.EventType.SADAD_INITIATE.name());
             if (event.isPresent() || isSadadCreateCase) {
                 invoiceResponseDTO.setBillerId(156);
             }
-            String lang = StringUtils.isNotEmpty(language)? language: Constants.LANGUAGE.ARABIC.getHeaderKey();
+            String lang = StringUtils.isNotEmpty(language) ? language : Constants.LANGUAGE.ARABIC.getHeaderKey();
             invoiceResponseDTO.setCompanyName(languageUtil.getMessageByKey("company.name", Constants.LANGUAGE.getLanguageByHeaderKey(lang)));
         }
     }
@@ -738,7 +774,7 @@ public class InvoiceService {
     public Page<InvoiceDTO> findByCustomerId(String customerId, String language, Pageable pageable) {
 
         String appName = SecurityUtils.getCurrentUserLogin().orElse("");
-        Optional<Client> client =  clientService.getClientByClientId(appName);
+        Optional<Client> client = clientService.getClientByClientId(appName);
         Page<InvoiceDTO> pageInvoice = invoiceMapper.toDtoPageable(invoiceRepository.findByCustomerIdentityAndClientId(customerId, client.get().getId(), pageable));
         pageInvoice.forEach(invoiceDTO -> {
             invoiceDTO.setClient(null);
@@ -748,7 +784,7 @@ public class InvoiceService {
     }
 
     // Invoice report data
-    List<InvoiceItem> getItemInvoice( Long invoiceId) {
+    List<InvoiceItem> getItemInvoice(Long invoiceId) {
         Optional<Invoice> invoice = invoiceRepository.findById(invoiceId);
         return invoice.get().getInvoiceItems();
     }
