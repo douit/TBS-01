@@ -262,20 +262,23 @@ public class InvoiceService {
         }
 
         // Customer check if exists else create new
-        Optional<Customer> customer;
-        if (invoiceDTO.getCustomer().getIdentity() != null) {
-            customer = customerService.findByIdentifier(invoiceDTO.getCustomer().getIdentity());
-            if (customer.isPresent()) {
-                if (!customer.get().getName().equals(invoiceDTO.getCustomer().getName())) {
-                    customer.get().setName(invoiceDTO.getCustomer().getName());
-                } else if (!customer.get().getContact().getEmail().equals(invoiceDTO.getCustomer().getEmail())) {
-                    customer.get().getContact().setEmail(invoiceDTO.getCustomer().getEmail());
-
-                } else if (!customer.get().getContact().getPhone().equals(invoiceDTO.getCustomer().getPhone())) {
-                    customer.get().getContact().setPhone(invoiceDTO.getCustomer().getPhone());
-
-                }
-                customerRepository.save(customer.get());
+        Optional<Customer> customer = customerService.findByIdentifier(invoiceDTO.getCustomer().getIdentity());
+        if (customer.isPresent()) {
+            boolean isUpdate = false;
+            if (!customer.get().getName().equals(invoiceDTO.getCustomer().getName())) {
+                customer.get().setName(invoiceDTO.getCustomer().getName());
+                isUpdate = true;
+            } 
+            if (!customer.get().getContact().getEmail().equals(invoiceDTO.getCustomer().getEmail())) {
+                customer.get().getContact().setEmail(invoiceDTO.getCustomer().getEmail());
+                isUpdate = true;
+            }
+            if (!customer.get().getContact().getPhone().equals(invoiceDTO.getCustomer().getPhone())) {
+                customer.get().getContact().setPhone(invoiceDTO.getCustomer().getPhone());
+                isUpdate = true;
+            }
+            if (isUpdate) {
+                customerRepository.save(customer.get()); 
             }
         } else {
             customer = Optional.of(Customer.builder()

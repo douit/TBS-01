@@ -309,12 +309,22 @@
             window.onload = function() {
                 console.log('---load iframe');
                 document.getElementById("CreditCardDiv").classList.add("display-block");
-                // test also canMakePaymentsWithActiveCard: whether the user has an active card in Wallet
-                if (window.ApplePaySession && ApplePaySession.canMakePayments) {
-                    // showApplePayButton
-                    document.getElementById("ApplePayDiv").classList.add("display-block");
-                    document.getElementById("ApplePayBtn").classList.add("visible");
-                    console.log('+++ canMakePayments');
+                // canMakePaymentsWithActiveCard: whether the user has an active card in Wallet
+                // Feature disabled as apple does not allow multiple domain:
+                if (false && window.ApplePaySession && ApplePaySession.canMakePayments) {
+                    var merchantIdentifier = 'merchant.sa.tamkeentech.billing';
+                    var promise = ApplePaySession.canMakePaymentsWithActiveCard(merchantIdentifier);
+                    promise.then(function (canMakePayments) {
+                        if (canMakePayments) {
+                            // showApplePayButton
+                            document.getElementById("ApplePayDiv").classList.add("display-block");
+                            document.getElementById("ApplePayBtn").classList.add("visible");
+                            console.log('+++ can MakePayments');
+                        } else {
+                            console.log('+++ can MakePayments but no active CC');
+                        }
+                    });
+
                 } else {
                     console.log('--- cant MakePayments');
                 }
@@ -342,6 +352,7 @@
                 };
 
                 console.log('---  creating applePayButtonClicked session v1');
+                console.log('---  Req:' + JSON.stringify(paymentRequest));
                 var session = new ApplePaySession(1, paymentRequest);
                 console.log('--- applePayButtonClicked session created');
 

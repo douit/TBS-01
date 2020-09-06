@@ -136,6 +136,20 @@
             }
         }
 
+        function startLoading() {
+            // disbaleElements();
+            // $("#btnHint").html("");
+            // $("#loadingI").show();
+            var loadIcon = document.getElementById("loadingI");
+            loadIcon.style.visibility = "visible";
+
+            //$("#submitBtn").addClass("loading");
+            //$("#submitBtn").attr("disabled", true);
+            var submitButton = document.getElementById("submitBtn");
+            //submitButton.classList.add("loading");
+            submitButton.disabled = true;
+        }
+
         function isNumber(evt) {
             var code = evt.keyCode || evt.which;
             var regex = new RegExp("^\\d+$");
@@ -162,17 +176,14 @@
             return new Promise(function (resolve, reject) {
                 var xhr = new XMLHttpRequest();
                 console.log('--- authorize sending post req to backend');
-                // !!! ----------------------------- Ahmed must change To mule
-                xhr.open('POST', '/billing/payments/stcpay-payment-processing');
-                // xhr.open('POST', actionUrl);
-                // add header test
-                // xhr.setRequestHeader("Access-Control-Allow-Origin", "*");
+                //xhr.open('POST', '/billing/payments/stcpay-payment-processing');
+                xhr.open('POST', actionUrl);
                 xhr.onload = function () {
                     if (this.status >= 200 && this.status < 300) {
                         console.log('--- Success result');
                         resolve(xhr.response);
                     } else {
-                        console.log('--- Fail result');
+                        console.log('--- Fail result code');
                         reject({
                             status: this.status,
                             statusText: xhr.statusText
@@ -180,12 +191,14 @@
                     }
                 };
                 xhr.onerror = function () {
+                    console.log('--- Fail result');
                     reject({
                         status: this.status,
                         statusText: xhr.statusText
                     });
                 };
                 xhr.setRequestHeader("Content-Type", "application/json");
+                // xhr.setRequestHeader("Access-Control-Allow-Origin", "*");
                 xhr.send(JSON.stringify({merchant_reference: transactionId, mobile_no: mobile}));
             });
         }

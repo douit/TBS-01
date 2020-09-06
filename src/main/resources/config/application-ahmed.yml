@@ -41,14 +41,11 @@ spring:
       indent-output: true
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-#    url: jdbc:postgresql://localhost:5432/tbs
-##    url: jdbc:postgresql://10.60.75.90:5432/tbs_staging
-##    url: jdbc:postgresql://10.60.72.90:5432/tbs_prod
-#    username: postgres
-#    password: postgres
     url: jdbc:postgresql://localhost:5432/tbs
+#    url: jdbc:postgresql://10.60.75.90:5432/tbs_staging
+#    url: jdbc:postgresql://10.60.72.90:5432/tbs_prod
     username: postgres
-    password: 1
+    password: postgres
     hikari:
       poolName: Hikari
       auto-commit: false
