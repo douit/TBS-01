@@ -176,18 +176,26 @@ tbs:
     sts-refund-and-inquiry: 'https://platform.tamkeentech.sa/billing-system/STSInquiryAndRefund'
     url: 'https://platform.tamkeentech.sa/billing-system/requestPayment?'
 
-    payfort-sha-request-phrase: '$2y$10$b2XJU7zWg'
-    payfort-sha-response-phrase: '$2y$10$MnMjJ0SM6'
-    payfort-access-code: 'D3KyGokx8hLlQmOVszty'
-    payfort-access-code-apple-pay: '5ODYV1FwvKEKGABmbQW2'
-    payfort-merchant-identifier: 'e93bbe3b'
-
+    # Payfort config
+    payfort-sha-request-phrase: '308rjst7nII7T6mXrL7Xt4)*'
+    payfort-sha-response-phrase: '581V5Lfhd46SLkbsaMDbvW!&'
+    payfort-access-code: 'ysxSZN248SdH7rmMlnjB'
+    payfort-merchant-identifier: 'vLuOUiVW'
     payfort-url-json: 'https://platform.tamkeentech.sa/billing-system/PayfortPaymentApi'
     payfort-url-form: 'https://checkout.payfort.com/FortAPI/paymentPage'
-
     payfort-process-payment: 'https://platform.tamkeentech.sa/billing-system/PayfortPaymentProcessing'
 
+    payfort-access-code-apple-pay: 'ockcK72WK3lHnTPBVfWK'
     apple-pay-validate-session: 'https://platform.tamkeentech.sa/billing-system/apple-pay/generateSession'
+
+    apple-pay-get-session: 'https://platform.tamkeentech.sa/billing-system/billing/payments/apple-session'
+    apple-pay-authorize: 'https://platform.tamkeentech.sa/billing-system/billing/payments/apple-authorize'
+
+    stcpay-direct-payment-authorize: 'https://platform.tamkeentech.sa/billing-system/B2B.DirectPayment.WebApi/DirectPayment/V4/DirectPaymentAuthorize'
+    stcpay-direct-payment: 'https://platform.tamkeentech.sa/billing-system/B2B.DirectPayment.WebApi/DirectPayment/V4/DirectPaymentConfirm'
+    stcpay-payment-inquiry: 'https://platform.tamkeentech.sa/billing-system/B2B.DirectPayment.WebApi/DirectPayment/V4/PaymentInquiry'
+    stcpay-refund: 'https://platform.tamkeentech.sa/billing-system/B2B.MerchantTransactionsWebApi/MerchantTransactions/v3/RefundPayment'
+    stcpay-url-form: 'https://platform.tamkeentech.sa/billing-system/billing/payments/stcpay-payment-processing'
 
   refund:
     sadad-url-refund: 'http://10.4.7.61:2020/Sender/api/Sadad/RefundLoadRq'

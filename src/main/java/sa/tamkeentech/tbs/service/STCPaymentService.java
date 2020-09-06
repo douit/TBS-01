@@ -3,6 +3,19 @@ package sa.tamkeentech.tbs.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.ssl.SSLContexts;
+import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +30,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.Invoice;
@@ -35,7 +47,6 @@ import sa.tamkeentech.tbs.service.dto.StcDTO.STCPayPaymentRefundRespDTO;
 import sa.tamkeentech.tbs.service.mapper.PaymentMapper;
 import sa.tamkeentech.tbs.service.util.CommonUtils;
 import sa.tamkeentech.tbs.service.util.LanguageUtil;
-import sa.tamkeentech.tbs.web.rest.errors.PaymentGatewayException;
 
 import javax.inject.Inject;
 import javax.net.ssl.*;
@@ -151,8 +162,10 @@ public class STCPaymentService {
     }
 
     // return the form to enter otp
-    public  Map<String, String> initPayment(Payment payment, String mobile) throws JSONException, IOException {
+    public ResponseEntity<Object> initPayment(Map<String, String> payload) throws JSONException, IOException {
 
+        Payment payment = paymentRepository.findByTransactionId(payload.get("merchant_reference"));
+        String mobile = payload.get("mobile_no");
         // resp
         Map<String, String> model = new HashMap<>();
 
@@ -165,46 +178,49 @@ public class STCPaymentService {
         stcPayReqParam.put("RefNum", payment.getTransactionId());
         stcPayReqParam.put("BillNumber", payment.getInvoice().getAccountId());
         // ToDO Get Mobile form
-        if (CommonUtils.isProfile(environment, "prod") || CommonUtils.isProfile(environment, "ahmed")) {
+        //if (CommonUtils.isProfile(environment, "prod") || CommonUtils.isProfile(environment, "ahmed")) {
             stcPayReqParam.put("MobileNo", "966" + mobile.substring(1));
-        } else {
+        /*} else {
             stcPayReqParam.put("MobileNo", "966539396141");
-        }
+        }*/
         stcPayReqParam.put("Amount", payment.getAmount());
-        stcPayReqParam.put("MerchantNote", "");
+        // stcPayReqParam.put("MerchantNote", "");
         stcPayReqObj.put("DirectPaymentAuthorizeV4RequestMessage", stcPayReqParam);
 
         // STC Resp as string
         String res = httpsStcRequest(stcPayReqObj.toString(), stcDirectPaymentAuthorize);
 
-        if (StringUtils.isNotEmpty(res)) {
-            STCPayDirectPaymentAuthorizeRespDTO stcPayRes = objectMapper.readValue(res, STCPayDirectPaymentAuthorizeRespDTO.class);
-            payment.setOtpReference(stcPayRes.getDirectPaymentAuthorizeV4ResponseMessage().getOtpReference());
-            payment.setPaymentReference(stcPayRes.getDirectPaymentAuthorizeV4ResponseMessage().getSTCPayPmtReference());
-            paymentRepository.save(payment);
-            model.put("mobileValidationStatus", Constants.STCPayMobileValidationStatus.VALID.name());
 
-        } else {
-            log.error("------STC Authorize failed - empty body");
+        try {
+            if (StringUtils.isNotEmpty(res)) {
+                // success case {"DirectPaymentAuthorizeV4ResponseMessage":{"OtpReference":"UMSCPwTVAnJXZhDJHeQO","STCPayPmtReference":"1262678035888","ExpiryDuration":300}}
+                // error 403 case "{"Code":2008,"Text":"Customer not found","Type":0}",
+                STCPayDirectPaymentAuthorizeRespDTO stcPayRes = objectMapper.readValue(res, STCPayDirectPaymentAuthorizeRespDTO.class);
+                payment.setOtpReference(stcPayRes.getDirectPaymentAuthorizeV4ResponseMessage().getOtpReference());
+                payment.setPaymentReference(stcPayRes.getDirectPaymentAuthorizeV4ResponseMessage().getSTCPayPmtReference());
+                paymentRepository.save(payment);
+                model.put("mobileValidationStatus", Constants.STCPayMobileValidationStatus.VALID.name());
+
+            } else {
+                log.error("------STC Authorize failed - empty body");
+                model.put("mobileValidationStatus", Constants.STCPayMobileValidationStatus.INVALID.name());
+            }
+        } catch (Exception e) {
+            log.error("------STC Authorize failed - can't extract otp ");
             model.put("mobileValidationStatus", Constants.STCPayMobileValidationStatus.INVALID.name());
         }
 
-        return model;
-
+        if (model.get("mobileValidationStatus").equals(Constants.STCPayMobileValidationStatus.VALID.name())) {
+            return ResponseEntity.status(HttpStatus.OK).build();//.body(model);
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();//.body(model);
     }
 
-    public Map<String, String> proceedPaymentOperation(Map<String, Object> params, HttpServletRequest request, HttpServletResponse response, Map<String, String> payload) throws JSONException, IOException {
+    public void proceedPaymentOperation(Map<String, Object> params, HttpServletRequest request, HttpServletResponse response, Map<String, String> payload) throws JSONException, IOException {
 
         // payload.get("merchant_reference") in case of mobile validation
         // params.get("merchant_reference") in case of payment submit
-        Payment payment;
-        if (payload != null && StringUtils.isNotEmpty(payload.get("merchant_reference"))) {
-            // submit mobile
-            payment = paymentRepository.findByTransactionId(payload.get("merchant_reference"));
-            return initPayment(payment, payload.get("mobile_no"));
-        } else {
-            payment = paymentRepository.findByTransactionId(params.get("merchant_reference").toString());
-        }
+        Payment payment = paymentRepository.findByTransactionId(params.get("merchant_reference").toString());
 
         // submit otp
         payment.setStatus(PaymentStatus.CHECKOUT_PAGE);
@@ -228,82 +244,67 @@ public class STCPaymentService {
 
         if (StringUtils.isNotEmpty(res)) {
             STCPayDirectPaymentRespDTO stcPayRes = objectMapper.readValue(res, STCPayDirectPaymentRespDTO.class);
-            // Possible values:  Pending = 1,   Paid = 2,   Cancelled = 4,  Expired = 5
-            updatePaymentStatus(payment, invoice, stcPayRes.getDirectPaymentV4ResponseMessage().getPaymentStatus());
+            // Possible values:  Pending = 1,   Paid = 2,   Cancelled = 4,  Expired = 5    --- 6 other errors like balance
+            // NPE STC pay request status code: 200 OK, body {"Code":2023,"Text":"Available balance is not enough to proceed","Type":0}  or 200 OK, body {"Code":2031,"Text":"Invalid OTP value","Type":0}
+            if (stcPayRes != null && stcPayRes.getDirectPaymentV4ResponseMessage() != null && stcPayRes.getDirectPaymentV4ResponseMessage().getPaymentStatus() != null) {
+                updatePaymentStatus(payment, invoice, stcPayRes.getDirectPaymentV4ResponseMessage().getPaymentStatus());
+            } else {
+                updatePaymentStatus(payment, invoice, 6);
+            }
         } else {
             log.error("------STC Payment failed - empty body");
         }
         String redirectUrl = invoice.getClient().getRedirectUrl() + "?transactionId=" + payment.getTransactionId();
         response.addHeader("Location", redirectUrl);
         response.setStatus(HttpStatus.FOUND.value());
-        return null;
+        // return null;
     }
 
     private String httpsStcRequest(String requestBody, String requestUrl) {
         // HTTPS
         // STC Resp as string
         StringBuilder sb = new StringBuilder();
+
+        // direct call working --> move to mule
         /*try {
-            KeyStore clientStore = KeyStore.getInstance("JKS");
-            clientStore.load(STCPaymentService.class.getClassLoader().getResourceAsStream(keyStoreFile), keyStorePassword.toCharArray());
-            KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-            kmf.init(clientStore, keyStorePassword.toCharArray());
-            KeyManager[] kms = kmf.getKeyManagers();
+            KeyStore clientStore = KeyStore.getInstance("PKCS12");
+            clientStore.load(STCPaymentService.class.getClassLoader().getResourceAsStream("config/tls/Tkeen-win-gen.pfx"),keyStorePassword.toCharArray());
 
-            TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
-                public X509Certificate[] getAcceptedIssuers() {
-                    return null;
-                }
 
-                public void checkClientTrusted(X509Certificate[] certs, String authType) {
-                }
+            SSLContextBuilder sslContextBuilder = new SSLContextBuilder();
+            sslContextBuilder.setProtocol("TLS");
+            sslContextBuilder.loadKeyMaterial(clientStore, keyStorePassword.toCharArray());
+            sslContextBuilder.loadTrustMaterial(new TrustSelfSignedStrategy());
 
-                public void checkServerTrusted(X509Certificate[] certs, String authType) {
-                }
-            } };
+            SSLConnectionSocketFactory sslConnectionSocketFactory = new SSLConnectionSocketFactory(sslContextBuilder.build());
+            CloseableHttpClient httpClient = HttpClients.custom()
+                .setSSLSocketFactory(sslConnectionSocketFactory)
+                .build();
 
-            SSLContext sslContext = null;
-            sslContext = SSLContext.getInstance("TLS");
 
-            sslContext.init(kms, trustAllCerts, new SecureRandom());
-            HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
-            URL url = new URL(requestUrl);
-            HttpsURLConnection urlConn = (HttpsURLConnection) url.openConnection();
-            urlConn.setDoOutput(true);
-            urlConn.setDoInput(true);
-            urlConn.setRequestProperty("Content-Type", "application/json");
-            // urlConn.setRequestProperty("Accept", "application/json");
-            urlConn.setRequestProperty("X-ClientCode", "61248102687");
-            urlConn.setRequestMethod("POST");
-            OutputStreamWriter wr = new OutputStreamWriter
-                (urlConn.getOutputStream());
-            wr.write(requestBody);
-            wr.flush();
-            // StringBuilder sb = new StringBuilder();
-            int HttpResult = urlConn.getResponseCode();
-            if (HttpResult == HttpURLConnection.HTTP_OK) {
-                BufferedReader br = new BufferedReader(
-                    new InputStreamReader(urlConn.getInputStream(), "utf-8"));
-                String line = null;
-                while ((line = br.readLine()) != null) {
-                    sb.append(line + "\n");
-                }
-                br.close();
-            } else {
-                // error from STC
-                log.error("------STC call failed: {}", HttpResult);
+            HttpPost httpPost = new HttpPost("https://b2b.stcpay.com.sa/B2B.DirectPayment.WebApi/DirectPayment/V4/DirectPaymentAuthorize");
+            StringEntity entity = new StringEntity(requestBody);
+            httpPost.setHeader("Content-Type", "application/json");
+            httpPost.setHeader("X-ClientCode", "74133136252");
+
+            httpPost.setEntity(entity);
+            CloseableHttpResponse response = httpClient.execute(httpPost);
+            if(response.getEntity() != null) {
+                return  EntityUtils.toString(response.getEntity());
             }
         } catch (Exception e) {
             log.error("------STC call exception: {}", e);
         }
         return sb.toString();*/
+
+        // calling mule
         String resp = null;
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.set("Content-Type", "application/json");
             HttpEntity<String> entity = new HttpEntity<String>(requestBody, headers);
             ResponseEntity<String> result = restTemplate.postForEntity(requestUrl, entity, String.class);
-            log.debug("STC pay request status code: {}, body ", result.getStatusCode(), result.getBody());
+            log.debug("STC pay request status code: {}, body {}", result.getStatusCode(), result.getBody());
             resp = result.getBody();
         } catch (Exception e) {
             log.error("------STC call exception: {}", e);
@@ -351,21 +352,21 @@ public class STCPaymentService {
     private Boolean updatePaymentStatus(Payment payment, Invoice invoice, int status) {
         // Possible values:  Pending = 1,   Paid = 2,   Cancelled = 4,  Expired = 5
         if(status == 2) {
-            log.debug("------STC Payment Success - updating payment and invoice");
+            log.debug("------STC Payment {} Success - updating payment and invoice", payment.getTransactionId());
             payment.setStatus(PaymentStatus.PAID);
             paymentRepository.save(payment);
             invoice.setPaymentStatus(PaymentStatus.PAID);
             invoiceRepository.save(invoice);
             return Boolean.TRUE;
         } else if (status != 1) {
-            log.debug("------STC Payment failed with status:{}", status);
+            log.debug("------STC Payment {} failed with status:{}", payment.getTransactionId(), status);
             payment.setStatus(PaymentStatus.UNPAID);
             paymentRepository.save(payment);
             invoice.setPaymentStatus(PaymentStatus.UNPAID);
             invoiceRepository.save(invoice);
         } else {
             // keep chckout_page status --> job retry
-            log.debug("------STC Payment pending with status:{}", status);
+            log.debug("------STC Payment {} pending with status:{}", payment.getTransactionId(), status);
         }
         return null;
     }

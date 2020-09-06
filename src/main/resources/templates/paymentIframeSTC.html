@@ -96,13 +96,14 @@
             if (mobileValidationStatus != 'VALID') {
                 var mobileNo= document.getElementById('mobile_no').value;
                 console.log('mobileNo ' + mobileNo.length);
-                if (mobileNo.length == 10 ) {
+                if (mobileNo.length == 10 && mobileNo.toString().startsWith('05')) {
                     validateMobile(mobileNo, transactionIdBilling).then(function(response) {
                         console.log('--- validateMobile resp: ' + JSON.stringify(response));
-                        console.log('--- validateMobile resp: ' + (response));
-                        if (response != null) {
+                        // console.log('--- validateMobile resp: ' + (response));
+                        // if (response != null) {
                             // window.top.location.href = response;
                             // success case
+                            document.getElementById("error_mobile").classList.remove("display-block");
                             mobileValidationStatus = 'VALID';
                             // mobile_row  -- otp_row  hide-block
                             document.getElementById('mobile_row').classList.add("hide-block");
@@ -110,11 +111,14 @@
                             // change submit label
                             document.getElementById("submitButtonText").innerHTML = payButtonLabel;
                             document.getElementById("mobile_no").focus();
-                        }
+                        // }
                     }).catch(err => {
                         console.log('--- validateMobile resp err: ' + JSON.stringify(err));
+                        document.getElementById("error_mobile").classList.add("display-block");
 
                     });
+                } else {
+                    document.getElementById("error_mobile").classList.add("display-block");
                 }
                 return false;
             } else {
@@ -159,8 +163,8 @@
                 var xhr = new XMLHttpRequest();
                 console.log('--- authorize sending post req to backend');
                 // !!! ----------------------------- Ahmed must change To mule
-               // xhr.open('POST', '/billing/payments/stcpay-payment-processing');
-                 xhr.open('POST', actionUrl);
+                xhr.open('POST', '/billing/payments/stcpay-payment-processing');
+                // xhr.open('POST', actionUrl);
                 // add header test
                 // xhr.setRequestHeader("Access-Control-Allow-Origin", "*");
                 xhr.onload = function () {

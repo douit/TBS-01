@@ -153,13 +153,13 @@ tbs:
 
     #stc pay
     #out
-    stcpay-direct-payment-authorize: 'https://platform.tamkeentech.sa/billing-system-test/B2B.DirectPayment.WebApi/DirectPayment/V4/DirectPaymentAuthorize'
-    stcpay-direct-payment: 'https://platform.tamkeentech.sa/billing-system-test/B2B.DirectPayment.WebApi/DirectPayment/V4/DirectPaymentConfirm'
-    stcpay-payment-inquiry: 'https://platform.tamkeentech.sa/billing-system-test/B2B.DirectPayment.WebApi/DirectPayment/V4/PaymentInquiry'
-    stcpay-refund: 'https://platform.tamkeentech.sa/billing-system-test/B2B.MerchantTransactionsWebApi/MerchantTransactions/v3/RefundPayment'
+    stcpay-direct-payment-authorize: 'http://127.0.0.1:8082/B2B.DirectPayment.WebApi/DirectPayment/V4/DirectPaymentAuthorize'
+    stcpay-direct-payment: 'http://127.0.0.1:8082/B2B.DirectPayment.WebApi/DirectPayment/V4/DirectPaymentConfirm'
+    stcpay-payment-inquiry: 'http://127.0.0.1:8082/B2B.DirectPayment.WebApi/DirectPayment/V4/PaymentInquiry'
+    stcpay-refund: 'http://127.0.0.1:8082/B2B.MerchantTransactionsWebApi/MerchantTransactions/v3/RefundPayment'
     #in
-    # Todo change mobile
     stcpay-url-form: 'http://127.0.0.1:8082/billing/payments/stcpay-payment-processing'
+
   refund:
     sadad-shared-folder: 'C:\\sadad_share\\'
   report:
