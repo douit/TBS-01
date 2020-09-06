@@ -201,13 +201,13 @@ tbs:
     payfort-sha-request-phrase: '$2y$10$b2XJU7zWg'
     payfort-sha-response-phrase: '$2y$10$MnMjJ0SM6'
     payfort-access-code: 'D3KyGokx8hLlQmOVszty'
-    payfort-access-code-apple-pay: '5ODYV1FwvKEKGABmbQW2'
     payfort-merchant-identifier: 'e93bbe3b'
     payfort-language: 'en'
     payfort-url-json: 'https://sbpaymentservices.payfort.com/FortAPI/paymentApi'
     payfort-url-form: 'https://sbcheckout.PayFort.com/FortAPI/paymentPage'
     payfort-process-payment: 'http://localhost:8081/billing/payments/payfort-processing'
 
+    payfort-access-code-apple-pay: '5ODYV1FwvKEKGABmbQW2'
     apple-pay-get-session: '/billing/payments/apple-session'
     apple-pay-authorize: '/billing/payments/apple-authorize'
 
