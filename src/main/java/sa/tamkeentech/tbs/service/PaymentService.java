@@ -120,6 +120,9 @@ public class PaymentService {
     @Autowired
     private RestTemplate restTemplate;
 
+    @Autowired
+    private MailService mailService;
+
     public PaymentService(PaymentRepository paymentRepository, PaymentMapper paymentMapper, InvoiceRepository invoiceRepository, BankRepository bankRepository, BinRepository binRepository, PaymentMethodService paymentMethodService, ObjectMapper objectMapper, EventPublisherService eventPublisherService, ClientService clientService, ClientMapper clientMapper, PersistenceAuditEventRepository persistenceAuditEventRepository, PaymentMethodMapper paymentMethodMapper, ClientRepository clientRepository, STCPaymentService stcPaymentService) {
         this.paymentRepository = paymentRepository;
         this.paymentMapper = paymentMapper;
@@ -230,7 +233,7 @@ public class PaymentService {
      * @return
      */
     @Transactional
-    public PaymentDTO updateCreditCardPaymentAndSendEvent(PaymentStatusResponseDTO paymentStatusResponseDTO, Payment payment) {
+    public PaymentDTO updateCreditCardPaymentAndSendEvent(PaymentStatusResponseDTO paymentStatusResponseDTO, Payment payment, boolean isSendEmail) {
         log.debug("Request to update status Payment : {}", paymentStatusResponseDTO);
         // Payment payment = paymentRepository.findByTransactionId(paymentStatusResponseDTO.getTransactionId());
         Invoice invoice = payment.getInvoice();
@@ -238,11 +241,11 @@ public class PaymentService {
         TBSEventReqDTO<PaymentStatusResponseDTO> reqNotification = TBSEventReqDTO.<PaymentStatusResponseDTO>builder().principalId(invoice.getCustomer().getIdentity())
             .referenceId(invoice.getAccountId().toString()).req(paymentStatusResponseDTO).build();
 
-        return eventPublisherService.creditCardNotificationEvent(reqNotification, payment, invoice).getResp();
+        return eventPublisherService.creditCardNotificationEvent(reqNotification, payment, invoice, isSendEmail).getResp();
     }
 
     @Transactional
-    public PaymentDTO updateCreditCardPayment(PaymentStatusResponseDTO paymentStatusResponseDTO, Payment payment, Invoice invoice) {
+    public PaymentDTO updateCreditCardPayment(PaymentStatusResponseDTO paymentStatusResponseDTO, Payment payment, Invoice invoice, boolean isSendEmail) {
         log.debug("Request to update status Payment : {}", paymentStatusResponseDTO);
         if ((Constants.STS_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode())
                 || Constants.PAYFORT_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode())) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
@@ -250,6 +253,10 @@ public class PaymentService {
             invoice.setPaymentStatus(PaymentStatus.PAID);
             // in case client does not call check-payment Job will send notification
             invoice.setStatus(InvoiceStatus.WAITING);
+            // send email to customer
+            if (isSendEmail) {
+                mailService.sendReceiptMailWithAttachment(invoice.getCustomer().getContact().getEmail(), invoice.getId(), invoice.getCustomer().getName());
+            }
         } else if ((Constants.STS_PAYMENT_FAILURE_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode())
             || Constants.PAYFORT_PAYMENT_FAILURE_CODE.contains(paymentStatusResponseDTO.getCode())) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
             payment.setStatus(PaymentStatus.UNPAID);

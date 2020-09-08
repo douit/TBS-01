@@ -210,7 +210,7 @@ public class STSPaymentService {
             // Complete the Action get other parameters from result map and do your processes
             // Please refer to The Integration Manual to see the List of The Received Parameters
             log.info("Status is: {}", responseParameters.get("Response.StatusCode"));
-            paymentService.updateCreditCardPaymentAndSendEvent(paymentStatusResp.build(), payment);
+            paymentService.updateCreditCardPaymentAndSendEvent(paymentStatusResp.build(), payment, true);
         }
         String redirectUrl = invoice.getClient().getRedirectUrl() + "?transactionId=" + transactionId;
         log.info("------Redirect after payment to: {}", redirectUrl);
@@ -344,7 +344,7 @@ public class STSPaymentService {
                 .build();
             Payment payment = paymentRepository.findByTransactionId(result.get("Response.TransactionID"));
 
-            paymentService.updateCreditCardPaymentAndSendEvent(paymentStatusResponseDTO, payment);
+            paymentService.updateCreditCardPaymentAndSendEvent(paymentStatusResponseDTO, payment, true);
             return paymentStatusResponseDTO;
         }
 
@@ -395,10 +395,10 @@ public class STSPaymentService {
         return responseOrderdString.toString();
     }
 
-    public RefundStatusCCResponseDTO proceedRefundOperation(Refund refund, Invoice invoice, Optional<Payment> payment) throws IOException {
+    public RefundStatusCCResponseDTO proceedRefundOperation(RefundDTO refund, Invoice invoice, Optional<Payment> payment) throws IOException {
 
         RefundStatusCCResponseDTO refundStatusCCResponseDTO =  RefundStatusCCResponseDTO.builder()
-            .refundId(refund.getPayment().getTransactionId()).build();
+            .refundId(payment.get().getTransactionId()).build();
         //Step 1: Generate Secure Hash
         //  String SECRET_KEY = "Y2FkMTdlOWZiMzJjMzY4ZGFkMzhkMWIz"; // Use Yours, Please Store Your Secret Key in safe Place(e.g. database)
 

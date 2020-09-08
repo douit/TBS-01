@@ -1,6 +1,9 @@
 package sa.tamkeentech.tbs.service;
 
 import org.springframework.boot.autoconfigure.mail.MailProperties;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.core.io.ByteArrayResource;
+import sa.tamkeentech.tbs.config.Constants;
 import sa.tamkeentech.tbs.domain.User;
 
 import io.github.jhipster.config.JHipsterProperties;
@@ -20,6 +23,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring5.SpringTemplateEngine;
+import sa.tamkeentech.tbs.service.dto.FileDTO;
 
 /**
  * Service for sending emails.
@@ -37,6 +41,8 @@ public class MailService {
 
     private static final String LINK = "link";
 
+    private static final String USER_NAME = "userName";
+
     private final JHipsterProperties jHipsterProperties;
 
     private final JavaMailSender javaMailSender;
@@ -48,6 +54,10 @@ public class MailService {
     @Inject
     private MailProperties mailProperties;
 
+    @Inject
+    @Lazy
+    private ReportService reportService;
+
     public MailService(JHipsterProperties jHipsterProperties, JavaMailSender javaMailSender,
             MessageSource messageSource, SpringTemplateEngine templateEngine) {
 
@@ -58,7 +68,7 @@ public class MailService {
     }
 
     @Async
-    public void sendEmail(String to, String subject, String content, boolean isMultipart, boolean isHtml) {
+    public void sendEmail(String to, String subject, String content, boolean isMultipart, boolean isHtml, FileDTO attachment) {
         log.debug("Send email[multipart '{}' and html '{}'] to '{}' with subject '{}' and content={}",
             isMultipart, isHtml, to, subject, content);
 
@@ -70,6 +80,9 @@ public class MailService {
             message.setFrom(jHipsterProperties.getMail().getFrom());
             message.setSubject(subject);
             message.setText(content, isHtml);
+            if (attachment != null) {
+                message.addAttachment(attachment.getName(),  new ByteArrayResource(attachment.getBytes()));
+            }
 
             // --- Debug Code
             log.debug("----- spring: mail: -----");
@@ -107,17 +120,15 @@ public class MailService {
         Context context = new Context(locale);
         context.setVariable(USER, user);
         context.setVariable(BASE_URL, jHipsterProperties.getMail().getBaseUrl());
-        if(user.isInternal() != true)
-            context.setVariable(LINK, "#/account/reset/finish?key="+user.getResetKey());
-        else
+        if (user.isInternal() != true) {
+            context.setVariable(LINK, "#/account/reset/finish?key=" + user.getResetKey());
+        } else {
             context.setVariable(LINK, "#/");
-
-
-
+        }
 
         String content = templateEngine.process(templateName, context);
         String subject = messageSource.getMessage(titleKey, null, locale);
-        sendEmail(user.getEmail(), subject, content, false, true);
+        sendEmail(user.getEmail(), subject, content, false, true, null);
     }
 
     @Async
@@ -136,5 +147,19 @@ public class MailService {
     public void sendPasswordResetMail(User user) {
         log.debug("Sending password reset email to '{}'", user.getEmail());
         sendEmailFromTemplate(user, "mail/passwordResetEmail", "email.reset.title");
+    }
+
+    @Async
+    public void sendReceiptMailWithAttachment(String email, Long invoiceId, String receiverName) {
+        log.debug("Sending Receipt email to '{}'", email);
+        FileDTO attachment = reportService.generateInvoiceReceipt(invoiceId);
+        log.debug("Sending Receipt email to '{}'", email);
+        Locale locale = Locale.forLanguageTag(Constants.LANGUAGE.ARABIC.getLanguageKey());
+        Context context = new Context(locale);
+        context.setVariable(BASE_URL, jHipsterProperties.getMail().getBaseUrl());
+        context.setVariable(USER_NAME, receiverName);
+        String content = templateEngine.process("mail/receiptEmail", context);
+        String subject = messageSource.getMessage("email.receipt.title", null, locale);
+        sendEmail(email, subject, content, true, true, attachment);
     }
 }

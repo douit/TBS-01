@@ -3,19 +3,6 @@ package sa.tamkeentech.tbs.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.ssl.SSLContextBuilder;
-import org.apache.http.ssl.SSLContexts;
-import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,28 +26,21 @@ import sa.tamkeentech.tbs.domain.enumeration.PaymentStatus;
 import sa.tamkeentech.tbs.domain.enumeration.RequestStatus;
 import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.repository.PaymentRepository;
+import sa.tamkeentech.tbs.service.dto.RefundDTO;
 import sa.tamkeentech.tbs.service.dto.RefundStatusCCResponseDTO;
 import sa.tamkeentech.tbs.service.dto.StcDTO.STCPayDirectPaymentAuthorizeRespDTO;
 import sa.tamkeentech.tbs.service.dto.StcDTO.STCPayDirectPaymentRespDTO;
 import sa.tamkeentech.tbs.service.dto.StcDTO.STCPayPaymentInquiryRespDTO;
 import sa.tamkeentech.tbs.service.dto.StcDTO.STCPayPaymentRefundRespDTO;
 import sa.tamkeentech.tbs.service.mapper.PaymentMapper;
-import sa.tamkeentech.tbs.service.util.CommonUtils;
 import sa.tamkeentech.tbs.service.util.LanguageUtil;
 
 import javax.inject.Inject;
-import javax.net.ssl.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.security.KeyStore;
-import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -101,6 +81,9 @@ public class STCPaymentService {
 
     @Inject
     private RestTemplate restTemplate;
+
+    @Inject
+    private MailService mailService;
 
     private final ObjectMapper objectMapper;
     private final PaymentMapper paymentMapper;
@@ -357,6 +340,7 @@ public class STCPaymentService {
             paymentRepository.save(payment);
             invoice.setPaymentStatus(PaymentStatus.PAID);
             invoiceRepository.save(invoice);
+            mailService.sendReceiptMailWithAttachment(invoice.getCustomer().getContact().getEmail(), invoice.getId(), invoice.getCustomer().getName());
             return Boolean.TRUE;
         } else if (status != 1) {
             log.debug("------STC Payment {} failed with status:{}", payment.getTransactionId(), status);
@@ -372,33 +356,42 @@ public class STCPaymentService {
     }
 
 
-    public RefundStatusCCResponseDTO proceedRefundOperation(Refund refund, Invoice invoice, Optional<Payment> payment) throws JSONException, IOException {
+    public RefundStatusCCResponseDTO proceedRefundOperation(RefundDTO refund, Invoice invoice, Optional<Payment> payment) throws JSONException, IOException {
 
         RefundStatusCCResponseDTO refundStatusCCResponseDTO =  RefundStatusCCResponseDTO.builder()
-            .refundId(refund.getPayment().getTransactionId()).build();
+            .refundId(payment.get().getTransactionId()).build();
+        BigDecimal roundedAmount = refund.getRefundValue().setScale(2, RoundingMode.HALF_UP);
 
         JSONObject stcPayRefReqParam = new JSONObject();
         JSONObject stcPayRefReqObj = new JSONObject();
         stcPayRefReqParam.put("STCPayRefNum", payment.get().getPaymentReference());
-        stcPayRefReqParam.put("Amount", payment.get().getAmount());
+        stcPayRefReqParam.put("Amount", roundedAmount);
         stcPayRefReqObj.put("RefundPaymentRequestMessage", stcPayRefReqParam);
 
         // STC Resp as string
         String res = httpsStcRequest(stcPayRefReqObj.toString(), stcPayRefund);
-        // The only success response if 200 OK == body not empty
+        // The only success response if 200 OK && RefundPaymentResponseMessage value (Mule return 200 even in case of error)
+        // error body: {"Code":2003,"Text":"Insufficient fund","Type":0}
         if (StringUtils.isNotEmpty(res)) {
             STCPayPaymentRefundRespDTO stcPayRefRes = objectMapper.readValue(res, STCPayPaymentRefundRespDTO.class);
-            if (stcPayRefRes != null ) {
+            if (stcPayRefRes != null && stcPayRefRes.getRefundPaymentResponseMessage() != null) {
                 payment.get().setPaymentReference(stcPayRefRes.getRefundPaymentResponseMessage().getNewSTCPayRefNum());
                 payment.get().setStatus(PaymentStatus.REFUNDED);
                 paymentRepository.save(payment.get());
                 invoice.setPaymentStatus(PaymentStatus.REFUNDED);
                 invoiceRepository.save(invoice);
                 refundStatusCCResponseDTO.setStatus(RequestStatus.SUCCEEDED);
-            }else{
+            } else {
                 refundStatusCCResponseDTO.setStatus(RequestStatus.FAILED);
-
+                try {
+                    JSONObject refResponse = new JSONObject(res);
+                    log.debug("Refund of invoice {} failed with code: {} and message {}", invoice.getAccountId(), refResponse.get("Code") , refResponse.get("Text"));
+                }catch (Exception err){
+                    log.error("Error parsing refund response: {}", res);
+                }
             }
+        } else {
+            refundStatusCCResponseDTO.setStatus(RequestStatus.FAILED);
         }
 
 

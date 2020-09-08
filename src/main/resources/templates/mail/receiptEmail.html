@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title th:text="#{email.receipt.title}">JHipster password reset</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <link rel="shortcut icon" th:href="@{|${baseUrl}/favicon.ico|}" />
+    </head>
+    <body>
+        <p th:text="#{email.receipt.greeting(${userName})}">
+            Dear
+        </p>
+        <p th:text="#{email.receipt.text1}">
+            Your payment has been successfully processed, please find further details in attachments.
+        </p>
+
+        <p>
+            <span th:text="#{email.reset.text2}">Regards, </span>
+        </p>
+    </body>
+</html>

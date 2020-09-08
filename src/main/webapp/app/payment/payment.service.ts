@@ -43,7 +43,7 @@ export class PaymentService {
 
   createCcPayment(accountId, paymentMethod): Observable<EntityResponseType> {
     const headers = new HttpHeaders()
-      .set('Accept-Language', 'en');
+      .set('Accept-Language', 'ar');
     return this.http
       /*.post<IPayment>(this.resourceUrlCreditCard, copy, { observe: 'response' })*/
       .get<any>(this.resourceUrlCreditCard + '/' + accountId + '/' + paymentMethod,

@@ -133,8 +133,8 @@ public class EventPublisherService {
     }*/
 
     @TBSEventPub(eventName = Constants.EventType.CREDIT_CARD_NOTIFICATION)
-    public TBSEventRespDTO<PaymentDTO> creditCardNotificationEvent(TBSEventReqDTO<PaymentStatusResponseDTO> reqNotification, Payment payment, Invoice invoice) {
-        PaymentDTO result = paymentService.updateCreditCardPayment(reqNotification.getReq(), payment, invoice);
+    public TBSEventRespDTO<PaymentDTO> creditCardNotificationEvent(TBSEventReqDTO<PaymentStatusResponseDTO> reqNotification, Payment payment, Invoice invoice, boolean isSendEmail) {
+        PaymentDTO result = paymentService.updateCreditCardPayment(reqNotification.getReq(), payment, invoice, isSendEmail);
         TBSEventRespDTO<PaymentDTO> eventResp = TBSEventRespDTO.<PaymentDTO>builder().resp(result).build();
         return eventResp;
     }
@@ -149,14 +149,13 @@ public class EventPublisherService {
 
     @TBSEventPub(eventName = Constants.EventType.CREDIT_CARD_REFUND_REQUEST)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public TBSEventRespDTO<RefundStatusCCResponseDTO> callRefundByCreditCardEvent(TBSEventReqDTO<Refund> eventReq, Invoice invoice, Optional<Payment> payment) throws IOException, JSONException {
+    public TBSEventRespDTO<RefundStatusCCResponseDTO> callRefundByCreditCardEvent(TBSEventReqDTO<RefundDTO> eventReq, Invoice invoice, Optional<Payment> payment) throws IOException, JSONException {
         RefundStatusCCResponseDTO refundStatusCCResponseDTO;
         if(payment.get().getPaymentProvider().equals(PaymentProvider.STC_PAY)){
             refundStatusCCResponseDTO = stcPaymentService.proceedRefundOperation(eventReq.getReq(), invoice, payment);
-        }
-        else if(payment.get().getPaymentProvider().equals(PaymentProvider.STS)){
+        } else if(payment.get().getPaymentProvider().equals(PaymentProvider.STS)){
             refundStatusCCResponseDTO = stsPaymentService.proceedRefundOperation(eventReq.getReq(), invoice, payment);
-        }else {
+        } else {
             refundStatusCCResponseDTO =  payFortPaymentService.proceedRefundOperation(eventReq.getReq(), invoice, payment);
         }
         TBSEventRespDTO<RefundStatusCCResponseDTO> eventResp = TBSEventRespDTO.<RefundStatusCCResponseDTO>builder().resp(refundStatusCCResponseDTO).build();

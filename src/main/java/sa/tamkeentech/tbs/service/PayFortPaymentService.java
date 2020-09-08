@@ -26,10 +26,7 @@ import sa.tamkeentech.tbs.domain.enumeration.RequestStatus;
 import sa.tamkeentech.tbs.repository.InvoiceRepository;
 import sa.tamkeentech.tbs.repository.PaymentRepository;
 import sa.tamkeentech.tbs.repository.RefundRepository;
-import sa.tamkeentech.tbs.service.dto.ApplePayTokenAuthorizeDTO;
-import sa.tamkeentech.tbs.service.dto.PayFortOperationDTO;
-import sa.tamkeentech.tbs.service.dto.PaymentStatusResponseDTO;
-import sa.tamkeentech.tbs.service.dto.RefundStatusCCResponseDTO;
+import sa.tamkeentech.tbs.service.dto.*;
 import sa.tamkeentech.tbs.service.mapper.RefundMapper;
 import sa.tamkeentech.tbs.service.util.LanguageUtil;
 import sa.tamkeentech.tbs.web.rest.errors.PaymentGatewayException;
@@ -353,7 +350,8 @@ public class PayFortPaymentService {
             // Please refer to The Integration Manual to see the List of The Received Parameters
             log.info("Status is: {}", params.get("status"));
         }
-        paymentService.updateCreditCardPaymentAndSendEvent(paymentStatusResp, payment);
+        // in case of payfort send email if isCorrectionTrue to avoid sending mail twice
+        paymentService.updateCreditCardPaymentAndSendEvent(paymentStatusResp, payment, isCorrection);
         // in case of correction -> no redirection
         if (isCorrection) {
             return null;
@@ -421,11 +419,11 @@ public class PayFortPaymentService {
     }*/
 
 
-    public RefundStatusCCResponseDTO proceedRefundOperation(Refund refund, Invoice invoice, Optional<Payment> payment){
+    public RefundStatusCCResponseDTO proceedRefundOperation(RefundDTO refund, Invoice invoice, Optional<Payment> payment){
         log.info("Request to initiate Refund : {}", refund.getId());
 
         RefundStatusCCResponseDTO refundStatusCCResponseDTO =  RefundStatusCCResponseDTO.builder()
-            .refundId(refund.getPayment().getTransactionId()).build();
+            .refundId(payment.get().getTransactionId()).build();
 
         BigDecimal roundedAmount = refund.getRefundValue().setScale(2, RoundingMode.HALF_UP);
         PayFortOperationDTO payfortOperationRequest = PayFortOperationDTO.builder()
@@ -504,7 +502,7 @@ public class PayFortPaymentService {
 
         Payment payment = paymentRepository.findByTransactionId(transactionId);
 
-        paymentService.updateCreditCardPaymentAndSendEvent(paymentStatusResponseDTO, payment);
+        paymentService.updateCreditCardPaymentAndSendEvent(paymentStatusResponseDTO, payment, true);
         return paymentStatusResponseDTO;
     }
 

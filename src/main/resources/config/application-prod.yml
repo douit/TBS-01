@@ -194,7 +194,8 @@ tbs:
     stcpay-direct-payment-authorize: 'https://platform.tamkeentech.sa/billing-system/B2B.DirectPayment.WebApi/DirectPayment/V4/DirectPaymentAuthorize'
     stcpay-direct-payment: 'https://platform.tamkeentech.sa/billing-system/B2B.DirectPayment.WebApi/DirectPayment/V4/DirectPaymentConfirm'
     stcpay-payment-inquiry: 'https://platform.tamkeentech.sa/billing-system/B2B.DirectPayment.WebApi/DirectPayment/V4/PaymentInquiry'
-    stcpay-refund: 'https://platform.tamkeentech.sa/billing-system/B2B.MerchantTransactionsWebApi/MerchantTransactions/v3/RefundPayment'
+    #stcpay-refund: 'https://platform.tamkeentech.sa/billing-system/B2B.MerchantTransactionsWebApi/MerchantTransactions/v3/RefundPayment'
+    stcpay-refund: 'https://platform.tamkeentech.sa/billing-system/B2B.MerchantTransactions.WebApi/MerchantTransactions/v3/RefundPayment'
     stcpay-url-form: 'https://platform.tamkeentech.sa/billing-system/billing/payments/stcpay-payment-processing'
 
   refund:

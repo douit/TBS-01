@@ -98,6 +98,7 @@
                 console.log('mobileNo ' + mobileNo.length);
                 if (mobileNo.length == 10 && mobileNo.toString().startsWith('05')) {
                     validateMobile(mobileNo, transactionIdBilling).then(function(response) {
+                        stopLoading();
                         console.log('--- validateMobile resp: ' + JSON.stringify(response));
                         // console.log('--- validateMobile resp: ' + (response));
                         // if (response != null) {
@@ -115,7 +116,7 @@
                     }).catch(err => {
                         console.log('--- validateMobile resp err: ' + JSON.stringify(err));
                         document.getElementById("error_mobile").classList.add("display-block");
-
+                        stopLoading();
                     });
                 } else {
                     document.getElementById("error_mobile").classList.add("display-block");
@@ -137,17 +138,17 @@
         }
 
         function startLoading() {
-            // disbaleElements();
-            // $("#btnHint").html("");
-            // $("#loadingI").show();
             var loadIcon = document.getElementById("loadingI");
             loadIcon.style.visibility = "visible";
-
-            //$("#submitBtn").addClass("loading");
-            //$("#submitBtn").attr("disabled", true);
             var submitButton = document.getElementById("submitBtn");
-            //submitButton.classList.add("loading");
             submitButton.disabled = true;
+        }
+
+        function stopLoading() {
+            var loadIcon = document.getElementById("loadingI");
+            loadIcon.style.visibility = "hidden";
+            var submitButton = document.getElementById("submitBtn");
+            submitButton.disabled = false;
         }
 
         function isNumber(evt) {
@@ -176,6 +177,7 @@
             return new Promise(function (resolve, reject) {
                 var xhr = new XMLHttpRequest();
                 console.log('--- authorize sending post req to backend');
+                startLoading();
                 //xhr.open('POST', '/billing/payments/stcpay-payment-processing');
                 xhr.open('POST', actionUrl);
                 xhr.onload = function () {
@@ -201,6 +203,26 @@
                 // xhr.setRequestHeader("Access-Control-Allow-Origin", "*");
                 xhr.send(JSON.stringify({merchant_reference: transactionId, mobile_no: mobile}));
             });
+        }
+
+        function mobileNumberListener() {
+            var holdr = document.getElementById('mobile_no').value;
+            // styling placeholder
+            if (holdr.length >= 1) {
+                document.getElementById('mobile_no').parentElement.classList.add("input-filled");
+            } else {
+                document.getElementById('mobile_no').parentElement.classList.remove("input-filled");
+            }
+        }
+
+        function codeListener() {
+            var holdr = document.getElementById('opt_value').value;
+            // styling placeholder
+            if (holdr.length >= 1) {
+                document.getElementById('opt_value').parentElement.classList.add("input-filled");
+            } else {
+                document.getElementById('opt_value').parentElement.classList.remove("input-filled");
+            }
         }
 
     </script>
@@ -235,9 +257,10 @@
                 <span class="input" id="mobile_row" th:classappend="(${mobileValidationStatus} == 'VALID')? hide-block : ''">
                                     <input class="input-field align-center" type="tel" name="mobile_no" id="mobile_no" pattern="[0-9]*" maxlength="10"
                                            onkeypress="javascript: return isNumber(event)" th:value="${MobileNo}"
+                                           onkeyup="javascript: mobileNumberListener();"
                                            ondrag="return false" ondrop="return false" autocomplete="off" autofocus>
                                     <label class="input-label" for="">
-                                        <i class="fas fa-shield-alt"></i>
+                                        <i class="icon-mobile icon"></i>
                                         <span class="input-label-content"  th:text="${mobileLabel}">Mobile number</span>
                                     </label>
                                 </span>
@@ -245,6 +268,7 @@
                 <span class="input" id="otp_row" th:classappend="(${mobileValidationStatus} != 'VALID')? hide-block : ''">
                                     <input class="input-field align-center" type="tel" name="opt_value" id="opt_value" pattern="[0-9]*" maxlength="8"
                                            onkeypress="javascript: return isNumber(event)"
+                                           onkeyup="javascript: codeListener();"
                                            ondrag="return false" ondrop="return false" autocomplete="off" autofocus>
                                     <label class="input-label" for="">
                                         <i class="fas fa-shield-alt"></i>

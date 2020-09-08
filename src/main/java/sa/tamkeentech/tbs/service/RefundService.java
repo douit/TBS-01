@@ -210,10 +210,10 @@ public class RefundService {
         } else {
             RefundStatusCCResponseDTO refundStatusCCResponseDTO;
             String principalId = paymentService.getCustomerId(invoice.getCustomer());
-            TBSEventReqDTO<Refund> req = TBSEventReqDTO.<Refund>builder()
+            TBSEventReqDTO<RefundDTO> req = TBSEventReqDTO.<RefundDTO>builder()
                 .principalId(principalId)
                 .referenceId(invoice.getAccountId().toString())
-                .req(refund).build();
+                .req(refundMapper.toDto(refund)).build();
             refundStatusCCResponseDTO = eventPublisherService.callRefundByCreditCardEvent(req, invoice, payment).getResp();
           if(refundStatusCCResponseDTO.getStatus().equals(RequestStatus.SUCCEEDED)){
               refund.setStatus(RequestStatus.SUCCEEDED);
