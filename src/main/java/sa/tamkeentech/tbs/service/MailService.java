@@ -8,11 +8,20 @@ import sa.tamkeentech.tbs.domain.User;
 
 import io.github.jhipster.config.JHipsterProperties;
 
+import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
 import javax.inject.Inject;
+import javax.mail.*;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import javax.mail.util.ByteArrayDataSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -160,6 +169,56 @@ public class MailService {
         context.setVariable(USER_NAME, receiverName);
         String content = templateEngine.process("mail/receiptEmail", context);
         String subject = messageSource.getMessage("email.receipt.title", null, locale);
-        sendEmail(email, subject, content, true, true, attachment);
+        sendClientMail(email, subject, content, true, true, attachment);
+    }
+
+
+    private void sendClientMail(String to, String subject, String content, boolean isMultipart, boolean isHtml, FileDTO attachment) {
+        Properties props = new Properties();
+        // props.put("mail.smtp.host", "10.102.11.18");
+        props.put("mail.smtp.host", "10.60.73.8");
+        Session session = Session.getDefaultInstance(props, null);
+
+        try {
+            Message message = new MimeMessage(session);
+            message.setFrom(new InternetAddress("info@mnar.sa"));
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
+            message.setSubject(subject);
+
+            Multipart multipart = new MimeMultipart();
+            // Set text message part
+            MimeBodyPart messageBodyPart1 = new MimeBodyPart();
+            // messageBodyPart1.setText(content);
+            messageBodyPart1.setContent( content, "text/html; charset=utf-8" );
+            // Set Attachment
+            MimeBodyPart messageBodyPart2 = new MimeBodyPart();
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+
+            // Now use your ByteArrayDataSource as
+            DataSource source = new ByteArrayDataSource(attachment.getBytes(), "application/pdf");
+            messageBodyPart2.setDataHandler(new DataHandler(source));
+            messageBodyPart2.setFileName(attachment.getName());
+
+            multipart.addBodyPart(messageBodyPart1);
+            multipart.addBodyPart(messageBodyPart2);
+
+            // Send the complete message parts
+            message.setContent(multipart);
+            message.saveChanges();
+            // Set the Date: header
+            message.setSentDate(new java.util.Date());
+
+            log.debug("Sending email ....");
+            Thread.currentThread().setContextClassLoader( MailService.class.getClassLoader());
+            Transport.send(message);
+            log.debug("Sent Email Successfully");
+
+        } catch (MessagingException e) {
+            log.debug("Sent Email issue : " + e.getMessage());
+            e.printStackTrace();
+        }catch (Exception e) {
+            log.debug("Sent Email issue 2 : " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }

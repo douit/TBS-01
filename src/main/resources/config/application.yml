@@ -110,7 +110,7 @@ spring:
     port: 25
 #    username: HDFBS.LOCAL/tbs@tamkeentech.sa
     username: tbs@tamkeentech.sa
-    password: P#ssword5124
+    password: BP@ss#5413
     protocol: smtp
     tls: true
     properties.mail.smtp:
