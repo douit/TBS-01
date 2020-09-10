@@ -192,7 +192,7 @@ public class SecurityConfiguration {
                 .permitAll()
             .and()
                 .headers()
-                .contentSecurityPolicy("default-src 'self'; frame-src 'self' https://platform.tamkeentech.sa https://www.google.com data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://storage.googleapis.com https://www.google.com https://www.gstatic.com; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; img-src 'self' data:; font-src 'self' https://fonts.gstatic.com data:")
+                .contentSecurityPolicy("default-src 'self' blob: ; frame-src 'self' https://platform.tamkeentech.sa https://www.google.com data:; script-src 'self' https://platform.tamkeentech.sa 'unsafe-inline' 'unsafe-eval' https://storage.googleapis.com https://www.google.com https://www.gstatic.com  blob: ; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; img-src 'self' data:; font-src 'self' https://fonts.gstatic.com data: worker-src blob:")
                 //.contentSecurityPolicy("default-src 'self'; frame-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://storage.googleapis.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:")
             .and()
                 .referrerPolicy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)

@@ -1,3 +1,14 @@
+<script>
+
+    window.addEventListener('message',function(e) {
+        var key = e.message ? 'message' : 'data';
+        var data = e[key];
+
+        console.log("------------call from iframe:" + data);
+    },false);
+
+</script>
+
 <div class="main-content">
     <div class="container-fluid">
 

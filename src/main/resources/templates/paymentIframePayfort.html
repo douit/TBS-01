@@ -145,6 +145,7 @@
         </script>
 
         <script>
+            /* Credit card logic*/
             function payOnClick() {
                 var date = document.getElementById('expiry_date_formatted').value;
                 var cardNumberInput = document.getElementById('card_number').value;
@@ -303,6 +304,10 @@
                 }
             }
 
+        </script>
+
+        <script>
+
             /*****************************/
             /********* Apple pay *********/
             // Show apple pay button
@@ -311,19 +316,20 @@
                 document.getElementById("CreditCardDiv").classList.add("display-block");
                 // canMakePaymentsWithActiveCard: whether the user has an active card in Wallet
                 // Feature disabled as apple does not allow multiple domain:
-                if (false && window.ApplePaySession && ApplePaySession.canMakePayments) {
-                    var merchantIdentifier = 'merchant.sa.tamkeentech.billing';
-                    var promise = ApplePaySession.canMakePaymentsWithActiveCard(merchantIdentifier);
-                    promise.then(function (canMakePayments) {
-                        if (canMakePayments) {
+                // if (false && window.ApplePaySession && ApplePaySession.canMakePayments) {
+                if (window.ApplePaySession && ApplePaySession.canMakePayments) {
+                    // var merchantIdentifier = 'merchant.sa.tamkeentech.billing';
+                    // var promise = ApplePaySession.canMakePaymentsWithActiveCard(merchantIdentifier);
+                    // promise.then(function (canMakePayments) {
+                    //    if (canMakePayments) {
                             // showApplePayButton
                             document.getElementById("ApplePayDiv").classList.add("display-block");
                             document.getElementById("ApplePayBtn").classList.add("visible");
                             console.log('+++ can MakePayments');
-                        } else {
-                            console.log('+++ can MakePayments but no active CC');
-                        }
-                    });
+                    //    } else {
+                    //        console.log('+++ can MakePayments but no active CC');
+                    //    }
+                    // });
 
                 } else {
                     console.log('--- cant MakePayments');
@@ -421,8 +427,9 @@
                 return new Promise(function (resolve, reject) {
                     var xhr = new XMLHttpRequest();
                     console.log('--- getApplePaySession sending post req to backend');
-                    // xhr.open('POST', '/billing/payments/apple-session');
-                    xhr.open('POST', applePaySessionUrl);
+                   // Test Abaan apple pay
+                    xhr.open('POST', '/api/bill/payments/apple-session');
+                    // xhr.open('POST', applePaySessionUrl);
                     xhr.onload = function () {
                         if (this.status == 200) {
                             resolve(JSON.parse(xhr.response));
@@ -530,6 +537,11 @@
                 </span>
             </h4>
         </div>
+
+         <!-- Test call Parent -->
+         <div class="row">
+             <div class="apple-pay-button" style="visibility: visible !important;" onclick="parent.postMessage('loadApple','*');"></div>
+         </div>
 
         <form  th:action="${actionUrl}" method="post" name="redirectForm" target="_top">
             <input type="hidden" name="service_command" th:value="${service_command}">
