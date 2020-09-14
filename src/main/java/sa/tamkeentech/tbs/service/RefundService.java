@@ -644,7 +644,7 @@ public class RefundService {
         return refundMapper.toDetailedDto(refundRepository.findAll((root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(criteriaBuilder.and(root.get("payment").get("invoice").get("client").get("id").in(clientIds)));
-            // predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("status"), PaymentStatus.PAID)));
+            predicates.add(criteriaBuilder.and(root.get("status").in(Arrays.asList(RequestStatus.SUCCEEDED, RequestStatus.PENDING))));
             if (start != null) {
                 predicates.add(criteriaBuilder.and(criteriaBuilder.greaterThanOrEqualTo(root.get("createdDate"), start)));
             }

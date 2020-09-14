@@ -231,3 +231,11 @@ body {
   padding-left: 10px !important;
 }
 
+
+// Dashboard chart
+.ct-series-a .ct-bar, .ct-series-a .ct-line, .ct-series-a .ct-point, .ct-series-a .ct-slice-donut {
+  stroke: #00897b !important;
+}
+.ct-series-b .ct-bar, .ct-series-b .ct-line, .ct-series-b .ct-point, .ct-series-b .ct-slice-donut {
+  stroke: #2196f3 !important;
+}

@@ -247,23 +247,29 @@ public class PaymentService {
     @Transactional
     public PaymentDTO updateCreditCardPayment(PaymentStatusResponseDTO paymentStatusResponseDTO, Payment payment, Invoice invoice, boolean isSendEmail) {
         log.debug("Request to update status Payment : {}", paymentStatusResponseDTO);
+        log.debug("Sending email : {}", isSendEmail);
+        if (StringUtils.isNotEmpty(paymentStatusResponseDTO.getCardNumber()) && paymentStatusResponseDTO.getCardNumber().length() > 5) {
+            payment.setBankId(findBankCode(paymentStatusResponseDTO.getCardNumber()));
+        }
+        // CHECKOUT_PAGE status removed, in case of payfort second call may be ignored -> mail not sent
         if ((Constants.STS_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode())
-                || Constants.PAYFORT_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode())) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
-            payment.setStatus(PaymentStatus.PAID);
-            invoice.setPaymentStatus(PaymentStatus.PAID);
-            // in case client does not call check-payment Job will send notification
-            invoice.setStatus(InvoiceStatus.WAITING);
+                || Constants.PAYFORT_PAYMENT_SUCCESS_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode())) /*&& payment.getStatus() == PaymentStatus.CHECKOUT_PAGE*/) {
+            // Avoid setting status Waiting after client check payment
+            if (payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
+                payment.setStatus(PaymentStatus.PAID);
+                invoice.setPaymentStatus(PaymentStatus.PAID);
+                // in case client does not call check-payment Job will send notification
+                invoice.setStatus(InvoiceStatus.WAITING);
+            }
             // send email to customer
             if (isSendEmail) {
-                mailService.sendReceiptMailWithAttachment(invoice.getCustomer().getContact().getEmail(), invoice.getId(), invoice.getCustomer().getName());
+                log.debug("Sending email ...");
+                mailService.sendReceiptMailWithAttachment(invoice.getCustomer().getContact().getEmail(), invoice.getId(), invoice.getCustomer().getName(), invoice.getClient().getClientId());
             }
         } else if ((Constants.STS_PAYMENT_FAILURE_CODE.equalsIgnoreCase(paymentStatusResponseDTO.getCode())
             || Constants.PAYFORT_PAYMENT_FAILURE_CODE.contains(paymentStatusResponseDTO.getCode())) && payment.getStatus() == PaymentStatus.CHECKOUT_PAGE) {
             payment.setStatus(PaymentStatus.UNPAID);
             invoice.setPaymentStatus(PaymentStatus.UNPAID);
-        }
-        if (StringUtils.isNotEmpty(paymentStatusResponseDTO.getCardNumber()) && paymentStatusResponseDTO.getCardNumber().length() > 5) {
-            payment.setBankId(findBankCode(paymentStatusResponseDTO.getCardNumber()));
         }
         paymentRepository.save(payment);
         invoiceRepository.save(invoice);

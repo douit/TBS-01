@@ -310,8 +310,8 @@
                 console.log('---load iframe');
                 document.getElementById("CreditCardDiv").classList.add("display-block");
                 // canMakePaymentsWithActiveCard: whether the user has an active card in Wallet
-                // Feature disabled as apple does not allow multiple domain:
-                if (false && window.ApplePaySession && ApplePaySession.canMakePayments) {
+                // Feature disabled as apple does not allow cross domain:
+                if (/*false && */window.ApplePaySession && ApplePaySession.canMakePayments) {
                     var merchantIdentifier = 'merchant.sa.tamkeentech.billing';
                     var promise = ApplePaySession.canMakePaymentsWithActiveCard(merchantIdentifier);
                     promise.then(function (canMakePayments) {

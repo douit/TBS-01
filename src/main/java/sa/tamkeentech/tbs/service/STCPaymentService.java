@@ -340,7 +340,7 @@ public class STCPaymentService {
             paymentRepository.save(payment);
             invoice.setPaymentStatus(PaymentStatus.PAID);
             invoiceRepository.save(invoice);
-            mailService.sendReceiptMailWithAttachment(invoice.getCustomer().getContact().getEmail(), invoice.getId(), invoice.getCustomer().getName());
+            mailService.sendReceiptMailWithAttachment(invoice.getCustomer().getContact().getEmail(), invoice.getId(), invoice.getCustomer().getName(), invoice.getClient().getClientId());
             return Boolean.TRUE;
         } else if (status != 1) {
             log.debug("------STC Payment {} failed with status:{}", payment.getTransactionId(), status);

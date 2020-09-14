@@ -159,7 +159,7 @@ public class MailService {
     }
 
     @Async
-    public void sendReceiptMailWithAttachment(String email, Long invoiceId, String receiverName) {
+    public void sendReceiptMailWithAttachment(String email, Long invoiceId, String receiverName, String clientCode) {
         log.debug("Sending Receipt email to '{}'", email);
         FileDTO attachment = reportService.generateInvoiceReceipt(invoiceId);
         log.debug("Sending Receipt email to '{}'", email);
@@ -169,19 +169,33 @@ public class MailService {
         context.setVariable(USER_NAME, receiverName);
         String content = templateEngine.process("mail/receiptEmail", context);
         String subject = messageSource.getMessage("email.receipt.title", null, locale);
-        sendClientMail(email, subject, content, true, true, attachment);
+        sendClientMail(email, subject, content, true, true, attachment, clientCode);
     }
 
 
-    private void sendClientMail(String to, String subject, String content, boolean isMultipart, boolean isHtml, FileDTO attachment) {
+    private void sendClientMail(String to, String subject, String content, boolean isMultipart, boolean isHtml, FileDTO attachment, String clientCode) {
         Properties props = new Properties();
         // props.put("mail.smtp.host", "10.102.11.18");
         props.put("mail.smtp.host", "10.60.73.8");
-        Session session = Session.getDefaultInstance(props, null);
+        Session session;
+        String from;
+        if ("MNAR".equals(clientCode)) {
+             session = Session.getDefaultInstance(props, null);
+            from = "info@mnar.sa";
+        } else {
+             session = Session.getInstance(props, new javax.mail.Authenticator() {
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(mailProperties.getUsername(), mailProperties.getPassword());
+                }
+            });
+            from = "billing@tamkeentech.sa";
+        }
+
 
         try {
             Message message = new MimeMessage(session);
-            message.setFrom(new InternetAddress("info@mnar.sa"));
+            message.setFrom(new InternetAddress(from));
+
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
             message.setSubject(subject);
 
